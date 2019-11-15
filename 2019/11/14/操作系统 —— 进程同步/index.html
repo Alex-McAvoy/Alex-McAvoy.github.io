@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+  
+  
+  <link rel="stylesheet" media="all" href="/lib/Han/dist/han.min.css?v=3.3">
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="学习笔记,操作系统,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="【概述】1.制约关系多个程序在并发执行时，对于同处一个系统中的多个进程，由于他们共享系统中的资源，或为完成某一任务而相互合作，使得他们存在制约关系。 制约关系分为两种：  间接制约关系：对于临界资源来说，多个进程对之间只能互斥地访问，这类资源由系统实施统一分配 直接制约关系：对于某些应用，为完成某任务而建立了两个及以上的进程，这些进程为完成同一任务将进行合作  简单来说，间接制约关系是指诸进程间的">
+<meta name="keywords" content="学习笔记,操作系统">
+<meta property="og:type" content="article">
+<meta property="og:title" content="操作系统 —— 进程同步">
+<meta property="og:url" content="http://yoursite.com/2019/11/14/操作系统 —— 进程同步/index.html">
+<meta property="og:site_name" content="Alex_McAvoy">
+<meta property="og:description" content="【概述】1.制约关系多个程序在并发执行时，对于同处一个系统中的多个进程，由于他们共享系统中的资源，或为完成某一任务而相互合作，使得他们存在制约关系。 制约关系分为两种：  间接制约关系：对于临界资源来说，多个进程对之间只能互斥地访问，这类资源由系统实施统一分配 直接制约关系：对于某些应用，为完成某任务而建立了两个及以上的进程，这些进程为完成同一任务将进行合作  简单来说，间接制约关系是指诸进程间的">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/20191115084928265.png">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/20191115105355994.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3UwMTE4MTU0MDQ=,size_16,color_FFFFFF,t_70">
+<meta property="og:updated_time" content="2019-11-15T03:17:28.033Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="操作系统 —— 进程同步">
+<meta name="twitter:description" content="【概述】1.制约关系多个程序在并发执行时，对于同处一个系统中的多个进程，由于他们共享系统中的资源，或为完成某一任务而相互合作，使得他们存在制约关系。 制约关系分为两种：  间接制约关系：对于临界资源来说，多个进程对之间只能互斥地访问，这类资源由系统实施统一分配 直接制约关系：对于某些应用，为完成某任务而建立了两个及以上的进程，这些进程为完成同一任务将进行合作  简单来说，间接制约关系是指诸进程间的">
+<meta name="twitter:image" content="https://img-blog.csdnimg.cn/20191115084928265.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":true,"scrollpercent":true,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2019/11/14/操作系统 —— 进程同步/">
+
+
+
+
+
+  <title>操作系统 —— 进程同步 | Alex_McAvoy</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Alex_McAvoy</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/11/14/操作系统 —— 进程同步/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Alex_McAvoy">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/assets/img/head.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Alex_McAvoy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">操作系统 —— 进程同步</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-11-14T14:32:15+08:00">
+                2019-11-14
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/学习笔记/" itemprop="url" rel="index">
+                    <span itemprop="name">学习笔记</span>
+                  </a>
+                </span>
+
+                
+                
+                  ， 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/学习笔记/学习笔记——操作系统/" itemprop="url" rel="index">
+                    <span itemprop="name">学习笔记——操作系统</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body han-init-context" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="【概述】"><a href="#【概述】" class="headerlink" title="【概述】"></a>【概述】</h1><h2 id="1-制约关系"><a href="#1-制约关系" class="headerlink" title="1.制约关系"></a>1.制约关系</h2><p>多个程序在并发执行时，对于同处一个系统中的多个进程，由于他们共享系统中的资源，或为完成某一任务而相互合作，使得他们存在制约关系。</p>
+<p>制约关系分为两种：</p>
+<ul>
+<li><strong>间接制约关系</strong>：对于临界资源来说，多个进程对之间只能互斥地访问，这类资源由系统实施统一分配</li>
+<li><strong>直接制约关系</strong>：对于某些应用，为完成某任务而建立了两个及以上的进程，这些进程为完成同一任务将进行合作</li>
+</ul>
+<p>简单来说，间接制约关系是指诸进程间的 <strong>“ 共享资源 ”</strong> ，直接制约关系是指诸进程间的 <strong>“ 相互合作 ”</strong></p>
+<p>在多道程序环境下，由于存在上述的两类制约关系，会产生对共享变量或数据结构等资源不正确的访问次序，从而造成进程每次执行结果的不一致，即<strong>进程的异步性</strong>。</p>
+<p>为杜绝这种差错，使程序具有<strong>可再现性</strong>，必须对进程执行次序进行协调，保证进程按序执行。</p>
+<h2 id="2-临界资源与临界区"><a href="#2-临界资源与临界区" class="headerlink" title="2.临界资源与临界区"></a>2.临界资源与临界区</h2><p><strong>临界资源</strong>，是指一次仅允许一个进程使用的资源，例如打印机、磁带机等硬件资源。</p>
+<p>对临界资源，应采取<strong>互斥方式</strong>进行访问，从而实现资源共享。</p>
+<p>每个进程中访问临界资源的代码叫作<strong>临界区</strong>，显然，若能保证诸进程互斥地进入自己的临界区，便可实现进程对临界资源的互斥访问，为此，在每个进程进入临界区前，应先对欲访问的临界资源进行检查，看他是否正在被访问。</p>
+<p>因此，必须在临界区前增加一段用于检查的代码：如果某时刻临界资源正被访问，那么进程就可以访问该临界资源，并设置该临界资源正被访问的标志；如果某时刻临界资源正被访问，那么该进程就不能进入临界区。</p>
+<p>用于检查的这段代码称为<strong>进入区</strong>，相应的，在临界区后要加上一段用于将恢复访问标志的代码，这段代码称为<strong>退出区</strong>，同时，在进程中除进入区、临界区、退出区的其他部分，统称为<strong>剩余区</strong>。</p>
+<p>因此，一个访问临界资源的循环进程可以被描述为：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">while</span>(True)&#123;</span><br><span class="line">    进入区</span><br><span class="line">    临界区</span><br><span class="line">    退出区</span><br><span class="line">    剩余区</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="3-同步机制应遵循的规则"><a href="#3-同步机制应遵循的规则" class="headerlink" title="3.同步机制应遵循的规则"></a>3.同步机制应遵循的规则</h2><p>为实现进程互斥地进入自己的临界区，系统中设置了专门的同步机制来协调各进程间的运行，所有的同步机制都遵循以下四条规则：</p>
+<ul>
+<li><strong>空闲让进</strong>：当无进程处于临界区时，表明临界资源处于空闲状态，此时允许请求进入临界区的进程进入</li>
+<li><strong>忙则等待</strong>：当有进程处于临界区时，表明临界资源处于忙碌状态，此时请求进入临界区的进程必须等待，以保证对临界资源的互斥访问</li>
+<li><strong>有限等待</strong>：对要求访问临界资源的进程，应保证在有限时间内能进入自己的临界区，以免陷入 <strong>“ 死等 ” 状态</strong></li>
+<li><strong>让权等待</strong>：进程无法进入自己的临界区时，应立刻师范处理机，以免陷入 <strong>“ 忙等 ” 状态</strong></li>
+</ul>
+<h1 id="【同步机制】"><a href="#【同步机制】" class="headerlink" title="【同步机制】"></a>【同步机制】</h1><h2 id="1-硬件同步机制"><a href="#1-硬件同步机制" class="headerlink" title="1.硬件同步机制"></a>1.硬件同步机制</h2><p>许多计算机中提供了一些特殊的硬件指令，允许对一个字中的内容进行检测和修正，或对两个字的内容进行交换，利用这些特殊的硬件指令，可以解决临界区问题。</p>
+<p>进入临界区往往与其标志有关，我们可以将标志看做一个<strong>初始时开启</strong>的锁：锁开启时，允许进入，且进入后关闭锁；锁关闭时，必须等待</p>
+<h3 id="1）关中断"><a href="#1）关中断" class="headerlink" title="1）关中断"></a>1）关中断</h3><p>关中断是实现互斥的最简单的方法。</p>
+<p>在进入锁测试前关闭中断，直到完成锁测试并上锁后才能打开中断，这样进程在临界区执行期间，系统不响应中断，从而也就不会引发调度。</p>
+<p>但关中断的方法具有许多缺点，例如：滥用关中断权力、关中断时间过长影响系统效率、不适用于多 CPU 系统等</p>
+<h3 id="2）TS-指令"><a href="#2）TS-指令" class="headerlink" title="2）TS 指令"></a>2）TS 指令</h3><p>TS 指令是一条硬件指令：Test-and-Set 指令(测试并建立)</p>
+<p>该指令一般性描述如下：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">bool</span> <span class="title">TS</span><span class="params">(<span class="keyword">bool</span> *lock)</span></span>&#123;</span><br><span class="line">    <span class="keyword">bool</span> old;</span><br><span class="line">    old=lock;</span><br><span class="line">    *lock=<span class="literal">true</span>;</span><br><span class="line">    <span class="keyword">return</span> old;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这个指令可以看做一个函数过程，其执行过程是不可分割的，即其是一条<strong>原语</strong>，其中 lock 具有两种状态：</p>
+<ul>
+<li>*lock=false 时：表示该资源空闲</li>
+<li>*lock=true 时：表示该资源正被使用</li>
+</ul>
+<p>用 TS 指令管理临界区时，现为每个临界资源设置一个布尔变量 lock，由于变量 lock 代表了该资源的状态，故可以将其看作一把锁。</p>
+<p>利用 TS 指令实现互斥的循环进程结构描述如下：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">do</span>&#123;</span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">while</span>(TS(&amp;lock));<span class="comment">//进入区</span></span><br><span class="line">    临界区</span><br><span class="line">    lock=<span class="literal">false</span>;<span class="comment">//退出区</span></span><br><span class="line">    剩余区</span><br><span class="line">&#125;<span class="keyword">while</span>(<span class="literal">true</span>);</span><br></pre></td></tr></table></figure>
+
+<h3 id="3）swap-指令"><a href="#3）swap-指令" class="headerlink" title="3）swap 指令"></a>3）swap 指令</h3><p>swap 指令为对换指令，用于交换两个字的内容，其处理过程描述如下：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">swap</span><span class="params">(<span class="keyword">bool</span> *a,<span class="keyword">bool</span> *b)</span></span>&#123;</span><br><span class="line">    <span class="keyword">bool</span> temp;</span><br><span class="line">    temp=*a;</span><br><span class="line">    *a=*b;</span><br><span class="line">    *b=temp;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>使用对换指令可以简单有效地实现互斥，其方法是为每个临界资源设置一个初值为 false 的全局布尔变量 lock，在每个进程中再利用一个局部布尔变量 key，利用 swap 进行交换来实现互斥。</p>
+<p>利用 swap 指令实现互斥的循环进程结构描述如下：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">do</span>&#123;</span><br><span class="line">    key=<span class="literal">true</span>;</span><br><span class="line">    <span class="keyword">do</span>&#123;</span><br><span class="line">        swap(&amp;lock,&amp;key);</span><br><span class="line">    &#125;<span class="keyword">while</span>(key!=<span class="literal">false</span>);<span class="comment">//进入区</span></span><br><span class="line">    临界区</span><br><span class="line">    lock=<span class="literal">false</span>;<span class="comment">//退出区</span></span><br><span class="line">    剩余区</span><br><span class="line">&#125;<span class="keyword">while</span>(<span class="literal">true</span>);</span><br></pre></td></tr></table></figure>
+
+<h2 id="2-信号量机制"><a href="#2-信号量机制" class="headerlink" title="2.信号量机制"></a>2.信号量机制</h2><p>利用硬件指令可以有效地实现进程互斥，但当进程资源忙碌时，其他访问进程必须不断地进行测试，处于一种<strong>忙等状态</strong>，不符合<strong>让权等待原则</strong>，造成了处理机的浪费。</p>
+<p>1965年，Dijkstra 提出了信号量机制，在长期广泛的应用中，证明了其是一种卓有成效的进程同步机制，现广泛地利用于各种系统中。</p>
+<h3 id="1）整型信号量"><a href="#1）整型信号量" class="headerlink" title="1）整型信号量"></a>1）整型信号量</h3><p>整型信号量定义为一个用于表示资源数目的整型量 S，其与一般整型量不同，除初始化外，仅能通过两个<strong>原子操作 wait(S) 和 signal(S)</strong> 来访问。</p>
+<p>wait(S) 与 signal(S) 是两个原子操作，又被称为 P 原语、V 原语，他们在执行时不可中断，描述如下：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">wait</span><span class="params">(S)</span></span>&#123;</span><br><span class="line">    <span class="keyword">while</span>(S&lt;=<span class="number">0</span>);<span class="comment">//忙等</span></span><br><span class="line">    S--;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">signal</span><span class="params">(S)</span></span>&#123;</span><br><span class="line">    S++;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="2）记录型信号量"><a href="#2）记录型信号量" class="headerlink" title="2）记录型信号量"></a>2）记录型信号量</h3><p>在整型信号量中的 wait(S) 操作中，只要信号量 ${S\leq0}$ 就会不断的测试，这没有遵循<strong>让权等待</strong>原则，使进程陷入了<strong>忙等</strong>状态。</p>
+<p>而如果采取让权等待的策略，那么会出现多个进程等待访问同一临界资源的情况，为此，在记录型信号量中，除了一个用于表示资源数目的整型变量 value 外，还增加了一个进程链表指针 link，用于链接多个等待进程。</p>
+<p>其结构如下：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Semaphore</span>&#123;</span></span><br><span class="line">    <span class="keyword">int</span> value;<span class="comment">//记录资源数目</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">process_control_block</span> *<span class="title">link</span>;</span><span class="comment">//PCB链表指针</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在记录型信号量中，${S-&gt;value}$ 的初值表示系统中某类资源的数目，对他的每次 wait 操作，意味着进程请求一个单位的该类资源，使系统中可供分配的该类资源数减少一个；对他的每次 signal 操作，意味着进程释放一个单位的该类资源，使系统中可供分配的该类资源数增加一个。</p>
+<p>相应的，wait(S) 与 signal(S) 描述如下：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">wait</span><span class="params">(Semaphore *S)</span></span>&#123;</span><br><span class="line">    S-&gt;value--;</span><br><span class="line">    <span class="keyword">if</span>(S-&gt;value&lt;<span class="number">0</span>)<span class="comment">//该类资源已分配完毕</span></span><br><span class="line">        block(S-&gt;link);<span class="comment">//自我阻塞，放弃处理机</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">signal</span><span class="params">(Semaphore *S)</span></span>&#123;</span><br><span class="line">    S-&gt;value++;</span><br><span class="line">    <span class="keyword">if</span>(S-&gt;value&lt;=<span class="number">0</span>)<span class="comment">//仍有等待资源的进程被堵塞</span></span><br><span class="line">        wakeup(S-&gt;link);<span class="comment">//唤醒链表中的第一个等待进程</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="3）AND-型信号量"><a href="#3）AND-型信号量" class="headerlink" title="3）AND 型信号量"></a>3）AND 型信号量</h3><p>在某些应用场合，一个进程往往需要两个及以上的共享资源才能执行其任务。</p>
+<p>假定有两个进程 A、B，要求访问临界资源 C、D，那么，如果 A 占有了 C 等待 D，B 占有了 D 等待 C，那么就会陷入<strong>死锁状态</strong>，两者都在等待对方释放自己所需的资源。<br><img src="https://img-blog.csdnimg.cn/20191115084928265.png" alt="Alt"><br>显然，当进程同时要求的共享资源越多时，发生进程死锁的可能性就越大。</p>
+<p>为预防进程死锁的问题，出现了 AND 型信号量，其基本思想是：将进程在整个运行过程中需要的所有资源，一次性全部分配给进程，待进程使用完后再一起释放，简单来说，要么全部分配完成，要么一个也不分配。</p>
+<p>在实现中，对若干临界资源的分配采取了原子操作方式，为此在 wait 与 signal 的操作的基础上，加了一个 AND 条件，称为<strong>同时 wait 操作（Swait 操作）</strong>、<strong>同时 signal 操作（Ssignal 操作）</strong>，其描述如下：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">Swait</span><span class="params">(S1,S2,...,Sn)</span></span>&#123;</span><br><span class="line">    <span class="keyword">while</span>(<span class="literal">true</span>)&#123;</span><br><span class="line">        <span class="keyword">if</span>(S1&gt;<span class="number">0</span>&amp;&amp;S2&gt;<span class="number">0</span>&amp;&amp;...&amp;&amp;Sn&gt;<span class="number">0</span>)&#123;</span><br><span class="line">            <span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">1</span>; i&lt;=n; i++)</span><br><span class="line">                Si--;</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span>&#123;</span><br><span class="line">            将进程堵塞在第一个不能满足资源信号量的队列中</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">void</span> Ssignal(S1,S2,...,Sn)&#123;</span><br><span class="line">    <span class="keyword">while</span>(<span class="literal">true</span>)&#123;</span><br><span class="line">        <span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">1</span>; i&lt;=n; i++)&#123;</span><br><span class="line">            Si+;</span><br><span class="line">            唤醒所有与Si相关的阻塞进程</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="4）信号量集"><a href="#4）信号量集" class="headerlink" title="4）信号量集"></a>4）信号量集</h3><p>对于记录型信号量，wait(S) 或 signal(S) 操作每次只能对某临界资源进行一个单位的申请或释放，当一次需要 n 个单位时，意味着需要 n 次 wait(S) 操作，这不仅低效，还会增加死锁的概率。</p>
+<p>在某些情况下，为保证系统的安全性，当所申请的资源数量低于一定值时，必须要加以管制不予分配，因此当进程申请某类临界资源时，每次分配前都要测试资源数量，判断是否大于可分配的下限值，决定是否予以分配。</p>
+<p>基于以上两点，对 AND 型信号量进行扩充，<strong>在一次 P、V 原语中，对进程所申请的所有资源以及每类资源不同资源的需求量完成申请或释放。</strong></p>
+<p>进程对信号量 ${S_i}$ 的测试值不再是 1，而是该类资源的分配下限值 ${t_i}$，即要求 ${S_i\geq t_i}$，否则不予分配，一旦允许分配，进程对该类资源的需求为 ${d_i}$，那么就进行 ${S_i=S_i-d_i}$操作，由此形成一般化的<strong>信号量集机制</strong>，对应的 Swait 与 Ssignal 格式如下：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Swait(S1,t1,d1,S2,t2,d2,...,Sn,tn,dn);</span><br><span class="line">Ssignal(S1,d1,S2,d2,...,Sn,dn);</span><br></pre></td></tr></table></figure>
+
+<p>一般的信号量集还具有以下三种情况：</p>
+<ul>
+<li>Swait(S,d,d)：此时信号量集中仅有一个信号量，但允许他每次申请 d 个资源，若现有资源数少于d，不予分配</li>
+<li>Swait(S,1,1)：相当于一般的记录型信号量(S&gt;1)或互斥信号量(S=1)</li>
+<li>Swait(S,1,0)：相当于一个可控开关，当 ${S \geq 1}$ 时，允许多个进程进入某特定区，当  ${S=0}$ 时，阻止任何进程进入特定区</li>
+</ul>
+<h2 id="3-管程机制"><a href="#3-管程机制" class="headerlink" title="3.管程机制"></a>3.管程机制</h2><p>由于每个要访问的临界资源的进程都要自备同步操作 wait(S) 与 signal(S)，这就使大量的同步操作分散在各个进程中，不仅管理困难，还容易因同步操作顺序不当而产生死锁，而<strong>管程</strong>，就是用于解决上述问题的一种同步工具。</p>
+<h3 id="1）管程的组成"><a href="#1）管程的组成" class="headerlink" title="1）管程的组成"></a>1）管程的组成</h3><p>所谓<strong>管程</strong>，是指代表共享资源的数据结构、由该数据结构实施操作的一组国创所组成管理程序，共同构成的一个 OS 的资源管理模块。</p>
+<p>利用共享数据结构，抽象地表示系统中的共享资源，同时将对该共享资源实施的操作定义为一组过程，进程对资源的申请、释放必须通过这组过程间接地对共享数据结构实现操作。</p>
+<p>对于请求访问共享资源的诸多并发进程，根据资源的情况接受或者阻塞，确保每次只有一个警察进入管程，执行这组过程，使用共享资源，从而达到对共享资源所有访问的统一管理。</p>
+<p>任何进程只能通过调用管程提供的过程入口进入管程，从而访问共享数据，而且在任何时刻，仅允许一个进程在管程中执行某个内部过程，如同使用临界资源，就要必须通过其信号量的申请。</p>
+<p>管程被请求和释放资源的进程所调用，其由四部分构成：<strong>管程名称、共享数据结构说明(共享变量、条件变量等)、对数据结构操作的过程（可调用的方法）、对管程初始化的语句</strong><br><img src="https://img-blog.csdnimg.cn/20191115105355994.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3UwMTE4MTU0MDQ=,size_16,color_FFFFFF,t_70" alt="Alt"></p>
+<h3 id="2）管程的同步控制——条件变量"><a href="#2）管程的同步控制——条件变量" class="headerlink" title="2）管程的同步控制——条件变量"></a>2）管程的同步控制——条件变量</h3><p>管程的变量有两种，一种是<strong>普通变量</strong>，一种是<strong>条件变量</strong>。</p>
+<p>其中条件变量用于控制进程阻塞与唤醒，其类似于信号量变量，但没有具体值，相当于每个阻塞队列的队列指针。</p>
+<p>管程中的每个条件变量都必须予以说明，其形式为：<strong>condition x,y</strong>，而对条件变量的操作，需要结合对普通变量的条件判断，由此来控制进程状态。</p>
+<p>而对条件变量的操作只有 wait 与 signal，因此条件变量是一种抽象的数据类型，每个条件变量只保留了一个链表，用于记录因该条件变量而阻塞的所有进程，因此，两个操作可表示为：</p>
+<ul>
+<li>x.wait：将执行进程挂到 x 对应的等待队列上</li>
+<li>x.signal：唤醒 x 相应的等待队列上的一个进程</li>
+</ul>
+<h1 id="【信号量的应用】"><a href="#【信号量的应用】" class="headerlink" title="【信号量的应用】"></a>【信号量的应用】</h1><h2 id="1-进程互斥"><a href="#1-进程互斥" class="headerlink" title="1.进程互斥"></a>1.进程互斥</h2><p>当多个进程需要互斥地访问某临界资源时，仅需为该资源设置一初值为 1 的<strong>互斥信号量 mutex</strong>，然后将各进程访问该资源的临界区置于 wait(mutex) 与 signal(mutex) 之间即可。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">Semaphore mutex=<span class="number">1</span>;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">Process</span><span class="params">()</span></span>&#123;</span><br><span class="line">    ....</span><br><span class="line">    <span class="keyword">while</span>(<span class="literal">true</span>)&#123;</span><br><span class="line">        wait(mutex);<span class="comment">//进入区</span></span><br><span class="line">        临界区</span><br><span class="line">        signal(mutex);<span class="comment">//退出区</span></span><br><span class="line">        剩余区</span><br><span class="line">    &#125;</span><br><span class="line">    ....</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="2-前趋关系"><a href="#2-前趋关系" class="headerlink" title="2.前趋关系"></a>2.前趋关系</h2><p>假设有两个并发执行的进程 P1 与 P2，P1 中有语句 S1，P2 中有语句 S2，现在我们希望 S1 执行后再执行 S2，为实现这样的前趋关系，令进程 P1、P2 共享一个初值为 0 的公用信号量，将 signal(S) 放在 S1 语句后面，将 wait(S) 放在 S2 语句前面。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">Semaphore S=<span class="number">0</span>;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">process1</span><span class="params">()</span></span>&#123;</span><br><span class="line">    S1</span><br><span class="line">    signal(S);</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">process2</span><span class="params">()</span></span>&#123;</span><br><span class="line">    wait(S);</span><br><span class="line">    S2</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>感谢您对我的支持，让我继续努力分析有用地点技术与知识点！</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="/assets/img/wechatpay.jpg" alt="Alex_McAvoy 微信支付">
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="/assets/img/alipay.jpg" alt="Alex_McAvoy 支付宝">
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/学习笔记/" rel="tag"># 学习笔记</a>
+          
+            <a href="/tags/操作系统/" rel="tag"># 操作系统</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/11/13/学习笔记 —— 操作系统目录/" rel="next" title="学习笔记 —— 操作系统">
+                <i class="fa fa-chevron-left"></i> 学习笔记 —— 操作系统
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+
+      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/assets/img/head.jpg" alt="Alex_McAvoy">
+            
+              <p class="site-author-name" itemprop="name">Alex_McAvoy</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">2</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">2</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">2</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/Alex-McAvoy" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="https://blog.csdn.net/u011815404" target="_blank" title="CSDN">
+                      
+                        <i class="fa fa-fw fa-copyright"></i>CSDN</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+            <div class="cc-license motion-element" itemprop="license">
+              <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" class="cc-opacity" target="_blank">
+                <img src="/images/cc-by-nc-sa.svg" alt="Creative Commons">
+              </a>
+            </div>
+          
+
+          
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-link"></i>
+                Links
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/sdz20172133" title="神仙队友" target="_blank">神仙队友</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://www.bycore.net/" title="凉了的某饼同学" target="_blank">凉了的某饼同学</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/wentong_Xu" title="小黑贱胖子" target="_blank">小黑贱胖子</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/sdau_fangshifeng" title="一个头很酷的家伙" target="_blank">一个头很酷的家伙</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://www.yuheng.tech/" title="咸于" target="_blank">咸于</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/lanshan1111" title="肥硕硕" target="_blank">肥硕硕</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/sdauguanweihong" title="管少" target="_blank">管少</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/qq_41661919" title="俊杰" target="_blank">俊杰</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/qq_40859951" title="峰哥" target="_blank">峰哥</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/LSD20164388" title="狗冬" target="_blank">狗冬</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/qq_37748451" title="胖亚亚" target="_blank">胖亚亚</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/qq_37868325" title="妍大佬" target="_blank">妍大佬</a>
+                  </li>
+                
+              </ul>
+            </div>
+          
+
+          
+
+        </div>
+      </section>
+
+      
+
+      
+        <div class="back-to-top">
+          <i class="fa fa-arrow-up"></i>
+          
+            <span id="scrollpercent"><span>0</span>%</span>
+          
+        </div>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 &mdash; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Alex_McAvoy</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdn.bootcss.com/mathjax/2.7.1/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  
+
+
+  
+
+  
+
+  
+</body>
+</html>
