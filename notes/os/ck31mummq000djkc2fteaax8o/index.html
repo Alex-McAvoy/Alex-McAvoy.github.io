@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+  
+  
+  <link rel="stylesheet" media="all" href="/lib/Han/dist/han.min.css?v=3.3">
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="学习笔记,操作系统,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="【概述】进程通信是指进程间的信息交换。 由于进程的互斥与同步需要在进程间交换信息，但由于信号量机制虽是有效的同步工具，但作为通信工具来说效率低、通信对用户不透明，因此常常归类为低级进程通信。 为了使通信时用户使用方便、能高效地传递大量数据，OS 隐藏了实现进程通信的具体细节，向用户提供了一组用于实现高级通信命令（原语），利用这些原语，可以高效地传送大量数据，也即高级进程通信。 【进程通信的类型】1">
+<meta name="keywords" content="学习笔记,操作系统">
+<meta property="og:type" content="article">
+<meta property="og:title" content="操作系统——进程通信">
+<meta property="og:url" content="https://alex-mcavoy.github.io/notes/os/ck31mummq000djkc2fteaax8o/index.html">
+<meta property="og:site_name" content="Alex_McAvoy">
+<meta property="og:description" content="【概述】进程通信是指进程间的信息交换。 由于进程的互斥与同步需要在进程间交换信息，但由于信号量机制虽是有效的同步工具，但作为通信工具来说效率低、通信对用户不透明，因此常常归类为低级进程通信。 为了使通信时用户使用方便、能高效地传递大量数据，OS 隐藏了实现进程通信的具体细节，向用户提供了一组用于实现高级通信命令（原语），利用这些原语，可以高效地传送大量数据，也即高级进程通信。 【进程通信的类型】1">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/os/08-1.png">
+<meta property="og:updated_time" content="2019-11-16T12:29:14.230Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="操作系统——进程通信">
+<meta name="twitter:description" content="【概述】进程通信是指进程间的信息交换。 由于进程的互斥与同步需要在进程间交换信息，但由于信号量机制虽是有效的同步工具，但作为通信工具来说效率低、通信对用户不透明，因此常常归类为低级进程通信。 为了使通信时用户使用方便、能高效地传递大量数据，OS 隐藏了实现进程通信的具体细节，向用户提供了一组用于实现高级通信命令（原语），利用这些原语，可以高效地传送大量数据，也即高级进程通信。 【进程通信的类型】1">
+<meta name="twitter:image" content="https://alex-mcavoy.github.io/images/notes/os/08-1.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":true,"scrollpercent":true,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://alex-mcavoy.github.io/notes/os/ck31mummq000djkc2fteaax8o/">
+
+
+
+
+
+  <title>操作系统——进程通信 | Alex_McAvoy</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Alex_McAvoy</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/notes/os/ck31mummq000djkc2fteaax8o/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Alex_McAvoy">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/assets/img/head.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Alex_McAvoy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">操作系统——进程通信</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-11-15T18:40:52+08:00">
+                2019-11-15
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/notes/" itemprop="url" rel="index">
+                    <span itemprop="name">学习笔记</span>
+                  </a>
+                </span>
+
+                
+                
+                  ， 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/notes/os/" itemprop="url" rel="index">
+                    <span itemprop="name">学习笔记——操作系统</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body han-init-context" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="【概述】"><a href="#【概述】" class="headerlink" title="【概述】"></a>【概述】</h1><p>进程通信是指<strong>进程间的信息交换</strong>。</p>
+<p>由于<strong>进程的互斥与同步</strong>需要在进程间交换信息，但由于信号量机制虽是有效的同步工具，但作为通信工具来说效率低、通信对用户不透明，因此常常归类为<strong>低级进程通信</strong>。</p>
+<p>为了使通信时用户使用方便、能高效地传递大量数据，OS 隐藏了实现进程通信的具体细节，向用户提供了一组用于实现<strong>高级通信命令（原语）</strong>，利用这些原语，可以高效地传送大量数据，也即<strong>高级进程通信</strong>。</p>
+<h1 id="【进程通信的类型】"><a href="#【进程通信的类型】" class="headerlink" title="【进程通信的类型】"></a>【进程通信的类型】</h1><h2 id="1-共享存储器系统"><a href="#1-共享存储器系统" class="headerlink" title="1.共享存储器系统"></a>1.共享存储器系统</h2><p>在共享存储器系统中，相互通信的进程共享某些数据结构、存储区，进程能利用这些空间进行通信，因此可以分为以下两种类型：</p>
+<ul>
+<li><strong>基于共享数据结构的通信(低级通信)</strong>：OS 仅提供共享存储器，程序员负责对公用数据结构设置与对进程间同步进行处理，通信效率低下，适合于传递少量数据</li>
+<li><strong>基于共享存储区的通信(高级通信)</strong>：在存储器中划出了一块共享存储区，诸进程可通过共享存储区中数据的读写来实现通信，适合于传输大量数据</li>
+</ul>
+<h2 id="2-消息传递系统"><a href="#2-消息传递系统" class="headerlink" title="2.消息传递系统"></a>2.消息传递系统</h2><p>消息传递系统是应用最广泛的一种，其以<strong>格式化的消息</strong>为单位，屏蔽底层复杂的操作。例如：在计算机网络中，消息又称为报文；在微内核操作系统中，微内核与服务器的通信也采用了消息传递系统。</p>
+<p>根据实现方式的不同，可分为以下两类：</p>
+<ul>
+<li><strong>直接通信方式</strong>：发送进程利用 OS 发送原语，直接将消息发送给目标进程</li>
+<li><strong>间接通信方式</strong>：发送、接收进程均通过<strong>共享中间实体</strong>进行消息的发送与接收</li>
+</ul>
+<h2 id="3-管道通信系统"><a href="#3-管道通信系统" class="headerlink" title="3.管道通信系统"></a>3.管道通信系统</h2><p>所谓<strong>管道(pipe文件)</strong>，是指用于连接读、写进程以实现通信的一个共享文件。</p>
+<p>向管道提供输入的<strong>发送进程(写进程)</strong>以字符流形式将数据送入管道，接收管道输出的<strong>接收进程(读进程)</strong>同样以字符流的形式接收数据。</p>
+<p>管道通信系统，就是利用管道来进行通信的，为协调双方通信，管道机制必须具备<strong>互斥、同步、确认对方是否存在</strong>的能力。</p>
+<h2 id="4-客户-服务器系统"><a href="#4-客户-服务器系统" class="headerlink" title="4.客户/服务器系统"></a>4.客户/服务器系统</h2><h3 id="1）套接字"><a href="#1）套接字" class="headerlink" title="1）套接字"></a>1）套接字</h3><p>套接字最早用于同一主机上多个应用程序间的通信，随着网络技术的发展，套接字已成为最流行的网络通信程序接口之一，其是为客户/服务器模型设计的。</p>
+<p>一个套接字就是一个通信标识类型的数据结构，其包含了通信目的的地址，端口号，传输层协议、进程所在的网络地址，针对 C\S 程序提供的不同系统调用等。</p>
+<p>系统中所有的连接都持有<strong>唯一的一对套接字及端口连接</strong>，从而方便地区分来自不同应用程序进程或网络连接的通信，确保通信双方间逻辑链路的唯一性。</p>
+<h3 id="2）远程过程调用与远程方法调用"><a href="#2）远程过程调用与远程方法调用" class="headerlink" title="2）远程过程调用与远程方法调用"></a>2）远程过程调用与远程方法调用</h3><p>远程过程(方法)调用 RPC 是一个通信协议，用于通过网络连接的系统。</p>
+<p>RPC 基本通信模型是基于客户/服务器进程间相互通信模型的一种同步通信形式，其对客户提供了远程服务的过程抽象，底层消息传递操作对客户是透明的。</p>
+<p>该协议允许运行于<strong>一台主机系统(本机)</strong>上的进程调用<strong>另一台主机系统(远程)</strong>上的进程。</p>
+<p>负责远程过程调用的进程有两个，一个是本地客户进程，一个是远程服务器进程，这两个进程通常被称为<strong>网络守护进程</strong>，主要负责在网络间的消息传递，一般情况下，这两个进程均处于阻塞状态，等待消息。</p>
+<h1 id="【消息传递通信的实现方式】"><a href="#【消息传递通信的实现方式】" class="headerlink" title="【消息传递通信的实现方式】"></a>【消息传递通信的实现方式】</h1><p>在进程间通信时，源进程可以直接或间接地将消息传送给目标进程，因此可将进程通信分为直接和间接两种方式。</p>
+<h2 id="1-直接消息传递系统"><a href="#1-直接消息传递系统" class="headerlink" title="1.直接消息传递系统"></a>1.直接消息传递系统</h2><h3 id="1）直接通信原语"><a href="#1）直接通信原语" class="headerlink" title="1）直接通信原语"></a>1）直接通信原语</h3><p>直接消息传递系统采用直接通信方式，即发送进程利用 OS 所提供的<strong>发送命令(原语)</strong>直接将消息发送给目标进程，此时，发送进程和接收进程都以显式方式提供对方的标识符。</p>
+<p>系统通信命令分为两类，一类是<strong>对称寻址方式</strong>，一类是<strong>非对称寻址方式</strong>。</p>
+<p>对于对称寻址方式来说，有以下两种通信命令：</p>
+<ul>
+<li>Send(receiver, message)：将一个消息给接收进程</li>
+<li>Receive(sender, message)：接收 sender 发送的消息</li>
+</ul>
+<p>对于非对称寻址方法来说，有以下两种通信命令：</p>
+<ul>
+<li>send(P, message)：发送一个消息给进程 P</li>
+<li>receive(id, message)：接收任何来自进程的消息，id 为进行通信的发送方 id 或名字</li>
+</ul>
+<h3 id="2）进程的同步方式"><a href="#2）进程的同步方式" class="headerlink" title="2）进程的同步方式"></a>2）进程的同步方式</h3><p>在进程间进行通信时，同样要有进程同步机制，从而使各进程间能协调通信。</p>
+<p>无论是发送进程还是接收进程，在完成消息发送、接收后，都存在两种可能：进程继续发送/接收、进程阻塞</p>
+<p>由此，可得到三种情况：</p>
+<ul>
+<li>发送进程阻塞，接收进程阻塞：该情况主要用于<strong>进程间紧密同步</strong>，即<strong>两进程间无缓冲</strong>时</li>
+<li>发送进程不阻塞，接收进程阻塞：该情况是应用最广的进程同步方式，常用于服务器程序，接收进程平时处于阻塞状态，只有当消息发送过来才被唤醒</li>
+<li>发送进程不阻塞，接收进程不阻塞：该情况利用缓冲队列的数据结构，仅当某事件发生无法运行时，才阻塞起来进行等待。</li>
+</ul>
+<h3 id="3）通信链路"><a href="#3）通信链路" class="headerlink" title="3）通信链路"></a>3）通信链路</h3><p>为在发送进程与接收进程间通信，必须在两者间建立一条通信链路，根据通信方式的不同，通信链路分为单向通信链路、双向通信链路。</p>
+<p>在计算机网络中，发送进程在通信前用显式的及<strong>建立连接原语</strong>请求系统为其建立一条通信链路，在通信完成后拆除链路。</p>
+<p>在单机系统中，发送进程无须明确提出建立链路的请求，只须利用系统提供的<strong>发送原语</strong>，系统会自动为其建立一条链路。</p>
+<h2 id="2-信箱通信"><a href="#2-信箱通信" class="headerlink" title="2.信箱通信"></a>2.信箱通信</h2><p>信箱通信属于间接通信方式，即进程间的通信，需要通过某种<strong>中间实体(信箱)</strong>来完成，该实体建立在随机存储器的公用缓冲区上，用来暂存发送进程给目标的消息，接收进程可以从该实体中取出发送进程给自己的消息。</p>
+<p>每个信箱都有一个唯一的标识符，消息在信箱中可以安全的保存，只允许目标用户随时读取，因此，信箱通信方式即可以实时通信，又可以非实时通信。</p>
+<p>信箱由 OS 创建，也可由用户进程创建，创建者是信箱的拥有者，据此可将信箱分为：私用信箱、公用信箱、共享信箱</p>
+<h3 id="1）信箱结构"><a href="#1）信箱结构" class="headerlink" title="1）信箱结构"></a>1）信箱结构</h3><p>信箱定义为一种数据结构，在逻辑上，其可以分为以下两部分：</p>
+<ul>
+<li><strong>信箱头</strong>：存放有关信息的描述信息，如信箱标识符、信箱拥有者、信箱口令等</li>
+<li><strong>信箱体</strong>：由若干可存放消息的信箱格组成，信箱格的数目及每格大小在创建信箱时确定</li>
+</ul>
+<p><img src="/images/notes/os/08-1.png" alt="unload successful"></p>
+<h3 id="2）信箱通信原语"><a href="#2）信箱通信原语" class="headerlink" title="2）信箱通信原语"></a>2）信箱通信原语</h3><p>系统为信箱通信提供了若干条原语：</p>
+<ul>
+<li>信箱创建：进程利用信箱创建原语来建立一个新信箱</li>
+<li>信箱撤销：进程利用信箱撤销原语来撤销一个不再需要的信箱</li>
+<li>消息发送：send(mailbox, message)，将一个消息发送到指定信箱</li>
+<li>消息接收：receive(mailbox, message)，从指定信箱中接收一个消息</li>
+</ul>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>感谢您对我的支持，让我继续努力分析有用地点技术与知识点！</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="/assets/img/wechatpay.jpg" alt="Alex_McAvoy 微信支付">
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="/assets/img/alipay.jpg" alt="Alex_McAvoy 支付宝">
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/学习笔记/" rel="tag"># 学习笔记</a>
+          
+            <a href="/tags/操作系统/" rel="tag"># 操作系统</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/notes/os/ck31mump4001ljkc2k8g9bhsv/" rel="next" title="操作系统——进程同步">
+                <i class="fa fa-chevron-left"></i> 操作系统——进程同步
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+
+      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/assets/img/head.jpg" alt="Alex_McAvoy">
+            
+              <p class="site-author-name" itemprop="name">Alex_McAvoy</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">9</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">2</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">2</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/Alex-McAvoy" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="https://blog.csdn.net/u011815404" target="_blank" title="CSDN">
+                      
+                        <i class="fa fa-fw fa-copyright"></i>CSDN</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+            <div class="cc-license motion-element" itemprop="license">
+              <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" class="cc-opacity" target="_blank">
+                <img src="/images/cc-by-nc-sa.svg" alt="Creative Commons">
+              </a>
+            </div>
+          
+
+          
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-link"></i>
+                Links
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/sdz20172133" title="神仙队友" target="_blank">神仙队友</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://www.bycore.net/" title="凉了的某饼同学" target="_blank">凉了的某饼同学</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/wentong_Xu" title="小黑贱胖子" target="_blank">小黑贱胖子</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/sdau_fangshifeng" title="一个头很酷的家伙" target="_blank">一个头很酷的家伙</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://www.yuheng.tech/" title="咸于" target="_blank">咸于</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/lanshan1111" title="肥硕硕" target="_blank">肥硕硕</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/sdauguanweihong" title="管少" target="_blank">管少</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/qq_41661919" title="俊杰" target="_blank">俊杰</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/qq_40859951" title="峰哥" target="_blank">峰哥</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/LSD20164388" title="狗冬" target="_blank">狗冬</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/qq_37748451" title="胖亚亚" target="_blank">胖亚亚</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/qq_37868325" title="妍大佬" target="_blank">妍大佬</a>
+                  </li>
+                
+              </ul>
+            </div>
+          
+
+          
+
+        </div>
+      </section>
+
+      
+
+      
+        <div class="back-to-top">
+          <i class="fa fa-arrow-up"></i>
+          
+            <span id="scrollpercent"><span>0</span>%</span>
+          
+        </div>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 &mdash; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Alex_McAvoy</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdn.bootcss.com/mathjax/2.7.1/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  
+
+
+  
+
+  
+
+  
+</body>
+</html>
