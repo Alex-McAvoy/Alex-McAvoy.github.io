@@ -86,18 +86,18 @@
 <meta name="description" content="【概述】1.制约关系多个程序在并发执行时，对于同处一个系统中的多个进程，由于他们共享系统中的资源，或为完成某一任务而相互合作，使得他们存在制约关系。 制约关系分为两种：  间接制约关系：对于临界资源来说，多个进程对之间只能互斥地访问，这类资源由系统实施统一分配 直接制约关系：对于某些应用，为完成某任务而建立了两个及以上的进程，这些进程为完成同一任务将进行合作  简单来说，间接制约关系是指诸进程间的">
 <meta name="keywords" content="学习笔记,操作系统">
 <meta property="og:type" content="article">
-<meta property="og:title" content="操作系统 —— 进程同步">
-<meta property="og:url" content="http://yoursite.com/notes/os/1114-143215/index.html">
+<meta property="og:title" content="操作系统——进程同步">
+<meta property="og:url" content="https://alex-mcavoy.github.io/notes/os/ck31kmyf6001kzcc241cvc0hv/index.html">
 <meta property="og:site_name" content="Alex_McAvoy">
 <meta property="og:description" content="【概述】1.制约关系多个程序在并发执行时，对于同处一个系统中的多个进程，由于他们共享系统中的资源，或为完成某一任务而相互合作，使得他们存在制约关系。 制约关系分为两种：  间接制约关系：对于临界资源来说，多个进程对之间只能互斥地访问，这类资源由系统实施统一分配 直接制约关系：对于某些应用，为完成某任务而建立了两个及以上的进程，这些进程为完成同一任务将进行合作  简单来说，间接制约关系是指诸进程间的">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:image" content="https://img-blog.csdnimg.cn/20191115084928265.png">
-<meta property="og:image" content="https://img-blog.csdnimg.cn/20191115105355994.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3UwMTE4MTU0MDQ=,size_16,color_FFFFFF,t_70">
-<meta property="og:updated_time" content="2019-11-15T10:20:59.490Z">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/os/07-1.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/os/07-2.png">
+<meta property="og:updated_time" content="2019-11-16T12:29:30.615Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="操作系统 —— 进程同步">
+<meta name="twitter:title" content="操作系统——进程同步">
 <meta name="twitter:description" content="【概述】1.制约关系多个程序在并发执行时，对于同处一个系统中的多个进程，由于他们共享系统中的资源，或为完成某一任务而相互合作，使得他们存在制约关系。 制约关系分为两种：  间接制约关系：对于临界资源来说，多个进程对之间只能互斥地访问，这类资源由系统实施统一分配 直接制约关系：对于某些应用，为完成某任务而建立了两个及以上的进程，这些进程为完成同一任务将进行合作  简单来说，间接制约关系是指诸进程间的">
-<meta name="twitter:image" content="https://img-blog.csdnimg.cn/20191115084928265.png">
+<meta name="twitter:image" content="https://alex-mcavoy.github.io/images/notes/os/07-1.png">
 
 
 
@@ -127,13 +127,13 @@
 
 
 
-  <link rel="canonical" href="http://yoursite.com/notes/os/1114-143215/">
+  <link rel="canonical" href="https://alex-mcavoy.github.io/notes/os/ck31kmyf6001kzcc241cvc0hv/">
 
 
 
 
 
-  <title>操作系统 —— 进程同步 | Alex_McAvoy</title>
+  <title>操作系统——进程同步 | Alex_McAvoy</title>
   
 
 
@@ -260,7 +260,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/notes/os/1114-143215/">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/notes/os/ck31kmyf6001kzcc241cvc0hv/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="Alex_McAvoy">
@@ -277,7 +277,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">操作系统 —— 进程同步</h1>
+          <h1 class="post-title" itemprop="name headline">操作系统——进程同步</h1>
         
 
         <div class="post-meta">
@@ -289,7 +289,7 @@
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-11-14T14:32:15+08:00">
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-11-14T19:48:57+08:00">
                 2019-11-14
               </time>
             
@@ -425,7 +425,9 @@
 <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">wait</span><span class="params">(Semaphore *S)</span></span>&#123;</span><br><span class="line">    S-&gt;value--;</span><br><span class="line">    <span class="keyword">if</span>(S-&gt;value&lt;<span class="number">0</span>)<span class="comment">//该类资源已分配完毕</span></span><br><span class="line">        block(S-&gt;link);<span class="comment">//自我阻塞，放弃处理机</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">signal</span><span class="params">(Semaphore *S)</span></span>&#123;</span><br><span class="line">    S-&gt;value++;</span><br><span class="line">    <span class="keyword">if</span>(S-&gt;value&lt;=<span class="number">0</span>)<span class="comment">//仍有等待资源的进程被堵塞</span></span><br><span class="line">        wakeup(S-&gt;link);<span class="comment">//唤醒链表中的第一个等待进程</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
 <h3 id="3）AND-型信号量"><a href="#3）AND-型信号量" class="headerlink" title="3）AND 型信号量"></a>3）AND 型信号量</h3><p>在某些应用场合，一个进程往往需要两个及以上的共享资源才能执行其任务。</p>
-<p>假定有两个进程 A、B，要求访问临界资源 C、D，那么，如果 A 占有了 C 等待 D，B 占有了 D 等待 C，那么就会陷入<strong>死锁状态</strong>，两者都在等待对方释放自己所需的资源。<br><img src="https://img-blog.csdnimg.cn/20191115084928265.png" alt="Alt"><br>显然，当进程同时要求的共享资源越多时，发生进程死锁的可能性就越大。</p>
+<p>假定有两个进程 A、B，要求访问临界资源 C、D，那么，如果 A 占有了 C 等待 D，B 占有了 D 等待 C，那么就会陷入<strong>死锁状态</strong>，两者都在等待对方释放自己所需的资源。</p>
+<p><img src="/images/notes/os/07-1.png" alt="unload successful"></p>
+<p>显然，当进程同时要求的共享资源越多时，发生进程死锁的可能性就越大。</p>
 <p>为预防进程死锁的问题，出现了 AND 型信号量，其基本思想是：将进程在整个运行过程中需要的所有资源，一次性全部分配给进程，待进程使用完后再一起释放，简单来说，要么全部分配完成，要么一个也不分配。</p>
 <p>在实现中，对若干临界资源的分配采取了原子操作方式，为此在 wait 与 signal 的操作的基础上，加了一个 AND 条件，称为<strong>同时 wait 操作（Swait 操作）</strong>、<strong>同时 signal 操作（Ssignal 操作）</strong>，其描述如下：</p>
 <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">Swait</span><span class="params">(S1,S2,...,Sn)</span></span>&#123;</span><br><span class="line">    <span class="keyword">while</span>(<span class="literal">true</span>)&#123;</span><br><span class="line">        <span class="keyword">if</span>(S1&gt;<span class="number">0</span>&amp;&amp;S2&gt;<span class="number">0</span>&amp;&amp;...&amp;&amp;Sn&gt;<span class="number">0</span>)&#123;</span><br><span class="line">            <span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">1</span>; i&lt;=n; i++)</span><br><span class="line">                Si--;</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span>&#123;</span><br><span class="line">            将进程堵塞在第一个不能满足资源信号量的队列中</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">void</span> Ssignal(S1,S2,...,Sn)&#123;</span><br><span class="line">    <span class="keyword">while</span>(<span class="literal">true</span>)&#123;</span><br><span class="line">        <span class="keyword">for</span>(<span class="keyword">int</span> i=<span class="number">1</span>; i&lt;=n; i++)&#123;</span><br><span class="line">            Si+;</span><br><span class="line">            唤醒所有与Si相关的阻塞进程</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
@@ -447,7 +449,8 @@
 <p>利用共享数据结构，抽象地表示系统中的共享资源，同时将对该共享资源实施的操作定义为一组过程，进程对资源的申请、释放必须通过这组过程间接地对共享数据结构实现操作。</p>
 <p>对于请求访问共享资源的诸多并发进程，根据资源的情况接受或者阻塞，确保每次只有一个警察进入管程，执行这组过程，使用共享资源，从而达到对共享资源所有访问的统一管理。</p>
 <p>任何进程只能通过调用管程提供的过程入口进入管程，从而访问共享数据，而且在任何时刻，仅允许一个进程在管程中执行某个内部过程，如同使用临界资源，就要必须通过其信号量的申请。</p>
-<p>管程被请求和释放资源的进程所调用，其由四部分构成：<strong>管程名称、共享数据结构说明(共享变量、条件变量等)、对数据结构操作的过程（可调用的方法）、对管程初始化的语句</strong><br><img src="https://img-blog.csdnimg.cn/20191115105355994.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3UwMTE4MTU0MDQ=,size_16,color_FFFFFF,t_70" alt="Alt"></p>
+<p>管程被请求和释放资源的进程所调用，其由四部分构成：<strong>管程名称、共享数据结构说明(共享变量、条件变量等)、对数据结构操作的过程（可调用的方法）、对管程初始化的语句</strong></p>
+<p><img src="/images/notes/os/07-2.png" alt="unload successful"></p>
 <h3 id="2）管程的同步控制——条件变量"><a href="#2）管程的同步控制——条件变量" class="headerlink" title="2）管程的同步控制——条件变量"></a>2）管程的同步控制——条件变量</h3><p>管程的变量有两种，一种是<strong>普通变量</strong>，一种是<strong>条件变量</strong>。</p>
 <p>其中条件变量用于控制进程阻塞与唤醒，其类似于信号量变量，但没有具体值，相当于每个阻塞队列的队列指针。</p>
 <p>管程中的每个条件变量都必须予以说明，其形式为：<strong>condition x,y</strong>，而对条件变量的操作，需要结合对普通变量的条件判断，由此来控制进程状态。</p>
@@ -523,8 +526,8 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/notes/os/1113-212137/" rel="next" title="学习笔记 —— 操作系统">
-                <i class="fa fa-chevron-left"></i> 学习笔记 —— 操作系统
+              <a href="/notes/os/ck31kmydz0004zcc2g8d0nifu/" rel="next" title="操作系统——操作系统的结构">
+                <i class="fa fa-chevron-left"></i> 操作系统——操作系统的结构
               </a>
             
           </div>
@@ -532,6 +535,10 @@
           <span class="post-nav-divider"></span>
 
           <div class="post-nav-prev post-nav-item">
+            
+              <a href="/notes/os/ck31kmyed000dzcc2to1zior6/" rel="prev" title="操作系统——进程通信">
+                操作系统——进程通信 <i class="fa fa-chevron-right"></i>
+              </a>
             
           </div>
         </div>
@@ -601,7 +608,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">2</span>
+                  <span class="site-state-item-count">9</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
