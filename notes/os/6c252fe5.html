@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+  
+  
+  <link rel="stylesheet" media="all" href="/lib/Han/dist/han.min.css?v=3.3">
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="学习笔记,操作系统,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="【基本概念】1.页面与物理块分页存储管理将进程的逻辑地址空间划分为若干页，并将各页加以编号，例如：第 0 页，第 1 页等 相应的，也将内存的物理地址空间划分为若干块，也为他们加以编号，例如：0#块，1#块等 需要注意的是，逻辑划分的页大小=物理划分的块大小 在为进程分配内存时，以块为单位，将进程中的若干页分别装入到多个可不相邻的物理块中。 在分页系统中，若页面大小过大，那么会导致进程的最后一页经">
+<meta name="keywords" content="学习笔记,操作系统">
+<meta property="og:type" content="article">
+<meta property="og:title" content="操作系统——离散存储方式——分页存储管理">
+<meta property="og:url" content="https://alex-mcavoy.github.io/notes/os/6c252fe5.html">
+<meta property="og:site_name" content="Alex_McAvoy">
+<meta property="og:description" content="【基本概念】1.页面与物理块分页存储管理将进程的逻辑地址空间划分为若干页，并将各页加以编号，例如：第 0 页，第 1 页等 相应的，也将内存的物理地址空间划分为若干块，也为他们加以编号，例如：0#块，1#块等 需要注意的是，逻辑划分的页大小=物理划分的块大小 在为进程分配内存时，以块为单位，将进程中的若干页分别装入到多个可不相邻的物理块中。 在分页系统中，若页面大小过大，那么会导致进程的最后一页经">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/os/24-1.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/os/24-2.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/os/24-3.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/os/24-4.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/os/24-5.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/os/24-6.png">
+<meta property="og:updated_time" content="2020-01-14T13:03:21.074Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="操作系统——离散存储方式——分页存储管理">
+<meta name="twitter:description" content="【基本概念】1.页面与物理块分页存储管理将进程的逻辑地址空间划分为若干页，并将各页加以编号，例如：第 0 页，第 1 页等 相应的，也将内存的物理地址空间划分为若干块，也为他们加以编号，例如：0#块，1#块等 需要注意的是，逻辑划分的页大小=物理划分的块大小 在为进程分配内存时，以块为单位，将进程中的若干页分别装入到多个可不相邻的物理块中。 在分页系统中，若页面大小过大，那么会导致进程的最后一页经">
+<meta name="twitter:image" content="https://alex-mcavoy.github.io/images/notes/os/24-1.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":true,"scrollpercent":true,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://alex-mcavoy.github.io/notes/os/6c252fe5.html">
+
+
+
+
+
+  <title>操作系统——离散存储方式——分页存储管理 | Alex_McAvoy</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Alex_McAvoy</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/notes/os/6c252fe5.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Alex_McAvoy">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/assets/img/head.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Alex_McAvoy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">操作系统——离散存储方式——分页存储管理</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-12-04T21:56:05+08:00">
+                2019-12-04
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/notes/" itemprop="url" rel="index">
+                    <span itemprop="name">学习笔记</span>
+                  </a>
+                </span>
+
+                
+                
+                  ， 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/notes/os/" itemprop="url" rel="index">
+                    <span itemprop="name">学习笔记——操作系统</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body han-init-context" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="【基本概念】"><a href="#【基本概念】" class="headerlink" title="【基本概念】"></a>【基本概念】</h1><h2 id="1-页面与物理块"><a href="#1-页面与物理块" class="headerlink" title="1.页面与物理块"></a>1.页面与物理块</h2><p>分页存储管理将<strong>进程的逻辑地址空间</strong>划分为若干页，并将各页加以编号，例如：第 0 页，第 1 页等</p>
+<p>相应的，也将<strong>内存的物理地址空间</strong>划分为若干块，也为他们加以编号，例如：0#块，1#块等</p>
+<p>需要注意的是，<strong>逻辑划分的页大小=物理划分的块大小</strong></p>
+<p>在为进程分配内存时，以块为单位，将进程中的若干页分别装入到多个可不相邻的物理块中。</p>
+<p>在分页系统中，若页面大小过大，那么会导致进程的最后一页经常装不满一块，从而形成了不可利用的<strong>页内碎片</strong>；若页面大小过小，那么虽然可以减少页面碎片，提高了利用率，但每个进程的页面数量较多，使得<strong>页表过长</strong>，反而大量占用内存。</p>
+<p>因此，在页面大小应选择适中，且页面大小应为 2 的幂，一般为 1KB~8KB</p>
+<h2 id="2-分页地址的地址结构"><a href="#2-分页地址的地址结构" class="headerlink" title="2.分页地址的地址结构"></a>2.分页地址的地址结构</h2><p>分页地址的结构包含两部分内容：前一部分为<strong>页号 P</strong>，后一部分为<strong>位偏移量(页内地址) W</strong>。</p>
+<p>以下图为例，地址长度为 32 位，0 ~ 11 位为页内地址，即每页大小为 $2^{12}=4K$，12 ~ 31 位为页号，即地址空间最多运行有 $2^{20}=1M$ 页</p>
+<p><img src="/images/notes/os/24-1.png" alt="unload successful"></p>
+<p>若给定一个逻辑地址空间中的地址为 A，页面大小为 L，则页号 P 和页内地址 W 可按下式求得：</p>
+<p>$$P=INT[\frac{A}{L}],W=[A]:MOD:L$$</p>
+<p>其中，INT 是整除函数</p>
+<p>例如：某系统页面大小为 1KB，其逻辑地址为 2170B，那么</p>
+<ul>
+<li>页号 $P=INT[\frac{2170B}{1024B}]=2$</li>
+<li>页内地址 $W=2170B:mod : 1024B=122$</li>
+</ul>
+<h2 id="3-页表"><a href="#3-页表" class="headerlink" title="3.页表"></a>3.页表</h2><p>在分页系统中，允许将进程的各个页离散地存储在内存的任一物理块中，为<strong>保证进程能在内存中找到每个页面所对应的物理块</strong>，系统为每个进程创建了一张<strong>页面映像表</strong>，即<strong>页表</strong>。</p>
+<p>在进程地址空间内的所有页，依次在页表中有一页表项，其中记录了相应页在内存中对应的物理块号，进程每次执行时，通过查找该表，即可找到每页在内存中的物理块号，简单来说，<strong>页表的作用就是实现从页号到物理块号的地址映射</strong>。</p>
+<p><img src="/images/notes/os/24-2.png" alt="unload successful"></p>
+<h1 id="【地址变换机构】"><a href="#【地址变换机构】" class="headerlink" title="【地址变换机构】"></a>【地址变换机构】</h1><p>地址变换机构用于<strong>将用户地址空间中的逻辑地址转为内存空间中的物理地址</strong>。</p>
+<p>由于页内地址与物理地址是一一对应的，因此地址变换机构的任务实际上只是将逻辑地址中的页号转为内存中的物理块号，又因为页表的作用就是实现页号到块号的变换，因此，地址变化任务是借助于页表完成的。</p>
+<h2 id="1-基本地址变换结构"><a href="#1-基本地址变换结构" class="headerlink" title="1.基本地址变换结构"></a>1.基本地址变换结构</h2><p>系统中设置了一个<strong>页表寄存器(PTR)</strong>，在其中存放页表在内存的起始地址和页表的长度。</p>
+<p>在进程未执行时，页表的起始地址和页表长度存放在本进程的 PCB 里，当调度程序调度到某进程时，将这两个数据装入 PTR 中。</p>
+<p>每执行一条指令时，根据计算分页得到指令的页号与内部偏移量，然后 CPU 高速访问 PTR 找到对应页表位置。</p>
+<p>最后查找页表数据，得到指令页号实际对应存放的物理块，完成地址映射计算，最终在内存中找到该指令。</p>
+<p><img src="/images/notes/os/24-3.png" alt="unload successful"></p>
+<h2 id="2-具快表的地址变换结构"><a href="#2-具快表的地址变换结构" class="headerlink" title="2.具快表的地址变换结构"></a>2.具快表的地址变换结构</h2><p>在基本分页机制下，CPU 操作一条指令需访问内存两次，一次访问内存中的页表，以计算指令所在的实际物理地址，一次根据计算出的实际物理地址去进行访问。</p>
+<p>因此，一次指令需要两次内存访问，虽然分页空间利用率提高，但这使得处理机速度降低了一半。</p>
+<p>为提高地址变换速度，可在地址变换机构中增设一具有并行查寻能力的高速缓存器，即<strong>快表(TLB)</strong>，以<strong>存放当前访问的页表项</strong>。</p>
+<p>在加入快表之后，地址变换过程也有了改变。</p>
+<p>在 CPU 给出有效地址后，地址变换机构自动地将页号送入快表，并将此页号与快表中的所有页号进行比较。</p>
+<p>若有相匹配的页号，表示要访问的页表项在快表中，因此可直接从快表中读出相应的物理块号，并送入物理地址寄存器；若没有相匹配的页表项，则还需访问内存中的页表，找到后将物理号送往物理地址寄存器，同时将该表项送入快表。</p>
+<p>若快表已满，则 OS 找到一个已被认为不再需要的页表项，进行替换。</p>
+<p><img src="/images/notes/os/24-4.png" alt="unload successful"></p>
+<h1 id="【内存访问有效时间】"><a href="#【内存访问有效时间】" class="headerlink" title="【内存访问有效时间】"></a>【内存访问有效时间】</h1><p>进程发出逻辑地址的访问请求，经过地址变换，到内存中找到对应的实际物理地址单元并取出数据，所需花费的总时间，称为<strong>内存有效访问时间(EAT)</strong></p>
+<p>在基本地址变换结构中，设访问一次内存的时间为 T，那么 EAT 就等于查找页表对应页表项耗费的时间 T 与将页表的物理块号与页内地址拼接成实际物理地址耗费的时间 T 的和，即：</p>
+<p>$$EAT=T+T$$</p>
+<p>而在引入了快表的分页存储管理方式中，通过快表查询，可以直接得到逻辑页对应的物理块，减少了一次内存访问，缩短了内存访问有效时间。</p>
+<p>但由于快表容量有限，因此在快表中查找表项存在<strong>命中率</strong>，即使用快表并在其中成功找到所需页面表项的比率。</p>
+<p>设 $\lambda , a, T$ 分别为查找快表所需时间、命中率、访问一次内存所需时间，那么 EAT 的计算公式为：</p>
+<p>$$EAT = a  \lambda + (1-a)  ( T + \lambda ) + T =2T - aT + \lambda$$</p>
+<h1 id="【二级页表与多级页表】"><a href="#【二级页表与多级页表】" class="headerlink" title="【二级页表与多级页表】"></a>【二级页表与多级页表】</h1><h2 id="1-概述"><a href="#1-概述" class="headerlink" title="1.概述"></a>1.概述</h2><p>由于目前大多数计算机都支持非常大的逻辑地址空间，在这样的环境下，页表就变得非常大，此外，由于页表要求连续，又要占用相当大的内存空间，系统并无法提供大的连续的内存空间来存放页表。</p>
+<p>为解决上述问题，可再用下述两个方法解决：</p>
+<ul>
+<li>对页表所需的内存空间，采用离散分配方式</li>
+<li>只将当前需要的部分页表项调入内存，其余的页表项仍驻留在磁盘上，需要时再调入</li>
+</ul>
+<h2 id="2-地址结构"><a href="#2-地址结构" class="headerlink" title="2.地址结构"></a>2.地址结构</h2><p>针对难以找到大的连续的内存空间来存放页表的问题，可以将页表进行分页，<strong>使每个页面的大小与内存物理块的大小相同</strong>，并将他们进行编号，即依次为：0#页，1#页，2#页，…，n#页，然后离散地将各个页面分别存放于不同的物理块中。</p>
+<p>同样，将离散分配的页表再建立一张页表，称为<strong>外层页表</strong>，在每个表项下记录了页表页面的物理块号。</p>
+<p>二级页表的地址结构包含三部分内容：前一部分为<strong>外页号 P1</strong>，中间一部分为<strong>外页内地址(页在外页内的偏移) P2</strong>，后一部分为<strong>位偏移量(页内地址) W</strong>。</p>
+<p>以下图为例，地址长度为 32 位，0 ~ 11 位为页内地址，即每页大小为 $2^{12}=4K$，12 ~ 21 位为外页内地址，即每页最多有 $2^{10}$ 个页表项，22 ~ 31 位为外页号，即最多允许有 $2^{10}$ 个页表分页。</p>
+<p><img src="/images/notes/os/24-5.png" alt="unload successful"></p>
+<h2 id="3-地址变换机构"><a href="#3-地址变换机构" class="headerlink" title="3.地址变换机构"></a>3.地址变换机构</h2><p>在地址变换机构中，增设了一个外页表寄存器，用于存放外页表的起始地址，并利用逻辑地址中的外层页号作为外层页表的索引，从中找到指定页表分页的起始地址，再利用 P2 作为指定页表分页的索引，找到指定的页表项，其中即含有该页在内存的物理块号，用该块号 P 和页内地址 W 即可访问内存的物理地址。</p>
+<p><img src="/images/notes/os/24-6.png" alt="unload successful"></p>
+<h2 id="4-请求调页"><a href="#4-请求调页" class="headerlink" title="4.请求调页"></a>4.请求调页</h2><p>上述对页表实行离散分配的方法，虽然解决了对于大页表无需大片连续存储空间的问题，但并未解决用较少的内存空间去放大页表的问题。</p>
+<p>换言之，只用离散分配空间的方法并未减少页表所占用的内存空间。</p>
+<p>能够用较少的内存空间存放页表的唯一方法是：仅将当前需要的一批页表项调入内存，以后再根据需要陆续调入。</p>
+<h2 id="5-多级页表"><a href="#5-多级页表" class="headerlink" title="5.多级页表"></a>5.多级页表</h2><p>对于 32 位的系统，采用两级页表即可，但对于 64 位的系统，两级仍无法解决页表过大的问题。</p>
+<p>此时，按照二级页表的原理，继续分页下去，可形成多级页表。</p>
+<h1 id="【反置页表】"><a href="#【反置页表】" class="headerlink" title="【反置页表】"></a>【反置页表】</h1><p>在分页系统中，每个进程配置了一张页表，进程逻辑地址空间中的每一页，在页表中都要有一个页表项，这就占用了大量的内存空间。</p>
+<p>为减少页表占用的内存空间，由此引入了反置页表。</p>
+<p>反置页表为每一物理块设置了一个页表项，并将他们按物理块的编号排序，其中的内容则是<strong>已调入内存的进程标识符</strong>与<strong>页号</strong>。</p>
+<p>在利用反置页表进行地址变换时，根据进程标识符与页号，去进行检索。</p>
+<p>若检索到匹配的页表项，说明该页表项中的序号 i 便是该页所在的物理块号，可用该块号与页内地址一起构成物理地址送入内存地址寄存器；若未检索到匹配的页表项，说明此页未调入内存。</p>
+<p>当内存容量很大时，反置页表的页表项还是会很大，利用进程标识符和页号去检索一张大的线性表很费时，此时可利用 Hash 算法来提高检索速度。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>感谢您对我的支持，让我继续努力分析有用地点技术与知识点！</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="/assets/img/wechatpay.jpg" alt="Alex_McAvoy 微信支付">
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="/assets/img/alipay.jpg" alt="Alex_McAvoy 支付宝">
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/学习笔记/" rel="tag"># 学习笔记</a>
+          
+            <a href="/tags/操作系统/" rel="tag"># 操作系统</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/notes/os/30cc3b1e.html" rel="next" title="操作系统——连续存储方式——对换技术">
+                <i class="fa fa-chevron-left"></i> 操作系统——连续存储方式——对换技术
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/notes/os/6e39588e.html" rel="prev" title="操作系统——离散存储方式——分段存储管理">
+                操作系统——离散存储方式——分段存储管理 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+
+      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/assets/img/head.jpg" alt="Alex_McAvoy">
+            
+              <p class="site-author-name" itemprop="name">Alex_McAvoy</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">54</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">5</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">5</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/Alex-McAvoy" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="https://blog.csdn.net/u011815404" target="_blank" title="CSDN">
+                      
+                        <i class="fa fa-fw fa-copyright"></i>CSDN</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+            <div class="cc-license motion-element" itemprop="license">
+              <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" class="cc-opacity" target="_blank">
+                <img src="/images/cc-by-nc-sa.svg" alt="Creative Commons">
+              </a>
+            </div>
+          
+
+          
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-link"></i>
+                Links
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/sdz20172133" title="神仙队友" target="_blank">神仙队友</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://www.bycore.net/" title="凉了的某饼同学" target="_blank">凉了的某饼同学</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/wentong_Xu" title="小黑贱胖子" target="_blank">小黑贱胖子</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/sdau_fangshifeng" title="一个头很酷的家伙" target="_blank">一个头很酷的家伙</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://www.yuheng.tech/" title="咸于" target="_blank">咸于</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/lanshan1111" title="肥硕硕" target="_blank">肥硕硕</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/sdauguanweihong" title="管少" target="_blank">管少</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/qq_41661919" title="俊杰" target="_blank">俊杰</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/qq_40859951" title="峰哥" target="_blank">峰哥</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/LSD20164388" title="狗冬" target="_blank">狗冬</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/qq_37748451" title="胖亚亚" target="_blank">胖亚亚</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/qq_37868325" title="妍大佬" target="_blank">妍大佬</a>
+                  </li>
+                
+              </ul>
+            </div>
+          
+
+          
+
+        </div>
+      </section>
+
+      
+
+      
+        <div class="back-to-top">
+          <i class="fa fa-arrow-up"></i>
+          
+            <span id="scrollpercent"><span>0</span>%</span>
+          
+        </div>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 &mdash; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Alex_McAvoy</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdn.bootcss.com/mathjax/2.7.1/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  
+
+
+  
+
+  
+
+  
+</body>
+</html>
