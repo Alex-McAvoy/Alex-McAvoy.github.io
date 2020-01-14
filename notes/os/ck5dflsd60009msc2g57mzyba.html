@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+  
+  
+  <link rel="stylesheet" media="all" href="/lib/Han/dist/han.min.css?v=3.3">
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="学习笔记,操作系统,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="【概述】1.进程调度任务进程调度是 OS 中必不可少的一种调度，因此在三种类型的 OS 中，无一例外的使用了进程调度，其是对系统性能影响最大的一种处理机调度。 进程调度的任务有三：  保存处理机现场信息：在调度时需要保存当前进程的处理机现场信息 按某种算法选取进程：调度程序按某种算法从就绪队列中选取一个进程，将其状态改为运行状态，并准备将处理机分配给他 将处理机分配给进程：由分派程序将处理机分配给">
+<meta name="keywords" content="学习笔记,操作系统">
+<meta property="og:type" content="article">
+<meta property="og:title" content="操作系统——处理机调度——进程调度">
+<meta property="og:url" content="https://alex-mcavoy.github.io/notes/os/ck5dflsd60009msc2g57mzyba.html">
+<meta property="og:site_name" content="Alex_McAvoy">
+<meta property="og:description" content="【概述】1.进程调度任务进程调度是 OS 中必不可少的一种调度，因此在三种类型的 OS 中，无一例外的使用了进程调度，其是对系统性能影响最大的一种处理机调度。 进程调度的任务有三：  保存处理机现场信息：在调度时需要保存当前进程的处理机现场信息 按某种算法选取进程：调度程序按某种算法从就绪队列中选取一个进程，将其状态改为运行状态，并准备将处理机分配给他 将处理机分配给进程：由分派程序将处理机分配给">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2019-12-07T13:57:58.781Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="操作系统——处理机调度——进程调度">
+<meta name="twitter:description" content="【概述】1.进程调度任务进程调度是 OS 中必不可少的一种调度，因此在三种类型的 OS 中，无一例外的使用了进程调度，其是对系统性能影响最大的一种处理机调度。 进程调度的任务有三：  保存处理机现场信息：在调度时需要保存当前进程的处理机现场信息 按某种算法选取进程：调度程序按某种算法从就绪队列中选取一个进程，将其状态改为运行状态，并准备将处理机分配给他 将处理机分配给进程：由分派程序将处理机分配给">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":true,"scrollpercent":true,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://alex-mcavoy.github.io/notes/os/ck5dflsd60009msc2g57mzyba.html">
+
+
+
+
+
+  <title>操作系统——处理机调度——进程调度 | Alex_McAvoy</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Alex_McAvoy</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/notes/os/ck5dflsd60009msc2g57mzyba.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Alex_McAvoy">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/assets/img/head.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Alex_McAvoy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">操作系统——处理机调度——进程调度</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-11-22T12:29:00+08:00">
+                2019-11-22
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/notes/" itemprop="url" rel="index">
+                    <span itemprop="name">学习笔记</span>
+                  </a>
+                </span>
+
+                
+                
+                  ， 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/notes/os/" itemprop="url" rel="index">
+                    <span itemprop="name">学习笔记——操作系统</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body han-init-context" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="【概述】"><a href="#【概述】" class="headerlink" title="【概述】"></a>【概述】</h1><h2 id="1-进程调度任务"><a href="#1-进程调度任务" class="headerlink" title="1.进程调度任务"></a>1.进程调度任务</h2><p>进程调度是 OS 中必不可少的一种调度，因此在三种类型的 OS 中，无一例外的使用了进程调度，其是对系统性能影响最大的一种处理机调度。</p>
+<p>进程调度的任务有三：</p>
+<ul>
+<li><strong>保存处理机现场信息</strong>：在调度时需要保存当前进程的处理机现场信息</li>
+<li><strong>按某种算法选取进程</strong>：调度程序按某种算法从就绪队列中选取一个进程，将其状态改为运行状态，并准备将处理机分配给他</li>
+<li><strong>将处理机分配给进程</strong>：由分派程序将处理机分配给该进程，此时需要将选中的进程控制块内有关处理机现场的信息装入处理器相应的各个寄存器中，将处理器的控制权交予该进程，让其从上次断点处恢复运行</li>
+</ul>
+<h2 id="2-进程调度方式"><a href="#2-进程调度方式" class="headerlink" title="2.进程调度方式"></a>2.进程调度方式</h2><h3 id="1）非抢占方式"><a href="#1）非抢占方式" class="headerlink" title="1）非抢占方式"></a>1）非抢占方式</h3><p>非抢占方式实现简单，系统开销小，适用于大多数的批处理系统，但不适用于分时系统与实时系统。</p>
+<p>非抢占方式一旦将处理机分配给某进程后，就会让该进程一直运行下去，直至进程完成或因发生某事件堵塞，<strong>绝不会因为时钟中断或其他原因去抢占当前正在运行进程的处理机</strong>。</p>
+<p>在采用非抢占方式时，可能引起进程调度的因素有：</p>
+<ul>
+<li>正在执行的进程运行完毕</li>
+<li>因发生某事件使得进程无法继续运行</li>
+<li>正在执行中的进程因提出 I/O 请求而暂停</li>
+<li>进程通信或进程同步中，执行了某种原语操作</li>
+</ul>
+<h3 id="2）抢占方式"><a href="#2）抢占方式" class="headerlink" title="2）抢占方式"></a>2）抢占方式</h3><p>抢占方式运行调度程序依据某种原则，去暂停某个正在执行的进程，<strong>将已分配给进程的处理机重新分配给另一进程</strong>。</p>
+<p>抢占不算一种任意性行为，而是遵循一定原则：</p>
+<ul>
+<li><strong>优先权原则</strong>：允许优先级高的新到进程抢占当前进程的处理机</li>
+<li><strong>短进程优先原则</strong>：运行新到的短进程抢占当前长进程的处理机</li>
+<li><strong>时间片原则</strong>：各进程按时间片轮转时，正在执行的进程的一个时间片完后，便停止该进程的执行而重新进行调度</li>
+</ul>
+<h1 id="【进程调度算法】"><a href="#【进程调度算法】" class="headerlink" title="【进程调度算法】"></a>【进程调度算法】</h1><h2 id="1-轮转调度算法"><a href="#1-轮转调度算法" class="headerlink" title="1.轮转调度算法"></a>1.轮转调度算法</h2><p>在分时系统中，最简单也最常用的是基于时间片轮转（Round Robin，RR）调度算法，其让就绪队列上的每个进程仅运行一个时间片，对于 n 个进程，每个进程每次大约都可获得 $\frac{1}{n}$ 的处理机时间</p>
+<p>轮转法根据 FCFS 策略，将所有的就绪进程排成就绪队列，<strong>设置每一定时间间隔产生一次中断</strong>，激活进程调度程序，完成调度，将 CPU 分配给队首进程，当进程的时间片耗尽或运行完毕后，系统再次将 CPU 分给新的队首进程</p>
+<p>在轮转法中，进行进程的切换分为两种情况：</p>
+<ul>
+<li><strong>时间片未用完，正在运行的进程已完成</strong>：将完成的进程从就绪队列中删除，再调度就绪队列队首进程，启动一个新时间片</li>
+<li><strong>时间片已用完，正在运行的进程未完成</strong>：中断程序被激活，调度程序将进程送往就绪队列尾部</li>
+</ul>
+<p>时间片大小的确定对性能有很大的影响，如果选择较小的时间片，那么会有利于短作业，但会频繁的执行进程调度与进程上下文切换，增加了系统开销；如果时间片选择的过长，且每个进程都能在一个时间片内完成，那么 RR 算法就退化成了 FCFS 算法，无法满足短作业与交互用户的需求。</p>
+<p>因此，一个较为可取的时间片大小是<strong>略大于一次典型的交互所需的时间</strong>，从而使得大多数交互式进程能在一个时间片内完成。</p>
+<h2 id="2-优先级调度算法"><a href="#2-优先级调度算法" class="headerlink" title="2.优先级调度算法"></a>2.优先级调度算法</h2><h3 id="1）非抢占与抢占式优先级调度算法"><a href="#1）非抢占与抢占式优先级调度算法" class="headerlink" title="1）非抢占与抢占式优先级调度算法"></a>1）非抢占与抢占式优先级调度算法</h3><p>优先级调度算法，是将处理机分配给就绪队列中优先级最高的进程，依据进程调度方式，其可进一步的分为以下两种：</p>
+<ul>
+<li><strong>非抢占式优先级调度算法</strong>：一旦将处理机分配给就绪队列中优先级最高的进程后，该进程会一直执行直至完成，除非因该进程发生某事件而放弃处理机时，系统才可将处理机分配给另一优先级最高的进程</li>
+<li><strong>抢占式优先级调度算法</strong>：将处理机分配给优先级最高的进程后，在执行期间，只要出现另一个优先级更高的进程，调度程序就会将处理机分配给这个优先级更高的进程</li>
+</ul>
+<h3 id="2）优先级类型"><a href="#2）优先级类型" class="headerlink" title="2）优先级类型"></a>2）优先级类型</h3><p>优先级调度算法的关键在于两点：一是确定进程的优先级，二是优先级类型的选择</p>
+<p><strong>静态优先级</strong>是创建进程时确定的，其用某一范围内的一个整数 <strong>(优先数)</strong> 来表示，在进程的整个运行期间不变；<strong>动态优先级</strong>是创建进程之初先赋予了一个优先级，然后其值随着进程的推进或时间的增加而改变。</p>
+<p>对于静态优先级来说，其简单易行，系统开销小，但不够精确，可能会出现优先级低的进程长期没有被调度的情况；对于动态优先级来说，其较为精确，但系统开销大。</p>
+<h2 id="3-多队列调度算法"><a href="#3-多队列调度算法" class="headerlink" title="3.多队列调度算法"></a>3.多队列调度算法</h2><p>多队列调度算法将系统中的进程<strong>就绪队列从一个拆分为多个</strong>，将不同类型或性质的进程固定分配在不同的就绪队列，不同的就绪队列可以采用不同的调度算法，每个就绪队列中的进程也可以设置不同的优先级。</p>
+<p>在多处理机系统中，由于该算法安排了多个就绪队列，因此在多处理机系统中，可以很方便地为每个处理机设置一个单独的就绪队列。</p>
+<h2 id="4-多级反馈队列调度算法"><a href="#4-多级反馈队列调度算法" class="headerlink" title="4.多级反馈队列调度算法"></a>4.多级反馈队列调度算法</h2><p>多级反馈队列调度算法不像上述算法一样，要知道各进程所需的执行时间，其调度机制描述如下：</p>
+<ul>
+<li><strong>设置多个就绪队列</strong>：在系统中设置多个就绪队列，并为每个队列设置不同的优先级，第一个队列优先级最高，第二个次之，其他队列优先级逐个降低，优先级越高的时间片越小，一般设置为后一个优先级的时间片长度为前一个优先级的时间片的一倍</li>
+<li><strong>每个队列采用 FCFS 算法</strong>：当新进程进入内存后，首先将其放入第一队列末尾，按 FCFS 原则进行调度，当轮到该进程时，如果其能在时间片内完成，便可撤离系统；如果其不能在时间片内完成，那么就将其转入第二队列的末尾等待调度，以此类推。当进程被降到第 n 队列后，在第 n 队列中采取 RR 方式运行</li>
+<li><strong>按队列优先级调度</strong>：调度程序仅当第 1 到第 i-1 的所有队列都为空时，才会调度第 i 队列中的进程。如果处理机在第 i 队列中为某进程服务时又有新进程进入 i 之前的队列，那么须将正在运行的进程放回第 i 进程的末尾，并将处理机分配给高优先级的进程</li>
+</ul>
+<h2 id="5-基于公平原则的调度算法"><a href="#5-基于公平原则的调度算法" class="headerlink" title="5.基于公平原则的调度算法"></a>5.基于公平原则的调度算法</h2><h3 id="1）保证调度算法"><a href="#1）保证调度算法" class="headerlink" title="1）保证调度算法"></a>1）保证调度算法</h3><p>保证调度算法是另一种类型的调度算法，其向用户做出的保证并不是优先运行，而是明确的性能保证，该算法可以做到调度的公平性。</p>
+<p>如果在系统中有 n 个相同类型的进程在运行，为公平起见，那么须保证<strong>每个进程都获得相同的处理机时间</strong> $\frac{1}{n}$</p>
+<h3 id="2）公平分享调度算法"><a href="#2）公平分享调度算法" class="headerlink" title="2）公平分享调度算法"></a>2）公平分享调度算法</h3><p>保证调度算法分配给每个进程相同的处理机时间，对于诸进程来说，是体现了一定程度的公平，但如果各个用户拥有的进程数不同，就会发生对用户的不公平问题。</p>
+<p>在该调度算法中，调度的公平性是<strong>针对用户而言</strong>，使所有用户能获得相同的处理机时间，或所要求的时间比例。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>感谢您对我的支持，让我继续努力分析有用地点技术与知识点！</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="/assets/img/wechatpay.jpg" alt="Alex_McAvoy 微信支付">
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="/assets/img/alipay.jpg" alt="Alex_McAvoy 支付宝">
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/学习笔记/" rel="tag"># 学习笔记</a>
+          
+            <a href="/tags/操作系统/" rel="tag"># 操作系统</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/notes/os/ck5dflsdo000nmsc2o8evikc0.html" rel="next" title="操作系统——处理机调度——作业调度">
+                <i class="fa fa-chevron-left"></i> 操作系统——处理机调度——作业调度
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/notes/os/ck5dflsdb000cmsc2cyvp9w0g.html" rel="prev" title="操作系统——处理机调度——实时调度">
+                操作系统——处理机调度——实时调度 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+
+      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/assets/img/head.jpg" alt="Alex_McAvoy">
+            
+              <p class="site-author-name" itemprop="name">Alex_McAvoy</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">44</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">2</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">2</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/Alex-McAvoy" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="https://blog.csdn.net/u011815404" target="_blank" title="CSDN">
+                      
+                        <i class="fa fa-fw fa-copyright"></i>CSDN</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+            <div class="cc-license motion-element" itemprop="license">
+              <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" class="cc-opacity" target="_blank">
+                <img src="/images/cc-by-nc-sa.svg" alt="Creative Commons">
+              </a>
+            </div>
+          
+
+          
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-link"></i>
+                Links
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/sdz20172133" title="神仙队友" target="_blank">神仙队友</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://www.bycore.net/" title="凉了的某饼同学" target="_blank">凉了的某饼同学</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/wentong_Xu" title="小黑贱胖子" target="_blank">小黑贱胖子</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/sdau_fangshifeng" title="一个头很酷的家伙" target="_blank">一个头很酷的家伙</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://www.yuheng.tech/" title="咸于" target="_blank">咸于</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/lanshan1111" title="肥硕硕" target="_blank">肥硕硕</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/sdauguanweihong" title="管少" target="_blank">管少</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/qq_41661919" title="俊杰" target="_blank">俊杰</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/qq_40859951" title="峰哥" target="_blank">峰哥</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/LSD20164388" title="狗冬" target="_blank">狗冬</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/qq_37748451" title="胖亚亚" target="_blank">胖亚亚</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/qq_37868325" title="妍大佬" target="_blank">妍大佬</a>
+                  </li>
+                
+              </ul>
+            </div>
+          
+
+          
+
+        </div>
+      </section>
+
+      
+
+      
+        <div class="back-to-top">
+          <i class="fa fa-arrow-up"></i>
+          
+            <span id="scrollpercent"><span>0</span>%</span>
+          
+        </div>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 &mdash; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Alex_McAvoy</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdn.bootcss.com/mathjax/2.7.1/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  
+
+
+  
+
+  
+
+  
+</body>
+</html>
