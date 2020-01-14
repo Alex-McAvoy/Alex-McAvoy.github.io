@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+  
+  
+  <link rel="stylesheet" media="all" href="/lib/Han/dist/han.min.css?v=3.3">
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="学习笔记,操作系统,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="【概述】设备驱动程序是 I/O 系统的高层与设备控制器之间的通信程序，其主要任务是将上层软件发来的抽象 I/O 要求转化为具体要求，发送给设备控制器，启动设备去执行。同时，它也将由设备控制器发来的信号，传送给上层软件。 为实现 I/O 系统高层与设备控制器间的通信，设备驱动程序应具有以下功能：  接收由与上层设备无关的软件发来的命令和参数，并将命令中的抽象要求，转换为与设备相关的低层操作序列 检查">
+<meta name="keywords" content="学习笔记,操作系统">
+<meta property="og:type" content="article">
+<meta property="og:title" content="操作系统——IO系统——设备驱动程序">
+<meta property="og:url" content="https://alex-mcavoy.github.io/notes/os/ck5dqn8yw003kkgc2sxpg1sri.html">
+<meta property="og:site_name" content="Alex_McAvoy">
+<meta property="og:description" content="【概述】设备驱动程序是 I/O 系统的高层与设备控制器之间的通信程序，其主要任务是将上层软件发来的抽象 I/O 要求转化为具体要求，发送给设备控制器，启动设备去执行。同时，它也将由设备控制器发来的信号，传送给上层软件。 为实现 I/O 系统高层与设备控制器间的通信，设备驱动程序应具有以下功能：  接收由与上层设备无关的软件发来的命令和参数，并将命令中的抽象要求，转换为与设备相关的低层操作序列 检查">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/os/35-1.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/os/35-2.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/os/35-3.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/os/35-4.png">
+<meta property="og:updated_time" content="2019-12-19T10:06:44.193Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="操作系统——IO系统——设备驱动程序">
+<meta name="twitter:description" content="【概述】设备驱动程序是 I/O 系统的高层与设备控制器之间的通信程序，其主要任务是将上层软件发来的抽象 I/O 要求转化为具体要求，发送给设备控制器，启动设备去执行。同时，它也将由设备控制器发来的信号，传送给上层软件。 为实现 I/O 系统高层与设备控制器间的通信，设备驱动程序应具有以下功能：  接收由与上层设备无关的软件发来的命令和参数，并将命令中的抽象要求，转换为与设备相关的低层操作序列 检查">
+<meta name="twitter:image" content="https://alex-mcavoy.github.io/images/notes/os/35-1.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":true,"scrollpercent":true,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://alex-mcavoy.github.io/notes/os/ck5dqn8yw003kkgc2sxpg1sri.html">
+
+
+
+
+
+  <title>操作系统——IO系统——设备驱动程序 | Alex_McAvoy</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Alex_McAvoy</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/notes/os/ck5dqn8yw003kkgc2sxpg1sri.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Alex_McAvoy">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/assets/img/head.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Alex_McAvoy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">操作系统——IO系统——设备驱动程序</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-12-14T17:04:32+08:00">
+                2019-12-14
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/notes/" itemprop="url" rel="index">
+                    <span itemprop="name">学习笔记</span>
+                  </a>
+                </span>
+
+                
+                
+                  ， 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/notes/os/" itemprop="url" rel="index">
+                    <span itemprop="name">学习笔记——操作系统</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body han-init-context" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="【概述】"><a href="#【概述】" class="headerlink" title="【概述】"></a>【概述】</h1><p>设备驱动程序是 <strong>I/O 系统的高层与设备控制器之间的通信程序</strong>，其主要任务是将上层软件发来的抽象 I/O 要求转化为具体要求，发送给设备控制器，启动设备去执行。同时，它也将由设备控制器发来的信号，传送给上层软件。</p>
+<p>为实现 I/O 系统高层与设备控制器间的通信，设备驱动程序应具有以下功能：</p>
+<ul>
+<li>接收由与上层设备无关的软件发来的命令和参数，并将命令中的抽象要求，转换为与设备相关的低层操作序列</li>
+<li>检查用户 I/O 请求的合法性，了解 I/O 设备的工作状态，传递与 I/O 设备操作有关的参数，设置设备的工作方式</li>
+<li>发出 I/O 命令，如果设备空闲，便立即启动 I/O 设备，完成指定的 I/O 操作；如果设备忙碌，则将请求者挂在设备队列上等待</li>
+<li>及时响应由设备控制器发来的中断请求，并根据其中断类型，调用相应的中断处理程序进行处理</li>
+</ul>
+<h1 id="【设备驱动程序特点】"><a href="#【设备驱动程序特点】" class="headerlink" title="【设备驱动程序特点】"></a>【设备驱动程序特点】</h1><p>设备驱动程序属于低级系统例程，其与一般的应用程序及系统程序不同，其特点如下：</p>
+<ul>
+<li><strong>位置</strong>：驱动程序是与设备无关的软件和设备控制器之间通信和转换的程序</li>
+<li><strong>硬件特性</strong>：驱动程序与设备控制器和 I/O 设备的硬件特性，紧密相关</li>
+<li><strong>控制方式</strong>：驱动程序与I/O设备所采用的I/O控制方式紧密相关</li>
+<li><strong>语言</strong>：由于驱动程序与硬件紧密相关，因而其中的一部分必须用汇编语言编写</li>
+<li><strong>重入</strong>：驱动程序应允许可重入，一个正在运行的驱动程序常会在一次调用完成前被再次调用</li>
+</ul>
+<h1 id="【设备处理方式】"><a href="#【设备处理方式】" class="headerlink" title="【设备处理方式】"></a>【设备处理方式】</h1><p>在不同的操作系统中，所采用的的设备处理方式并不完全相同，设备处理方式可分为以下三类：</p>
+<ul>
+<li>为每一类设备设置一个进程，专门用于执行这类设备的 I/O 操作</li>
+<li>在整个系统中设置一个 I/O 管理进程专门用于执行系统中所有各类设备的 I/O 操作</li>
+<li>不设置专门的设备处理进程，只为各类设备设置相应的设备驱动程序，供用户或系统进程调用</li>
+</ul>
+<h1 id="【设备驱动程序处理过程】"><a href="#【设备驱动程序处理过程】" class="headerlink" title="【设备驱动程序处理过程】"></a>【设备驱动程序处理过程】</h1><p>设备驱动程序的主要任务是启动指定设备，完成上层指定的 I/O 工作，但在启动前，应先完成必要的准备工作。在完成所有的准备工作后，才向设备控制器发送一条启动命令。</p>
+<p>设备驱动程序的处理过程如下：</p>
+<ol>
+<li>将抽象要求转换为具体要求</li>
+<li>对服务请求进行校验</li>
+<li>检查设备状态</li>
+<li>传送必要参数</li>
+<li>启动 I/O 设备</li>
+</ol>
+<h1 id="【对-I-O-设备的控制方式】"><a href="#【对-I-O-设备的控制方式】" class="headerlink" title="【对 I/O 设备的控制方式】"></a>【对 I/O 设备的控制方式】</h1><h2 id="1-轮询的可编程-I-O-方式"><a href="#1-轮询的可编程-I-O-方式" class="headerlink" title="1.轮询的可编程 I/O 方式"></a>1.轮询的可编程 I/O 方式</h2><p>轮询的可编程 I/O 方式，又称忙-等待方式或程序 I/O 方式，其处理过程如下：</p>
+<ol>
+<li>处理机向控制器发送一条 I/O 指令，启动输入设备输入数据，同时将状态寄存器置 busy=1</li>
+<li>不断循环测试 busy 标志：busy=1 时，表示输入机尚未输完一个字，CPU 继续对该标志测试；busy=0 时，表示数据已输入控制器数据寄存器中</li>
+<li>将 CPU 存取控制器中的数据送入内存单元，完成一个字的 I/O </li>
+</ol>
+<p>在程序 I/O 方式中，CPU 的绝大部分时间都处于等待 I/O 设备完成数据 I/O 的循环测试中，造成了对 CPU 的极大浪费，这是因为在 CPU 中无中断机构，使 I/O 设备无法向 CPU 报告其已完成了一个字符的输入。</p>
+<p><img src="/images/notes/os/35-1.png" alt="unload successful"></p>
+<h2 id="2-使用中断的可编程-I-O-方式"><a href="#2-使用中断的可编程-I-O-方式" class="headerlink" title="2.使用中断的可编程 I/O 方式"></a>2.使用中断的可编程 I/O 方式</h2><p>该方式利用设备控制器来完成对 I/O 设备的控制，其过程如下：</p>
+<ol>
+<li>CPU 向相应的设备控制器发送一条 I/O 命令</li>
+<li>立即返回继续执行原来的任务</li>
+<li>设备控制器按照命令控制指定 I/O 设备，此时 CPU 与 I/O 设备并行运行</li>
+</ol>
+<p>在 I/O 设备输入每个数据的过程中，可使 CPU 与 I/O 设备并行工作，仅当输完一个数据时，才需要 CPU 花费极短的时间去做中断处理。</p>
+<p>这样使得 CPU 和 I/O 都处于忙碌状态，从而提高了整个系统的资源利用率与吞吐量。</p>
+<p><img src="/images/notes/os/35-2.png" alt="unload successful"></p>
+<h2 id="3-直接存储器访问方式"><a href="#3-直接存储器访问方式" class="headerlink" title="3.直接存储器访问方式"></a>3.直接存储器访问方式</h2><p>该方式借助 DMA 控制器完成对 I/O 设备的控制，因此又称为 DMA 方式。</p>
+<p>该方式的数据传输基本单位是<strong>数据块</strong>，所传送的数据从设备直接送入内存，或直接从内存进设备，整块数据的传送是在 DMA 控制器的控制下完成的，不需要 CPU 操作，即 CPU 干预进一步减少，仅在传送一个或多个数据块的开始和结束时，才需 CPU 干预。</p>
+<p>DMA 控制器由三部分组成：主机与 DMA 控制器的接口、DMA 控制器与块设备的接口、I/O 控制逻辑</p>
+<p>为实现主机与控制器之间块数据的直接交换，必须设置如下四类寄存器：</p>
+<ol>
+<li><strong>数据寄存器 DR</strong>：暂存设备到内存或从内存到设备的数据</li>
+<li><strong>内存地址寄存器 MAR</strong>：存放把数据从设备传送到内存的起始的目标地址或内存原地址</li>
+<li><strong>数据计数器 DC</strong>：存放本次 CPU 要读或写的字数</li>
+<li><strong>命令/状态寄存器 CR</strong>：用于接收从 CPU 发来的 I/O 命令或有关控制和状态信息</li>
+</ol>
+<p><img src="/images/notes/os/35-3.png" alt="unload successful"></p>
+<p>DMA 方式的工作过程如下：</p>
+<ol>
+<li>CPU 向磁盘控制器发送一条读命令，同时发送数据读入到内存的起始地址</li>
+<li>命令被送到命令寄存器 CR 中，地址被送入内存地址寄存器 MAR 中，要读数据的字数则送入数据计数器 DC 中</li>
+<li>将磁盘中的数据原地址直接送入 DMA 控制器的 I/O 控制逻辑上，按设备状态启动磁头到相应位置</li>
+<li>启动 DMA 控制器控制逻辑开始进行数据传送：<ol>
+<li>DMA 控制器读入一个数据到数据寄存器 DR 中，然后传到内存 MAR 地址中</li>
+<li>接着 MAR+1，DC-1</li>
+<li>判断 DC 状态：若 DC=0，控制器发送中断请求，传送完毕；若 DC=1，继续传送</li>
+</ol>
+</li>
+</ol>
+<p><img src="/images/notes/os/35-4.png" alt="unload successful"></p>
+<h2 id="4-I-O-通道控制方式"><a href="#4-I-O-通道控制方式" class="headerlink" title="4.I/O 通道控制方式"></a>4.I/O 通道控制方式</h2><p>DMA适用于读一个连续的数据块，若一次读多个数据块到内存的不同区域，那么须由 CPU 分别发送多条 I/O 指令、进行多次 DMA 中断处理。</p>
+<p>为进一步减少 CPU 的干预，引入了通道方式，CPU 只需发一条 I/O 指令，给出通道程序的首地址及要访问设备即可，这使得 CPU、通道和 I/O 设备三者并行操作，提高整个系统的资源利用率。</p>
+<p>通道，是一种<strong>通过执行通道程序管理 I/O 操作的控制器</strong>，它使 CPU、内存与 I/O 操作之间达到更高的并行程度，由于它的任务是管理实现 I/O 操作，提供了一种传送通道，所以将这种部件称作通道。</p>
+<p>通道，通过执行<strong>通道程序</strong>，与设备控制器共同实现对 I/O 设备的控制，简单来说，CPU 指令经过设备驱动程序解读后，送往通道程序，通过通道程序的执行来完成通道操作，通道程序由一系列<strong>通道指令</strong>构成。</p>
+<p>通道指令一般包含下述信息：</p>
+<ul>
+<li><strong>操作码</strong>：规定指令所执行的操作</li>
+<li><strong>内存地址</strong>：标明字符送入内存、从内存取出时的内存首址</li>
+<li><strong>计数</strong>：表示本指令所要操作的字节数</li>
+<li><strong>通道程序结束位 P</strong>：表示程序是否结束，P=1 表示本条指令是通道程序的最后一条指令</li>
+<li><strong>记录结束标志 R</strong>：表示该指令是否与下条指令有关，R=0 表示本通道指令与下一条指令同属一记录；R=1 表示是处理某记录的最后一条指令</li>
+</ul>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>感谢您对我的支持，让我继续努力分析有用地点技术与知识点！</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="/assets/img/wechatpay.jpg" alt="Alex_McAvoy 微信支付">
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="/assets/img/alipay.jpg" alt="Alex_McAvoy 支付宝">
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/学习笔记/" rel="tag"># 学习笔记</a>
+          
+            <a href="/tags/操作系统/" rel="tag"># 操作系统</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/notes/os/ck5dqn8yu003ekgc2vlkl7x6z.html" rel="next" title="操作系统——IO系统——中断机构与中断处理程序">
+                <i class="fa fa-chevron-left"></i> 操作系统——IO系统——中断机构与中断处理程序
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/notes/os/ck5dqn8z5003zkgc2tm4qwy5v.html" rel="prev" title="操作系统——IO系统——与设备无关的I/O软件">
+                操作系统——IO系统——与设备无关的I/O软件 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+
+      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/assets/img/head.jpg" alt="Alex_McAvoy">
+            
+              <p class="site-author-name" itemprop="name">Alex_McAvoy</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">52</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">3</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">3</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/Alex-McAvoy" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="https://blog.csdn.net/u011815404" target="_blank" title="CSDN">
+                      
+                        <i class="fa fa-fw fa-copyright"></i>CSDN</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+            <div class="cc-license motion-element" itemprop="license">
+              <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" class="cc-opacity" target="_blank">
+                <img src="/images/cc-by-nc-sa.svg" alt="Creative Commons">
+              </a>
+            </div>
+          
+
+          
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-link"></i>
+                Links
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/sdz20172133" title="神仙队友" target="_blank">神仙队友</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://www.bycore.net/" title="凉了的某饼同学" target="_blank">凉了的某饼同学</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/wentong_Xu" title="小黑贱胖子" target="_blank">小黑贱胖子</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/sdau_fangshifeng" title="一个头很酷的家伙" target="_blank">一个头很酷的家伙</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://www.yuheng.tech/" title="咸于" target="_blank">咸于</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/lanshan1111" title="肥硕硕" target="_blank">肥硕硕</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/sdauguanweihong" title="管少" target="_blank">管少</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/qq_41661919" title="俊杰" target="_blank">俊杰</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/qq_40859951" title="峰哥" target="_blank">峰哥</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/LSD20164388" title="狗冬" target="_blank">狗冬</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/qq_37748451" title="胖亚亚" target="_blank">胖亚亚</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/qq_37868325" title="妍大佬" target="_blank">妍大佬</a>
+                  </li>
+                
+              </ul>
+            </div>
+          
+
+          
+
+        </div>
+      </section>
+
+      
+
+      
+        <div class="back-to-top">
+          <i class="fa fa-arrow-up"></i>
+          
+            <span id="scrollpercent"><span>0</span>%</span>
+          
+        </div>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 &mdash; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Alex_McAvoy</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdn.bootcss.com/mathjax/2.7.1/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  
+
+
+  
+
+  
+
+  
+</body>
+</html>
