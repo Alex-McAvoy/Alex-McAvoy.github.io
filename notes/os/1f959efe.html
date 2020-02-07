@@ -94,7 +94,7 @@
 <meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/os/30-1.png">
 <meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/os/30-2.png">
 <meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/os/30-3.png">
-<meta property="og:updated_time" content="2020-01-14T13:03:21.056Z">
+<meta property="og:updated_time" content="2020-02-02T08:26:32.702Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="操作系统——虚拟存储器——抖动与工作集">
 <meta name="twitter:description" content="【抖动】1.多道程序度由于虚拟存储器系统从逻辑上扩大内存，只需要装入一个进程的部分程序和数据即可运行，为提高处理机的利用率，可采取增加多道程序的方法，即在系统中运行更多的进程。 如下图，随着进程数目的增加，处理机的利用率也增加，但到增速逐渐减缓，直到达到峰值，之后再进行增加，处理机利用率反而下降，这是因为在系统中已经发生了抖动。  2.抖动抖动，即刚被换出的页很快又要被访问，需要将其重新调入，而此">
@@ -363,7 +363,7 @@
       
         <h1 id="【抖动】"><a href="#【抖动】" class="headerlink" title="【抖动】"></a>【抖动】</h1><h2 id="1-多道程序度"><a href="#1-多道程序度" class="headerlink" title="1.多道程序度"></a>1.多道程序度</h2><p>由于虚拟存储器系统从逻辑上扩大内存，只需要装入一个进程的部分程序和数据即可运行，为提高处理机的利用率，可采取<strong>增加多道程序</strong>的方法，即在系统中运行更多的进程。</p>
 <p>如下图，随着进程数目的增加，处理机的利用率也增加，但到增速逐渐减缓，直到达到峰值，之后再进行增加，处理机利用率反而下降，这是因为在系统中已经发生了<strong>抖动</strong>。</p>
-<p><img src="/images/notes/os/30-1.png" alt="unload successful"></p>
+<p><img src="/images/notes/os/30-1.png" alt="load unsuccessful"></p>
 <h2 id="2-抖动"><a href="#2-抖动" class="headerlink" title="2.抖动"></a>2.抖动</h2><p>抖动，即刚被换出的页很快又要被访问，需要将其重新调入，而此时又需要再选一页调出，置换完毕后，刚被调出的页又被访问，又需要将其调入，频繁地更换页面，使得一个进程在运行过程中将大部分时间都花在了置换工作上。</p>
 <p>产生抖动的根本原因在于，同时在系统中运行的进程太多，由此分配给每一进程的物理块太小，不能满足进程正常运行的基本要求，从而使得<strong>每个进程频繁地出现缺页</strong>。</p>
 <p>而大量的缺页会使得系统中排队等待页面调度的进程数增加，对磁盘的有效访问时间也随之增加，造成每个进程大部分时间都用于页面的换进换出，从而导致处理机利用率急剧下降甚至趋于 0 的情况。</p>
@@ -375,12 +375,12 @@
 <li>抖动发生时，暂停某些进程，从而<strong>调节多道程序度</strong></li>
 </ul>
 <h1 id="【工作集】"><a href="#【工作集】" class="headerlink" title="【工作集】"></a>【工作集】</h1><p>进程发生缺页的时间间隔与进程获得的物理块数有关联，缺页率随着分配物理块数的增加明显地减少。</p>
-<p><img src="/images/notes/os/30-2.png" alt="unload successful"></p>
+<p><img src="/images/notes/os/30-2.png" alt="load unsuccessful"></p>
 <p>基于程序局部性原理可知，程序在运行期间，对页面的访问是不均匀的，因此，若能预知程序在某段时间要访问的页面并全部调入他们，将大大降低缺页率，显著地提供处理机的利用率。</p>
 <p>由于无法预知程序在不同时刻访问的页面，因此只能像置换算法那样用程序过去某段时间的行为作为程序将来某段时间的行为的近似。</p>
 <p>工作集，是指在某段时间间隔 $\Delta$ 中，进程时间所访问页面的集合。</p>
 <p>具体来说，可以用一个二元函数 $W(t, \Delta)$ 来表示某进程在执行时刻 t 的工作集，在不同时间 t 的工作集大小不同，所含的页面数也不同，其是窗口尺寸 $\Delta$ 的非降函数，即：$W(t,\Delta) \subseteq  W(t,\Delta +1)$</p>
-<p><img src="/images/notes/os/30-3.png" alt="unload successful"></p>
+<p><img src="/images/notes/os/30-3.png" alt="load unsuccessful"></p>
 
       
     </div>

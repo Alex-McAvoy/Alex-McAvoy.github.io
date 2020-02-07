@@ -93,7 +93,7 @@
 <meta property="og:locale" content="zh-Hans">
 <meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/os/07-1.png">
 <meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/os/07-2.png">
-<meta property="og:updated_time" content="2020-01-14T13:03:21.073Z">
+<meta property="og:updated_time" content="2020-02-02T08:27:59.727Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="操作系统——进程的描述与控制——进程同步">
 <meta name="twitter:description" content="【概述】1.制约关系多个程序在并发执行时，对于同处一个系统中的多个进程，由于他们共享系统中的资源，或为完成某一任务而相互合作，使得他们存在制约关系。 制约关系分为两种：  间接制约关系：对于临界资源来说，多个进程对之间只能互斥地访问，这类资源由系统实施统一分配 直接制约关系：对于某些应用，为完成某任务而建立了两个及以上的进程，这些进程为完成同一任务将进行合作  简单来说，间接制约关系是指诸进程间的">
@@ -426,7 +426,7 @@
 
 <h3 id="3）AND-型信号量"><a href="#3）AND-型信号量" class="headerlink" title="3）AND 型信号量"></a>3）AND 型信号量</h3><p>在某些应用场合，一个进程往往需要两个及以上的共享资源才能执行其任务。</p>
 <p>假定有两个进程 A、B，要求访问临界资源 C、D，那么，如果 A 占有了 C 等待 D，B 占有了 D 等待 C，那么就会陷入<strong>死锁状态</strong>，两者都在等待对方释放自己所需的资源。</p>
-<p><img src="/images/notes/os/07-1.png" alt="unload successful"></p>
+<p><img src="/images/notes/os/07-1.png" alt="load unsuccessful"></p>
 <p>显然，当进程同时要求的共享资源越多时，发生进程死锁的可能性就越大。</p>
 <p>为预防进程死锁的问题，出现了 AND 型信号量，其基本思想是：将进程在整个运行过程中需要的所有资源，一次性全部分配给进程，待进程使用完后再一起释放，简单来说，要么全部分配完成，要么一个也不分配。</p>
 <p>在实现中，对若干临界资源的分配采取了原子操作方式，为此在 wait 与 signal 的操作的基础上，加了一个 AND 条件，称为<strong>同时 wait 操作（Swait 操作）</strong>、<strong>同时 signal 操作（Ssignal 操作）</strong>，其描述如下：</p>
@@ -450,7 +450,7 @@
 <p>对于请求访问共享资源的诸多并发进程，根据资源的情况接受或者阻塞，确保每次只有一个进程进入管程，执行这组过程，使用共享资源，从而达到对共享资源所有访问的统一管理。</p>
 <p>任何进程只能通过调用管程提供的过程入口进入管程，从而访问共享数据，而且在任何时刻，仅允许一个进程在管程中执行某个内部过程，如同使用临界资源，就要必须通过其信号量的申请。</p>
 <p>管程被请求和释放资源的进程所调用，其由四部分构成：<strong>管程名称、共享数据结构说明(共享变量、条件变量等)、对数据结构操作的过程（可调用的方法）、对管程初始化的语句</strong></p>
-<p><img src="/images/notes/os/07-2.png" alt="unload successful"></p>
+<p><img src="/images/notes/os/07-2.png" alt="load unsuccessful"></p>
 <h3 id="2）管程的同步控制——条件变量"><a href="#2）管程的同步控制——条件变量" class="headerlink" title="2）管程的同步控制——条件变量"></a>2）管程的同步控制——条件变量</h3><p>管程的变量有两种，一种是<strong>普通变量</strong>，一种是<strong>条件变量</strong>。</p>
 <p>其中条件变量用于控制进程阻塞与唤醒，其类似于信号量变量，但没有具体值，相当于每个阻塞队列的队列指针。</p>
 <p>管程中的每个条件变量都必须予以说明，其形式为：<strong>condition x,y</strong>，而对条件变量的操作，需要结合对普通变量的条件判断，由此来控制进程状态。</p>

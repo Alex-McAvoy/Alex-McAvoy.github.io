@@ -95,7 +95,7 @@
 <meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/os/31-2.png">
 <meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/os/31-3.png">
 <meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/os/31-4.png">
-<meta property="og:updated_time" content="2020-01-14T13:03:21.057Z">
+<meta property="og:updated_time" content="2020-02-02T08:26:29.027Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="操作系统——虚拟存储器——请求分段存储管理方式">
 <meta name="twitter:description" content="【概述】在分页基础上建立的请求分页式虚拟存储器系统，是以页面为单位换入换出的。 而在分段基础上建立的请求分段式虚拟存储器系统，是以分段为单位换入换出的。 两者的原理、实现方式以及所需硬件支持都十分相似。 【硬件支持】为实现请求分段存储管理，应在系统中配置相应的硬件机构，以支持快速地完成请求分段功能。 与请求分页系统相似，请求分段系统中所需的硬件支持有：请求段表机制、缺段中断机构、地址变换机构 1.">
@@ -368,7 +368,7 @@
 <h1 id="【硬件支持】"><a href="#【硬件支持】" class="headerlink" title="【硬件支持】"></a>【硬件支持】</h1><p>为实现请求分段存储管理，应在系统中配置相应的硬件机构，以支持快速地完成请求分段功能。</p>
 <p>与请求分页系统相似，请求分段系统中所需的硬件支持有：请求段表机制、缺段中断机构、地址变换机构</p>
 <h2 id="1-请求段表机制"><a href="#1-请求段表机制" class="headerlink" title="1.请求段表机制"></a>1.请求段表机制</h2><p>在请求分段管理中所需的主要数据结构是请求段表。</p>
-<p><img src="/images/notes/os/31-1.png" alt="unload successful"></p>
+<p><img src="/images/notes/os/31-1.png" alt="load unsuccessful"></p>
 <ul>
 <li><strong>存取方式</strong> ：用于标识本分段的存取属性 R、W、R/W</li>
 <li><strong>访问字段 A</strong> ：用于记录本段被访问的频繁程度</li>
@@ -383,18 +383,18 @@
 <li>进入 OS，由缺段中断处理程序将所需段调入内存</li>
 </ul>
 <p>缺段中断与缺页中断相似，同样是在一条指令的执行期间产生和处理中断，一条指令执行可能产生多次缺段中断，但不会出现一条指令被分割在两个分段中或一组信息被分割在两个分段中的情况。</p>
-<p><img src="/images/notes/os/31-2.png" alt="unload successful"></p>
+<p><img src="/images/notes/os/31-2.png" alt="load unsuccessful"></p>
 <h2 id="3-地址变换机构"><a href="#3-地址变换机构" class="headerlink" title="3.地址变换机构"></a>3.地址变换机构</h2><p>请求分段系统中的地址变换机构是在分段系统地址变换机构的基础上形成的。</p>
 <p>由于被访问的段并非全在内存，因此在地址变换时，若发现要访问的段不在内存，必须先将所缺的段调入内存，并修改段表，才能利用段表进行地址变换。</p>
 <p>为此，在分段系统地址变换机构的基础上添加了<strong>缺段中断请求与处理</strong>的功能。</p>
-<p><img src="/images/notes/os/31-3.png" alt="unload successful"></p>
+<p><img src="/images/notes/os/31-3.png" alt="load unsuccessful"></p>
 <h1 id="【分段共享与保护】"><a href="#【分段共享与保护】" class="headerlink" title="【分段共享与保护】"></a>【分段共享与保护】</h1><h2 id="1-共享段表"><a href="#1-共享段表" class="headerlink" title="1.共享段表"></a>1.共享段表</h2><p>为实现分段共享，需要在系统中配备一张<strong>共享段表</strong>，所有共享段都在共享段表中占据一个表项，在表项上记录了共享段的段号、段长、内存始址、状态位、外存始址、共享进程计数等信息。</p>
 <ul>
 <li><strong>共享进程计数</strong>：记录有多少个进程需要共享该分段</li>
 <li><strong>存取控制字段</strong>：共享段给不同的进程以不同的存取权限</li>
 <li><strong>段号</strong>：对于一个共享段，不同的进程可用不同的段号</li>
 </ul>
-<p><img src="/images/notes/os/31-4.png" alt="unload successful"></p>
+<p><img src="/images/notes/os/31-4.png" alt="load unsuccessful"></p>
 <h2 id="2-共享段的分配"><a href="#2-共享段的分配" class="headerlink" title="2.共享段的分配"></a>2.共享段的分配</h2><p> 由于共享段是供多个进程共享的，因此对共享段的分配方法与非共享段的分配方法有所不同。</p>
 <ul>
 <li>第一个请求使用该共享段的进程 A：系统为该共享段分配一物理区，再把共享段装入该区</li>

@@ -94,7 +94,7 @@
 <meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/os/21-1.png">
 <meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/os/21-2.png">
 <meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/os/21-3.png">
-<meta property="og:updated_time" content="2020-01-14T13:03:21.047Z">
+<meta property="og:updated_time" content="2020-02-02T08:27:09.011Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="操作系统——连续存储方式——动态分区分配">
 <meta name="twitter:description" content="【概述】动态分区分配又称可变分区分配，其是根据进程的实际需要，动态地为之分配内存空间。 动态分区分配并发进程数没有固定的限制，因此不会产生内碎片，但由于动态分区分配算法的设计，存在外碎片，即分区之间无法利用的空间 【数据结构】在实现动态分区分配时，要配置相应的数据结构，来描述空闲分区和已分配分区的情况，为分配提供依据，常用的数据结构有以下两种：  空闲分区表：记录每个空闲分区的情况，每个空闲分区占">
@@ -368,7 +368,7 @@
 <li><strong>空闲分区表</strong>：记录每个空闲分区的情况，每个空闲分区占一个表目，表目中包括分区号、分区大小、分区起始位置</li>
 <li><strong>空闲分区链表</strong>：为实现对空闲分区的分配、链接，在每个分区的起始位置设置一些用于控制分区分配的信息，以及用于链接各分区所用的前向指针、后向指针，通过前、后向链接指针，将所有的空闲分区链成一双向链表</li>
 </ul>
-<p><img src="/images/notes/os/21-1.png" alt="unload successful"></p>
+<p><img src="/images/notes/os/21-1.png" alt="load unsuccessful"></p>
 <h1 id="【动态分区分配算法】"><a href="#【动态分区分配算法】" class="headerlink" title="【动态分区分配算法】"></a>【动态分区分配算法】</h1><h2 id="1-首次适应算法"><a href="#1-首次适应算法" class="headerlink" title="1.首次适应算法"></a>1.首次适应算法</h2><p>首次适应（First Fit，FF）算法是一种<strong>顺序搜索算法</strong>，其要求<strong>空闲分区链以地址递增的次序链接</strong>。</p>
 <p>在分配内存时，首先从链首开始顺序查找直至找到一个大小能满足要求的空闲分区，然后从该分区中划出一块作业要求大小的内存空间分配给请求者，余下的空闲分区大小改变仍留在空闲链中。</p>
 <p>若从链表到链尾都检索不到满足要求的分区，则分配失败。</p>
@@ -397,7 +397,7 @@
 <p>当进行空闲分区分配时，根据所需空闲分区大小，通过哈希函数计算，即得到在哈希表中的位置，从中得到相应的空闲分区链表，实现最佳分配策略。</p>
 <h1 id="【分区分配操作】"><a href="#【分区分配操作】" class="headerlink" title="【分区分配操作】"></a>【分区分配操作】</h1><h2 id="1-分配内存"><a href="#1-分配内存" class="headerlink" title="1.分配内存"></a>1.分配内存</h2><p>利用某种分配算法，从空闲分区表中找到所需大小的分区。</p>
 <p>设请求分区大小为 u.size，表中每个分区大小为 m.size，则流程如下：</p>
-<p><img src="/images/notes/os/21-2.png" alt="unload successful"></p>
+<p><img src="/images/notes/os/21-2.png" alt="load unsuccessful"></p>
 <h2 id="2-回收内存"><a href="#2-回收内存" class="headerlink" title="2.回收内存"></a>2.回收内存</h2><p>当进程运行完毕释放内存时，系统根据回收区的首地址，从空闲分区表中找到相应的插入点，此时可能会出现以下四种情况：</p>
 <ul>
 <li>回收分区<strong>上邻接</strong>一个空闲分区：合并后首地址为空闲分区首地址，大小为二者之和</li>
@@ -405,7 +405,7 @@
 <li>回收分区<strong>上下邻接</strong>空闲分区：合并后首地址为上空闲分区首地址，大小为三者之和，删除下邻</li>
 <li>回收分区<strong>不邻接</strong>空闲分区：在空闲分区表新建一表项，并填写分区大小等信息</li>
 </ul>
-<p><img src="/images/notes/os/21-3.png" alt="unload successful"></p>
+<p><img src="/images/notes/os/21-3.png" alt="load unsuccessful"></p>
 
       
     </div>
