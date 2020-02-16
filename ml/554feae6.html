@@ -91,10 +91,12 @@
 <meta property="og:site_name" content="Alex_McAvoy">
 <meta property="og:description" content="【概述】在回归分析中，如果有两个及以上的自变量，且因变量和自变量之间是线性关系，则称为多元线性回归。在实际应用中，一种现象常常是与多个因素相联系的，由多个自变量的最优组合共同来预测或估计因变量，比只用一个自变量的一元线性回归进行预测或估计更有效，更符合实际。 在一元线性回归模型 $h(x)=\theta_0 + \theta_1 x$ 中，我们只有一个特征值 $x$，通过利用批量梯度下降法(BGD">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2020-02-15T15:04:36.716Z">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/04-1.png">
+<meta property="og:updated_time" content="2020-02-16T14:05:17.191Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="机器学习——多元线性回归">
 <meta name="twitter:description" content="【概述】在回归分析中，如果有两个及以上的自变量，且因变量和自变量之间是线性关系，则称为多元线性回归。在实际应用中，一种现象常常是与多个因素相联系的，由多个自变量的最优组合共同来预测或估计因变量，比只用一个自变量的一元线性回归进行预测或估计更有效，更符合实际。 在一元线性回归模型 $h(x)=\theta_0 + \theta_1 x$ 中，我们只有一个特征值 $x$，通过利用批量梯度下降法(BGD">
+<meta name="twitter:image" content="https://alex-mcavoy.github.io/images/ml/04-1.png">
 
 
 
@@ -350,17 +352,71 @@
 <p>在一元线性回归模型 $h(x)=\theta_0 + \theta_1 x$ 中，我们只有一个特征值 $x$，通过利用<strong>批量梯度下降法(BGD)</strong> 对代价函数 $J(\theta_0,theta_1)$ 最小化，来拟合一条<strong>直线</strong>来描述数据间的关系，这样当出现新的数据时，我们能预测一个 $y$ 值。</p>
 <p>而多元线性回归模型，简单来说，就是当有多个特征值 $x_1,x_2,…,x_n$ 时，通过对假设函数来描述数据间的关系，这样当出现新的数据时，就能预测出一个值。</p>
 <p>关于线性回归：<a href="https://alex-mcavoy.github.io/ml/1bfe723c.html">点击这里</a></p>
-<h1 id="【假设形式】"><a href="#【假设形式】" class="headerlink" title="【假设形式】"></a>【假设形式】</h1><p>假设给定 $n$ 个样本，具有 $m$ 个特征值 $x_1,x_2,…x_m$，输出为 $y$</p>
-<p>则假设函数为 $h(x) = \theta_0 + \theta_1 x_1 + \theta_2 x_2 + … + \theta_m x_m$</p>
-<p>为了表述方便，我们对假设函数进行简化，假设：$x_0=1$，即定义了一个额外的第 0 个特征量，这个特征量对所有样本的取值全部为 1，这使得特征量从过去的 m 个变为 m+1 个。</p>
-<p>那么假设函数就可以写为：$h(x) = \theta_0 x_0+ \theta_1 x_1 + \theta_2 x_2 + … + \theta_m x_m$</p>
-<p>我们将所有的特征量 $x_i$ 看做一个向量 $X$，即：</p>
+<h1 id="【假设形式】"><a href="#【假设形式】" class="headerlink" title="【假设形式】"></a>【假设形式】</h1><p>假设给定 $n$ 个样本，具有 $m$ 个特征值 $x_1,x_2,…x_m$，输出为 $y$，同时，我们将第 $i$ 组样本的所有特征量记为 $x^{(i)}$，输出记为 $y^{(i)}$，将第 $i$ 组样本的第 $j$ 个特征量记为 $x_j^{(i)}$</p>
+<p>则假设函数为 $h_{\theta}(x) = \theta_0 + \theta_1 x_1 + \theta_2 x_2 + … + \theta_m x_m$</p>
+<p>为了表述方便，我们对假设函数进行简化，假设：$x_0^{(i)}=1$，即定义了一个额外的第 0 个特征量，这个特征量对所有样本的取值全部为 1，这使得特征量从过去的 m 个变为 m+1 个。</p>
+<p>那么假设函数就可以写为：$h_{\theta}(x) = \theta_0 x_0+ \theta_1 x_1 + \theta_2 x_2 + … + \theta_m x_m$</p>
+<p>我们将所有的特征量看做一个向量 $X$，即：</p>
 <p>$$<br>X=<br>\begin{bmatrix}x_0<br>\\ x_1<br>\\ …<br>\\ x_m<br>\end{bmatrix}<br>$$</p>
 <p>同时，我们将所有的参数看做一个向量 $\theta$，即：</p>
 <p>$$<br>\theta=<br>\begin{bmatrix}\theta_0<br>\\ \theta_1<br>\\ …<br>\\ \theta_m<br>\end{bmatrix}<br>$$</p>
-<p>那么，假设函数就可以简化为：$ h(x)=\theta^T X $</p>
-<p>同时，我们与一元线性回归一样，引入代价函数:</p>
-<p>$$<br>J(\theta_0,\theta_1,…,\theta_m)=\frac{1}{2n}\sum_{i=1}^n(h(x_i)-y_i)^2<br>$$</p>
+<p>那么，假设函数就可以简化为：$ h_{\theta}(x)=\theta^T X $</p>
+<p>与一元线性回归模型相同，我们引入代价函数:</p>
+<p>$$<br>J(\theta)=\frac{1}{2n}\sum_{i=1}^n(h_{\theta}(x^{(i)})-y^{(i)})^2<br>$$</p>
+<p>通过最小化代价函数 $J(\theta)$ 来找到合适的 $\theta$ 参数。</p>
+<h1 id="【多元梯度下降】"><a href="#【多元梯度下降】" class="headerlink" title="【多元梯度下降】"></a>【多元梯度下降】</h1><p>多元梯度下降的核心同样是代价函数对应的梯度函数，即将下列公式<strong>重复直到收敛</strong>为止：</p>
+<p>$$<br>\theta_j = \theta_j - \alpha \frac{\partial}{\partial \theta_j}J(\theta)<br>$$</p>
+<p>其中，$j = 0,1,…,m$</p>
+<p>式子的核心同样是偏导数项：$\frac{\partial}{\partial \theta_j}J(\theta)$</p>
+<p>我们需要对其进行化简。</p>
+<p>首先给出需要用到的求导法则：</p>
+<ul>
+<li>对函数的和求导：$(u+v)’=u’+v’$</li>
+<li>对函数的和求导推广：$(\sum_{i=0}^nu_i)’=\sum_{i=0}^n(u_i)’$</li>
+<li>对函数的积求导：$(uv)’=u’v+uv’$</li>
+<li>对幂函数的求导：$(x^u)’=ux^{u-1}$</li>
+<li>对常数的求导：$C’=0$</li>
+<li>链式法则：若$z=f(g(x))$，则 $z’=f(g(x))’+g(x)’$</li>
+</ul>
+<p>下面正式开始对偏导数项化简：</p>
+<p>$$<br>\frac{\partial}{\partial \theta_j} J(\theta)= \frac{\partial}{\partial \theta_j} \frac{1}{2n}\sum_{i=1}^n(h_{\theta}(x^{(i)})-y^{(i)})^2<br>$$</p>
+<p>即：</p>
+<p>$$<br>\frac{\partial}{\partial \theta_j} J(\theta)=\frac{1}{2n}\sum_{i=1}^n ( \frac{\partial}{\partial \theta_j} (h_{\theta}(x^{(i)})-y^{(i)})^2)<br>$$</p>
+<p>根据链式法则，展开有：</p>
+<p>$$<br>\frac{\partial}{\partial \theta_j} J(\theta)=\frac{1}{2n}\sum_{i=1}^n ( \frac{\partial}{\partial \theta_j} (h_{\theta}(x^{(i)})-y^{(i)})^2) \cdot (\frac{\partial}{\partial \theta_j} (h_{\theta}(x^{(i)}) - y^{(i)}))<br>$$</p>
+<p>展开后，先对幂进行求导，有：</p>
+<p>$$<br>\frac{\partial}{\partial \theta_j} J(\theta)=\frac{1}{n}\sum_{i=1}^n  (h_{\theta}(x^{(i)})-y^{(i)}) \cdot (\frac{\partial}{\partial \theta_j} (h_{\theta}(x^{(i)}) - y^{(i)}))<br>$$</p>
+<p>现在，只需要处理式子的后半部分：$\frac{\partial}{\partial \theta_j} (h_{\theta}(x^{(i)}) - y^{(i)})$</p>
+<p>我们将其展开：</p>
+<p>$$\frac{\partial}{\partial \theta_j} ( \sum_{j=0}^m \theta_j x^{(i)} - y^{(i)})$$</p>
+<p>进一步化简得：</p>
+<p>$$\frac{\partial}{\partial \theta_j}  \sum_{j=0}^m \theta_j x^{(i)} - \frac{\partial}{\partial \theta_j}y^{(i)}$$</p>
+<p>即：</p>
+<p>$$\frac{\partial}{\partial \theta_j}  (\theta_0x_0^{(i)}+\theta_1x_1^{(i)}+…+\theta_mx_m^{(i)}) - \frac{\partial}{\partial \theta_j}y^{(i)}$$</p>
+<p>对于求和函数展开，我们对其中第 i 项求导时，其余各项实际上就是一个常数，它们在求导这一刻是固定不变的，因此有：</p>
+<p>$$0+0+…+\frac{\partial}{\partial \theta_j}\theta_jx_j^{(i)}+…+0-0$$</p>
+<p>对于得到的乘积函数 $\frac{\partial}{\partial \theta_j}\theta_j x_j^{(i)}$，求导展开，有：</p>
+<p>$$x_j^{(i)}\frac{\partial}{\partial \theta_j}\theta_j + \theta_j \frac{\partial}{\partial \theta_j}x_j^{(i)} = x_j^{(i)}$$</p>
+<p>下面，我们将得到的结果组合回去，即有：</p>
+<p>$$\frac{\partial}{\partial \theta_j} J(\theta)=\frac{1}{n}\sum_{i=1}^n  (h_{\theta}(x^{(i)})-y^{(i)}) \cdot x_j^{(i)}$$</p>
+<p>故而，只需将下列公式<strong>重复至收敛</strong>即可：</p>
+<p>$$\theta_j = \theta_j - \alpha\frac{1}{n}\sum_{i=1}^n  (h_{\theta}(x^{(i)})-y^{(i)}) \cdot x_j^{(i)}$$</p>
+<p>其中，$j = 0,1,…,m$</p>
+<h1 id="【特征缩放】"><a href="#【特征缩放】" class="headerlink" title="【特征缩放】"></a>【特征缩放】</h1><p>特征缩放是梯度下降的实用技巧之一，其目的是为了让梯度下降收敛时迭代次数更少。</p>
+<p>对于一个机器学习问题，如果该问题有多个特征，且这些特征不同特征的取值都处在一个相近的范围内，这样利用梯度下降就能更快地收敛。</p>
+<p>如下图，当特征不在一个相近范围内，使用梯度下降法需要迭代多次次才能找到合适的参数，而利用特征缩放后，只需要迭代很少的次数，即可找到合适的参数。</p>
+<p><img src="/images/ml/04-1.png" alt="load unsuccessfule"></p>
+<p>特征缩放，是将特征的取值约束到接近 $[-1,1]$ 的范围内。</p>
+<p>对于 $x_0^{(1)}=1$，其已在这个范围内，我们不作考虑。而对于其他的特征值，我们需要通过除以不同的数，来让它们在同一范围内。类似地，如果特征在一个十分小的范围内，我们也需要除以不同的数，来让它们在同一范围。</p>
+<p>举例来说，假设现在有 4 个特征值，它们的范围如下：</p>
+<p>$$<br>\left<br>\{\begin{matrix} -1 \leq x_1 \leq 2<br>\\  -3 \leq x_1 \leq 1.5<br>\\  -100 \leq x_1 \leq 100<br>\\  -0.001 \leq x_1 \leq 0.001<br>\end{matrix}<br>\right.<br>$$</p>
+<p>可以看出，$x_1,x_2$ 的范围比较接近 $[-1,1]$，我们可以不作考虑，而 $x_3$ 的范围过大，我们需要除以一个数，来使其接近 $[-1,1]$，同样，$x_4$ 的范围过小，我们需要除以一个数，来使其接近 $[-1,1]$</p>
+<p>一般来说，当某个特征需要特征缩放时，我们一般<strong>除以这个特征的最大值</strong>，即对于该特征 $x^{(i)}$ 的每一项 $x_j^{(i)}$，我们都将其除以该特征的最大值 $x_max$。</p>
+<p>即：</p>
+<p>$$x_j^{(i)} = \frac{x_j^{(i)}}{x_{max}}$$</p>
+<p>除了除以特征的最大值外，有时也会利用<strong>均值归一化</strong>的方法，将特征值减去所有样本的该特征值的平均值 $u_i$ 后，再除以该特征的最大值。</p>
+<p>即：$$x_j^{(i)} = \frac{x_j^{(i)}-u_i}{x_{max}}$$</p>
+<p>此外，由于特征缩放的目的是为了让梯度下降收敛次数更少，因此不需要特别精确，在特征缩放时除以特征值的极差、标准差等均可，只要能使特征值在相近区间范围内即可。</p>
 
       
     </div>
@@ -646,7 +702,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【概述】"><span class="nav-number">1.</span> <span class="nav-text">【概述】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【假设形式】"><span class="nav-number">2.</span> <span class="nav-text">【假设形式】</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【概述】"><span class="nav-number">1.</span> <span class="nav-text">【概述】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【假设形式】"><span class="nav-number">2.</span> <span class="nav-text">【假设形式】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【多元梯度下降】"><span class="nav-number">3.</span> <span class="nav-text">【多元梯度下降】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【特征缩放】"><span class="nav-number">4.</span> <span class="nav-text">【特征缩放】</span></a></li></ol></div>
             
 
           </div>
