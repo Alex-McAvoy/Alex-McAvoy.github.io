@@ -91,7 +91,7 @@
 <meta property="og:site_name" content="Alex_McAvoy">
 <meta property="og:description" content="【预防死锁】预防死锁的方法是通过破坏死锁的四个必要条件中的一个或几个，以避免发生死锁。 由于互斥条件是非共享设备所必须的，不仅不能改变，还要加以保证，因此主要是破坏产生死锁的后三个条件。  破坏请求与保持条件：系统必须做到当一个进程在请求资源时，其不能持有不可抢占资源，因此一般利用 AND 信号量机制，在进程开始前，一次性地为进程申请所需的全部资源 。 破坏不可抢占条件：允许进程先运行，但当提出的">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2020-01-14T13:03:21.040Z">
+<meta property="og:updated_time" content="2020-02-20T16:08:58.131Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="操作系统——死锁——死锁的预防与避免">
 <meta name="twitter:description" content="【预防死锁】预防死锁的方法是通过破坏死锁的四个必要条件中的一个或几个，以避免发生死锁。 由于互斥条件是非共享设备所必须的，不仅不能改变，还要加以保证，因此主要是破坏产生死锁的后三个条件。  破坏请求与保持条件：系统必须做到当一个进程在请求资源时，其不能持有不可抢占资源，因此一般利用 AND 信号量机制，在进程开始前，一次性地为进程申请所需的全部资源 。 破坏不可抢占条件：允许进程先运行，但当提出的">
@@ -366,7 +366,7 @@
 </ul>
 <p>可以看出，破坏请求与保持条件，算法简单，易于实现且十分安全，但资源浪费严重，且进程可能会延迟运行；破坏不可抢占条件实现复杂，可能会造成反复申请与释放的情况；破坏环路等待条件较前两者有了极大改善，资源利用率与系统吞吐量有了明显提高，但存在资源编号限制新设备的增加、应用中的使用设备顺序与规定顺序不协调等情况</p>
 <h1 id="【避免死锁】"><a href="#【避免死锁】" class="headerlink" title="【避免死锁】"></a>【避免死锁】</h1><p>预防死锁的限制条件都太强，造成一定程度上的应用不变，因此在实际应用中，常采用避免死锁的方法，避免死锁只施加较弱的限制条件，但获得了令人满意的系统性能。</p>
-<h2 id="1-系统安全状态"><a href="#1-系统安全状态" class="headerlink" title="1.系统安全状态"></a>1.系统安全状态</h2><p>在避免死锁方法中，将系统的状态分为安全状态与不安全状态，当系统处于安全状态时，可避免发生死锁，当系统处于不安全状态时，可能进入死锁：</p>
+<p>在避免死锁方法中，将系统的状态分为安全状态与不安全状态，当系统处于安全状态时，可避免发生死锁，当系统处于不安全状态时，可能进入死锁：</p>
 <ul>
 <li><strong>安全状态</strong>：系统能按某种进程顺序为每个进程分配所需资源，直至满足每个进程对资源的最大需求，并能顺利完成</li>
 <li><strong>不安全状态</strong>：系统无法找到一种使多个进程能够顺利分配资源执行完的<strong>安全序列</strong></li>
@@ -463,25 +463,25 @@
 <p>这时进程 $P_3$ 就有足够的资源，从而使得每个进程都能顺利完成</p>
 <p>每次资源分配时，都应按照上述实例来分析资源分配图，看该次操作后是否有安全序列，若不存在安全序列，说明该操作会使系统进入不安全状态。</p>
 <p>需要注意的是，<strong>只要使系统始终处于安全状态，便可避免发生死锁，但不是所有的不安全状态都是死锁状态</strong>。</p>
-<h2 id="2-银行家算法"><a href="#2-银行家算法" class="headerlink" title="2.银行家算法"></a>2.银行家算法</h2><p>银行家算法是最有代表性的避免死锁的算法，其有 Dijkstra 提出，该算法因能用于银行系统现金贷款的发放而得名。</p>
-<h3 id="1）基本思路"><a href="#1）基本思路" class="headerlink" title="1）基本思路"></a>1）基本思路</h3><p>银行家算法随时对系统中的所有资源信息进行统计，包括：每种资源的数量、已分配给各进程的数量</p>
+<h1 id="【银行家算法】"><a href="#【银行家算法】" class="headerlink" title="【银行家算法】"></a>【银行家算法】</h1><p>银行家算法是最有代表性的避免死锁的算法，其有 Dijkstra 提出，该算法因能用于银行系统现金贷款的发放而得名。</p>
+<h2 id="基本思路"><a href="#基本思路" class="headerlink" title="基本思路"></a>基本思路</h2><p>银行家算法随时对系统中的所有资源信息进行统计，包括：每种资源的数量、已分配给各进程的数量</p>
 <p>每当进程提出某种资源请求时，会判断该请求分配后是否安全，如果安全才分配。</p>
 <p>对每个资源请求的处理都要保证系统始终从一个安全状态到另一个安全状态。</p>
-<h3 id="2）数据结构"><a href="#2）数据结构" class="headerlink" title="2）数据结构"></a>2）数据结构</h3><p><strong>进程请求资源的数量 $Request_i$</strong>：代表进程 $P_i$ 请求资源的数量，例如：$Request_i[j]=k$ 表示进程 $P_i$ 需要 k 个 j 类型的资源</p>
+<h2 id="数据结构"><a href="#数据结构" class="headerlink" title="数据结构"></a>数据结构</h2><p><strong>进程请求资源的数量 $Request_i$</strong>：代表进程 $P_i$ 请求资源的数量，例如：$Request_i[j]=k$ 表示进程 $P_i$ 需要 k 个 j 类型的资源</p>
 <p><strong>各类可利用资源的数量 Available[m]</strong>：包含 m 个元素，每个元素代表一类可利用的资源数目，初始值是系统配置的该类资源的全部数目，值随着资源的分配与回收而动态改变，例如：$Available[j]=k$ 表示系统中 j 类资源现有可用资源 k 个</p>
 <p><strong>每个进程对每类资源的最大需求 Max[n][m]</strong>：系统 n 个进程中每个进程分别对 m 类资源的最大需求，初始值是进程的需要资源数，例如：$Max[i][j]=k$ 表示进程 i 需要 j 类资源的最大数目为 k</p>
 <p><strong>每个进程对每类资源的已分配矩阵 Allocation[n][m]</strong>：系统 n 个进程中每个进程分别对 m 类资源已获得的资源数量，例如：$Allocation[i][j]=k$ 表示进程 i 当前已获得 j 类资源的数量为 k</p>
 <p><strong>每个进程对每类资源的需求矩阵 Need[n][m]</strong>：系统 n 个进程中每个进程分别对 m 类资源还需要的资源数量，例如：$Need[i][j]=k$ 表示进程 i 还需要 j 类资源 k 个</p>
 <p>需要注意的是，上述的三个矩阵存在关系：</p>
 <p>$$Max[i][j]=Allocation[i][j]+Need[i][j]$$</p>
-<h3 id="3）算法流程"><a href="#3）算法流程" class="headerlink" title="3）算法流程"></a>3）算法流程</h3><p>当进程 $P_i$ 发出资源请求后，系统按下述步骤进行检查：</p>
+<h2 id="算法流程"><a href="#算法流程" class="headerlink" title="算法流程"></a>算法流程</h2><p>当进程 $P_i$ 发出资源请求后，系统按下述步骤进行检查：</p>
 <ol>
 <li>若 $Request_i[j] \leq Need[i][j]$，转向步骤 2，否则认为出错，即所需资源数已超过宣布的最大值</li>
 <li>若 $Request_i[j] \leq Available[j]$，转向步骤 3，否则表示尚无所需资源，进程 $P_i$ 需等待</li>
 <li>系统试探着将资源分配给进行 $P_i$，并修改下面数据结构中的值：<br>   $Available[j] = Available[j]-Request_i[j]$<br>   $Allocation[i][j]=Allocation[i][j]+Request_i[j]$<br>   $Need[i][j]=Need[i][j]-Request_i[j]$</li>
 <li>系统执行<strong>安全性算法</strong>，检查此次资源分配后系统是否处于安全状态，若安全，则将资源正式分配给进程 $P_i$，以完成本次分配，否则，本次的试探分配作废，恢复原来的分配状态，让进程 $P_i$ 等待</li>
 </ol>
-<h3 id="4）安全性算法"><a href="#4）安全性算法" class="headerlink" title="4）安全性算法"></a>4）安全性算法</h3><p>① 首先设置两个向量：</p>
+<h2 id="安全性算法"><a href="#安全性算法" class="headerlink" title="安全性算法"></a>安全性算法</h2><p>① 首先设置两个向量：</p>
 <ul>
 <li><strong>工作向量 Work[m]</strong>：表示系统可提供给进程继续运行所需的各类资源数目，其初始值与 Available[m] 向量相同，例如：$Work[j]=k$ 表示系统中 j 类资源可提供给进程 k 个</li>
 <li><strong>标记向量 Finish[n]</strong>：表示系统是否有足够的资源分配给进程，初始值为 false，当有足够资源分配给进程 $P_i$ 时，有 $Finish[i]=true$</li>
@@ -786,7 +786,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【预防死锁】"><span class="nav-number">1.</span> <span class="nav-text">【预防死锁】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【避免死锁】"><span class="nav-number">2.</span> <span class="nav-text">【避免死锁】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-系统安全状态"><span class="nav-number">2.1.</span> <span class="nav-text">1.系统安全状态</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-银行家算法"><span class="nav-number">2.2.</span> <span class="nav-text">2.银行家算法</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1）基本思路"><span class="nav-number">2.2.1.</span> <span class="nav-text">1）基本思路</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2）数据结构"><span class="nav-number">2.2.2.</span> <span class="nav-text">2）数据结构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3）算法流程"><span class="nav-number">2.2.3.</span> <span class="nav-text">3）算法流程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4）安全性算法"><span class="nav-number">2.2.4.</span> <span class="nav-text">4）安全性算法</span></a></li></ol></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【预防死锁】"><span class="nav-number">1.</span> <span class="nav-text">【预防死锁】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【避免死锁】"><span class="nav-number">2.</span> <span class="nav-text">【避免死锁】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【银行家算法】"><span class="nav-number">3.</span> <span class="nav-text">【银行家算法】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#基本思路"><span class="nav-number">3.1.</span> <span class="nav-text">基本思路</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#数据结构"><span class="nav-number">3.2.</span> <span class="nav-text">数据结构</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#算法流程"><span class="nav-number">3.3.</span> <span class="nav-text">算法流程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#安全性算法"><span class="nav-number">3.4.</span> <span class="nav-text">安全性算法</span></a></li></ol></li></ol></div>
             
 
           </div>

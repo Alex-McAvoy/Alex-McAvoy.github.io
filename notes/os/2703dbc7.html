@@ -92,7 +92,7 @@
 <meta property="og:description" content="【概述】磁盘存储器是计算机系统中最重要的存储设备，其中存放了大量的文件。 对文件的读写操作都涉及到对磁盘的访问，磁盘 I/O 速度高低和磁盘系统可靠性，直接影响到系统的性能。 磁盘设备包含一到多个物理盘片，每个盘片分一或两个存储面，每个盘面上有若干磁道，每条磁道由从逻辑上划分了若干扇区(盘块)。 为方便处理，每条磁道存储容量相同，由于磁盘密度规定为单位英寸上存储的位数，因此内层磁道的密度较外层磁道">
 <meta property="og:locale" content="zh-Hans">
 <meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/os/39-1.png">
-<meta property="og:updated_time" content="2020-02-02T08:25:59.037Z">
+<meta property="og:updated_time" content="2020-02-20T16:24:52.944Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="操作系统——IO系统——磁盘存储器的性能与调度">
 <meta name="twitter:description" content="【概述】磁盘存储器是计算机系统中最重要的存储设备，其中存放了大量的文件。 对文件的读写操作都涉及到对磁盘的访问，磁盘 I/O 速度高低和磁盘系统可靠性，直接影响到系统的性能。 磁盘设备包含一到多个物理盘片，每个盘片分一或两个存储面，每个盘面上有若干磁道，每条磁道由从逻辑上划分了若干扇区(盘块)。 为方便处理，每条磁道存储容量相同，由于磁盘密度规定为单位英寸上存储的位数，因此内层磁道的密度较外层磁道">
@@ -378,16 +378,16 @@
 <p>当一次读写的字节数相当于半条磁道上的字节数时，$T_{\tau} = T_t$</p>
 <p>综上，访问时间 $T_a = T_s + \frac{1}{2r} + \frac{b}{rN}$</p>
 <h1 id="【磁盘调度算法】"><a href="#【磁盘调度算法】" class="headerlink" title="【磁盘调度算法】"></a>【磁盘调度算法】</h1><p>为减少对文件的访问时间，应采取一种最佳的磁盘调度算法，以使得各进程对磁盘的平均访问时间最小。</p>
-<h2 id="1-先来先服务"><a href="#1-先来先服务" class="headerlink" title="1.先来先服务"></a>1.先来先服务</h2><p>先来先服务（First Come First Service，FCFS）算法，是最简单的调度算法，其<strong>根据进程请求访问磁盘的先后次序进行调度</strong>。</p>
+<h2 id="先来先服务"><a href="#先来先服务" class="headerlink" title="先来先服务"></a>先来先服务</h2><p>先来先服务（First Come First Service，FCFS）算法，是最简单的调度算法，其<strong>根据进程请求访问磁盘的先后次序进行调度</strong>。</p>
 <p>该算法公平、简单，每个进程的请求都能依次得到处理，不会出现某一进程的请求长期得不到满足的情况。</p>
 <p>但此算法未对寻到进行优化，使得平均寻到时间可能较长。</p>
-<h2 id="2-最短寻道时间优先"><a href="#2-最短寻道时间优先" class="headerlink" title="2.最短寻道时间优先"></a>2.最短寻道时间优先</h2><p>最短寻道时间优先（Shortest Seek Time First，SSTF）算法，每次<strong>选择访问磁道与当前磁头所在磁道最近的进程</strong>，这样使得每次寻道时间最短，但无法保证平均寻道时间最短。</p>
+<h2 id="最短寻道时间优先"><a href="#最短寻道时间优先" class="headerlink" title="最短寻道时间优先"></a>最短寻道时间优先</h2><p>最短寻道时间优先（Shortest Seek Time First，SSTF）算法，每次<strong>选择访问磁道与当前磁头所在磁道最近的进程</strong>，这样使得每次寻道时间最短，但无法保证平均寻道时间最短。</p>
 <p>该算法对中间磁道有利，但可能会使得低优先级进程长期处于饥饿状态。</p>
-<h2 id="3-扫描算法"><a href="#3-扫描算法" class="headerlink" title="3.扫描算法"></a>3.扫描算法</h2><p>扫描（Scan）算法是在 SSTF 算法的基础上修改得来的，其可以防止低优先级进程出现饥饿现象。</p>
+<h2 id="扫描算法"><a href="#扫描算法" class="headerlink" title="扫描算法"></a>扫描算法</h2><p>扫描（Scan）算法是在 SSTF 算法的基础上修改得来的，其可以防止低优先级进程出现饥饿现象。</p>
 <p>该算法规定磁头移动方向，每次要访问的对象应在磁道之外，又是距离最近的，这样<strong>从里向外</strong>地访问，直到无更外的磁道需要访问时，才将磁臂<strong>自外向里</strong>移动。</p>
-<h2 id="4-循环扫描算法"><a href="#4-循环扫描算法" class="headerlink" title="4.循环扫描算法"></a>4.循环扫描算法</h2><p>循环扫描（Cycle Scan，CSCAN）算法，是在 SCAN 算法的基础上修改得来的。</p>
+<h2 id="循环扫描算法"><a href="#循环扫描算法" class="headerlink" title="循环扫描算法"></a>循环扫描算法</h2><p>循环扫描（Cycle Scan，CSCAN）算法，是在 SCAN 算法的基础上修改得来的。</p>
 <p>对于 SCAN 算法来说，其具有较好的寻道功能，且可以防止饥饿现象，但当磁头刚从里向外移动越过了某磁道时，恰有一进程要访问该磁道，此时进程必须等待，待磁头继续从从里向外扫描完后再返回来，才能处理该进程的要求，使得该进程的请求被大大地推迟。</p>
-<p>为减少上述的延迟，CSCAN 规定磁头单向移动，即当<strong>有里向外访问</strong>再无更外的磁道时，返回最里的磁道，<strong>再次有里向外访问</strong>。  </p>
+<p>为减少上述的延迟，CSCAN 规定磁头单向移动，即当<strong>有里向外访问</strong>再无更外的磁道时，返回最里的磁道，<strong>再次有里向外访问</strong>。</p>
 
       
     </div>
@@ -675,7 +675,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【概述】"><span class="nav-number">1.</span> <span class="nav-text">【概述】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【磁盘访问时间】"><span class="nav-number">2.</span> <span class="nav-text">【磁盘访问时间】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【磁盘调度算法】"><span class="nav-number">3.</span> <span class="nav-text">【磁盘调度算法】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-先来先服务"><span class="nav-number">3.1.</span> <span class="nav-text">1.先来先服务</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-最短寻道时间优先"><span class="nav-number">3.2.</span> <span class="nav-text">2.最短寻道时间优先</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-扫描算法"><span class="nav-number">3.3.</span> <span class="nav-text">3.扫描算法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-循环扫描算法"><span class="nav-number">3.4.</span> <span class="nav-text">4.循环扫描算法</span></a></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【概述】"><span class="nav-number">1.</span> <span class="nav-text">【概述】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【磁盘访问时间】"><span class="nav-number">2.</span> <span class="nav-text">【磁盘访问时间】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【磁盘调度算法】"><span class="nav-number">3.</span> <span class="nav-text">【磁盘调度算法】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#先来先服务"><span class="nav-number">3.1.</span> <span class="nav-text">先来先服务</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#最短寻道时间优先"><span class="nav-number">3.2.</span> <span class="nav-text">最短寻道时间优先</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#扫描算法"><span class="nav-number">3.3.</span> <span class="nav-text">扫描算法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#循环扫描算法"><span class="nav-number">3.4.</span> <span class="nav-text">循环扫描算法</span></a></li></ol></li></ol></div>
             
 
           </div>

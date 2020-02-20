@@ -83,23 +83,23 @@
 
 
 
-<meta name="description" content="【概述】用户程序要在系统中运行，必须先将其装入内存，然后再将其转变为一个可执行的程序，通常要执行以下步骤：  编译：由编译程序对用户源程序进行编译，形成若干个目标模块 链接：由链接程序将编译后形成的一组目标模块及他们所需要的库函数链接在一起，形成一个完整的装入模块 装入：由装入程序将装入模块装入内存   【地址】地址是一个十分重要的概念，在程序链接、装入的过程中，围绕着地址进行处理。 1.逻辑地址">
+<meta name="description" content="【概述】用户程序要在系统中运行，必须先将其装入内存，然后再将其转变为一个可执行的程序，通常要执行以下步骤：  编译：由编译程序对用户源程序进行编译，形成若干个目标模块 链接：由链接程序将编译后形成的一组目标模块及他们所需要的库函数链接在一起，形成一个完整的装入模块 装入：由装入程序将装入模块装入内存   【地址】地址是一个十分重要的概念，在程序链接、装入的过程中，围绕着地址进行处理。 逻辑地址逻辑">
 <meta name="keywords" content="学习笔记,操作系统">
 <meta property="og:type" content="article">
 <meta property="og:title" content="操作系统——存储器管理——程序的装入和链接">
 <meta property="og:url" content="https://alex-mcavoy.github.io/notes/os/39584625.html">
 <meta property="og:site_name" content="Alex_McAvoy">
-<meta property="og:description" content="【概述】用户程序要在系统中运行，必须先将其装入内存，然后再将其转变为一个可执行的程序，通常要执行以下步骤：  编译：由编译程序对用户源程序进行编译，形成若干个目标模块 链接：由链接程序将编译后形成的一组目标模块及他们所需要的库函数链接在一起，形成一个完整的装入模块 装入：由装入程序将装入模块装入内存   【地址】地址是一个十分重要的概念，在程序链接、装入的过程中，围绕着地址进行处理。 1.逻辑地址">
+<meta property="og:description" content="【概述】用户程序要在系统中运行，必须先将其装入内存，然后再将其转变为一个可执行的程序，通常要执行以下步骤：  编译：由编译程序对用户源程序进行编译，形成若干个目标模块 链接：由链接程序将编译后形成的一组目标模块及他们所需要的库函数链接在一起，形成一个完整的装入模块 装入：由装入程序将装入模块装入内存   【地址】地址是一个十分重要的概念，在程序链接、装入的过程中，围绕着地址进行处理。 逻辑地址逻辑">
 <meta property="og:locale" content="zh-Hans">
 <meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/os/18-1.png">
 <meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/os/18-1.png">
 <meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/os/18-2.png">
 <meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/os/18-3.png">
 <meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/os/18-4.png">
-<meta property="og:updated_time" content="2020-02-02T08:27:18.072Z">
+<meta property="og:updated_time" content="2020-02-20T16:15:41.047Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="操作系统——存储器管理——程序的装入和链接">
-<meta name="twitter:description" content="【概述】用户程序要在系统中运行，必须先将其装入内存，然后再将其转变为一个可执行的程序，通常要执行以下步骤：  编译：由编译程序对用户源程序进行编译，形成若干个目标模块 链接：由链接程序将编译后形成的一组目标模块及他们所需要的库函数链接在一起，形成一个完整的装入模块 装入：由装入程序将装入模块装入内存   【地址】地址是一个十分重要的概念，在程序链接、装入的过程中，围绕着地址进行处理。 1.逻辑地址">
+<meta name="twitter:description" content="【概述】用户程序要在系统中运行，必须先将其装入内存，然后再将其转变为一个可执行的程序，通常要执行以下步骤：  编译：由编译程序对用户源程序进行编译，形成若干个目标模块 链接：由链接程序将编译后形成的一组目标模块及他们所需要的库函数链接在一起，形成一个完整的装入模块 装入：由装入程序将装入模块装入内存   【地址】地址是一个十分重要的概念，在程序链接、装入的过程中，围绕着地址进行处理。 逻辑地址逻辑">
 <meta name="twitter:image" content="https://alex-mcavoy.github.io/images/notes/os/18-1.png">
 
 
@@ -371,15 +371,15 @@
 </ul>
 <p><img src="/images/notes/os/18-1.png" alt="load unsuccessful"></p>
 <h1 id="【地址】"><a href="#【地址】" class="headerlink" title="【地址】"></a>【地址】</h1><p>地址是一个十分重要的概念，在程序链接、装入的过程中，围绕着地址进行处理。</p>
-<h2 id="1-逻辑地址"><a href="#1-逻辑地址" class="headerlink" title="1.逻辑地址"></a>1.逻辑地址</h2><p>逻辑地址又称相对地址、虚地址，当用户的程序经过汇编或编译后形成的代码，目标代码中的指令地址即为相对地址。</p>
+<h2 id="逻辑地址"><a href="#逻辑地址" class="headerlink" title="逻辑地址"></a>逻辑地址</h2><p>逻辑地址又称相对地址、虚地址，当用户的程序经过汇编或编译后形成的代码，目标代码中的指令地址即为相对地址。</p>
 <p>一般来说，逻辑地址首地址为 0，其余指令中的地址都相对于首地址来编址，需要注意的是，不能利用逻辑地址在内存中读取信息。</p>
-<h2 id="2-物理地址"><a href="#2-物理地址" class="headerlink" title="2.物理地址"></a>2.物理地址</h2><p>物理地址又称绝对地址、实地址，内存中存储单元的地址即为实地址，其可以直接寻址被执行。</p>
-<h2 id="3-地址映射"><a href="#3-地址映射" class="headerlink" title="3.地址映射"></a>3.地址映射</h2><p>将用户程序中的逻辑地址转换为运行时机器直接寻址的内存物理地址的过程，称为地址映射。</p>
+<h2 id="物理地址"><a href="#物理地址" class="headerlink" title="物理地址"></a>物理地址</h2><p>物理地址又称绝对地址、实地址，内存中存储单元的地址即为实地址，其可以直接寻址被执行。</p>
+<h2 id="地址映射"><a href="#地址映射" class="headerlink" title="地址映射"></a>地址映射</h2><p>将用户程序中的逻辑地址转换为运行时机器直接寻址的内存物理地址的过程，称为地址映射。</p>
 <p>简单来说，地址映射，就将用户程序的第 x 字节处的指令，转换为内存的第 y 个地址上。</p>
 <h1 id="【链接】"><a href="#【链接】" class="headerlink" title="【链接】"></a>【链接】</h1><p>源程序经过编译后，可得到一组<strong>目标模块</strong>。</p>
 <p>链接程序的功能是将这组目标模块及其所需要的库函数装配成一个完整的装入模块。</p>
 <p>在对目标模块进行链接时，根据进行链接的时间不同，可分为以下三种方式：</p>
-<h2 id="1-静态链接"><a href="#1-静态链接" class="headerlink" title="1.静态链接"></a>1.静态链接</h2><p>静态链接，是指在程序运行前，将各目标模块及其所需的库函数链接成一个完整的装配模块，以后不再拆开。</p>
+<h2 id="静态链接"><a href="#静态链接" class="headerlink" title="静态链接"></a>静态链接</h2><p>静态链接，是指在程序运行前，将各目标模块及其所需的库函数链接成一个完整的装配模块，以后不再拆开。</p>
 <p><img src="/images/notes/os/18-1.png" alt="load unsuccessful"></p>
 <p>静态链接需要解决两个问题：</p>
 <ul>
@@ -387,7 +387,7 @@
 <li>变换外部调用符号</li>
 </ul>
 <p><img src="/images/notes/os/18-2.png" alt="在这里插入图片描述"></p>
-<h2 id="2-装入时动态链接"><a href="#2-装入时动态链接" class="headerlink" title="2.装入时动态链接"></a>2.装入时动态链接</h2><p>装入时动态链接，是指讲用户源程序编译后所得的一组目标模块，在装入内存时，采用<strong>边装入边链接</strong>的方式。</p>
+<h2 id="装入时动态链接"><a href="#装入时动态链接" class="headerlink" title="装入时动态链接"></a>装入时动态链接</h2><p>装入时动态链接，是指讲用户源程序编译后所得的一组目标模块，在装入内存时，采用<strong>边装入边链接</strong>的方式。</p>
 <p>简单来说，在装入一个目标模块时，若发生一个外部模块调用事件，将引起装入程序去寻找相应的外部目标模块，并将他装入内存，同时，还要修改目标模块中的相对地址。</p>
 <p>装入时动态链接具有以下优点：</p>
 <ul>
@@ -395,21 +395,21 @@
 <li><strong>便于实现对目标模块的共享</strong>：采用静态链接方式时，每个应用模块都必须含有其目标模块的拷贝，即 n 个程序就需要 n 次拷贝，但采用装入时动态链接的方式，OS 会十分容易将一个目标模块链接到几个应用模块上，从而实现多应用程序的共享。</li>
 </ul>
 <p><img src="/images/notes/os/18-3.png" alt="load unsuccessful"></p>
-<h2 id="3-运行时动态链接"><a href="#3-运行时动态链接" class="headerlink" title="3.运行时动态链接"></a>3.运行时动态链接</h2><p>在许多情况下，应用程序在运行时，每次要运行的模块可能是不相同的，但由于实现无法知道本次要运行哪些模块，因此只能将可能要运行到的所有模块链接后装入内存，这无疑是低效的。</p>
+<h2 id="运行时动态链接"><a href="#运行时动态链接" class="headerlink" title="运行时动态链接"></a>运行时动态链接</h2><p>在许多情况下，应用程序在运行时，每次要运行的模块可能是不相同的，但由于实现无法知道本次要运行哪些模块，因此只能将可能要运行到的所有模块链接后装入内存，这无疑是低效的。</p>
 <p>比较典型的例子就是错误处理时的目标模块，如果程序在运行过程中不出现错误，那么这么模块将不会用到。</p>
 <p>运行时动态链接是对上述链接方式的一种改进，其<strong>将某些模块的链接推迟到程序执行时才进行</strong>。</p>
 <p>简单来说，在程序执行过程中，当发现一个被调用模块尚未装入内存时，立即由 OS 去找到该模块，将其链接到调用者模块上，并装入内存。</p>
 <p><img src="/images/notes/os/18-4.png" alt="在这里插入图片描述"></p>
-<h1 id="【装入】"><a href="#【装入】" class="headerlink" title="【装入】"></a>【装入】</h1><h2 id="1-绝对装入方式"><a href="#1-绝对装入方式" class="headerlink" title="1.绝对装入方式"></a>1.绝对装入方式</h2><p>当计算机系统很小，且仅能运行单道程序时，完全有可能知道程序将驻留在内存的什么位置，此时可采用绝对装入方式。</p>
+<h1 id="【装入】"><a href="#【装入】" class="headerlink" title="【装入】"></a>【装入】</h1><h2 id="绝对装入方式"><a href="#绝对装入方式" class="headerlink" title="绝对装入方式"></a>绝对装入方式</h2><p>当计算机系统很小，且仅能运行单道程序时，完全有可能知道程序将驻留在内存的什么位置，此时可采用绝对装入方式。</p>
 <p>用户程序经编译后，将产生物理地址的目标代码，绝对装入程序便可按照装入模块中的地址，将程序与数据装入内存，装入模块被装入内存后，由于程序中的<strong>逻辑地址与物理地址完全相同</strong>，因此不需要对程序和数据的地址进行修改。</p>
 <p>优点：装入过程简单，不需任何地址变换，程序中的逻辑地址与实际内存物理地址完全相同。</p>
 <p>缺点：过于依赖硬件结构,，只适用早期针对硬件直接编程、单道环境。</p>
-<h2 id="2-静态可重定位装入方式"><a href="#2-静态可重定位装入方式" class="headerlink" title="2.静态可重定位装入方式"></a>2.静态可重定位装入方式</h2><p>重定位是指将目标程序中的指令和数据的逻辑地址变成内存中的物理地址的地址变换过程。</p>
+<h2 id="静态可重定位装入方式"><a href="#静态可重定位装入方式" class="headerlink" title="静态可重定位装入方式"></a>静态可重定位装入方式</h2><p>重定位是指将目标程序中的指令和数据的逻辑地址变成内存中的物理地址的地址变换过程。</p>
 <p>静态可重定位装入方式是<strong>将逻辑地址经过重定位后，转为物理地址，再进行装入</strong>。</p>
 <p>地址映射在程序执行之前进行，重定位后物理地址不再改变，可由专门设计的重定位装配程序完成，在装入时根据所定位的内存地址去修改每个逻辑地址，添加相应偏移量，重定位为物理地址</p>
 <p>优点：不需硬件支持，可以装入有限的多道程序</p>
 <p>缺点：软件装入一次完成，一个程序通常需要占用连续的内存空间，程序装入内存后不能移动，也不易实现共享。</p>
-<h2 id="3-动态运行时装入方式"><a href="#3-动态运行时装入方式" class="headerlink" title="3.动态运行时装入方式"></a>3.动态运行时装入方式</h2><p>在实际运行中，往往会需要程序在内存中的各位置移动，即经常需要将逻辑地址重定位到不同的物理地址上。</p>
+<h2 id="动态运行时装入方式"><a href="#动态运行时装入方式" class="headerlink" title="动态运行时装入方式"></a>动态运行时装入方式</h2><p>在实际运行中，往往会需要程序在内存中的各位置移动，即经常需要将逻辑地址重定位到不同的物理地址上。</p>
 <p>这种运行时移动程序要求地址变换要快速，实现时一般依靠<strong>重定位寄存器</strong>来变换地址。</p>
 <p>动态运行时装入，可多次重定位到不同位置，即可以不将装入模块中的逻辑地址立刻转换为物理地址，而是把这种地址转换推迟到程序真正要执行时才进行。</p>
 
@@ -699,7 +699,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【概述】"><span class="nav-number">1.</span> <span class="nav-text">【概述】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【地址】"><span class="nav-number">2.</span> <span class="nav-text">【地址】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-逻辑地址"><span class="nav-number">2.1.</span> <span class="nav-text">1.逻辑地址</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-物理地址"><span class="nav-number">2.2.</span> <span class="nav-text">2.物理地址</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-地址映射"><span class="nav-number">2.3.</span> <span class="nav-text">3.地址映射</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【链接】"><span class="nav-number">3.</span> <span class="nav-text">【链接】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-静态链接"><span class="nav-number">3.1.</span> <span class="nav-text">1.静态链接</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-装入时动态链接"><span class="nav-number">3.2.</span> <span class="nav-text">2.装入时动态链接</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-运行时动态链接"><span class="nav-number">3.3.</span> <span class="nav-text">3.运行时动态链接</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【装入】"><span class="nav-number">4.</span> <span class="nav-text">【装入】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-绝对装入方式"><span class="nav-number">4.1.</span> <span class="nav-text">1.绝对装入方式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-静态可重定位装入方式"><span class="nav-number">4.2.</span> <span class="nav-text">2.静态可重定位装入方式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-动态运行时装入方式"><span class="nav-number">4.3.</span> <span class="nav-text">3.动态运行时装入方式</span></a></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【概述】"><span class="nav-number">1.</span> <span class="nav-text">【概述】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【地址】"><span class="nav-number">2.</span> <span class="nav-text">【地址】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#逻辑地址"><span class="nav-number">2.1.</span> <span class="nav-text">逻辑地址</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#物理地址"><span class="nav-number">2.2.</span> <span class="nav-text">物理地址</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#地址映射"><span class="nav-number">2.3.</span> <span class="nav-text">地址映射</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【链接】"><span class="nav-number">3.</span> <span class="nav-text">【链接】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#静态链接"><span class="nav-number">3.1.</span> <span class="nav-text">静态链接</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#装入时动态链接"><span class="nav-number">3.2.</span> <span class="nav-text">装入时动态链接</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#运行时动态链接"><span class="nav-number">3.3.</span> <span class="nav-text">运行时动态链接</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【装入】"><span class="nav-number">4.</span> <span class="nav-text">【装入】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#绝对装入方式"><span class="nav-number">4.1.</span> <span class="nav-text">绝对装入方式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#静态可重定位装入方式"><span class="nav-number">4.2.</span> <span class="nav-text">静态可重定位装入方式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#动态运行时装入方式"><span class="nav-number">4.3.</span> <span class="nav-text">动态运行时装入方式</span></a></li></ol></li></ol></div>
             
 
           </div>

@@ -94,7 +94,7 @@
 <meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/os/21-1.png">
 <meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/os/21-2.png">
 <meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/os/21-3.png">
-<meta property="og:updated_time" content="2020-02-02T08:27:09.011Z">
+<meta property="og:updated_time" content="2020-02-20T16:16:21.568Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="操作系统——连续存储方式——动态分区分配">
 <meta name="twitter:description" content="【概述】动态分区分配又称可变分区分配，其是根据进程的实际需要，动态地为之分配内存空间。 动态分区分配并发进程数没有固定的限制，因此不会产生内碎片，但由于动态分区分配算法的设计，存在外碎片，即分区之间无法利用的空间 【数据结构】在实现动态分区分配时，要配置相应的数据结构，来描述空闲分区和已分配分区的情况，为分配提供依据，常用的数据结构有以下两种：  空闲分区表：记录每个空闲分区的情况，每个空闲分区占">
@@ -369,36 +369,36 @@
 <li><strong>空闲分区链表</strong>：为实现对空闲分区的分配、链接，在每个分区的起始位置设置一些用于控制分区分配的信息，以及用于链接各分区所用的前向指针、后向指针，通过前、后向链接指针，将所有的空闲分区链成一双向链表</li>
 </ul>
 <p><img src="/images/notes/os/21-1.png" alt="load unsuccessful"></p>
-<h1 id="【动态分区分配算法】"><a href="#【动态分区分配算法】" class="headerlink" title="【动态分区分配算法】"></a>【动态分区分配算法】</h1><h2 id="1-首次适应算法"><a href="#1-首次适应算法" class="headerlink" title="1.首次适应算法"></a>1.首次适应算法</h2><p>首次适应（First Fit，FF）算法是一种<strong>顺序搜索算法</strong>，其要求<strong>空闲分区链以地址递增的次序链接</strong>。</p>
+<h1 id="【动态分区分配算法】"><a href="#【动态分区分配算法】" class="headerlink" title="【动态分区分配算法】"></a>【动态分区分配算法】</h1><h2 id="首次适应算法"><a href="#首次适应算法" class="headerlink" title="首次适应算法"></a>首次适应算法</h2><p>首次适应（First Fit，FF）算法是一种<strong>顺序搜索算法</strong>，其要求<strong>空闲分区链以地址递增的次序链接</strong>。</p>
 <p>在分配内存时，首先从链首开始顺序查找直至找到一个大小能满足要求的空闲分区，然后从该分区中划出一块作业要求大小的内存空间分配给请求者，余下的空闲分区大小改变仍留在空闲链中。</p>
 <p>若从链表到链尾都检索不到满足要求的分区，则分配失败。</p>
 <p>该算法优先利用内存低址部分，而保留了高地址部分的大空闲区，但随着低址部分不断划分，会<strong>产生外碎片</strong>，而且每次查找从低址部分开始，会逐渐增加查找开销。</p>
-<h2 id="2-循环首次适应算法"><a href="#2-循环首次适应算法" class="headerlink" title="2.循环首次适应算法"></a>2.循环首次适应算法</h2><p>循环首次适应（Next Fit，NF）算法是一种<strong>顺序搜索算法</strong>，其要求<strong>空闲分区链以地址递增的次序链接</strong>。</p>
+<h2 id="循环首次适应算法"><a href="#循环首次适应算法" class="headerlink" title="循环首次适应算法"></a>循环首次适应算法</h2><p>循环首次适应（Next Fit，NF）算法是一种<strong>顺序搜索算法</strong>，其要求<strong>空闲分区链以地址递增的次序链接</strong>。</p>
 <p>在分配内存时，不再是每次从链首开始寻找，而是从上次找到的空闲分区的下一个空闲分区开始查找，直到找到一个能满足要求的空闲分区。</p>
 <p>为实现该算法，应设置一<strong>起始查找指针</strong>，用于指示下一次起始查找的空闲分区，同时采用<strong>循环查找方式</strong>。</p>
 <p>该算法能使内存中的空闲分区分布更加均匀，从而减少了查找空闲分区时的开销，但这样会缺乏大的空闲分区。</p>
-<h2 id="3-最佳适应算法"><a href="#3-最佳适应算法" class="headerlink" title="3.最佳适应算法"></a>3.最佳适应算法</h2><p>最佳适应（Best Fit，BF）算法是一种<strong>顺序搜索算法</strong>，其要求<strong>空闲分区按容量从小到大排成空闲分区表</strong>。</p>
+<h2 id="最佳适应算法"><a href="#最佳适应算法" class="headerlink" title="最佳适应算法"></a>最佳适应算法</h2><p>最佳适应（Best Fit，BF）算法是一种<strong>顺序搜索算法</strong>，其要求<strong>空闲分区按容量从小到大排成空闲分区表</strong>。</p>
 <p>在分配内存时，从分区表的头部开始检索，找到的第一个满足大小的空闲分区就进行分配。</p>
 <p>宏观上来看最佳适应算法是最佳的，但每次找到最合适大小的分区割下的空闲区也总是最小的，这就会<strong>产生外碎片</strong></p>
-<h2 id="4-最坏适应算法"><a href="#4-最坏适应算法" class="headerlink" title="4.最坏适应算法"></a>4.最坏适应算法</h2><p>最坏适应（Worst Fit，WF）算法是一种<strong>顺序搜索算法</strong>，其要求<strong>空闲分区按容量从大到小排成空闲分区表</strong>。</p>
+<h2 id="最坏适应算法"><a href="#最坏适应算法" class="headerlink" title="最坏适应算法"></a>最坏适应算法</h2><p>最坏适应（Worst Fit，WF）算法是一种<strong>顺序搜索算法</strong>，其要求<strong>空闲分区按容量从大到小排成空闲分区表</strong>。</p>
 <p>在分配内存时，从分区表的头部开始检索，总是选择一个最大的空闲区，从中割一部分存储空间给作业使用。</p>
 <p>该算法与最佳适应算法正好相反，其能使得剩下的空闲区不至于太小，产生外碎片的可能性也就变小，对中、小型作业较为有利，但会出现缺乏较大的空闲分区的情况。</p>
-<h2 id="5-快速适应算法"><a href="#5-快速适应算法" class="headerlink" title="5.快速适应算法"></a>5.快速适应算法</h2><p>快速适应算法（Quick Fit，QF）算法是一种<strong>基于索引搜索算法</strong>，其是将<strong>空闲分区根据容量大小进行分类</strong>，对于每一类具有相同容量的空闲分区，单独设立一个空闲分区链表。</p>
+<h2 id="快速适应算法"><a href="#快速适应算法" class="headerlink" title="快速适应算法"></a>快速适应算法</h2><p>快速适应算法（Quick Fit，QF）算法是一种<strong>基于索引搜索算法</strong>，其是将<strong>空闲分区根据容量大小进行分类</strong>，对于每一类具有相同容量的空闲分区，单独设立一个空闲分区链表。</p>
 <p>同时，在内存中设立一张管理索引表，其中的每一个索引表项都对应了一种空闲分区类型，并记录了该类型空闲分区链表表头的指针。</p>
 <p>在分配内存时，首先根据进程长度从索引表中去寻找容纳它的最小空闲分区链表，然后从链表中取下第一块进行分配。</p>
 <p>该算法在进行空闲分区分配时，不会对任何分区产生分割，因此能保留大分区，也不会产生内存碎片，但分区归还时算法较为复杂，系统开销较大</p>
-<h2 id="6-伙伴系统"><a href="#6-伙伴系统" class="headerlink" title="6.伙伴系统"></a>6.伙伴系统</h2><p>伙伴系统规定，无论是已分配分区还是空闲分区，其大小均为 2 的 k 次幂，且 $1 \leq k \leq m$，通常 $2^m$ 为可分配内存的大小，即最大分区大小。</p>
+<h2 id="伙伴系统"><a href="#伙伴系统" class="headerlink" title="伙伴系统"></a>伙伴系统</h2><p>伙伴系统规定，无论是已分配分区还是空闲分区，其大小均为 2 的 k 次幂，且 $1 \leq k \leq m$，通常 $2^m$ 为可分配内存的大小，即最大分区大小。</p>
 <p>在系统运行过程中，内存被不断划分，形成若干不连续的空闲分区，对每一类具有相同大小的空闲分区设置一双向链表，会有 k 个链表，链表中的分区大小都是 $2^m$</p>
 <p>当进程申请 n 个大小的空间时，计算一个 i 值，使得 $2^{i-1} &lt; n \leq 2^i$，然后在空闲分区大小为 $2^i$ 的空闲分区链表中查找。</p>
 <p>若找到，则将空闲分区分配给进程，否则表明长度为 $2^i$ 的空闲分区已耗尽，则在分区大小 $2^{i+1}$ 的空闲分区链表中查找。</p>
 <p>若存在 $2^{i+1}$ 的一个空闲分区，则将该空闲分区化为两个大小相等的 $2^i$ 的空闲分区，这两个分区称为一对<strong>伙伴</strong>，其中一个用于分配，另一个加入分区大小为 $2^i$ 的空闲分区链表中。</p>
 <p>若 $2^{i+1}$ 大小的空闲分区不存在，则去寻找 $2^{i+2}$ 大小的空闲分区，若找到则将其进行两次分割，若找不到继续寻找 $2^{i+3}$ 大小的空闲分区，以此类推。</p>
-<h2 id="7-哈希算法"><a href="#7-哈希算法" class="headerlink" title="7.哈希算法"></a>7.哈希算法</h2><p>哈希算法，是利用哈希快速查找的优点，以及空闲分区在可利用空闲区表中的分布规律，建立哈希函数，构造一张<strong>以空闲分区大小为关键字的哈希表</strong>，该表的每一表项记录了一个对应的空闲分区链表表头指针。</p>
+<h2 id="哈希算法"><a href="#哈希算法" class="headerlink" title="哈希算法"></a>哈希算法</h2><p>哈希算法，是利用哈希快速查找的优点，以及空闲分区在可利用空闲区表中的分布规律，建立哈希函数，构造一张<strong>以空闲分区大小为关键字的哈希表</strong>，该表的每一表项记录了一个对应的空闲分区链表表头指针。</p>
 <p>当进行空闲分区分配时，根据所需空闲分区大小，通过哈希函数计算，即得到在哈希表中的位置，从中得到相应的空闲分区链表，实现最佳分配策略。</p>
-<h1 id="【分区分配操作】"><a href="#【分区分配操作】" class="headerlink" title="【分区分配操作】"></a>【分区分配操作】</h1><h2 id="1-分配内存"><a href="#1-分配内存" class="headerlink" title="1.分配内存"></a>1.分配内存</h2><p>利用某种分配算法，从空闲分区表中找到所需大小的分区。</p>
+<h1 id="【分区分配操作】"><a href="#【分区分配操作】" class="headerlink" title="【分区分配操作】"></a>【分区分配操作】</h1><h2 id="分配内存"><a href="#分配内存" class="headerlink" title="分配内存"></a>分配内存</h2><p>利用某种分配算法，从空闲分区表中找到所需大小的分区。</p>
 <p>设请求分区大小为 u.size，表中每个分区大小为 m.size，则流程如下：</p>
 <p><img src="/images/notes/os/21-2.png" alt="load unsuccessful"></p>
-<h2 id="2-回收内存"><a href="#2-回收内存" class="headerlink" title="2.回收内存"></a>2.回收内存</h2><p>当进程运行完毕释放内存时，系统根据回收区的首地址，从空闲分区表中找到相应的插入点，此时可能会出现以下四种情况：</p>
+<h2 id="回收内存"><a href="#回收内存" class="headerlink" title="回收内存"></a>回收内存</h2><p>当进程运行完毕释放内存时，系统根据回收区的首地址，从空闲分区表中找到相应的插入点，此时可能会出现以下四种情况：</p>
 <ul>
 <li>回收分区<strong>上邻接</strong>一个空闲分区：合并后首地址为空闲分区首地址，大小为二者之和</li>
 <li>回收分区<strong>下邻接</strong>一个空闲分区：合并后首地址为回收分区首地址，大小为二者之和</li>
@@ -693,7 +693,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【概述】"><span class="nav-number">1.</span> <span class="nav-text">【概述】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【数据结构】"><span class="nav-number">2.</span> <span class="nav-text">【数据结构】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【动态分区分配算法】"><span class="nav-number">3.</span> <span class="nav-text">【动态分区分配算法】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-首次适应算法"><span class="nav-number">3.1.</span> <span class="nav-text">1.首次适应算法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-循环首次适应算法"><span class="nav-number">3.2.</span> <span class="nav-text">2.循环首次适应算法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-最佳适应算法"><span class="nav-number">3.3.</span> <span class="nav-text">3.最佳适应算法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-最坏适应算法"><span class="nav-number">3.4.</span> <span class="nav-text">4.最坏适应算法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-快速适应算法"><span class="nav-number">3.5.</span> <span class="nav-text">5.快速适应算法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-伙伴系统"><span class="nav-number">3.6.</span> <span class="nav-text">6.伙伴系统</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#7-哈希算法"><span class="nav-number">3.7.</span> <span class="nav-text">7.哈希算法</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【分区分配操作】"><span class="nav-number">4.</span> <span class="nav-text">【分区分配操作】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-分配内存"><span class="nav-number">4.1.</span> <span class="nav-text">1.分配内存</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-回收内存"><span class="nav-number">4.2.</span> <span class="nav-text">2.回收内存</span></a></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【概述】"><span class="nav-number">1.</span> <span class="nav-text">【概述】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【数据结构】"><span class="nav-number">2.</span> <span class="nav-text">【数据结构】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【动态分区分配算法】"><span class="nav-number">3.</span> <span class="nav-text">【动态分区分配算法】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#首次适应算法"><span class="nav-number">3.1.</span> <span class="nav-text">首次适应算法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#循环首次适应算法"><span class="nav-number">3.2.</span> <span class="nav-text">循环首次适应算法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#最佳适应算法"><span class="nav-number">3.3.</span> <span class="nav-text">最佳适应算法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#最坏适应算法"><span class="nav-number">3.4.</span> <span class="nav-text">最坏适应算法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#快速适应算法"><span class="nav-number">3.5.</span> <span class="nav-text">快速适应算法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#伙伴系统"><span class="nav-number">3.6.</span> <span class="nav-text">伙伴系统</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#哈希算法"><span class="nav-number">3.7.</span> <span class="nav-text">哈希算法</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【分区分配操作】"><span class="nav-number">4.</span> <span class="nav-text">【分区分配操作】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#分配内存"><span class="nav-number">4.1.</span> <span class="nav-text">分配内存</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#回收内存"><span class="nav-number">4.2.</span> <span class="nav-text">回收内存</span></a></li></ol></li></ol></div>
             
 
           </div>

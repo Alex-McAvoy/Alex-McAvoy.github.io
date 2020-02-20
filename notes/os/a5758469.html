@@ -92,7 +92,7 @@
 <meta property="og:description" content="【单一连续分配】在单道环境下，存储器的管理方式是将内存分为系统区和用户区两部分：  系统区：放在内存的低址部分，仅提供给 OS 使用 用户区：除系统区外的全部内存空间，提供给用户使用  值得注意的是，在单一联系分配方式中，用户区一般仅装有一道用户程序，即同一时刻，只有一个程序占用内存用户区的全部空间 单一连续分配方式是最简单的一种存储管理方式，只能用于单用户、单任务的 OS 中，其优点是便于管理，">
 <meta property="og:locale" content="zh-Hans">
 <meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/os/20-1.png">
-<meta property="og:updated_time" content="2020-02-02T08:27:12.331Z">
+<meta property="og:updated_time" content="2020-02-20T16:16:00.288Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="操作系统——连续存储方式——单一连续分配与固定分区分配">
 <meta name="twitter:description" content="【单一连续分配】在单道环境下，存储器的管理方式是将内存分为系统区和用户区两部分：  系统区：放在内存的低址部分，仅提供给 OS 使用 用户区：除系统区外的全部内存空间，提供给用户使用  值得注意的是，在单一联系分配方式中，用户区一般仅装有一道用户程序，即同一时刻，只有一个程序占用内存用户区的全部空间 单一连续分配方式是最简单的一种存储管理方式，只能用于单用户、单任务的 OS 中，其优点是便于管理，">
@@ -368,19 +368,19 @@
 <p>单一连续分配方式是最简单的一种存储管理方式，只能用于单用户、单任务的 OS 中，其优点是便于管理，缺点是对要求内存很少的程序造成了极大的内存浪费。</p>
 <h1 id="【固定分区分配】"><a href="#【固定分区分配】" class="headerlink" title="【固定分区分配】"></a>【固定分区分配】</h1><p>为能在内存中装入多道程序，且这些程序之间又不会发生干扰，于是<strong>将整个用户空间划分为若干固定大小的区域，在每个区域中只装入一道作业</strong>，这就形成了最早的、可运行多道程序的分区式存储管理方式。</p>
 <p>固定分区分配方式的分区总数是固定的，这就限制了并发执行的程序数目，此外，由于内存分配是固定的，可能会出现<strong>内碎片</strong>而造成浪费，即一个分区内分配程序后存在剩余空间。</p>
-<h2 id="1-分区大小的划分"><a href="#1-分区大小的划分" class="headerlink" title="1.分区大小的划分"></a>1.分区大小的划分</h2><p>在固定分区分配中，将内存的用户空间划分为若干固定大小的分区有以下两种方式：</p>
+<h2 id="分区大小的划分"><a href="#分区大小的划分" class="headerlink" title="分区大小的划分"></a>分区大小的划分</h2><p>在固定分区分配中，将内存的用户空间划分为若干固定大小的分区有以下两种方式：</p>
 <ul>
 <li><strong>分区大小相等</strong>：适用于多个相同程序的并发执行，缺乏灵活性</li>
 <li><strong>分区大小不等</strong>：划分为多个小分区、适量的中等分区、少量的大分区，根据程序的大小，分配当前空闲的、大小适当的分区</li>
 </ul>
-<h2 id="2-数据结构"><a href="#2-数据结构" class="headerlink" title="2.数据结构"></a>2.数据结构</h2><p>进行分区划分时，需要建立一个记录相关信息的分区表，表项值随着内存的分配和释放而动态进行改变，表项有：</p>
+<h2 id="数据结构"><a href="#数据结构" class="headerlink" title="数据结构"></a>数据结构</h2><p>进行分区划分时，需要建立一个记录相关信息的分区表，表项值随着内存的分配和释放而动态进行改变，表项有：</p>
 <ul>
 <li><strong>起始位置</strong>：分区地址的开始位置</li>
 <li><strong>分区大小</strong>：分区的大小</li>
 <li><strong>分区状态</strong>：是否已分配</li>
 </ul>
 <p><img src="/images/notes/os/20-1.png" alt="load unsuccessful"></p>
-<h2 id="3-分配过程"><a href="#3-分配过程" class="headerlink" title="3.分配过程"></a>3.分配过程</h2><p>为简化分配过程，常将分区表根据分区状态分为两张表：<strong>空闲分区表、占用分区表</strong>。</p>
+<h2 id="分配过程"><a href="#分配过程" class="headerlink" title="分配过程"></a>分配过程</h2><p>为简化分配过程，常将分区表根据分区状态分为两张表：<strong>空闲分区表、占用分区表</strong>。</p>
 <p>在进行分配时，<strong>检索空闲分区表</strong>，寻找一个满足要求且尚未分配的分区，并分配给请求程序，若未找到大小足够的分区，则拒绝为该用户程序分配内存。</p>
 <p>空闲分区表可能按照不同的分配算法而采用不同方式对表象进行排序。</p>
 
@@ -670,7 +670,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【单一连续分配】"><span class="nav-number">1.</span> <span class="nav-text">【单一连续分配】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【固定分区分配】"><span class="nav-number">2.</span> <span class="nav-text">【固定分区分配】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-分区大小的划分"><span class="nav-number">2.1.</span> <span class="nav-text">1.分区大小的划分</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-数据结构"><span class="nav-number">2.2.</span> <span class="nav-text">2.数据结构</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-分配过程"><span class="nav-number">2.3.</span> <span class="nav-text">3.分配过程</span></a></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【单一连续分配】"><span class="nav-number">1.</span> <span class="nav-text">【单一连续分配】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【固定分区分配】"><span class="nav-number">2.</span> <span class="nav-text">【固定分区分配】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#分区大小的划分"><span class="nav-number">2.1.</span> <span class="nav-text">分区大小的划分</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#数据结构"><span class="nav-number">2.2.</span> <span class="nav-text">数据结构</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#分配过程"><span class="nav-number">2.3.</span> <span class="nav-text">分配过程</span></a></li></ol></li></ol></div>
             
 
           </div>

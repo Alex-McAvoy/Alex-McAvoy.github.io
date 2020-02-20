@@ -95,7 +95,7 @@
 <meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/os/35-2.png">
 <meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/os/35-3.png">
 <meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/os/35-4.png">
-<meta property="og:updated_time" content="2020-02-02T08:26:14.821Z">
+<meta property="og:updated_time" content="2020-02-20T16:23:18.847Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="操作系统——IO系统——设备驱动程序">
 <meta name="twitter:description" content="【概述】设备驱动程序是 I/O 系统的高层与设备控制器之间的通信程序，其主要任务是将上层软件发来的抽象 I/O 要求转化为具体要求，发送给设备控制器，启动设备去执行。同时，它也将由设备控制器发来的信号，传送给上层软件。 为实现 I/O 系统高层与设备控制器间的通信，设备驱动程序应具有以下功能：  接收由与上层设备无关的软件发来的命令和参数，并将命令中的抽象要求，转换为与设备相关的低层操作序列 检查">
@@ -393,7 +393,7 @@
 <li>传送必要参数</li>
 <li>启动 I/O 设备</li>
 </ol>
-<h1 id="【对-I-O-设备的控制方式】"><a href="#【对-I-O-设备的控制方式】" class="headerlink" title="【对 I/O 设备的控制方式】"></a>【对 I/O 设备的控制方式】</h1><h2 id="1-轮询的可编程-I-O-方式"><a href="#1-轮询的可编程-I-O-方式" class="headerlink" title="1.轮询的可编程 I/O 方式"></a>1.轮询的可编程 I/O 方式</h2><p>轮询的可编程 I/O 方式，又称忙-等待方式或程序 I/O 方式，其处理过程如下：</p>
+<h1 id="【对-I-O-设备的控制方式】"><a href="#【对-I-O-设备的控制方式】" class="headerlink" title="【对 I/O 设备的控制方式】"></a>【对 I/O 设备的控制方式】</h1><h2 id="轮询的可编程-I-O-方式"><a href="#轮询的可编程-I-O-方式" class="headerlink" title="轮询的可编程 I/O 方式"></a>轮询的可编程 I/O 方式</h2><p>轮询的可编程 I/O 方式，又称忙-等待方式或程序 I/O 方式，其处理过程如下：</p>
 <ol>
 <li>处理机向控制器发送一条 I/O 指令，启动输入设备输入数据，同时将状态寄存器置 busy=1</li>
 <li>不断循环测试 busy 标志：busy=1 时，表示输入机尚未输完一个字，CPU 继续对该标志测试；busy=0 时，表示数据已输入控制器数据寄存器中</li>
@@ -401,7 +401,7 @@
 </ol>
 <p>在程序 I/O 方式中，CPU 的绝大部分时间都处于等待 I/O 设备完成数据 I/O 的循环测试中，造成了对 CPU 的极大浪费，这是因为在 CPU 中无中断机构，使 I/O 设备无法向 CPU 报告其已完成了一个字符的输入。</p>
 <p><img src="/images/notes/os/35-1.png" alt="load unsuccessful"></p>
-<h2 id="2-使用中断的可编程-I-O-方式"><a href="#2-使用中断的可编程-I-O-方式" class="headerlink" title="2.使用中断的可编程 I/O 方式"></a>2.使用中断的可编程 I/O 方式</h2><p>该方式利用设备控制器来完成对 I/O 设备的控制，其过程如下：</p>
+<h2 id="使用中断的可编程-I-O-方式"><a href="#使用中断的可编程-I-O-方式" class="headerlink" title="使用中断的可编程 I/O 方式"></a>使用中断的可编程 I/O 方式</h2><p>该方式利用设备控制器来完成对 I/O 设备的控制，其过程如下：</p>
 <ol>
 <li>CPU 向相应的设备控制器发送一条 I/O 命令</li>
 <li>立即返回继续执行原来的任务</li>
@@ -410,7 +410,7 @@
 <p>在 I/O 设备输入每个数据的过程中，可使 CPU 与 I/O 设备并行工作，仅当输完一个数据时，才需要 CPU 花费极短的时间去做中断处理。</p>
 <p>这样使得 CPU 和 I/O 都处于忙碌状态，从而提高了整个系统的资源利用率与吞吐量。</p>
 <p><img src="/images/notes/os/35-2.png" alt="load unsuccessful"></p>
-<h2 id="3-直接存储器访问方式"><a href="#3-直接存储器访问方式" class="headerlink" title="3.直接存储器访问方式"></a>3.直接存储器访问方式</h2><p>该方式借助 DMA 控制器完成对 I/O 设备的控制，因此又称为 DMA 方式。</p>
+<h2 id="直接存储器访问方式"><a href="#直接存储器访问方式" class="headerlink" title="直接存储器访问方式"></a>直接存储器访问方式</h2><p>该方式借助 DMA 控制器完成对 I/O 设备的控制，因此又称为 DMA 方式。</p>
 <p>该方式的数据传输基本单位是<strong>数据块</strong>，所传送的数据从设备直接送入内存，或直接从内存进设备，整块数据的传送是在 DMA 控制器的控制下完成的，不需要 CPU 操作，即 CPU 干预进一步减少，仅在传送一个或多个数据块的开始和结束时，才需 CPU 干预。</p>
 <p>DMA 控制器由三部分组成：主机与 DMA 控制器的接口、DMA 控制器与块设备的接口、I/O 控制逻辑</p>
 <p>为实现主机与控制器之间块数据的直接交换，必须设置如下四类寄存器：</p>
@@ -434,7 +434,7 @@
 </li>
 </ol>
 <p><img src="/images/notes/os/35-4.png" alt="load unsuccessful"></p>
-<h2 id="4-I-O-通道控制方式"><a href="#4-I-O-通道控制方式" class="headerlink" title="4.I/O 通道控制方式"></a>4.I/O 通道控制方式</h2><p>DMA适用于读一个连续的数据块，若一次读多个数据块到内存的不同区域，那么须由 CPU 分别发送多条 I/O 指令、进行多次 DMA 中断处理。</p>
+<h2 id="I-O-通道控制方式"><a href="#I-O-通道控制方式" class="headerlink" title="I/O 通道控制方式"></a>I/O 通道控制方式</h2><p>DMA适用于读一个连续的数据块，若一次读多个数据块到内存的不同区域，那么须由 CPU 分别发送多条 I/O 指令、进行多次 DMA 中断处理。</p>
 <p>为进一步减少 CPU 的干预，引入了通道方式，CPU 只需发一条 I/O 指令，给出通道程序的首地址及要访问设备即可，这使得 CPU、通道和 I/O 设备三者并行操作，提高整个系统的资源利用率。</p>
 <p>通道，是一种<strong>通过执行通道程序管理 I/O 操作的控制器</strong>，它使 CPU、内存与 I/O 操作之间达到更高的并行程度，由于它的任务是管理实现 I/O 操作，提供了一种传送通道，所以将这种部件称作通道。</p>
 <p>通道，通过执行<strong>通道程序</strong>，与设备控制器共同实现对 I/O 设备的控制，简单来说，CPU 指令经过设备驱动程序解读后，送往通道程序，通过通道程序的执行来完成通道操作，通道程序由一系列<strong>通道指令</strong>构成。</p>
@@ -733,7 +733,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【概述】"><span class="nav-number">1.</span> <span class="nav-text">【概述】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【设备驱动程序特点】"><span class="nav-number">2.</span> <span class="nav-text">【设备驱动程序特点】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【设备处理方式】"><span class="nav-number">3.</span> <span class="nav-text">【设备处理方式】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【设备驱动程序处理过程】"><span class="nav-number">4.</span> <span class="nav-text">【设备驱动程序处理过程】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【对-I-O-设备的控制方式】"><span class="nav-number">5.</span> <span class="nav-text">【对 I/O 设备的控制方式】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-轮询的可编程-I-O-方式"><span class="nav-number">5.1.</span> <span class="nav-text">1.轮询的可编程 I/O 方式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-使用中断的可编程-I-O-方式"><span class="nav-number">5.2.</span> <span class="nav-text">2.使用中断的可编程 I/O 方式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-直接存储器访问方式"><span class="nav-number">5.3.</span> <span class="nav-text">3.直接存储器访问方式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-I-O-通道控制方式"><span class="nav-number">5.4.</span> <span class="nav-text">4.I/O 通道控制方式</span></a></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【概述】"><span class="nav-number">1.</span> <span class="nav-text">【概述】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【设备驱动程序特点】"><span class="nav-number">2.</span> <span class="nav-text">【设备驱动程序特点】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【设备处理方式】"><span class="nav-number">3.</span> <span class="nav-text">【设备处理方式】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【设备驱动程序处理过程】"><span class="nav-number">4.</span> <span class="nav-text">【设备驱动程序处理过程】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【对-I-O-设备的控制方式】"><span class="nav-number">5.</span> <span class="nav-text">【对 I/O 设备的控制方式】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#轮询的可编程-I-O-方式"><span class="nav-number">5.1.</span> <span class="nav-text">轮询的可编程 I/O 方式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#使用中断的可编程-I-O-方式"><span class="nav-number">5.2.</span> <span class="nav-text">使用中断的可编程 I/O 方式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#直接存储器访问方式"><span class="nav-number">5.3.</span> <span class="nav-text">直接存储器访问方式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#I-O-通道控制方式"><span class="nav-number">5.4.</span> <span class="nav-text">I/O 通道控制方式</span></a></li></ol></li></ol></div>
             
 
           </div>
