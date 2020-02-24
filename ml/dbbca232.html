@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+  
+  
+  <link rel="stylesheet" media="all" href="/lib/Han/dist/han.min.css?v=3.3">
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="机器学习,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="【欠拟合与过拟合】概念泛化（Generalize），是指一个假设模型应用到新样本的能力。 偏差（Bias），又称为表观误差，是指个别测定值与测定的平均值之差，在机器学习中，偏差描述的是根据样本拟合出的模型输出结果与真实结果的差距。 方差（Variance），在概率论中是衡量随机变量或一组数据时离散程度的度量，在机器学习中，方差描述的是样本上训练出的模型在测试集上的表现。 拟合（Fitting），是">
+<meta name="keywords" content="机器学习">
+<meta property="og:type" content="article">
+<meta property="og:title" content="机器学习——正则化">
+<meta property="og:url" content="https://alex-mcavoy.github.io/ml/dbbca232.html">
+<meta property="og:site_name" content="Alex_McAvoy">
+<meta property="og:description" content="【欠拟合与过拟合】概念泛化（Generalize），是指一个假设模型应用到新样本的能力。 偏差（Bias），又称为表观误差，是指个别测定值与测定的平均值之差，在机器学习中，偏差描述的是根据样本拟合出的模型输出结果与真实结果的差距。 方差（Variance），在概率论中是衡量随机变量或一组数据时离散程度的度量，在机器学习中，方差描述的是样本上训练出的模型在测试集上的表现。 拟合（Fitting），是">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/08-1.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/08-2.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/08-3.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/08-4.png">
+<meta property="og:updated_time" content="2020-02-24T13:15:26.203Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="机器学习——正则化">
+<meta name="twitter:description" content="【欠拟合与过拟合】概念泛化（Generalize），是指一个假设模型应用到新样本的能力。 偏差（Bias），又称为表观误差，是指个别测定值与测定的平均值之差，在机器学习中，偏差描述的是根据样本拟合出的模型输出结果与真实结果的差距。 方差（Variance），在概率论中是衡量随机变量或一组数据时离散程度的度量，在机器学习中，方差描述的是样本上训练出的模型在测试集上的表现。 拟合（Fitting），是">
+<meta name="twitter:image" content="https://alex-mcavoy.github.io/images/ml/08-1.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":true,"scrollpercent":true,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://alex-mcavoy.github.io/ml/dbbca232.html">
+
+
+
+
+
+  <title>机器学习——正则化 | Alex_McAvoy</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Alex_McAvoy</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/ml/dbbca232.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Alex_McAvoy">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/assets/img/head.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Alex_McAvoy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">机器学习——正则化</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-01-22T19:48:00+08:00">
+                2020-01-22
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/ml/" itemprop="url" rel="index">
+                    <span itemprop="name">机器学习</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body han-init-context" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="【欠拟合与过拟合】"><a href="#【欠拟合与过拟合】" class="headerlink" title="【欠拟合与过拟合】"></a>【欠拟合与过拟合】</h1><h2 id="概念"><a href="#概念" class="headerlink" title="概念"></a>概念</h2><p><strong>泛化（Generalize）</strong>，是指一个假设模型应用到新样本的能力。</p>
+<p><strong>偏差（Bias）</strong>，又称为表观误差，是指个别测定值与测定的平均值之差，在机器学习中，偏差描述的是根据样本拟合出的模型输出结果与真实结果的差距。</p>
+<p><strong>方差（Variance）</strong>，在概率论中是衡量随机变量或一组数据时离散程度的度量，在机器学习中，方差描述的是样本上训练出的模型在测试集上的表现。</p>
+<p><strong>拟合（Fitting）</strong>，是指模型能否很好地描述样本，具有比较好的泛化能力。</p>
+<p><strong>欠拟合（Under Fitting）</strong>，是指样本不够或<strong>模型具有高偏差</strong>，不够精确，测试样本的特性没有学习到，不具备泛化性，拿到测试集后无法准确地去预测。</p>
+<p><strong>过拟合（Over Fitting）</strong>，是指<strong>模型具有高方差</strong>，太过贴近于训练数据的特征，此时代价函数可能十分接近于 0，模型过于庞大或变量过多，使得模型过度依赖于训练数据，在训练集上近乎完美地预测了所有的数据，但无法处理未知问题，在测试集上表现平平。</p>
+<p>回归问题中的三种拟合状态：</p>
+<p><img src="/images/ml/08-1.png" alt="load unsuccessful"></p>
+<p>分类问题中的三种拟合状态：</p>
+<p><img src="/images/ml/08-2.png" alt="load unsuccessful"></p>
+<h2 id="解决方法"><a href="#解决方法" class="headerlink" title="解决方法"></a>解决方法</h2><p>过拟合问题与欠拟合问题是所有机器学习算法都要考虑的问题。</p>
+<p>对于欠拟合问题来说，其比较容易克服，常见解决方法有：</p>
+<ul>
+<li>增加新的特征值，加入特征组合、高次特征等，以增大假设空间</li>
+<li>添加多项式特征，例如：线性回归模型的多项方程</li>
+<li>使用非线性模型，例如：决策树、SVM 等模型</li>
+<li>减少正则化参数，正则化的目的是用来防止过拟合的，但当模型出现欠拟合时，需要减少正则化参数</li>
+</ul>
+<p>而对于过拟合问题来说，常见的解决方法有：</p>
+<ul>
+<li>适当的减少特征值，人工检查特征变量来决定特征变量的去留</li>
+<li>使用模型选择算法，自动选择特征变量的去留</li>
+<li>加入正则化参数，保留所有的特征变量，但减少量级或减少 $\theta$ 参数的大小</li>
+</ul>
+<h1 id="【正则化】"><a href="#【正则化】" class="headerlink" title="【正则化】"></a>【正则化】</h1><h2 id="引入"><a href="#引入" class="headerlink" title="引入"></a>引入</h2><p>正则化是为了解决过拟合问题的一种方法。</p>
+<p>举例来说，我们有一组数据，我们利用高阶多项式进行拟合，假设函数为 $h_{\theta}(x) = \theta_0 + \theta_1 x + \theta_2 x^2 + \theta_3 x^3 + \theta_4 x^4$ 时，会得到如下一个十分曲折的图像：</p>
+<img width="250" src="/images/ml/08-3.png">
+
+<p>很明显，出现了过拟合的情况，虽然我们可以人为的去除一些特征项，但若想保留所有特征的高阶项，可以按照如下方法来进行优化。</p>
+<p>由于我们的目标是最小化代价函数 $J(\theta)=\frac{1}{2n}\sum_{i=1}^n(h_{\theta}(x^{(i)})-y^{(i)})^2$，而要使得这个函数尽可能小，就要使得 $\theta_3,\theta_4$ 参数尽可能的小，因此我们可以在其前加一个惩罚项，即加一个较大的数，使得参数值尽可能的小，例如：$J(\theta)=\frac{1}{2n}\sum_{i=1}^n(h_{\theta}(x^{(i)})-y^{(i)})^2+1000\theta_3^2 + 1000\theta_4^2$</p>
+<p>这样一来，由于 $\theta_3,\theta_4$ 参数前有了一个较大的系数，使得函数整体比较大，如果我们要使代价函数整体尽可能的小，那么可以预见到的是 $\theta_3,\theta_4$ 参数会很小，接近于零，如同直接去掉了 $\theta_3x^3,\theta_4x^4$ 这两项。</p>
+<p>那么，假设函数相当于一个二次函数： $h_{\theta}(x) = \theta_0 + \theta_1 x + \theta_2 x^2$，最后拟合出来的数据实际上与一个二次函数相差无几，只是加上了两个很小的、接近于 0 的项 $\theta_3x^3,\theta_4x^4$ </p>
+<img width="250" src="/images/ml/08-4.png">
+
+<p>上述的这个过程，就是<strong>正则化的思想，即：为所有的 $\theta$ 参数加上一个惩罚项，来尽量去简化假设模型。</strong></p>
+<h2 id="代价函数"><a href="#代价函数" class="headerlink" title="代价函数"></a>代价函数</h2><p>当特征变量 $x$ 与 $\theta$ 参数多达 $m+1$ 个时，我们并不知道该选出哪些参数来加入惩罚项从而缩小他们的值，因此在正则化过程中，我们要做的，就是对代价函数进行修改，令其缩小除 $\theta_0$ 外的 $m$ 个 $\theta$ 参数。</p>
+<p>我们以线性回归模型的代价函数为例，进行修改：</p>
+<p>$$J(\theta) = \frac{1}{2n}[\sum_{i=1}^n (h_{\theta}(x^{(i)})-y^{(i)})^2 + \lambda \sum_{j=1}^m \theta_j^2]$$</p>
+<p>可以看出，与线性回归模型原来的代价函数相比，多加了一个额外的正则化项 $\lambda \sum_{j=1}^m \theta_j^2$ 来缩小每个参数的值。</p>
+<h2 id="正则化参数"><a href="#正则化参数" class="headerlink" title="正则化参数"></a>正则化参数</h2><p>$\lambda$ 称为<strong>正则化参数</strong>，其用于控制两个不同目标间的平衡关系，一方面我们要更好地去拟合训练集，另一方面要保持参数尽可能的小，即控制 $\sum_{i=1}^n (h_{\theta}(x^{(i)})-y^{(i)})^2$ 与 $\sum_{j=1}^m \theta_j^2$ 的取舍。</p>
+<p><strong>如果 $\lambda$ 设置的过小</strong>，那么 $\theta$ 参数的惩罚程度为起到应有的效果，仍会出现<strong>过拟合问题</strong>。</p>
+<p><strong>如果 $\lambda$ 设置的过大</strong>，那么 $\theta$ 参数的惩罚程度太大，所有的 $\theta$ 参数几乎全部等于 0，这就使得把假设函数的除去 $\theta_0$ 的项全都忽略掉了，相当于直接用 $h_{\theta}(x)=\theta_0$ 来去拟合数据，这就出现了<strong>欠拟合问题</strong>。</p>
+<p>因此，为了让正则化起到应用的效果，我们应该去选择一个合适的正则化参数 $\lambda$</p>
+<h1 id="【线性回归的正则化】"><a href="#【线性回归的正则化】" class="headerlink" title="【线性回归的正则化】"></a>【线性回归的正则化】</h1><p>对于线性回归，之前介绍了两种解决方法：一种是基于梯度下降，一种是基于正规方程，下面我们对之前的两种模型进行正则化处理。</p>
+<p>基于梯度下降的线性回归模型：</p>
+<ul>
+<li>二元线性回归：<a href="https://alex-mcavoy.github.io/ml/1bfe723c.html">点击这里</a></li>
+<li>多元线性回归：<a href="https://alex-mcavoy.github.io/ml/554feae6.html">点击这里</a></li>
+</ul>
+<p>基于正规方程的线性回归模型：<a href="https://alex-mcavoy.github.io/ml/b5d44bd1.html">点击这里</a></p>
+<h2 id="梯度下降法"><a href="#梯度下降法" class="headerlink" title="梯度下降法"></a>梯度下降法</h2><p>在没有正则化项的情况下，我们最小化代价函数的方法是将下列公式迭代直至收敛：</p>
+<p>$$\theta_j = \theta_j - \alpha\frac{1}{n}\sum_{i=1}^n  (h_{\theta}(x^{(i)})-y^{(i)}) \cdot x_j^{(i)},j = 0,1,…,m$$</p>
+<p>对于正则化线性回归，我们的惩罚对象是 $\theta_1,\theta_2,…,\theta_m$，因此，我们将代价函数的进行分离：</p>
+<p>$$\begin{matrix}\theta_j = \theta_j - \alpha\frac{1}{n}\sum_{i=1}^n  (h_{\theta}(x^{(i)})-y^{(i)}) \cdot x_j^{(i)} &amp; j=1<br>\\ \theta_j = \theta_j - \alpha\frac{1}{n}\sum_{i=1}^n  (h_{\theta}(x^{(i)})-y^{(i)}) \cdot x_j^{(i)} &amp; j = 1,…,m<br>\end{matrix}$$</p>
+<p>其中，$h_{\theta}(x) = \theta_0 + \theta_1 x_1 + \theta_2 x_2 + … + \theta_m x_m$</p>
+<p>现在，我们考虑为其加上正则化项，我们知道，在未加入正则项前，有：</p>
+<p>$$\frac{\partial}{\partial \theta_j}J(\theta)=\frac{1}{n}\sum_{i=1}^n  (h_{\theta}(x^{(i)})-y^{(i)}) \cdot x_j^{(i)}$$</p>
+<p>加入正则项后，代价函数变为：</p>
+<p>$$J(\theta) = \frac{1}{2n}[\sum_{i=1}^n (h_{\theta}(x^{(i)})-y^{(i)})^2 + \lambda \sum_{j=1}^m \theta_j^2]$$</p>
+<p>我们仍需对 $J(\theta)$ 求偏导，根据加法求导法则与幂函数求导法则，修改后的代价函数的偏导数只需在修改前的偏导数之后加上对 $\frac{\partial}{\partial \theta_j}\lambda \sum_{j=1}^m \theta_j^2$ 的结果 $2\lambda \theta_j$</p>
+<p>因此，组合后有：</p>
+<p>$$\begin{matrix}\theta_j = \theta_j - \alpha\frac{1}{n}\sum_{i=1}^n  (h_{\theta}(x^{(i)})-y^{(i)}) \cdot x_j^{(i)} &amp; j=0<br>\\ \theta_j = \theta_j - \alpha\frac{1}{n}[\sum_{i=1}^n  (h_{\theta}(x^{(i)})-y^{(i)}) \cdot x_j^{(i)} + \lambda\theta_j] &amp; j=1,…,m<br>\end{matrix}$$</p>
+<p>其中，$h_{\theta}(x) = \theta_0 + \theta_1 x_1 + \theta_2 x_2 + … + \theta_m x_m$</p>
+<p>进一步：</p>
+<p>$$\begin{matrix}\theta_j = \theta_j - \alpha\frac{1}{n}\sum_{i=1}^n  (h_{\theta}(x^{(i)})-y^{(i)}) \cdot x_j^{(i)} &amp; j=0<br>\\ \theta_j = \theta_j - \theta_j\alpha\frac{\lambda}{n}-\alpha\frac{1}{n}\sum_{i=1}^n  (h_{\theta}(x^{(i)})-y^{(i)}) \cdot x_j^{(i)} &amp; j=1,…,m<br>\end{matrix}$$</p>
+<p>其中，$h_{\theta}(x) = \theta_0 + \theta_1 x_1 + \theta_2 x_2 + … + \theta_m x_m$</p>
+<p>即：</p>
+<p>$$\begin{matrix}\theta_j = \theta_j - \alpha\frac{1}{n}\sum_{i=1}^n  (h_{\theta}(x^{(i)})-y^{(i)}) \cdot x_j^{(i)} &amp; j=0<br>\\ \theta_j = \theta_j(1 - \alpha\frac{\lambda}{n})-\alpha\frac{1}{n}\sum_{i=1}^n  (h_{\theta}(x^{(i)})-y^{(i)}) \cdot x_j^{(i)} &amp; j=1,…,m<br>\end{matrix}$$</p>
+<p>其中，$h_{\theta}(x) = \theta_0 + \theta_1 x_1 + \theta_2 x_2 + … + \theta_m x_m$</p>
+<p>具体来说，对于 $\theta_0$ 时，没有进行正则化处理，其与之前的线性回归模型情况相同，而当 $\theta_1,\theta_2,…,\theta_m$ 时，我们将式子分成前后两部分进行考虑：</p>
+<p>对于 $\theta_j(1 - \alpha\frac{\lambda}{n})$ ：由于 $(1 - \alpha\frac{\lambda}{n})$ 的值会是一个比 1 略小一点的数，因此在其乘上 $\theta$ 后，将 $\theta_j$ 向 0的进行了缩小，即 $\theta_j$ 的平方范数 $\theta_j^2$ 变小了。</p>
+<p>对于 $\alpha\frac{1}{n}\sum_{i=1}^n  (h_{\theta}(x^{(i)})-y^{(i)}) \cdot x_j^{(i)}$，这与我们没有进行正则化处理时的情况相同。</p>
+<p>简单来说，即我们每次进行梯度处理时，都将 $\theta_j$ 乘上一个比 1 略小一点的数 $(1 - \alpha\frac{\lambda}{n})$ 来将参数缩小一点，然后进行与之前一样的操作。</p>
+<h2 id="正规方程法"><a href="#正规方程法" class="headerlink" title="正规方程法"></a>正规方程法</h2><p>对于加上正则化项后的代价函数：</p>
+<p>$$J(\theta) = \frac{1}{2n}[\sum_{i=1}^n (h_{\theta}(x^{(i)})-y^{(i)})^2 + \lambda \sum_{j=1}^m \theta_j^2]$$</p>
+<p>我们首先对代价函数求偏导，有：</p>
+<p>$$\frac{\partial}{\partial \theta_j}J(\theta) =\left\{\begin{matrix}\frac{1}{n}\sum_{i=1}^n  (h_{\theta}(x^{(i)})-y^{(i)}) \cdot x_j^{(i)}<br> &amp; j=0\\<br> \frac{1}{n}[\sum_{i=1}^n  (h_{\theta}(x^{(i)})-y^{(i)}) \cdot x_j^{(i)} + \lambda\theta_j] &amp; j=1,2,…,m<br>\end{matrix}\right.$$</p>
+<p>接着，对于 $j=1,2,…,m$ 的情况进行矢量化，有：</p>
+<p>$$\frac{\partial}{\partial \theta_j}J(\theta) = X^T(X\theta - y)+\lambda\theta$$</p>
+<p>令 $\frac{\partial}{\partial \theta_j}J(\theta)=0$，有：</p>
+<p>$$\begin{matrix}X^T(X\theta-y) + \lambda\theta =0<br>\\ X^TX\theta - X^TY + \lambda\theta =0<br>\\ X^TX\theta + \lambda \cdot I_m \theta =X^TY<br>\\ (X^TX + \lambda \cdot I_m) \theta = X^TY<br>\\ (X^TX+\lambda \cdot I_m)^{-1} (X^TX+\lambda \cdot I_m)\theta = (X^TX+\lambda \cdot I_m)^{-1} X^TY<br>\\ \theta = (X^TX+\lambda \cdot I_m)^{-1} X^TY<br>\end{matrix}$$</p>
+<p>再考虑 $j=0$ 的情况，将其加入 $\theta$，即有：</p>
+<p>$$\theta = (X^TX+\lambda \cdot \begin{bmatrix}<br>0 &amp; 0\\<br>0 &amp; I_n<br>\end{bmatrix})^{-1} X^TY$$</p>
+<p>其中，$I_m$ 是 $m$ 阶单位矩阵，即：$$\begin{bmatrix}<br>1 &amp; … &amp; 0 \\<br>\vdots  &amp; 1 &amp; \vdots \\<br>0 &amp; …&amp; 1<br>\end{bmatrix}$$</p>
+<h1 id="【Logistic回归的正则化】"><a href="#【Logistic回归的正则化】" class="headerlink" title="【Logistic回归的正则化】"></a>【Logistic回归的正则化】</h1><p>对于 Logistic 回归，其代价函数为：</p>
+<p>$$J(\theta) = -\frac{1}{n}\sum_{i=1}^n[y^{(i)}log(h_{\theta}(x^{(i)})) + (1-y^{(i)})log(1-h_{\theta}(x^{(i)}))]$$</p>
+<p>利用正则化项对代价函数进行修改，有：</p>
+<p>$$J(\theta) = -[\frac{1}{n}\sum_{i=1}^ny^{(i)}log(h_{\theta}(x^{(i)})) + (1-y^{(i)})log(1-h_{\theta}(x^{(i)}))+\frac{\lambda}{2n}\sum_{j=1}{m}\theta_j^2]$$</p>
+<p>与正则化的线性回归模型推导过程类似，最终我们能获得加入正则项后的公式：</p>
+<p>$$\begin{matrix}\theta_j = \theta_j - \alpha\frac{1}{n}\sum_{i=1}^n  (h_{\theta}(x^{(i)})-y^{(i)}) \cdot x_j^{(i)} &amp; j=0<br>\\ \theta_j = \theta_j - \alpha[\frac{1}{n}\sum_{i=1}^n  (h_{\theta}(x^{(i)})-y^{(i)}) \cdot x_j^{(i)}+\frac{\lambda}{n}\theta_j] &amp; j = 1,…,m<br>\end{matrix}$$</p>
+<p>其中，$h_{\theta}(x)=\frac{1}{1+e^{-\theta^Tx}}$</p>
+<p>进行化简，即可得到类似正则化线性回归模型的形式，即：</p>
+<p>$$\begin{matrix}\theta_j = \theta_j - \alpha\frac{1}{n}\sum_{i=1}^n  (h_{\theta}(x^{(i)})-y^{(i)}) \cdot x_j^{(i)} &amp; j=0<br>\\ \theta_j = \theta_j(1-\alpha\frac{\lambda}{n})  - \alpha\frac{1}{n}\sum_{i=1}^n  (h_{\theta}(x^{(i)})-y^{(i)}) \cdot x_j^{(i)} &amp; j = 1,…,m<br>\end{matrix}$$</p>
+<p>其中，$h_{\theta}(x)=\frac{1}{1+e^{-\theta^Tx}}$</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>感谢您对我的支持，让我继续努力分析有用地点技术与知识点！</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="/assets/img/wechatpay.jpg" alt="Alex_McAvoy 微信支付">
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="/assets/img/alipay.jpg" alt="Alex_McAvoy 支付宝">
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/ml/" rel="tag"># 机器学习</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/ml/129a3efa.html" rel="next" title="机器学习——Logistic回归">
+                <i class="fa fa-chevron-left"></i> 机器学习——Logistic回归
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/ml/dae268f.html" rel="prev" title="机器学习——激活函数">
+                机器学习——激活函数 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/assets/img/head.jpg" alt="Alex_McAvoy">
+            
+              <p class="site-author-name" itemprop="name">Alex_McAvoy</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">73</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">9</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">8</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/Alex-McAvoy" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="https://blog.csdn.net/u011815404" target="_blank" title="CSDN">
+                      
+                        <i class="fa fa-fw fa-copyright"></i>CSDN</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+            <div class="cc-license motion-element" itemprop="license">
+              <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" class="cc-opacity" target="_blank">
+                <img src="/images/cc-by-nc-sa.svg" alt="Creative Commons">
+              </a>
+            </div>
+          
+
+          
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-link"></i>
+                Links
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/sdz20172133" title="神仙队友" target="_blank">神仙队友</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://www.bycore.net/" title="凉了的某饼同学" target="_blank">凉了的某饼同学</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/wentong_Xu" title="小黑贱胖子" target="_blank">小黑贱胖子</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/sdau_fangshifeng" title="一个头很酷的家伙" target="_blank">一个头很酷的家伙</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://www.yuheng.tech/" title="咸于" target="_blank">咸于</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/lanshan1111" title="肥硕硕" target="_blank">肥硕硕</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/sdauguanweihong" title="管少" target="_blank">管少</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/qq_41661919" title="俊杰" target="_blank">俊杰</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/qq_40859951" title="峰哥" target="_blank">峰哥</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/LSD20164388" title="狗冬" target="_blank">狗冬</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/qq_37748451" title="胖亚亚" target="_blank">胖亚亚</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/qq_37868325" title="妍大佬" target="_blank">妍大佬</a>
+                  </li>
+                
+              </ul>
+            </div>
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【欠拟合与过拟合】"><span class="nav-number">1.</span> <span class="nav-text">【欠拟合与过拟合】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#概念"><span class="nav-number">1.1.</span> <span class="nav-text">概念</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#解决方法"><span class="nav-number">1.2.</span> <span class="nav-text">解决方法</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【正则化】"><span class="nav-number">2.</span> <span class="nav-text">【正则化】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#引入"><span class="nav-number">2.1.</span> <span class="nav-text">引入</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#代价函数"><span class="nav-number">2.2.</span> <span class="nav-text">代价函数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#正则化参数"><span class="nav-number">2.3.</span> <span class="nav-text">正则化参数</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【线性回归的正则化】"><span class="nav-number">3.</span> <span class="nav-text">【线性回归的正则化】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#梯度下降法"><span class="nav-number">3.1.</span> <span class="nav-text">梯度下降法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#正规方程法"><span class="nav-number">3.2.</span> <span class="nav-text">正规方程法</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【Logistic回归的正则化】"><span class="nav-number">4.</span> <span class="nav-text">【Logistic回归的正则化】</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+        <div class="back-to-top">
+          <i class="fa fa-arrow-up"></i>
+          
+            <span id="scrollpercent"><span>0</span>%</span>
+          
+        </div>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 &mdash; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Alex_McAvoy</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdn.bootcss.com/mathjax/2.7.1/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  
+
+
+  
+
+  
+
+  
+</body>
+</html>
