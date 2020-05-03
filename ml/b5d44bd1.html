@@ -91,7 +91,7 @@
 <meta property="og:site_name" content="Alex_McAvoy">
 <meta property="og:description" content="【概述】对于线性回归这个特定的模型，正规方程法是一种比梯度下降法更快的替代算法。 梯度下降法是经过多次迭代来使代价函数收敛到全局最小值或局部最小值，而正规方程法是一种求 $\theta$ 参数的解析解法，可以一次性求解 $\theta$ 的最优值。 【原理】我们知道，如果想要最小化一个二次函数 $f(x)=ax^2+bx+c$，其中一种方法是对这个二次函数进行求导，然后令其导数 $f’(x)=0$">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2020-02-26T08:00:35.227Z">
+<meta property="og:updated_time" content="2020-04-23T03:15:17.444Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="机器学习——正规方程法">
 <meta name="twitter:description" content="【概述】对于线性回归这个特定的模型，正规方程法是一种比梯度下降法更快的替代算法。 梯度下降法是经过多次迭代来使代价函数收敛到全局最小值或局部最小值，而正规方程法是一种求 $\theta$ 参数的解析解法，可以一次性求解 $\theta$ 的最优值。 【原理】我们知道，如果想要最小化一个二次函数 $f(x)=ax^2+bx+c$，其中一种方法是对这个二次函数进行求导，然后令其导数 $f’(x)=0$">
@@ -354,86 +354,114 @@
 <p>而这样要遍历所有的参数求其偏导数，不仅耗时长而且计算太繁琐，下面我们利用矩阵论的知识来简化这个过程，即<strong>正规方程</strong>。</p>
 <h1 id="【正规方程的推导过程】"><a href="#【正规方程的推导过程】" class="headerlink" title="【正规方程的推导过程】"></a>【正规方程的推导过程】</h1><p>对于多元线性回归模型，我们假设有 $n$ 个训练样本，每个样本有 $m$ 个特征，用 $x_j{(i)}$ 来表示第 $i$ 个样本的第 $j$ 个特征，同时对每个样本增加一个特征值 $x_0^{(i)}=1$</p>
 <p>那么，样本集为：</p>
-<p>$$X=\begin{bmatrix}<br>x_0^{(1)} &amp; \dots &amp; x_m^{(1)}\\<br>\vdots &amp; \ddots &amp; \vdots \\<br>x_0^{(n)} &amp; \dots &amp;x_m^{(n)}<br>\end{bmatrix}<br>$$</p>
-<p>特征参数为：$\theta = [\theta_0,\theta_1,…,\theta_m ]^T$</p>
+<script type="math/tex; mode=display">X=\begin{bmatrix}
+x_0^{(1)} & \dots & x_m^{(1)}\\ 
+\vdots & \ddots & \vdots \\ 
+x_0^{(n)} & \dots &x_m^{(n)} 
+\end{bmatrix}</script><p>特征参数为：$\theta = [\theta_0,\theta_1,…,\theta_m ]^T$</p>
 <p>输出变量为：$Y=[y^{(1)},y^{(2)},…,y^{(n)}]^T$</p>
 <p>那么代价函数为：</p>
-<p>$$\begin{align*}J(\theta)<br> &amp;= \frac{1}{2n}\sum_n^{i=1}(h_{\theta}(x^{(i)})-y^{(i)})^2\\<br> &amp;= \frac{1}{2n}(X\theta-Y)^T(X\theta-Y)\\<br> &amp;= \frac{1}{2n}(Y^TY-Y^TX\theta-\theta^TX^TY+\theta^TX^TX\theta)<br>\end{align*}$$</p>
-<hidden id="anchor2">
+<script type="math/tex; mode=display">\begin{align*}J(\theta)
+ &= \frac{1}{2n}\sum_n^{i=1}(h_{\theta}(x^{(i)})-y^{(i)})^2\\ 
+ &= \frac{1}{2n}(X\theta-Y)^T(X\theta-Y)\\ 
+ &= \frac{1}{2n}(Y^TY-Y^TX\theta-\theta^TX^TY+\theta^TX^TX\theta)
+\end{align*}</script><hidden id="anchor2">
 
 <p>我们对 $J(\theta)$求导：</p>
-<p>$$\begin{align*}\frac{\partial}{\partial \theta}J(\theta)<br> &amp;= \frac{\partial}{\partial \theta}(\frac{1}{2n}(Y^TY-Y^TX\theta-\theta^TX^TY+\theta^TX^TX\theta))\\<br> &amp;= \frac{1}{2n}(\frac{\partial}{\partial \theta}Y^TY-\frac{\partial}{\partial \theta}Y^TX\theta-\frac{\partial}{\partial \theta}\theta^TX^TY+\frac{\partial}{\partial \theta}\theta^TX^TX\theta)\\<br> &amp;= \frac{1}{2n}(0-X^TY-X^TY+2X^TX\theta)\\<br> &amp;= \frac{1}{2n}(-2X^TY+2X^TX\theta)<br>\end{align*}$$</p>
-<p><strong>PS：关于对 $J(\theta)$ 的第二步的每一项的求导步骤，见博文最下方：<a href="#anchor1">点击查看推导步骤</a></strong></p>
+<script type="math/tex; mode=display">\begin{align*}\frac{\partial}{\partial \theta}J(\theta)
+ &= \frac{\partial}{\partial \theta}(\frac{1}{2n}(Y^TY-Y^TX\theta-\theta^TX^TY+\theta^TX^TX\theta)) \\
+ &= \frac{1}{2n}(\frac{\partial}{\partial \theta}Y^TY-\frac{\partial}{\partial \theta}Y^TX\theta-\frac{\partial}{\partial \theta}\theta^TX^TY+\frac{\partial}{\partial \theta}\theta^TX^TX\theta)\\ 
+ &= \frac{1}{2n}(0-X^TY-X^TY+2X^TX\theta) \\
+ &= \frac{1}{2n}(-2X^TY+2X^TX\theta)
+\end{align*}</script><p><strong>PS：关于对 $J(\theta)$ 的第二步的每一项的求导步骤，见博文最下方：<a href="#anchor1">点击查看推导步骤</a></strong></p>
 <p>令 $\frac{\partial}{\partial \theta}J(\theta)=0$，即：</p>
-<p>$$\begin{matrix}\frac{1}{2n}(-2X^TY+2X^TX\theta)=0<br>\\ X^TX\theta=X^TY<br>\\ (X^TX)^{-1} \cdot X^TX\theta = (X^TX)^{-1} \cdot X^TY<br>\\ \theta=(X^TX)^{-1}X^TY<br>\end{matrix}$$</p>
-<p>因此，只要根据样本给出的特征值 $X$ 与输出 $Y$，即可计算出 $\theta$ 的最优解：$\theta=(X^TX)^{-1}X^TY$</p>
+<script type="math/tex; mode=display">\begin{matrix}\frac{1}{2n}(-2X^TY+2X^TX\theta)=0
+\\ X^TX\theta=X^TY
+\\ (X^TX)^{-1} \cdot X^TX\theta = (X^TX)^{-1} \cdot X^TY
+\\ \theta=(X^TX)^{-1}X^TY
+\end{matrix}</script><p>因此，只要根据样本给出的特征值 $X$ 与输出 $Y$，即可计算出 $\theta$ 的最优解：$\theta=(X^TX)^{-1}X^TY$</p>
 <h1 id="【与梯度下降法的对比】"><a href="#【与梯度下降法的对比】" class="headerlink" title="【与梯度下降法的对比】"></a>【与梯度下降法的对比】</h1><p>我们给出梯度下降法与正规方程法的对比：</p>
+<div class="table-container">
 <table>
 <thead>
 <tr>
-<th align="center"></th>
-<th align="center">梯度下降法</th>
-<th align="center">正规方程法</th>
+<th style="text-align:center"></th>
+<th style="text-align:center">梯度下降法</th>
+<th style="text-align:center">正规方程法</th>
 </tr>
 </thead>
-<tbody><tr>
-<td align="center">学习率</td>
-<td align="center">需要选择</td>
-<td align="center">不需要选择</td>
+<tbody>
+<tr>
+<td style="text-align:center">学习率</td>
+<td style="text-align:center">需要选择</td>
+<td style="text-align:center">不需要选择</td>
 </tr>
 <tr>
-<td align="center">计算方式</td>
-<td align="center">多次迭代</td>
-<td align="center">解析解法，一次运算得出</td>
+<td style="text-align:center">计算方式</td>
+<td style="text-align:center">多次迭代</td>
+<td style="text-align:center">解析解法，一次运算得出</td>
 </tr>
 <tr>
-<td align="center">算法复杂度</td>
-<td align="center">$O(kn^2)$</td>
-<td align="center">$O(n^3)$</td>
+<td style="text-align:center">算法复杂度</td>
+<td style="text-align:center">$O(kn^2)$</td>
+<td style="text-align:center">$O(n^3)$</td>
 </tr>
 <tr>
-<td align="center">适用情形</td>
-<td align="center">无论当特征数量 n 多大均可</td>
-<td align="center">需计算矩阵的逆，特征数量 n 较大时运算代价大 ，一般n&lt;10000时选用</td>
+<td style="text-align:center">适用情形</td>
+<td style="text-align:center">无论当特征数量 n 多大均可</td>
+<td style="text-align:center">需计算矩阵的逆，特征数量 n 较大时运算代价大 ，一般n&lt;10000时选用</td>
 </tr>
 <tr>
-<td align="center">适用算法</td>
-<td align="center">适用各种模型，线性模型、逻辑回归模型均可</td>
-<td align="center">只能用于线性模型</td>
+<td style="text-align:center">适用算法</td>
+<td style="text-align:center">适用各种模型，线性模型、逻辑回归模型均可</td>
+<td style="text-align:center">只能用于线性模型</td>
 </tr>
-</tbody></table>
+</tbody>
+</table>
+</div>
 <p>在处理多元线性回归模型时，不可否认的是，正规方程即不需要对学习率 $\alpha$ 进行选择测试，也不需要进行迭代，但当特征变量的数目极大时，该方法是不适用的。</p>
 <p>具体来说，标准方程法是一个很好的计算 $\theta$ 参数的方法，只要特征变量数小于 10000，一般都使用标准方程法。</p>
 <hidden id="anchor1">
 
 <h1 id="【详细推导】"><a href="#【详细推导】" class="headerlink" title="【详细推导】"></a>【详细推导】</h1><h2 id="所需公式"><a href="#所需公式" class="headerlink" title="所需公式"></a>所需公式</h2><p>我们对对 $J(\theta)$ 进行求导时的第二步骤进行化简，即：</p>
-<p>$$\frac{\partial}{\partial \theta}J(\theta)=\frac{1}{2n}(\frac{\partial}{\partial \theta}Y^TY-\frac{\partial}{\partial \theta}Y^TX\theta-\frac{\partial}{\partial \theta}\theta^TX^TY+\frac{\partial}{\partial \theta}\theta^TX^TX\theta)$$</p>
-<p>首先给出需要用到的矩阵求导公式：$\frac{dAB}{dB}=A^T,\frac{dB^TAB}{dB}=2AB$</p>
+<script type="math/tex; mode=display">\frac{\partial}{\partial \theta}J(\theta)=\frac{1}{2n}(\frac{\partial}{\partial \theta}Y^TY-\frac{\partial}{\partial \theta}Y^TX\theta-\frac{\partial}{\partial \theta}\theta^TX^TY+\frac{\partial}{\partial \theta}\theta^TX^TX\theta)</script><p>首先给出需要用到的矩阵求导公式：$\frac{dAB}{dB}=A^T,\frac{dB^TAB}{dB}=2AB$</p>
 <h2 id="第一项"><a href="#第一项" class="headerlink" title="第一项"></a>第一项</h2><p>对于第一项：$\frac{\partial}{\partial \theta}Y^TY$</p>
 <p>显然有：$\frac{\partial}{\partial \theta}Y^TY=0$</p>
 <h2 id="第二项"><a href="#第二项" class="headerlink" title="第二项"></a>第二项</h2><p>对于第二项：$\frac{\partial}{\partial \theta}Y^TX\theta$</p>
 <p>将 $Y^TX\theta$ 展开，有：</p>
-<p>$$Y^TX\theta=[y^{(1)},y^{(2)},…,y^{(n)}] \cdot  \begin{bmatrix}<br>x_0^{(1)} &amp; \dots &amp; x_m^{(1)}\\<br>\vdots &amp; \ddots &amp; \vdots \\<br>x_0^{(n)} &amp; \dots &amp;x_m^{(n)}<br>\end{bmatrix} \cdot [\theta_0,\theta_1,…,\theta_m ]^T$$</p>
-<p>化简得：</p>
-<p>$$\begin{align*}Y^TX\theta<br> &amp;= (x_0^{(1)}y^{(1)}+…+x_0^{(n)}y^{(n)})\theta_0\\<br> &amp;+ (x_1^{(1)}y^{(1)}+…+x_1^{(n)}y^{(n)})\theta_1\\<br> &amp;+ ……\\<br> &amp;+ (x_m^{(1)}y^{(1)}+…+x_m^{(n)}y^{(n)})\theta_m\\<br>\end{align*}$$</p>
-<p>该矩阵求导为<strong>分母布局</strong>下的<strong>标量/向量</strong>形式，故有：</p>
-<p>$$\frac{\partial}{\partial \theta}Y^TX\theta = \begin{bmatrix}\frac{\partial Y^TX\theta}{\partial \theta_0}\\ …\\ \frac{\partial Y^TX\theta}{\partial \theta_m}\end{bmatrix} = \begin{bmatrix}x_0^{(1)}y^{(1)}+…+x_0^{(n)}y^{(n)} \\ …\\x_m^{(1)}y^{(1)}+…+x_m^{(n)}y^{(n)} \end{bmatrix} = X^TY$$</p>
-<h2 id="第三项"><a href="#第三项" class="headerlink" title="第三项"></a>第三项</h2><p>对于第三项：$\frac{\partial}{\partial \theta}\theta^TX^TY$</p>
+<script type="math/tex; mode=display">Y^TX\theta=[y^{(1)},y^{(2)},...,y^{(n)}] \cdot  \begin{bmatrix}
+x_0^{(1)} & \dots & x_m^{(1)}\\ 
+\vdots & \ddots & \vdots \\ 
+x_0^{(n)} & \dots &x_m^{(n)} 
+\end{bmatrix} \cdot [\theta_0,\theta_1,...,\theta_m ]^T</script><p>化简得：</p>
+<script type="math/tex; mode=display">\begin{align*}Y^TX\theta
+ &= (x_0^{(1)}y^{(1)}+...+x_0^{(n)}y^{(n)})\theta_0\\ 
+ &+ (x_1^{(1)}y^{(1)}+...+x_1^{(n)}y^{(n)})\theta_1\\ 
+ &+ ......\\ 
+ &+ (x_m^{(1)}y^{(1)}+...+x_m^{(n)}y^{(n)})\theta_m\\ 
+\end{align*}</script><p>该矩阵求导为<strong>分母布局</strong>下的<strong>标量/向量</strong>形式，故有：</p>
+<script type="math/tex; mode=display">\frac{\partial}{\partial \theta}Y^TX\theta = \begin{bmatrix}\frac{\partial Y^TX\theta}{\partial \theta_0}\\ ...\\ \frac{\partial Y^TX\theta}{\partial \theta_m}\end{bmatrix} = \begin{bmatrix}x_0^{(1)}y^{(1)}+...+x_0^{(n)}y^{(n)} \\ ...\\x_m^{(1)}y^{(1)}+...+x_m^{(n)}y^{(n)} \end{bmatrix} = X^TY</script><h2 id="第三项"><a href="#第三项" class="headerlink" title="第三项"></a>第三项</h2><p>对于第三项：$\frac{\partial}{\partial \theta}\theta^TX^TY$</p>
 <p>将 $\theta^TX^TY$ 展开，有：</p>
-<p>$$\theta^TX^TY=[\theta_0,\theta_1,…,\theta_m ]  \cdot  \begin{bmatrix}<br>x_0^{(1)} &amp; \dots &amp; x_m^{(1)}\\<br>\vdots &amp; \ddots &amp; \vdots \\<br>x_0^{(n)} &amp; \dots &amp;x_m^{(n)}<br>\end{bmatrix}^T \cdot [y^{(1)},y^{(2)},…,y^{(n)}]^T$$</p>
-<p>化简得：</p>
-<p>$$\begin{align*}\theta^TX^TY<br> &amp;= (x_0^{(1)}\theta_0+…+x_m^{(1)}\theta_m)y^{(1)}\\<br> &amp;+ (x_0^{(2)}\theta_0+…+x_m^{(2)}\theta_m)y^{(2)}\\<br> &amp;+ ……\\<br> &amp;+ (x_0^{(n)}\theta_0+…+x_m^{(n)}\theta_m)y^{(n)}\\<br>\end{align*}$$</p>
-<p>该矩阵求导为<strong>分母布局</strong>下的<strong>标量/向量</strong>形式，故有：</p>
-<p>$$\frac{\partial}{\partial \theta}\theta^TX^TY = \begin{bmatrix}\frac{\partial \theta^TX^TY\theta}{\partial \theta_0}\\ …\\ \frac{\partial \theta^TX^TY\theta}{\partial \theta_m}\end{bmatrix} = \begin{bmatrix}x_0^{(1)}y^{(1)}+…+x_0^{(n)}y^{(n)} \\ …\\x_m^{(1)}y^{(1)}+…+x_m^{(n)}y^{(n)} \end{bmatrix} = X^TY$$</p>
-<h2 id="第四项"><a href="#第四项" class="headerlink" title="第四项"></a>第四项</h2><p>对于第四项：$\frac{\partial}{\partial \theta}\theta^TX^TX\theta$</p>
+<script type="math/tex; mode=display">\theta^TX^TY=[\theta_0,\theta_1,...,\theta_m ]  \cdot  \begin{bmatrix}
+x_0^{(1)} & \dots & x_m^{(1)}\\ 
+\vdots & \ddots & \vdots \\ 
+x_0^{(n)} & \dots &x_m^{(n)} 
+\end{bmatrix}^T \cdot [y^{(1)},y^{(2)},...,y^{(n)}]^T</script><p>化简得：</p>
+<script type="math/tex; mode=display">\begin{align*}\theta^TX^TY
+ &= (x_0^{(1)}\theta_0+...+x_m^{(1)}\theta_m)y^{(1)}\\ 
+ &+ (x_0^{(2)}\theta_0+...+x_m^{(2)}\theta_m)y^{(2)}\\ 
+ &+ ......\\\ 
+ &+ (x_0^{(n)}\theta_0+...+x_m^{(n)}\theta_m)y^{(n)}\\ 
+\end{align*}</script><p>该矩阵求导为<strong>分母布局</strong>下的<strong>标量/向量</strong>形式，故有：</p>
+<script type="math/tex; mode=display">\frac{\partial}{\partial \theta}\theta^TX^TY = \begin{bmatrix}\frac{\partial \theta^TX^TY\theta}{\partial \theta_0}\\ ...\\ \frac{\partial \theta^TX^TY\theta}{\partial \theta_m}\end{bmatrix} = \begin{bmatrix}x_0^{(1)}y^{(1)}+...+x_0^{(n)}y^{(n)} \\ ...\\x_m^{(1)}y^{(1)}+...+x_m^{(n)}y^{(n)} \end{bmatrix} = X^TY</script><h2 id="第四项"><a href="#第四项" class="headerlink" title="第四项"></a>第四项</h2><p>对于第四项：$\frac{\partial}{\partial \theta}\theta^TX^TX\theta$</p>
 <p>将 $\theta^TX^TX\theta$ 展开，有：</p>
-<p>$$\theta^TX^TX\theta = (X^TX)(\theta_0^2+\theta_1^2+…+\theta_m^2)$$</p>
-<p>其为一个标量，可看做一个常数</p>
+<script type="math/tex; mode=display">\theta^TX^TX\theta = (X^TX)(\theta_0^2+\theta_1^2+...+\theta_m^2)</script><p>其为一个标量，可看做一个常数</p>
 <p>该矩阵求导为<strong>分母布局</strong>下的<strong>标量/向量</strong>形式，故有：</p>
-<p>$$\frac{\partial}{\partial \theta}\theta^TX^TX\theta = \begin{bmatrix}\frac{\partial \theta^TX^TX\theta}{\partial \theta_0}\\ …\\ \frac{\partial \theta^TX^TX\theta}{\partial \theta_m}\end{bmatrix} = 2(X^TX)\begin{bmatrix}\theta_0 \\ …\\ \theta_m \end{bmatrix} = 2X^TX\theta$$</p>
-<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>综上，可得：</p>
-<p>$$\begin{align*}\frac{\partial}{\partial \theta}J(\theta)<br> &amp;= \frac{1}{2n}(\frac{\partial}{\partial \theta}Y^TY-\frac{\partial}{\partial \theta}Y^TX\theta-\frac{\partial}{\partial \theta}\theta^TX^TY+\frac{\partial}{\partial \theta}\theta^TX^TX\theta)\\<br> &amp;= \frac{1}{2n}(0-X^TY-X^TY+2X^TX\theta)<br>\end{align*}$$</p>
-<p><strong><a href="#anchor2">点击返回</a></strong></p>
+<script type="math/tex; mode=display">\frac{\partial}{\partial \theta}\theta^TX^TX\theta = \begin{bmatrix}\frac{\partial \theta^TX^TX\theta}{\partial \theta_0}\\ ...\\ \frac{\partial \theta^TX^TX\theta}{\partial \theta_m}\end{bmatrix} = 2(X^TX)\begin{bmatrix}\theta_0 \\ ...\\ \theta_m \end{bmatrix} = 2X^TX\theta</script><h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>综上，可得：</p>
+<script type="math/tex; mode=display">\begin{align*}\frac{\partial}{\partial \theta}J(\theta)
+ &= \frac{1}{2n}(\frac{\partial}{\partial \theta}Y^TY-\frac{\partial}{\partial \theta}Y^TX\theta-\frac{\partial}{\partial \theta}\theta^TX^TY+\frac{\partial}{\partial \theta}\theta^TX^TX\theta)\\ 
+ &= \frac{1}{2n}(0-X^TY-X^TY+2X^TX\theta)
+\end{align*}</script><p><strong><a href="#anchor2">点击返回</a></strong></p>
 </hidden></hidden>
       
     </div>
@@ -584,7 +612,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">98</span>
+                  <span class="site-state-item-count">102</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -595,7 +623,7 @@
               
               <div class="site-state-item site-state-categories">
                 <a href="/categories/index.html">
-                  <span class="site-state-item-count">11</span>
+                  <span class="site-state-item-count">12</span>
                   <span class="site-state-item-name">分类</span>
                 </a>
               </div>
@@ -606,7 +634,7 @@
               
               <div class="site-state-item site-state-tags">
                 <a href="/tags/index.html">
-                  <span class="site-state-item-count">11</span>
+                  <span class="site-state-item-count">12</span>
                   <span class="site-state-item-name">标签</span>
                 </a>
               </div>

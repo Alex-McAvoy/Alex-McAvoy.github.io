@@ -95,7 +95,7 @@
 <meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/08-2.png">
 <meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/08-3.png">
 <meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/08-4.png">
-<meta property="og:updated_time" content="2020-02-26T08:01:30.282Z">
+<meta property="og:updated_time" content="2020-04-23T03:26:36.842Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="机器学习——正则化">
 <meta name="twitter:description" content="【欠拟合与过拟合】概念泛化（Generalize），是指一个假设模型应用到新样本的能力。 偏差（Bias），又称为表观误差，是指个别测定值与测定的平均值之差，在机器学习中，偏差描述的是根据样本拟合出的模型输出结果与真实结果的差距。 方差（Variance），在概率论中是衡量随机变量或一组数据时离散程度的度量，在机器学习中，方差描述的是样本上训练出的模型在测试集上的表现。 拟合（Fitting），是">
@@ -377,19 +377,16 @@
 </ul>
 <h1 id="【正则化】"><a href="#【正则化】" class="headerlink" title="【正则化】"></a>【正则化】</h1><h2 id="引入"><a href="#引入" class="headerlink" title="引入"></a>引入</h2><p>正则化是为了解决过拟合问题的一种方法。</p>
 <p>举例来说，我们有一组数据，我们利用高阶多项式进行拟合，假设函数为 $h_{\theta}(x) = \theta_0 + \theta_1 x + \theta_2 x^2 + \theta_3 x^3 + \theta_4 x^4$ 时，会得到如下一个十分曲折的图像：</p>
-<img width="250" src="/images/ml/08-3.png">
-
+<p><img width="250" src="/images/ml/08-3.png"></p>
 <p>很明显，出现了过拟合的情况，虽然我们可以人为的去除一些特征项，但若想保留所有特征的高阶项，可以按照如下方法来进行优化。</p>
 <p>由于我们的目标是最小化代价函数 $J(\theta)=\frac{1}{2n}\sum_{i=1}^n(h_{\theta}(x^{(i)})-y^{(i)})^2$，而要使得这个函数尽可能小，就要使得 $\theta_3,\theta_4$ 参数尽可能的小，因此我们可以在其前加一个惩罚项，即加一个较大的数，使得参数值尽可能的小，例如：$J(\theta)=\frac{1}{2n}\sum_{i=1}^n(h_{\theta}(x^{(i)})-y^{(i)})^2+1000\theta_3^2 + 1000\theta_4^2$</p>
 <p>这样一来，由于 $\theta_3,\theta_4$ 参数前有了一个较大的系数，使得函数整体比较大，如果我们要使代价函数整体尽可能的小，那么可以预见到的是 $\theta_3,\theta_4$ 参数会很小，接近于零，如同直接去掉了 $\theta_3x^3,\theta_4x^4$ 这两项。</p>
 <p>那么，假设函数相当于一个二次函数： $h_{\theta}(x) = \theta_0 + \theta_1 x + \theta_2 x^2$，最后拟合出来的数据实际上与一个二次函数相差无几，只是加上了两个很小的、接近于 0 的项 $\theta_3x^3,\theta_4x^4$ </p>
-<img width="250" src="/images/ml/08-4.png">
-
+<p><img width="250" src="/images/ml/08-4.png"></p>
 <p>上述的这个过程，就是<strong>正则化的思想，即：为所有的 $\theta$ 参数加上一个惩罚项，来尽量去简化假设模型。</strong></p>
 <h2 id="代价函数"><a href="#代价函数" class="headerlink" title="代价函数"></a>代价函数</h2><p>当特征变量 $x$ 与 $\theta$ 参数多达 $m+1$ 个时，我们并不知道该选出哪些参数来加入惩罚项从而缩小他们的值，因此在正则化过程中，我们要做的，就是对代价函数进行修改，令其缩小除 $\theta_0$ 外的 $m$ 个 $\theta$ 参数。</p>
 <p>我们以线性回归模型的代价函数为例，进行修改：</p>
-<p>$$J(\theta) = \frac{1}{2n}[\sum_{i=1}^n (h_{\theta}(x^{(i)})-y^{(i)})^2 + \lambda \sum_{j=1}^m \theta_j^2]$$</p>
-<p>可以看出，与线性回归模型原来的代价函数相比，多加了一个额外的正则化项 $\lambda \sum_{j=1}^m \theta_j^2$ 来缩小每个参数的值。</p>
+<script type="math/tex; mode=display">J(\theta) = \frac{1}{2n}[\sum_{i=1}^n (h_{\theta}(x^{(i)})-y^{(i)})^2 + \lambda \sum_{j=1}^m \theta_j^2]</script><p>可以看出，与线性回归模型原来的代价函数相比，多加了一个额外的正则化项 $\lambda \sum_{j=1}^m \theta_j^2$ 来缩小每个参数的值。</p>
 <h2 id="正则化参数"><a href="#正则化参数" class="headerlink" title="正则化参数"></a>正则化参数</h2><p>$\lambda$ 称为<strong>正则化参数</strong>，其用于控制两个不同目标间的平衡关系，一方面我们要更好地去拟合训练集，另一方面要保持参数尽可能的小，即控制 $\sum_{i=1}^n (h_{\theta}(x^{(i)})-y^{(i)})^2$ 与 $\sum_{j=1}^m \theta_j^2$ 的取舍。</p>
 <p><strong>如果 $\lambda$ 设置的过小</strong>，那么 $\theta$ 参数的惩罚程度为起到应有的效果，仍会出现<strong>过拟合问题</strong>。</p>
 <p><strong>如果 $\lambda$ 设置的过大</strong>，那么 $\theta$ 参数的惩罚程度太大，所有的 $\theta$ 参数几乎全部等于 0，这就使得把假设函数的除去 $\theta_0$ 的项全都忽略掉了，相当于直接用 $h_{\theta}(x)=\theta_0$ 来去拟合数据，这就出现了<strong>欠拟合问题</strong>。</p>
@@ -402,49 +399,61 @@
 </ul>
 <p>基于正规方程的线性回归模型：<a href="https://alex-mcavoy.github.io/ml/b5d44bd1.html">点击这里</a></p>
 <h2 id="梯度下降法"><a href="#梯度下降法" class="headerlink" title="梯度下降法"></a>梯度下降法</h2><p>在没有正则化项的情况下，我们最小化代价函数的方法是将下列公式迭代直至收敛：</p>
-<p>$$\theta_j = \theta_j - \alpha\frac{1}{n}\sum_{i=1}^n  (h_{\theta}(x^{(i)})-y^{(i)}) \cdot x_j^{(i)},j = 0,1,…,m$$</p>
-<p>对于正则化线性回归，我们的惩罚对象是 $\theta_1,\theta_2,…,\theta_m$，因此，我们将代价函数的进行分离：</p>
-<p>$$\begin{matrix}\theta_j = \theta_j - \alpha\frac{1}{n}\sum_{i=1}^n  (h_{\theta}(x^{(i)})-y^{(i)}) \cdot x_j^{(i)} &amp; j=1<br>\\ \theta_j = \theta_j - \alpha\frac{1}{n}\sum_{i=1}^n  (h_{\theta}(x^{(i)})-y^{(i)}) \cdot x_j^{(i)} &amp; j = 1,…,m<br>\end{matrix}$$</p>
-<p>其中，$h_{\theta}(x) = \theta_0 + \theta_1 x_1 + \theta_2 x_2 + … + \theta_m x_m$</p>
+<script type="math/tex; mode=display">\theta_j = \theta_j - \alpha\frac{1}{n}\sum_{i=1}^n  (h_{\theta}(x^{(i)})-y^{(i)}) \cdot x_j^{(i)},j = 0,1,...,m</script><p>对于正则化线性回归，我们的惩罚对象是 $\theta_1,\theta_2,…,\theta_m$，因此，我们将代价函数的进行分离：</p>
+<script type="math/tex; mode=display">\begin{matrix}\theta_j = \theta_j - \alpha\frac{1}{n}\sum_{i=1}^n  (h_{\theta}(x^{(i)})-y^{(i)}) \cdot x_j^{(i)} & j=0
+\\ \theta_j = \theta_j - \alpha\frac{1}{n}\sum_{i=1}^n  (h_{\theta}(x^{(i)})-y^{(i)}) \cdot x_j^{(i)} & j = 1,...,m
+\end{matrix}</script><p>其中，$h_{\theta}(x) = \theta_0 + \theta_1 x_1 + \theta_2 x_2 + … + \theta_m x_m$</p>
 <p>现在，我们考虑为其加上正则化项，我们知道，在未加入正则项前，有：</p>
-<p>$$\frac{\partial}{\partial \theta_j}J(\theta)=\frac{1}{n}\sum_{i=1}^n  (h_{\theta}(x^{(i)})-y^{(i)}) \cdot x_j^{(i)}$$</p>
-<p>加入正则项后，代价函数变为：</p>
-<p>$$J(\theta) = \frac{1}{2n}[\sum_{i=1}^n (h_{\theta}(x^{(i)})-y^{(i)})^2 + \lambda \sum_{j=1}^m \theta_j^2]$$</p>
-<p>我们仍需对 $J(\theta)$ 求偏导，根据加法求导法则与幂函数求导法则，修改后的代价函数的偏导数只需在修改前的偏导数之后加上对 $\frac{\partial}{\partial \theta_j}\lambda \sum_{j=1}^m \theta_j^2$ 的结果 $2\lambda \theta_j$</p>
+<script type="math/tex; mode=display">\frac{\partial}{\partial \theta_j}J(\theta)=\frac{1}{n}\sum_{i=1}^n  (h_{\theta}(x^{(i)})-y^{(i)}) \cdot x_j^{(i)}</script><p>加入正则项后，代价函数变为：</p>
+<script type="math/tex; mode=display">J(\theta) = \frac{1}{2n}[\sum_{i=1}^n (h_{\theta}(x^{(i)})-y^{(i)})^2 + \lambda \sum_{j=1}^m \theta_j^2]</script><p>我们仍需对 $J(\theta)$ 求偏导，根据加法求导法则与幂函数求导法则，修改后的代价函数的偏导数只需在修改前的偏导数之后加上对 $\frac{\partial}{\partial \theta_j}\lambda \sum_{j=1}^m \theta_j^2$ 的结果 $2\lambda \theta_j$</p>
 <p>因此，组合后有：</p>
-<p>$$\begin{matrix}\theta_j = \theta_j - \alpha\frac{1}{n}\sum_{i=1}^n  (h_{\theta}(x^{(i)})-y^{(i)}) \cdot x_j^{(i)} &amp; j=0<br>\\ \theta_j = \theta_j - \alpha\frac{1}{n}[\sum_{i=1}^n  (h_{\theta}(x^{(i)})-y^{(i)}) \cdot x_j^{(i)} + \lambda\theta_j] &amp; j=1,…,m<br>\end{matrix}$$</p>
-<p>其中，$h_{\theta}(x) = \theta_0 + \theta_1 x_1 + \theta_2 x_2 + … + \theta_m x_m$</p>
+<script type="math/tex; mode=display">\begin{matrix}\theta_j = \theta_j - \alpha\frac{1}{n}\sum_{i=1}^n  (h_{\theta}(x^{(i)})-y^{(i)}) \cdot x_j^{(i)} & j=0
+\\ \theta_j = \theta_j - \alpha\frac{1}{n}[\sum_{i=1}^n  (h_{\theta}(x^{(i)})-y^{(i)}) \cdot x_j^{(i)} + \lambda\theta_j] & j=1,...,m
+\end{matrix}</script><p>其中，$h_{\theta}(x) = \theta_0 + \theta_1 x_1 + \theta_2 x_2 + … + \theta_m x_m$</p>
 <p>进一步：</p>
-<p>$$\begin{matrix}\theta_j = \theta_j - \alpha\frac{1}{n}\sum_{i=1}^n  (h_{\theta}(x^{(i)})-y^{(i)}) \cdot x_j^{(i)} &amp; j=0<br>\\ \theta_j = \theta_j - \theta_j\alpha\frac{\lambda}{n}-\alpha\frac{1}{n}\sum_{i=1}^n  (h_{\theta}(x^{(i)})-y^{(i)}) \cdot x_j^{(i)} &amp; j=1,…,m<br>\end{matrix}$$</p>
-<p>其中，$h_{\theta}(x) = \theta_0 + \theta_1 x_1 + \theta_2 x_2 + … + \theta_m x_m$</p>
+<script type="math/tex; mode=display">\begin{matrix}\theta_j = \theta_j - \alpha\frac{1}{n}\sum_{i=1}^n  (h_{\theta}(x^{(i)})-y^{(i)}) \cdot x_j^{(i)} & j=0
+\\ \theta_j = \theta_j - \theta_j\alpha\frac{\lambda}{n}-\alpha\frac{1}{n}\sum_{i=1}^n  (h_{\theta}(x^{(i)})-y^{(i)}) \cdot x_j^{(i)} & j=1,...,m
+\end{matrix}</script><p>其中，$h_{\theta}(x) = \theta_0 + \theta_1 x_1 + \theta_2 x_2 + … + \theta_m x_m$</p>
 <p>即：</p>
-<p>$$\begin{matrix}\theta_j = \theta_j - \alpha\frac{1}{n}\sum_{i=1}^n  (h_{\theta}(x^{(i)})-y^{(i)}) \cdot x_j^{(i)} &amp; j=0<br>\\ \theta_j = \theta_j(1 - \alpha\frac{\lambda}{n})-\alpha\frac{1}{n}\sum_{i=1}^n  (h_{\theta}(x^{(i)})-y^{(i)}) \cdot x_j^{(i)} &amp; j=1,…,m<br>\end{matrix}$$</p>
-<p>其中，$h_{\theta}(x) = \theta_0 + \theta_1 x_1 + \theta_2 x_2 + … + \theta_m x_m$</p>
+<script type="math/tex; mode=display">\begin{matrix}\theta_j = \theta_j - \alpha\frac{1}{n}\sum_{i=1}^n  (h_{\theta}(x^{(i)})-y^{(i)}) \cdot x_j^{(i)} & j=0
+\\ \theta_j = \theta_j(1 - \alpha\frac{\lambda}{n})-\alpha\frac{1}{n}\sum_{i=1}^n  (h_{\theta}(x^{(i)})-y^{(i)}) \cdot x_j^{(i)} & j=1,...,m
+\end{matrix}</script><p>其中，$h_{\theta}(x) = \theta_0 + \theta_1 x_1 + \theta_2 x_2 + … + \theta_m x_m$</p>
 <p>具体来说，对于 $\theta_0$ 时，没有进行正则化处理，其与之前的线性回归模型情况相同，而当 $\theta_1,\theta_2,…,\theta_m$ 时，我们将式子分成前后两部分进行考虑：</p>
 <p>对于 $\theta_j(1 - \alpha\frac{\lambda}{n})$ ：由于 $(1 - \alpha\frac{\lambda}{n})$ 的值会是一个比 1 略小一点的数，因此在其乘上 $\theta$ 后，将 $\theta_j$ 向 0的进行了缩小，即 $\theta_j$ 的平方范数 $\theta_j^2$ 变小了。</p>
 <p>对于 $\alpha\frac{1}{n}\sum_{i=1}^n  (h_{\theta}(x^{(i)})-y^{(i)}) \cdot x_j^{(i)}$，这与我们没有进行正则化处理时的情况相同。</p>
 <p>简单来说，即我们每次进行梯度处理时，都将 $\theta_j$ 乘上一个比 1 略小一点的数 $(1 - \alpha\frac{\lambda}{n})$ 来将参数缩小一点，然后进行与之前一样的操作。</p>
 <h2 id="正规方程法"><a href="#正规方程法" class="headerlink" title="正规方程法"></a>正规方程法</h2><p>对于加上正则化项后的代价函数：</p>
-<p>$$J(\theta) = \frac{1}{2n}[\sum_{i=1}^n (h_{\theta}(x^{(i)})-y^{(i)})^2 + \lambda \sum_{j=1}^m \theta_j^2]$$</p>
-<p>我们首先对代价函数求偏导，有：</p>
-<p>$$\frac{\partial}{\partial \theta_j}J(\theta) =\left\{\begin{matrix}\frac{1}{n}\sum_{i=1}^n  (h_{\theta}(x^{(i)})-y^{(i)}) \cdot x_j^{(i)}<br> &amp; j=0\\<br> \frac{1}{n}[\sum_{i=1}^n  (h_{\theta}(x^{(i)})-y^{(i)}) \cdot x_j^{(i)} + \lambda\theta_j] &amp; j=1,2,…,m<br>\end{matrix}\right.$$</p>
-<p>接着，对于 $j=1,2,…,m$ 的情况进行矢量化，有：</p>
-<p>$$\frac{\partial}{\partial \theta_j}J(\theta) = X^T(X\theta - y)+\lambda\theta$$</p>
-<p>令 $\frac{\partial}{\partial \theta_j}J(\theta)=0$，有：</p>
-<p>$$\begin{matrix}X^T(X\theta-y) + \lambda\theta =0<br>\\ X^TX\theta - X^TY + \lambda\theta =0<br>\\ X^TX\theta + \lambda \cdot I_m \theta =X^TY<br>\\ (X^TX + \lambda \cdot I_m) \theta = X^TY<br>\\ (X^TX+\lambda \cdot I_m)^{-1} (X^TX+\lambda \cdot I_m)\theta = (X^TX+\lambda \cdot I_m)^{-1} X^TY<br>\\ \theta = (X^TX+\lambda \cdot I_m)^{-1} X^TY<br>\end{matrix}$$</p>
-<p>再考虑 $j=0$ 的情况，将其加入 $\theta$，即有：</p>
-<p>$$\theta = (X^TX+\lambda \cdot \begin{bmatrix}<br>0 &amp; 0\\<br>0 &amp; I_n<br>\end{bmatrix})^{-1} X^TY$$</p>
-<p>其中，$I_m$ 是 $m$ 阶单位矩阵，即：$$\begin{bmatrix}<br>1 &amp; … &amp; 0 \\<br>\vdots  &amp; 1 &amp; \vdots \\<br>0 &amp; …&amp; 1<br>\end{bmatrix}$$</p>
+<script type="math/tex; mode=display">J(\theta) = \frac{1}{2n}[\sum_{i=1}^n (h_{\theta}(x^{(i)})-y^{(i)})^2 + \lambda \sum_{j=1}^m \theta_j^2]</script><p>我们首先对代价函数求偏导，有：</p>
+<script type="math/tex; mode=display">\frac{\partial}{\partial \theta_j}J(\theta) =\left\{\begin{matrix}\frac{1}{n}\sum_{i=1}^n  (h_{\theta}(x^{(i)})-y^{(i)}) \cdot x_j^{(i)}
+ & j=0\\ 
+ \frac{1}{n}[\sum_{i=1}^n  (h_{\theta}(x^{(i)})-y^{(i)}) \cdot x_j^{(i)} + \lambda\theta_j] & j=1,2,...,m 
+\end{matrix}\right.</script><p>接着，对于 $j=1,2,…,m$ 的情况进行矢量化，有：</p>
+<script type="math/tex; mode=display">\frac{\partial}{\partial \theta_j}J(\theta) = X^T(X\theta - y)+\lambda\theta</script><p>令 $\frac{\partial}{\partial \theta_j}J(\theta)=0$，有：</p>
+<script type="math/tex; mode=display">\begin{matrix}X^T(X\theta-y) + \lambda\theta =0
+\\ X^TX\theta - X^TY + \lambda\theta =0
+\\ X^TX\theta + \lambda \cdot I_m \theta =X^TY
+\\ (X^TX + \lambda \cdot I_m) \theta = X^TY
+\\ (X^TX+\lambda \cdot I_m)^{-1} (X^TX+\lambda \cdot I_m)\theta = (X^TX+\lambda \cdot I_m)^{-1} X^TY
+\\ \theta = (X^TX+\lambda \cdot I_m)^{-1} X^TY
+\end{matrix}</script><p>再考虑 $j=0$ 的情况，将其加入 $\theta$，即有：</p>
+<script type="math/tex; mode=display">\theta = (X^TX+\lambda \cdot \begin{bmatrix}
+0 & 0\\ 
+0 & I_n
+\end{bmatrix})^{-1} X^TY</script><p>其中，$I_m$ 是 $m$ 阶单位矩阵，即：<script type="math/tex">\begin{bmatrix}
+1 & ... & 0 \\ 
+\vdots  & 1 & \vdots \\ 
+0 & ...& 1
+\end{bmatrix}</script></p>
 <h1 id="【Logistic回归的正则化】"><a href="#【Logistic回归的正则化】" class="headerlink" title="【Logistic回归的正则化】"></a>【Logistic回归的正则化】</h1><p>对于 Logistic 回归，其代价函数为：</p>
-<p>$$J(\theta) = -\frac{1}{n}\sum_{i=1}^n[y^{(i)}log(h_{\theta}(x^{(i)})) + (1-y^{(i)})log(1-h_{\theta}(x^{(i)}))]$$</p>
-<p>利用正则化项对代价函数进行修改，有：</p>
-<p>$$J(\theta) = -[\frac{1}{n}\sum_{i=1}^ny^{(i)}log(h_{\theta}(x^{(i)})) + (1-y^{(i)})log(1-h_{\theta}(x^{(i)}))+\frac{\lambda}{2n}\sum_{j=1}{m}\theta_j^2]$$</p>
-<p>与正则化的线性回归模型推导过程类似，最终我们能获得加入正则项后的公式：</p>
-<p>$$\begin{matrix}\theta_j = \theta_j - \alpha\frac{1}{n}\sum_{i=1}^n  (h_{\theta}(x^{(i)})-y^{(i)}) \cdot x_j^{(i)} &amp; j=0<br>\\ \theta_j = \theta_j - \alpha[\frac{1}{n}\sum_{i=1}^n  (h_{\theta}(x^{(i)})-y^{(i)}) \cdot x_j^{(i)}+\frac{\lambda}{n}\theta_j] &amp; j = 1,…,m<br>\end{matrix}$$</p>
-<p>其中，$h_{\theta}(x)=\frac{1}{1+e^{-\theta^Tx}}$</p>
+<script type="math/tex; mode=display">J(\theta) = -\frac{1}{n}\sum_{i=1}^n[y^{(i)}log(h_{\theta}(x^{(i)})) + (1-y^{(i)})log(1-h_{\theta}(x^{(i)}))]</script><p>利用正则化项对代价函数进行修改，有：</p>
+<script type="math/tex; mode=display">J(\theta) = -[\frac{1}{n}\sum_{i=1}^ny^{(i)}log(h_{\theta}(x^{(i)})) + (1-y^{(i)})log(1-h_{\theta}(x^{(i)}))+\frac{\lambda}{2n}\sum_{j=1}{m}\theta_j^2]</script><p>与正则化的线性回归模型推导过程类似，最终我们能获得加入正则项后的公式：</p>
+<script type="math/tex; mode=display">\begin{matrix}\theta_j = \theta_j - \alpha\frac{1}{n}\sum_{i=1}^n  (h_{\theta}(x^{(i)})-y^{(i)}) \cdot x_j^{(i)} & j=0
+\\ \theta_j = \theta_j - \alpha[\frac{1}{n}\sum_{i=1}^n  (h_{\theta}(x^{(i)})-y^{(i)}) \cdot x_j^{(i)}+\frac{\lambda}{n}\theta_j] & j = 1,...,m
+\end{matrix}</script><p>其中，$h_{\theta}(x)=\frac{1}{1+e^{-\theta^Tx}}$</p>
 <p>进行化简，即可得到类似正则化线性回归模型的形式，即：</p>
-<p>$$\begin{matrix}\theta_j = \theta_j - \alpha\frac{1}{n}\sum_{i=1}^n  (h_{\theta}(x^{(i)})-y^{(i)}) \cdot x_j^{(i)} &amp; j=0<br>\\ \theta_j = \theta_j(1-\alpha\frac{\lambda}{n})  - \alpha\frac{1}{n}\sum_{i=1}^n  (h_{\theta}(x^{(i)})-y^{(i)}) \cdot x_j^{(i)} &amp; j = 1,…,m<br>\end{matrix}$$</p>
-<p>其中，$h_{\theta}(x)=\frac{1}{1+e^{-\theta^Tx}}$</p>
+<script type="math/tex; mode=display">\begin{matrix}\theta_j = \theta_j - \alpha\frac{1}{n}\sum_{i=1}^n  (h_{\theta}(x^{(i)})-y^{(i)}) \cdot x_j^{(i)} & j=0
+\\ \theta_j = \theta_j(1-\alpha\frac{\lambda}{n})  - \alpha\frac{1}{n}\sum_{i=1}^n  (h_{\theta}(x^{(i)})-y^{(i)}) \cdot x_j^{(i)} & j = 1,...,m
+\end{matrix}</script><p>其中，$h_{\theta}(x)=\frac{1}{1+e^{-\theta^Tx}}$</p>
 
       
     </div>
@@ -595,7 +604,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">98</span>
+                  <span class="site-state-item-count">102</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -606,7 +615,7 @@
               
               <div class="site-state-item site-state-categories">
                 <a href="/categories/index.html">
-                  <span class="site-state-item-count">11</span>
+                  <span class="site-state-item-count">12</span>
                   <span class="site-state-item-name">分类</span>
                 </a>
               </div>
@@ -617,7 +626,7 @@
               
               <div class="site-state-item site-state-tags">
                 <a href="/tags/index.html">
-                  <span class="site-state-item-count">11</span>
+                  <span class="site-state-item-count">12</span>
                   <span class="site-state-item-name">标签</span>
                 </a>
               </div>
