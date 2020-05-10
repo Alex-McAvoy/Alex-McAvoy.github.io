@@ -35,8 +35,8 @@ function login() {
 		password=parseFloat(password);
 		if(user==json_user){
 			if(password==json_password){
+				self.location.href="index.html";
 				alert("登录成功！");
-				self.location.href="http://alex-mcavoy.github.io/GXR/index.html";
 			}
 			else{
 				alert("密码错误！");
