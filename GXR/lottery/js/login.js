@@ -24,13 +24,6 @@ $(function() {
 
 // 登录验证
 function login(e) {
-	
-	// var url = window.location.href
-	// console.log(url);
-	// window.location.href = "https://www.baidu.com";
-	// alert(123);
-
-
 	var user = $("#user").val();
 	var password = $("#password").val();
 	if (!$("#user").val())
@@ -42,8 +35,8 @@ function login(e) {
 		password = parseFloat(password);
 		if (user == json_user) {
 			if (password == json_password) {
-				alert("登录成功！");
 				window.location.href="prize.html";
+				alert("登录成功！");
 			} else {
 				alert("密码错误！");
 			}
