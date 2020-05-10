@@ -13,36 +13,41 @@ $(document).ready(function() {
 // 焦点事件判断
 $(function() {
 	$("#user").blur(function() { // 用户名文本框失去焦点触发验证事件 
-		if(!$(this).val())
+		if (!$(this).val())
 			alert("用户名不能为空！");
 	});
 	$("#password").blur(function() { // 用户密码框失去焦点触发验证事件
-		if(!$(this).val())
+		if (!$(this).val())
 			alert("密码不能为空！");
 	});
 })
 
 // 登录验证
-function login() {
+function login(e) {
+	
+	// var url = window.location.href
+	// console.log(url);
+	// window.location.href = "https://www.baidu.com";
+	// alert(123);
+
+
 	var user = $("#user").val();
 	var password = $("#password").val();
 	if (!$("#user").val())
 		alert("用户名不能为空！");
-	else if(!$("#password").val())
+	else if (!$("#password").val())
 		alert("密码不能为空！");
-	else{
-		user=parseFloat(user);
-		password=parseFloat(password);
-		if(user==json_user){
-			if(password==json_password){
-				self.location.href="index.html";
+	else {
+		user = parseFloat(user);
+		password = parseFloat(password);
+		if (user == json_user) {
+			if (password == json_password) {
 				alert("登录成功！");
-			}
-			else{
+				window.location.href="prize.html";
+			} else {
 				alert("密码错误！");
 			}
-		}
-		else{
+		} else {
 			alert("用户名不存在！");
 		}
 	}

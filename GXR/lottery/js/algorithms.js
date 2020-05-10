@@ -1,6 +1,6 @@
-//请在此段代码前引用jq,否则代码无效
+
 $(document).ready(function() {
-    var name = ['谢谢参与', '谢谢参与', '谢谢参与', '谢谢参与', '谢谢参与', '谢谢参与', '谢谢参与', '谢谢参与', '三年模拟两年高考']
+    var name = ['谢谢参与', '谢谢参与', '谢谢参与', '谢谢参与', '谢谢参与', '谢谢参与', '谢谢参与', '谢谢参与', '皮肤']
     for (var i = 1; i <= name.length; i++) {
         $(".content").append('<div id="' + i + '" class="kuai">' + name[i - 1] + '</div>');
     }
@@ -39,9 +39,9 @@ function time(shu, sums, tie, sum, tis) { //倒计时
             shu++
             text(shu, sums, tie, sum, tis)
         } 
-		// else { //抽奖完毕,按钮重新进入可编辑状态
-  //           $('.choujiang').attr("disabled", false); 
-  //       }
+		else { //抽奖完毕,按钮重新进入可编辑状态
+            $('.choujiang').attr("disabled", false); 
+        }
     }, tie);
 }
 
