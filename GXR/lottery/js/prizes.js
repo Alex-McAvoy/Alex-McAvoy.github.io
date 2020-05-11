@@ -8,14 +8,14 @@ $(document).ready(function() {
 			names = name.split(",");
 		}
 	})
-	num=getUrlParam('num')[0];
+	num = getUrlParam('num')[0];
 });
 
 // 获取url参数
 function getUrlParam(param) {
 	var reg = new RegExp("(^|&)" + param + "=([^&]*)(&|$)"); //构造一个含有目标参数的正则表达式对象
 	var r = window.location.search.substr(1).match(reg); //匹配目标参数
-	if (r != null) 
+	if (r != null)
 		return unescape(r[2]);
 	return null; //返回参数值
 }
@@ -26,11 +26,11 @@ $(document).ready(function() {
 	for (var i = 1; i <= names.length; i++) {
 		$(".content").append('<div id="' + i + '" class="kuai">' + names[i - 1] + '</div>');
 	}
-	$(".content").append('<div id="num" class="num">剩余抽奖次数：'+ num + '次</div>')
+	$(".content").append('<div id="num" class="num">剩余抽奖次数：' + num + '次</div>')
 	$('.choujiang').on('click', function() {
 		$(this).attr("disabled", true); //点击按钮后,按钮进入不可编辑状态
-		num-=1; //抽奖次数-1
-		$(".num").html('<div id="num">抽奖次数：'+ num + '次</div>')
+		num -= 1; //抽奖次数-1
+		$(".num").html('<div id="num">抽奖次数：' + num + '次</div>')
 		var sum = names.length;
 		var le = 3 //设置滚动多轮
 		var hh = sum * le;
@@ -44,6 +44,7 @@ $(document).ready(function() {
 		}
 		time(1, rand, times, sum, times) //点击按钮后触发time事件
 	})
+
 });
 
 function time(shu, sums, tie, sum, tis) { //倒计时
@@ -64,10 +65,8 @@ function time(shu, sums, tie, sum, tis) { //倒计时
 			}
 			shu++
 			text(shu, sums, tie, sum, tis)
-			
-			console.log(num);
 		} else { //抽奖完毕
-			if(num>0)//抽奖次数大于0,按钮重新进入可编辑状态
+			if (num > 0) //抽奖次数大于0,按钮重新进入可编辑状态
 				$('.choujiang').attr("disabled", false);
 		}
 	}, tie);
