@@ -1,33 +1,10 @@
-// 读取json
-$(document).ready(function() {
-	$.ajax({
-		url: './json/prizes.json',
-		async: false,
-		success: function(data) {
-			name = data.name;
-			names = name.split(",");
-		}
-	})
-	num = getUrlParam('num')[0];
-});
-
-// 获取url参数
-function getUrlParam(param) {
-	var reg = new RegExp("(^|&)" + param + "=([^&]*)(&|$)"); //构造一个含有目标参数的正则表达式对象
-	var r = window.location.search.substr(1).match(reg); //匹配目标参数
-	if (r != null)
-		return unescape(r[2]);
-	return null; //返回参数值
-}
-
-
 // 抽奖
 $(document).ready(function() {
 	for (var i = 1; i <= names.length; i++) {
 		$(".content").append('<div id="' + i + '" class="kuai">' + names[i - 1] + '</div>');
 	}
 	$(".content").append('<div id="num" class="num">剩余抽奖次数：' + num + '次</div>')
-	$('.choujiang').on('click', function() {
+	$('.lottery').on('click', function() {
 		$(this).attr("disabled", true); //点击按钮后,按钮进入不可编辑状态
 		num -= 1; //抽奖次数-1
 		$(".num").html('<div id="num">抽奖次数：' + num + '次</div>')
@@ -56,7 +33,7 @@ function time(shu, sums, tie, sum, tis) { //倒计时
 				'color': ''
 			}) //清除css
 			$('#' + shu + '').css({
-				'background-color': 'aqua',
+				'background-color': '#ff0000',
 				'color': '#fff'
 			}) //添加css样式
 			if (shu == sum) {
@@ -67,7 +44,7 @@ function time(shu, sums, tie, sum, tis) { //倒计时
 			text(shu, sums, tie, sum, tis)
 		} else { //抽奖完毕
 			if (num > 0) //抽奖次数大于0,按钮重新进入可编辑状态
-				$('.choujiang').attr("disabled", false);
+				$('.lottery').attr("disabled", false);
 		}
 	}, tie);
 }
