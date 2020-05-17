@@ -1,4 +1,4 @@
-window.onload = function() {
+$(document).ready(function() {
 	//轮播图设置
 	$('.carousel').carousel({
 		interval: 3000
@@ -34,4 +34,4 @@ window.onload = function() {
 			return false;
 		};
 	})(jQuery);
-}
+});

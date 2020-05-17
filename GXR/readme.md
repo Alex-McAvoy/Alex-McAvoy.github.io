@@ -44,6 +44,7 @@ https://alex-mcavoy.github.io/GXR/login.html
 ### 2020.5.17
 
 - 登录页重做（GXR小朋友表示新页面比原来好看了n个等级）
+- 解决了PE端登录页缩放比例失调的bug
 
 ## 4.待解决问题
 

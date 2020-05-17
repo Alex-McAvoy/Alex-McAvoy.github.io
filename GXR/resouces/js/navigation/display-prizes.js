@@ -1,9 +1,8 @@
 // 展示中奖信息汇总
-function showPrize() {
+function displayPrize() {
 	var node = $("#prizeTable").exist();
-	if (node) {
-		$("#prizeTable").remove();
-	} else {
+	if (!node) {
+		$("#first-row").attr("hidden","hidden");
 		$("#prizes").append('<table class="table table-striped table-hover" id="prizeTable">');
 		$("#prizeTable").append('<tr>'+
 			'<th style="text-align: center;">#</th>'+
