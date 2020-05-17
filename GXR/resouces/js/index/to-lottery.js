@@ -9,5 +9,5 @@ function updateNum(){
 
 function toLottery(){
 	updateNum(); //更新num参数
-	window.location.href="../lottery/lottery.html?num="+num;
+	window.location.href="./lottery.html?num="+num;
 }

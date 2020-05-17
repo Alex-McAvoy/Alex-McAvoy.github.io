@@ -5,7 +5,7 @@ window.onload = function() {
 	});
 	//读取开奖信息json
 	$.ajax({
-		url: '../lottery/json/prizes.json',
+		url: '../resouces/json/lottery.json',
 		async: false,
 		success: function(data) {
 			num = data.num;
@@ -13,7 +13,7 @@ window.onload = function() {
 	});
 	//读取中奖汇总json
 	$.ajax({
-		url: './json/prizes.json',
+		url: '../resouces/json/prizes_table.json',
 		async: false,
 		success: function(data) {
 			content = data.content;

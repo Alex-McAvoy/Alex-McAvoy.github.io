@@ -1,7 +1,7 @@
 // 读取json
 $(document).ready(function() {
 	$.ajax({
-		url: './json/prizes.json',
+		url: '../resouces/json/lottery.json',
 		async: false,
 		success: function(data) {
 			name = data.name;
