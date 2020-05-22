@@ -1,3 +1,14 @@
+$(document).ready(function() {
+	//读取开奖信息json
+	$.ajax({
+		url: '../resouces/json/lottery.json',
+		async: false,
+		success: function(data) {
+			num = data.num;
+		}
+	});
+});
+
 //随机url参数生成
 function updateNum(){
 	var table=["1","2","3","4","5","6","7","8","9","10","A","B","C","D","E","F"];

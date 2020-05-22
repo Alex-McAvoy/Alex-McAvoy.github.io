@@ -1,5 +1,6 @@
-// 展示中奖信息汇总
-function displayPrize() {
+// 主页展示中奖信息汇总
+function indexDisplayPrize() {
+	$("#navbar").collapse('hide');
 	var node = $("#prizeTable").exist();
 	if (!node) {
 		$("#first-row").attr("hidden","hidden");
@@ -23,5 +24,28 @@ function displayPrize() {
 			$(temp).append('<td>' + times[i - 1] + '</td>');
 			$(temp).append('<td>' + '<a href="' + url[i - 1] + '">中奖信息</a>' + '</td>');
 		}
+	}
+}
+
+// 抽奖页展示中奖信息汇总
+function shoppingCartDisplayPrize(){
+	sessionStorage.setItem("from","prize");//存session
+	window.location.href="./index.html";//跳转到主页
+}
+$(document).ready(function() {
+	var temp=sessionStorage.getItem("from");
+	if(temp=="prize"){ //session中信息存在
+		indexDisplayPrize();//展示中奖信息汇总
+		sessionStorage.setItem("from","");//销毁session
+	}
+});
+
+// 隐藏中奖系统
+function noDisplayPrize(){
+	$("#navbar").collapse('hide');
+	var node = $("#prizeTable").exist();
+	if (node) {
+		$("#prizeTable").remove();
+		$("#first-row").removeAttr("hidden");
 	}
 }
