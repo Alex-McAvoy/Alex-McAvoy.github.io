@@ -45,8 +45,10 @@ function login() {
 		if (user == json_user) {
 			if (password == json_password) {
 				$("#input-password").text("");
-				alert("登录成功！");
-				window.location.href="index/index.html";
+				alert("生气了，禁止谷心然小朋友登录！")
+				// alert("登录成功！");
+				// window.location.href="index/index.html";
+				// sessionStorage.setItem("user","GXR");//存session
 				return false;
 			} else {
 				$("#input-password").text("密码错误！");

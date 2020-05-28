@@ -1,5 +1,10 @@
 // 读取json
 $(document).ready(function() {
+	var temp=sessionStorage.getItem("user");
+	if(temp!="GXR"){ //session中不信息存在
+		alert("请重新登录!");
+		window.location.href="../login.html";
+	}
 	$.ajax({
 		url: '../resouces/json/lottery.json',
 		async: false,
