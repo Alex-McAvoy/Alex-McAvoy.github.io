@@ -6,6 +6,11 @@ $(document).ready(function() {
 		success: function(data) {
 			json_user = data.user;
 			json_password = data.password;
+			json_num=data.num;
+			sessionStorage.setItem("num",json_num);//存session			
+		},
+		error:function(){
+			sessionStorage.setItem("num","error");//存session
 		}
 	})
 });
@@ -45,10 +50,10 @@ function login() {
 		if (user == json_user) {
 			if (password == json_password) {
 				$("#input-password").text("");
-				alert("生气了，禁止谷心然小朋友登录！")
-				// alert("登录成功！");
-				// window.location.href="index/index.html";
-				// sessionStorage.setItem("user","GXR");//存session
+				// alert("生气了，禁止谷心然小朋友登录！")
+				alert("登录成功！");
+				window.location.href="index/index.html";
+				sessionStorage.setItem("user","GXR");//存session
 				return false;
 			} else {
 				$("#input-password").text("密码错误！");

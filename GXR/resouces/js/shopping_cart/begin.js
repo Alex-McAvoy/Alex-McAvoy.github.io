@@ -19,8 +19,13 @@ $(document).ready(function() {
 //json对象随机排序
 function randomData(){
 	var obj_data=[];
-	for(var obj in data)
+	var num=0;
+	for(var obj in data){
+		num++;
+		if(num==34||num==35||num==36)
+			continue;
 		obj_data.push(obj);
+	}
 	
 	obj_data.sort(() => Math.random() - 0.5);
 	return obj_data;
