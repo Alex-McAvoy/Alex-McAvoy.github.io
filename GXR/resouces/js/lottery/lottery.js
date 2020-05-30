@@ -1,13 +1,3 @@
-// // 抽奖
-// $(document).ready(function() {
-// 	//生成页面
-// 	// var num=sessionStorage.getItem("num");//获取抽奖次数
-// 	// for (var i = 1; i <= names.length; i++) //生成九宫格
-// 	// 	$(".content").append('<div id="' + i + '" class="prizes">' + names[i - 1] + '</div>');
-// 	// $(".content").append('<div id="num" class="num">剩余抽奖次数：' + num + '次</div>');
-// 	// if(num>0)
-// 	// 	lottery();//抽奖
-// });
 function lottery(){
 	$('.lottery').on('click', function() {
 		$(this).attr("disabled", true); //点击按钮后,按钮进入不可编辑状态

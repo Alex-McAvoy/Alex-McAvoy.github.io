@@ -19,15 +19,16 @@ $(document).ready(function() {
 //json对象随机排序
 function randomData(){
 	var obj_data=[];
-	var num=0;
+	// var num=0;
 	for(var obj in data){
-		num++;
-		if(num==34||num==35||num==36)
-			continue;
+		// num++;
+		// if(num==34||num==35||num==36)
+		// 	continue;
 		obj_data.push(obj);
 	}
 	
 	obj_data.sort(() => Math.random() - 0.5);
+	console.log((obj_data))
 	return obj_data;
 }
 //生成页面
