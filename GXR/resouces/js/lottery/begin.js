@@ -13,7 +13,6 @@ $(document).ready(function() {
 			data=e;
 		}
 	})
-	alert("			注意事项\n		抽奖机会仅有三次\n请在抽奖完毕后凭截图任选一个进行兑奖\n	    P.S.刷新没用 🙃  🙃  🙃 ");
 	obj_data=randomData();//json对象随机排序
 	generatePage();//生成页面
 });
