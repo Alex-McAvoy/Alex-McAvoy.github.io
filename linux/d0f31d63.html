@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+  
+  
+  <link rel="stylesheet" media="all" href="/lib/Han/dist/han.min.css?v=3.3">
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Linux,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="【概述】Linux 系统的启动过程一般分为 4 个阶段：  BIOS 启动引导阶段 GRUB 启动引导阶段 内核阶段 1 号用户进程初始化阶段  这 4 个阶段具体过程细化如下图：  【BIOS 启动引导】当计算机打开电源启动后，首先进行的是 BIOS 开机自检，当设备检测通过后，根据在 BIOS 中设置的启动顺序搜索启动驱动器，并获取第一个启动设备的代号，读取第一个启动设备的 MBR 的引导加载">
+<meta name="keywords" content="Linux">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Linux——系统启动过程">
+<meta property="og:url" content="https://alex-mcavoy.github.io/linux/d0f31d63.html">
+<meta property="og:site_name" content="Alex_McAvoy">
+<meta property="og:description" content="【概述】Linux 系统的启动过程一般分为 4 个阶段：  BIOS 启动引导阶段 GRUB 启动引导阶段 内核阶段 1 号用户进程初始化阶段  这 4 个阶段具体过程细化如下图：  【BIOS 启动引导】当计算机打开电源启动后，首先进行的是 BIOS 开机自检，当设备检测通过后，根据在 BIOS 中设置的启动顺序搜索启动驱动器，并获取第一个启动设备的代号，读取第一个启动设备的 MBR 的引导加载">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/linux/05.png">
+<meta property="og:updated_time" content="2020-08-11T09:08:19.715Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Linux——系统启动过程">
+<meta name="twitter:description" content="【概述】Linux 系统的启动过程一般分为 4 个阶段：  BIOS 启动引导阶段 GRUB 启动引导阶段 内核阶段 1 号用户进程初始化阶段  这 4 个阶段具体过程细化如下图：  【BIOS 启动引导】当计算机打开电源启动后，首先进行的是 BIOS 开机自检，当设备检测通过后，根据在 BIOS 中设置的启动顺序搜索启动驱动器，并获取第一个启动设备的代号，读取第一个启动设备的 MBR 的引导加载">
+<meta name="twitter:image" content="https://alex-mcavoy.github.io/images/linux/05.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":true,"scrollpercent":true,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://alex-mcavoy.github.io/linux/d0f31d63.html">
+
+
+
+
+
+  <title>Linux——系统启动过程 | Alex_McAvoy</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Alex_McAvoy</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/linux/d0f31d63.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Alex_McAvoy">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/assets/img/head.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Alex_McAvoy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Linux——系统启动过程</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-06-12T16:31:00+08:00">
+                2018-06-12
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/linux/" itemprop="url" rel="index">
+                    <span itemprop="name">Linux</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body han-init-context" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="【概述】"><a href="#【概述】" class="headerlink" title="【概述】"></a>【概述】</h1><p>Linux 系统的启动过程一般分为 4 个阶段：</p>
+<ul>
+<li>BIOS 启动引导阶段</li>
+<li>GRUB 启动引导阶段</li>
+<li>内核阶段</li>
+<li>1 号用户进程初始化阶段</li>
+</ul>
+<p>这 4 个阶段具体过程细化如下图：</p>
+<p><img width="500" src="/images/linux/05.png"></p>
+<h1 id="【BIOS-启动引导】"><a href="#【BIOS-启动引导】" class="headerlink" title="【BIOS 启动引导】"></a>【BIOS 启动引导】</h1><p>当计算机打开电源启动后，首先进行的是 BIOS 开机自检，当设备检测通过后，根据在 BIOS 中设置的启动顺序搜索启动驱动器，并获取第一个启动设备的代号，读取第一个启动设备的 MBR 的引导加载程序的启动信息，从 MBR 中装载启动引导管理器 GRUB 并启动引导管理。</p>
+<p>MBR 是引导扇区的前 512 字节，由 BIOS 预加载在 ROM 中，其中 446 字节用于存储 Boot Loader 程序，64 字节用于存储分区表信息，最后 2 字节用于 MBR 的有效性检查。</p>
+<h1 id="【GRUB-启动引导】"><a href="#【GRUB-启动引导】" class="headerlink" title="【GRUB 启动引导】"></a>【GRUB 启动引导】</h1><p>大多数 Linux 发行版使用的引导加载程序有三种：GRUB、GRUB2、LILO，其中，GRUB2 是 CentOS 7 默认的引导加载程序。</p>
+<p>引导加载程序位于 <code>/boot</code> 目录下，用于将内核映像文件加载到内存中。</p>
+<h1 id="【内核阶段】"><a href="#【内核阶段】" class="headerlink" title="【内核阶段】"></a>【内核阶段】</h1><p>内核是 OS 的核心，是系统启动时加载的第一个程序，系统启动内核时，会从 <code>initrd.img</code> 将所有必需驱动模块加载到 Linux 系统中，并运行 1 号程序。</p>
+<p><code>initrd.img</code> 是一种基于内存的文件系统，启动过程中，系统在访问真正的根文件系统时，会先访问 initrd 文件系统。</p>
+<h1 id="【1号用户进程初始化阶段】"><a href="#【1号用户进程初始化阶段】" class="headerlink" title="【1号用户进程初始化阶段】"></a>【1号用户进程初始化阶段】</h1><h2 id="init-进程"><a href="#init-进程" class="headerlink" title="init 进程"></a>init 进程</h2><p>1 号进程，在 CentOS7 之前被称为 <code>init 进程</code>，在 CentOS7 之后被称为 <code>systemed 进程</code>，其是 Linux 上运行的第一个进程（PID 为 1）</p>
+<p>该进程是系统所有进程的起点，其会去读取 <code>/etc/inittab</code> 下的配置文件，以运行 Linux 中的 <code>守护进程（daemon）</code>。</p>
+<p><strong>注：守护进程类似于 Windows 中的<code>服务（service）</code>，是需要开机启动的程序。</strong></p>
+<h2 id="运行级别"><a href="#运行级别" class="headerlink" title="运行级别"></a>运行级别</h2><p>不同的场合需要启动不同的程序，Linux 允许为不同的场合，分配不同的开机启动程序，这就叫做 <code>运行级别（runlevel）</code>，即启动时根据运行级别，确定要运行的程序。</p>
+<p>Linux 系统有 7 个运行级别：</p>
+<ol>
+<li>runlevel-0：系统停机状态，系统默认运行级别不能设为 0，否则不能正常启动</li>
+<li>runlevel-1：单用户工作状态，root 权限用于系统维护，禁止远程登陆</li>
+<li>runlevel-2：多用户状态（没有NFS）</li>
+<li>runlevel-3：完全的多用户状态（有NFS），登陆后进入控制台命令行模式</li>
+<li>runlevel-4：系统未使用，保留</li>
+<li>runlevel-5：X11 控制台，登陆后进入图形 GUI 模式</li>
+<li>runlevel-6：系统正常关闭并重启，默认运行级别不能设为 6，否则不能正常启动</li>
+</ol>
+<h2 id="系统初始化"><a href="#系统初始化" class="headerlink" title="系统初始化"></a>系统初始化</h2><p>在 init 的配置文件中，存在这么一行：<code>si::sysinit:/etc/rc.d/rc.sysinit</code></p>
+<p>它调用执行了 <code>/etc/rc.d/rc.sysinit</code> ，而 <code>rc.sysinit</code> 是一个 bash shell 的脚本，主要用于完成系统初始化的工作，<code>rc.sysinit</code> 是每一个运行级别都要首先运行的重要脚本。</p>
+<p>它主要完成需要优先执行的任务，比如：激活交换分区、检查磁盘、加载硬件模块等。</p>
+<h2 id="终端建立"><a href="#终端建立" class="headerlink" title="终端建立"></a>终端建立</h2><p>在 <code>rc.sysinit</code> 执行完毕后，会返回 init，此时基本系统环境已经设置好了，各种守护进程也已启动了，init 接下来会打开 6 个终端，以便用户登录系统。</p>
+<p>这 6 个终端窗口分别是 <code>tty1~tty6</code>，他们可以通过快捷键 <code>Ctrl+Alt+F1~F6</code> 来进行切换，默认登录的是第一个窗口，即 <code>tty1</code>。</p>
+<p>如果安装了图形界面，默认情况下是直接进入图形界面，此时可以通过快捷键 <code>Ctrl+Alt+F1~F6</code> 来进行切换进入其中一个命令窗口界面，当进入命令窗口界面后再返回图形界面只要通过快捷键 <code>Ctrl+Alt+F7</code> 即可返回。</p>
+<p>在 inittab 中通过以下命令定义了 6 个终端：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">1:2345:respawn:/sbin/mingetty tty1</span><br><span class="line">2:2345:respawn:/sbin/mingetty tty2</span><br><span class="line">3:2345:respawn:/sbin/mingetty tty3</span><br><span class="line">4:2345:respawn:/sbin/mingetty tty4</span><br><span class="line">5:2345:respawn:/sbin/mingetty tty5</span><br><span class="line">6:2345:respawn:/sbin/mingetty tty6</span><br></pre></td></tr></table></figure>
+<p>可以看出在 2、3、4、5 的运行级别中都将以 <code>respawn 方式</code>运行 <code>mingetty 程序</code>。</p>
+<p>该程序能打开终端、设置模式，同时它会显示一个文本登录界面，这个界面就是我们经常看到的登录界面，在界面中会提示用户输入用户名，而用户输入的用户将作为参数传给 <code>login 程序</code> 来验证用户的身份。</p>
+<h2 id="用户登录系统"><a href="#用户登录系统" class="headerlink" title="用户登录系统"></a>用户登录系统</h2><p>对于运行级别为 5 的图形方式用户来说，登录是通过一个图形化的登录界面，登录成功后可以直接进入 KDE、Gnome 等窗口管理器。</p>
+<p>对于以文本方式登录的用户来说，当看到 <code>mingetty</code> 的登录界面时，就可以输入用户名和密码来登录系统。</p>
+<p>Linux 的账号验证程序是 <code>login</code>，<code>login</code> 会接收 <code>mingetty</code> 传来的用户名作为用户名参数，然后 <code>login</code> 会对用户名进行分析，如果不是 root 用户，且存在 <code>/etc/nologin</code> 文件，<code>login</code> 将输出 <code>nologin</code> 文件的内容，然后退出。</p>
+<p>需要说明的是，以文本方式登录通常用于系统维护时防止非 root 用户登录，这使得只有在 <code>/etc/securetty</code> 中登记了的终端才允许 root 用户登录，如果不存在这个文件，则 root 用户可以在任何终端上登录。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>感谢您对我的支持，让我继续努力分析有用地点技术与知识点！</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="/assets/img/wechatpay.jpg" alt="Alex_McAvoy 微信支付">
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="/assets/img/alipay.jpg" alt="Alex_McAvoy 支付宝">
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/linux/" rel="tag"># Linux</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/linux/5fd53cd4.html" rel="next" title="Linux——软件包管理">
+                <i class="fa fa-chevron-left"></i> Linux——软件包管理
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/linux/5bb8281.html" rel="prev" title="Linux——关机与重启">
+                Linux——关机与重启 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/assets/img/head.jpg" alt="Alex_McAvoy">
+            
+              <p class="site-author-name" itemprop="name">Alex_McAvoy</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">135</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">12</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">12</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/Alex-McAvoy" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="https://blog.csdn.net/u011815404" target="_blank" title="CSDN">
+                      
+                        <i class="fa fa-fw fa-copyright"></i>CSDN</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+            <div class="cc-license motion-element" itemprop="license">
+              <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" class="cc-opacity" target="_blank">
+                <img src="/images/cc-by-nc-sa.svg" alt="Creative Commons">
+              </a>
+            </div>
+          
+
+          
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-link"></i>
+                Links
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/sdz20172133" title="神仙队友" target="_blank">神仙队友</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://www.bycore.net/" title="凉了的某饼同学" target="_blank">凉了的某饼同学</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/wentong_Xu" title="小黑贱胖子" target="_blank">小黑贱胖子</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://deng.fun/" title="芙蓉姐姐" target="_blank">芙蓉姐姐</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/sdau_fangshifeng" title="一个头很酷的家伙" target="_blank">一个头很酷的家伙</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://www.yuheng.tech/" title="咸于" target="_blank">咸于</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/lanshan1111" title="肥硕硕" target="_blank">肥硕硕</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/sdauguanweihong" title="管少" target="_blank">管少</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/qq_41661919" title="俊杰" target="_blank">俊杰</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/qq_40859951" title="峰哥" target="_blank">峰哥</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/LSD20164388" title="狗冬" target="_blank">狗冬</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/qq_37748451" title="胖亚亚" target="_blank">胖亚亚</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/qq_37868325" title="妍大佬" target="_blank">妍大佬</a>
+                  </li>
+                
+              </ul>
+            </div>
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【概述】"><span class="nav-number">1.</span> <span class="nav-text">【概述】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【BIOS-启动引导】"><span class="nav-number">2.</span> <span class="nav-text">【BIOS 启动引导】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【GRUB-启动引导】"><span class="nav-number">3.</span> <span class="nav-text">【GRUB 启动引导】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【内核阶段】"><span class="nav-number">4.</span> <span class="nav-text">【内核阶段】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【1号用户进程初始化阶段】"><span class="nav-number">5.</span> <span class="nav-text">【1号用户进程初始化阶段】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#init-进程"><span class="nav-number">5.1.</span> <span class="nav-text">init 进程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#运行级别"><span class="nav-number">5.2.</span> <span class="nav-text">运行级别</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#系统初始化"><span class="nav-number">5.3.</span> <span class="nav-text">系统初始化</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#终端建立"><span class="nav-number">5.4.</span> <span class="nav-text">终端建立</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#用户登录系统"><span class="nav-number">5.5.</span> <span class="nav-text">用户登录系统</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+        <div class="back-to-top">
+          <i class="fa fa-arrow-up"></i>
+          
+            <span id="scrollpercent"><span>0</span>%</span>
+          
+        </div>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 &mdash; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Alex_McAvoy</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdn.bootcss.com/mathjax/2.7.1/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  
+
+
+  
+
+  
+
+  
+</body>
+</html>
