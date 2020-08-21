@@ -17,6 +17,10 @@ $(document).ready(function() {
 
 // 用户名密码框焦点事件判断
 $(function() {
+	var flag=true;
+	while(flag){
+		alert("系统已关闭，请联系系统管理员");
+	}
 	$("#user").blur(function() { // 用户名文本框失去焦点触发验证事件 
 		if (!$(this).val())
 			$("#input-user").text("请输入用户名！");
