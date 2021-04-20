@@ -1,0 +1,1027 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+<!-- 实现文章加密 -->
+<script>
+    (function(){
+        if(''){
+            if (prompt('请输入密码') !== ''){
+                alert('密码错误！');
+                history.back();
+            }
+        }
+    })();
+</script>
+
+
+
+  
+  
+    
+    
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+  <link href="/lib/pace/pace-theme-corner-indicator.min.css?v=1.0.2" rel="stylesheet">
+
+
+
+
+  
+  
+  <link rel="stylesheet" media="all" href="/lib/Han/dist/han.min.css?v=3.3">
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="机器学习,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="【概述】对于多分类问题，可以将其进行拆解，转换为若干个独立的二元分类问题，进而借助分类学习方法来解决多分类问题 具体来说，先对问题进行进行拆分，然后为拆出的每个二分类任务训练一个分类器，在测试时，对这些分类器的预测结果进行集成，以获得最终的多分类结果 最常用的拆解策略有三种：  一对一（One vs One，OvO） 一对其余（One vs Rest，OvR） 多对多（Many vs Many，M">
+<meta name="keywords" content="机器学习">
+<meta property="og:type" content="article">
+<meta property="og:title" content="多分类问题的拆解策略">
+<meta property="og:url" content="https://alex-mcavoy.github.io/ml/325cb37d.html">
+<meta property="og:site_name" content="Alex_McAvoy">
+<meta property="og:description" content="【概述】对于多分类问题，可以将其进行拆解，转换为若干个独立的二元分类问题，进而借助分类学习方法来解决多分类问题 具体来说，先对问题进行进行拆分，然后为拆出的每个二分类任务训练一个分类器，在测试时，对这些分类器的预测结果进行集成，以获得最终的多分类结果 最常用的拆解策略有三种：  一对一（One vs One，OvO） 一对其余（One vs Rest，OvR） 多对多（Many vs Many，M">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/20-1.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/20-2.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/20-3.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/20-4.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/20-5.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/20-2.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/20-6.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/20-7.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/20-8.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/20-9.png">
+<meta property="og:updated_time" content="2021-04-20T15:04:30.359Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="多分类问题的拆解策略">
+<meta name="twitter:description" content="【概述】对于多分类问题，可以将其进行拆解，转换为若干个独立的二元分类问题，进而借助分类学习方法来解决多分类问题 具体来说，先对问题进行进行拆分，然后为拆出的每个二分类任务训练一个分类器，在测试时，对这些分类器的预测结果进行集成，以获得最终的多分类结果 最常用的拆解策略有三种：  一对一（One vs One，OvO） 一对其余（One vs Rest，OvR） 多对多（Many vs Many，M">
+<meta name="twitter:image" content="https://alex-mcavoy.github.io/images/ml/20-1.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":true,"scrollpercent":true,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://alex-mcavoy.github.io/ml/325cb37d.html">
+
+
+
+
+
+  <title>多分类问题的拆解策略 | Alex_McAvoy</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Alex_McAvoy</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/ml/325cb37d.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Alex_McAvoy">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/assets/img/head.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Alex_McAvoy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">多分类问题的拆解策略</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-06-20T19:53:00+08:00">
+                2019-06-20
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/ml/" itemprop="url" rel="index">
+                    <span itemprop="name">机器学习</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  1,504 字
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">
+                  5 分钟
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body han-init-context" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="【概述】"><a href="#【概述】" class="headerlink" title="【概述】"></a>【概述】</h1><p>对于多分类问题，可以将其进行拆解，转换为若干个独立的二元分类问题，进而借助分类学习方法来解决多分类问题</p>
+<p>具体来说，先对问题进行进行拆分，然后为拆出的每个二分类任务训练一个分类器，在测试时，对这些分类器的预测结果进行集成，以获得最终的多分类结果</p>
+<p>最常用的拆解策略有三种：</p>
+<ul>
+<li>一对一（One vs One，OvO）</li>
+<li>一对其余（One vs Rest，OvR）</li>
+<li>多对多（Many vs Many，MvM）</li>
+</ul>
+<h1 id="【OvO】"><a href="#【OvO】" class="headerlink" title="【OvO】"></a>【OvO】</h1><p>假设有 $N$ 个类别 $C_1,C_2,…,C_N$，对于给定数据集 $\{(\vec{x_1},y_1),(\vec{x_2},y_2),…,(\vec{x_n},y_n)\}$，其中，$y_i\in\{C_1,C_2,…,C_N\}$</p>
+<p><code>OvO</code> 策略将这 $N$ 个类别两两配对，产生 $C_N^2=\frac{N(N-1)}{2}$ 个二分类任务</p>
+<p>之后，对划分好的 $C_N^2$ 个任务分别使用分类器进行训练</p>
+<p>在预测阶段，只需要将测试样本分别给在训练阶段训练好的 $C_N^2$ 个分类器进行预测，再将这些预测结果进行投票统计，票数最多的即为最终的预测结果</p>
+<p><img width="300" src="/images/ml/20-1.png"></p>
+<hr>
+<p>例如，下图中的训练集可分为 <code>A</code>、<code>B</code>、<code>C</code> 三个类别</p>
+<p><img width="300" src="/images/ml/20-2.png"></p>
+<p>采用 <code>OvO</code> 策略后，$3$ 个类别两两配对，产生 $C_3^2=\frac{3\cdot 2}{2}=3$ 个二分类任务，相应地，利用这三种划分就能得到 $3$ 个分类器</p>
+<p><img width="300" src="/images/ml/20-3.png"></p>
+<p>在预测阶段，只需要将测试样本分别给在训练阶段训练好的 $3$ 个分类器进行预测，最后将这些结果进行投票统计，票数最多的即为预测结果</p>
+<p><img width="300" src="/images/ml/20-4.png"></p>
+<h1 id="【OvR】"><a href="#【OvR】" class="headerlink" title="【OvR】"></a>【OvR】</h1><p>假设有 $N$ 个类别 $C_1,C_2,…,C_N$，对于给定数据集 $\{(\vec{x_1},y_1),(\vec{x_2},y_2),…,(\vec{x_n},y_n)\}$，其中，$y_i\in\{C_1,C_2,…,C_N\}$</p>
+<p><code>OvR</code> 策略每次将一个类的样例作为正类，其他的所有类的样例作为反类，如此划分为 $N$ 个类别，产生 $N$ 个二分类任务</p>
+<p>之后，对这 $N$ 个类别分别进行训练，训练出 $N$ 个分类器</p>
+<p>在测试时，若仅有一个分类器预测为正类，则对应的类别标记为最终的分类结果；若有多个分类器预测为正类，则考虑各分类器的预测置信度，选择置信度最大的类别标记为最终的分类结果</p>
+<p><img width="300" src="/images/ml/20-5.png"></p>
+<p><code>OvR</code> 策略只需要训练 $N$ 个分类器，而 <code>OvO</code> 策略需要训练 $C_n^2$ 个分类器，显然 <code>OvO</code> 策略的存储开销和时间开销要比 <code>OvR</code> 更大</p>
+<p>但在实际使用时，<code>OvO</code> 策略并不需要像 <code>OvR</code> 策略一样使用全部样本进行训练，在类别很多时，使用 <code>OvO</code> 策略的时间开销反而要比 <code>OvR</code> 策略要小</p>
+<hr>
+<p>例如，下图中的训练集可分为 <code>A</code>、<code>B</code>、<code>C</code> 三个类别</p>
+<p><img width="300" src="/images/ml/20-2.png"></p>
+<p>采用 <code>OvR</code> 策略后，$3$ 个类别分别作为正类，相应地剩余的两类别作为反类，产生 $N$ 个二分类任务</p>
+<p><img width="400" src="/images/ml/20-6.png"></p>
+<p>相应地，利用这三种划分就能得到 $3$ 个分类器</p>
+<p><img width="300" src="/images/ml/20-7.png"></p>
+<p>在预测阶段，只需要将测试样本分别给在训练阶段训练好的 $3$ 个分类器进行预测，最后对这些结果选择概率最高的类别作为最终结果</p>
+<p><img width="400" src="/images/ml/20-8.png"></p>
+<h1 id="【MvM】"><a href="#【MvM】" class="headerlink" title="【MvM】"></a>【MvM】</h1><h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>假设有 $N$ 个类别 $C_1,C_2,…,C_N$，对于给定数据集 $\{(\vec{x_1},y_1),(\vec{x_2},y_2),…,(\vec{x_n},y_n)\}$，其中，$y_i\in\{C_1,C_2,…,C_N\}$</p>
+<p><code>MvM</code> 策略每次将若干类的样例作为正类，其他的所有类的样例作为反类，显然 <code>OvO</code> 策略与 <code>OvR</code> 策略是 <code>MvM</code> 策略的特例</p>
+<p><code>MvM</code> 策略的正、反类构造必须要有特殊的设计，不能随意选取，最常用的构造技术为：<strong>纠错输出码（Error Correcting Codes，ECOC）</strong></p>
+<h2 id="ECOC"><a href="#ECOC" class="headerlink" title="ECOC"></a>ECOC</h2><p><code>ECOC</code> 是将编码思想引入到类别拆分中，并尽可能的在解码过程中具有容错性，其工作过程主要分两步：</p>
+<ol>
+<li>编码：对 $N$ 个类别进行 $M$ 次划分，每次划分将一部分类别划分为正类，另一部分划分为反类，从而形成一个二分类训练集，这样一共产生 $M$ 个训练集，进而可训练出 $M$ 个分类器</li>
+<li>解码：使用 $M$ 个分类器分别对测试样本进行预测，这些预测标记组成一个编码，将这个预测编码与每个类别各自的编码进行比较，返回其中距离最小的类别作为预测结果</li>
+</ol>
+<p>类别划分通过<strong>编码矩阵（coding matrix）</strong>指定，其有多种形式，最常见的是利用<strong>海明码</strong>来编码的二元码和三元码</p>
+<p>如下图，二元码将类别分为<strong>正类（-1）</strong>和<strong>负类（+1）</strong>，后者在二元码的基础上又加了<strong>停用类（0）</strong>，即分类器 $f_i$ 不使用该类样本</p>
+<p><img src="/images/ml/20-9.png"></p>
+<p>在解码阶段，各分类器的预测结果联合起来形成了测试实例的编码，该编码与各类所对应的编码进行比较，将距离最小的编码所对应的类作为预测结果，例如，在上图中的二元码中，若基于欧氏距离，预测结果将为 $C_3$</p>
+<p>在测试阶段，<code>ECOC</code> 对分类器的错误有一定的容忍和修正能力，在上图中，二元码中测试示例的正确编码是 $(-1,+1,+1,-1,+1)$</p>
+<p>假设在预测时，分类器 $f_2$ 出错了，导致了出现错误编码 $(-1,-1,+1,-1,+1)$，但基于这个编码，仍能产生正确的分类结果 $C_3$，这也是 <code>ECOC</code> 被称为纠错输出码的原因</p>
+<p>一般来说，<code>ECOC</code> 编码越长，纠错能力越长，但编码越长意味着要训练分类器越多，计算、存储开销都会增大，同时，对于有限类别，可能的组合数目是有限的，码长在超过一定范围后，就失去了意义</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    <!-- 版权说明 -->
+    
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者：</strong>
+    Alex_McAvoy
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://alex-mcavoy.github.io/ml/325cb37d.html" title="多分类问题的拆解策略">https://alex-mcavoy.github.io/ml/325cb37d.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>
+    本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 3.0</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+
+      </div>
+    
+	
+    <!-- 打赏 -->
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>感谢您对我的支持，让我继续努力分析有用地点技术与知识点！</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="/assets/img/wechatpay.jpg" alt="Alex_McAvoy 微信支付">
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="/assets/img/alipay.jpg" alt="Alex_McAvoy 支付宝">
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/ml/" rel="tag"># 机器学习</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/ml/c957033e.html" rel="next" title="多元 Logistic 回归">
+                <i class="fa fa-chevron-left"></i> 多元 Logistic 回归
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/notes/os/dc54fe0b.html" rel="prev" title="操作系统——OS 概述">
+                操作系统——OS 概述 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+	
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/assets/img/head.jpg" alt="Alex_McAvoy">
+            
+              <p class="site-author-name" itemprop="name">Alex_McAvoy</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">288</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">21</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">21</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/Alex-McAvoy" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="https://blog.csdn.net/u011815404" target="_blank" title="CSDN">
+                      
+                        <i class="fa fa-fw fa-copyright"></i>CSDN</a>
+                  </span>
+                
+            </div>
+          
+		  
+          
+          
+            <div class="cc-license motion-element" itemprop="license">
+              <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" class="cc-opacity" target="_blank">
+                <img src="/images/cc-by-nc-sa.svg" alt="Creative Commons">
+              </a>
+            </div>
+          
+		  
+		  <!-- 访客地图 -->
+		  <script type="text/javascript" src="//rf.revolvermaps.com/0/0/5.js?i=50n58yo58ow&amp;m=0&amp;c=ff0000&amp;cr1=ffffff" async="async"></script>
+
+          
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-link"></i>
+                Links
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/sdz20172133" title="神仙队友" target="_blank">神仙队友</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://pxlsdz.gitee.io/" title="神仙队友的另一个博客" target="_blank">神仙队友的另一个博客</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://www.bycore.net/" title="凉了的某饼同学" target="_blank">凉了的某饼同学</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/wentong_Xu" title="小黑贱胖子" target="_blank">小黑贱胖子</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://deng.fun/" title="芙蓉姐姐" target="_blank">芙蓉姐姐</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/sdau_fangshifeng" title="一个头很酷的家伙" target="_blank">一个头很酷的家伙</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://www.yuheng.tech/" title="咸于" target="_blank">咸于</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/lanshan1111" title="肥硕硕" target="_blank">肥硕硕</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/sdauguanweihong" title="管少" target="_blank">管少</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/qq_41661919" title="俊杰" target="_blank">俊杰</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/qq_40859951" title="峰哥" target="_blank">峰哥</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/LSD20164388" title="狗冬" target="_blank">狗冬</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/qq_37748451" title="胖亚亚" target="_blank">胖亚亚</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/qq_37868325" title="妍大佬" target="_blank">妍大佬</a>
+                  </li>
+                
+              </ul>
+            </div>
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【概述】"><span class="nav-number">1.</span> <span class="nav-text">【概述】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【OvO】"><span class="nav-number">2.</span> <span class="nav-text">【OvO】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【OvR】"><span class="nav-number">3.</span> <span class="nav-text">【OvR】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【MvM】"><span class="nav-number">4.</span> <span class="nav-text">【MvM】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#概述"><span class="nav-number">4.1.</span> <span class="nav-text">概述</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ECOC"><span class="nav-number">4.2.</span> <span class="nav-text">ECOC</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+        <div class="back-to-top">
+          <i class="fa fa-arrow-up"></i>
+          
+            <span id="scrollpercent"><span>0</span>%</span>
+          
+        </div>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 &mdash; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Alex_McAvoy</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+<script>
+(function(){
+    var bp = document.createElement('script');
+    var curProtocol = window.location.protocol.split(':')[0];
+    if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';        
+    }
+    else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+    }
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(bp, s);
+})();
+</script>
+
+
+  
+  
+
+  
+  
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdn.bootcss.com/mathjax/2.7.1/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  
+
+
+  
+
+  
+
+  <script type="text/javascript" src="/js/src/cursor-effects.js"></script>
+</body>
+</html>
