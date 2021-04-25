@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+<!-- 实现文章加密 -->
+<script>
+    (function(){
+        if(''){
+            if (prompt('请输入密码') !== ''){
+                alert('密码错误！');
+                history.back();
+            }
+        }
+    })();
+</script>
+
+
+
+  
+  
+    
+    
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+  <link href="/lib/pace/pace-theme-corner-indicator.min.css?v=1.0.2" rel="stylesheet">
+
+
+
+
+  
+  
+  <link rel="stylesheet" media="all" href="/lib/Han/dist/han.min.css?v=3.3">
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="机器学习,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="【类别不平衡问题】对于分类学习方法，都有一个共同的假设，即：不同类别的训练样例数目相同 如果不同类别的训练样例数目稍有差别，通常对分类影响不大，但是若差别很大，则会对学习造成影响，测试结果非常差 例如：对于二分类问题，有 998 个反例，2 个正例，那么学习方法只需返回一个永远将新样本预测为反例的分类器，就能达到 99.8% 的精度，显然，这样的分类器没有价值 对于多分类问题，在将其拆解为多个二分">
+<meta name="keywords" content="机器学习">
+<meta property="og:type" content="article">
+<meta property="og:title" content="类别不平衡问题">
+<meta property="og:url" content="https://alex-mcavoy.github.io/ml/bebe8788.html">
+<meta property="og:site_name" content="Alex_McAvoy">
+<meta property="og:description" content="【类别不平衡问题】对于分类学习方法，都有一个共同的假设，即：不同类别的训练样例数目相同 如果不同类别的训练样例数目稍有差别，通常对分类影响不大，但是若差别很大，则会对学习造成影响，测试结果非常差 例如：对于二分类问题，有 998 个反例，2 个正例，那么学习方法只需返回一个永远将新样本预测为反例的分类器，就能达到 99.8% 的精度，显然，这样的分类器没有价值 对于多分类问题，在将其拆解为多个二分">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2021-04-25T08:01:30.679Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="类别不平衡问题">
+<meta name="twitter:description" content="【类别不平衡问题】对于分类学习方法，都有一个共同的假设，即：不同类别的训练样例数目相同 如果不同类别的训练样例数目稍有差别，通常对分类影响不大，但是若差别很大，则会对学习造成影响，测试结果非常差 例如：对于二分类问题，有 998 个反例，2 个正例，那么学习方法只需返回一个永远将新样本预测为反例的分类器，就能达到 99.8% 的精度，显然，这样的分类器没有价值 对于多分类问题，在将其拆解为多个二分">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":true,"scrollpercent":true,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://alex-mcavoy.github.io/ml/bebe8788.html">
+
+
+
+
+
+  <title>类别不平衡问题 | Alex_McAvoy</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Alex_McAvoy</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/ml/bebe8788.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Alex_McAvoy">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/assets/img/head.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Alex_McAvoy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">类别不平衡问题</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-06-22T09:30:00+08:00">
+                2019-06-22
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/ml/" itemprop="url" rel="index">
+                    <span itemprop="name">机器学习</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  1,592 字
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">
+                  6 分钟
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body han-init-context" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="【类别不平衡问题】"><a href="#【类别不平衡问题】" class="headerlink" title="【类别不平衡问题】"></a>【类别不平衡问题】</h1><p>对于分类学习方法，都有一个共同的假设，即：不同类别的训练样例数目相同</p>
+<p>如果不同类别的训练样例数目稍有差别，通常对分类影响不大，但是若差别很大，则会对学习造成影响，测试结果非常差</p>
+<p>例如：对于二分类问题，有 998 个反例，2 个正例，那么学习方法只需返回一个永远将新样本预测为反例的分类器，就能达到 99.8% 的精度，显然，这样的分类器没有价值</p>
+<p>对于多分类问题，在将其拆解为多个二分类任务时，当使用 OvR 或 MvM 策略后，产生的二分类任务就有可能出现类别不平衡</p>
+<p><strong>类别不平衡（class-imbalance）</strong>是指分类任务中不同类别的训练样例数目差别很大的情况，在实际应用中，常会遇到类别不平衡的问题</p>
+<p>例如，在银行信用欺诈交易识别中，属于欺诈交易的应该是很少部分，绝大部分交易是正常的，这就是一个正常的类别不平衡问题</p>
+<p>一般而言，如果类别不平衡比例超过 4:1，那么分类器会因为数据不平衡性而无法满足分类要求，因此在构建分类模型之前，需要对分类不平衡性问题进行处理</p>
+<h1 id="【再缩放策略】"><a href="#【再缩放策略】" class="headerlink" title="【再缩放策略】"></a>【再缩放策略】</h1><h2 id="基本思想"><a href="#基本思想" class="headerlink" title="基本思想"></a>基本思想</h2><p>从线性分类器的角度进行讨论，当使用 $\hat{y}=\Theta^TX$ 对新样本进行拟合时，事实上是在用预测出的 $\hat{y}$  与一个阈值比较，一般来说，通常将阈值设为 0.5，即在 $\hat{y}&gt;0.5$ 时判为正类，在 $\hat{y}\leq 0.5$ 时判为负类</p>
+<p>$\hat{y}$ 实际上反映了 $\vec{x}$ 为正类的可能性，$1-\hat{y}$ 反应了 $\vec{x}$ 为负类的可能性，两者的比值 $\frac{\hat{y}}{1-\hat{y}}$ 称为<strong>几率（odds）</strong>，其反应了 $\vec{x}$ 为正类的相对可能性</p>
+<p>当阈值设为 0.5 时，恰好表明分类器认为 $\vec{x}$ 为正类、负类的可能性相同，即分类器的决策规则为：</p>
+<script type="math/tex; mode=display">
+若 \frac{\hat{y}}{1-\hat{y}}>1,\quad 则预测为正类</script><p>当训练集中正类、反类数目不同时，用 $m^+$ 表示正类数目，$m^-$ 表示负类数目，则观测几率为 $\frac{m^+}{m^-}$，假设训练集是真实样本总体的无偏估计，这时，观测几率就代表真实几率</p>
+<p>因此，只要分类器的预测几率高于观测几率，就判为正类，即：</p>
+<script type="math/tex; mode=display">
+若 \frac{\hat{y}}{1-\hat{y}}>\frac{m^+}{m^-},\quad 则预测为正类</script><p>但分类器是基于 $\frac{\hat{y}}{1-\hat{y}}&gt;1$ 进行决策的，因此需要对预测值进行调整，使其基于 $\frac{\hat{y}}{1-\hat{y}}&gt;\frac{m^+}{m^-}$ 执行 $\frac{\hat{y}}{1-\hat{y}}&gt;1$，即<strong>再缩放（rescaling）策略</strong>：</p>
+<script type="math/tex; mode=display">
+\frac{\hat{y}'}{1-\hat{y}'}=\frac{\hat{y}}{1-\hat{y}}\times \frac{m^-}{m^+}</script><p>简单来说，就是通过调整数据集中正类和负类的数目，从而对预测值进行缩放调整</p>
+<p>再缩放策略虽然简单，但实际操作却没这么容易，因为在实际应用中，<strong>假设训练集是真实样本总体的无偏估计</strong>这个假设往往不成立，即不能有效地基于训练集观测几率来推断真实几率</p>
+<h2 id="策略的实现"><a href="#策略的实现" class="headerlink" title="策略的实现"></a>策略的实现</h2><p>在实际应用中，有以下五种公认的方法去对数据集进行调整：</p>
+<ol>
+<li>随机减少大类的样本数量</li>
+<li>随机减少特定大类的样本数量</li>
+<li>随机增大小类的样本数量</li>
+<li>随机增大特定小类的样本数量</li>
+<li>修改阈值，使阈值更符合实际情况</li>
+</ol>
+<p>其中，通过实现第 1、2 种方法来使用再缩放策略的方法被称为<strong>欠采样</strong>，通过实现第 3、4 种方法来使用再缩放策略的方法被称为<strong>过采样</strong>，通过实现第 5 种方法来使用再缩放策略的方法被称为<strong>阈值移动</strong></p>
+<h1 id="【欠采样】"><a href="#【欠采样】" class="headerlink" title="【欠采样】"></a>【欠采样】</h1><p><strong>欠采样（undersampling）</strong>是指对大类的数据样本进行采样，从而减少该类数据样本的个数，使其与其他类的数目接近，然后再进行学习</p>
+<p>目前，最常用的欠采样算法是 <code>AdaBoost 迭代算法</code>，其是为解决基于随机丢弃大类样本可能会丢失一些重要信息的问题</p>
+<p> <code>AdaBoost 迭代算法</code> 是基于<strong>集成学习（ensemble learning）</strong>中<strong>简单集成（easy ensemble）</strong>的思想，其将大类随机分为若干个集合，每个集合分别与小类合并，得到多个新的训练子集，再利用每个训练子集分别训练 <code>AdaBoost 弱分类器</code>，最后集成所有的 <code>AdaBoost  基分类器</code>，最终得到经过提升的的 <code>AdaBoost 强分类器</code></p>
+<p>这样对每个弱分类器来看，都进行了欠采样；在全局来看，没有丢失重要信息</p>
+<h1 id="【过采样】"><a href="#【过采样】" class="headerlink" title="【过采样】"></a>【过采样】</h1><p><strong>过采样（oversampling）</strong>是指增加小类数据样本的个数，使其与其他类的数目接近，然后再进行学习，其代表算法是 <code>SMOTE 算法</code></p>
+<p>要注意的是，过采样不能简单地对小类进行重复采样，这会导致出现过拟合</p>
+<p><code>SMOTE 算法</code> 通过<strong>数据插值</strong>的思想来产生额外的小类样本数据，其基本思想是：对每个小类样本 $a_i$，从其最近的 $k$ 个邻居中随机选择一个样本 $b_i$，然后在 $a_i$ 与 $b_i$ 的连线上随机选择一点，作为新合成的小类样本 $c_i$</p>
+<p><code>SMOTE 算法</code>  有效地防止了过拟合问题，但可能扩大噪声的影响范围，并加剧分类边界模糊化</p>
+<h1 id="【阈值移动】"><a href="#【阈值移动】" class="headerlink" title="【阈值移动】"></a>【阈值移动】</h1><p>在分类问题中，阈值一般设为 $0.5$</p>
+<p>当有可能出现类别不平衡问题时，可以根据实际情况对阈值进行移动，调整阈值，进而增加某一类的权重，以达到解决类别不平衡问题的目的，这就是<strong>阈值移动（threshold moving）</strong></p>
+<p>也就是说，阈值移动是直接基于原始训练集进行学习，在完成训练要进行预测时，将再缩放策略，即：</p>
+<script type="math/tex; mode=display">
+\frac{\hat{y}'}{1-\hat{y}'}=\frac{\hat{y}}{1-\hat{y}}\times \frac{m^-}{m^+}</script><p>嵌入到决策过程中，通过改变阈值来达到解决类别不平衡问题的目的</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    <!-- 版权说明 -->
+    
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者：</strong>
+    Alex_McAvoy
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://alex-mcavoy.github.io/ml/bebe8788.html" title="类别不平衡问题">https://alex-mcavoy.github.io/ml/bebe8788.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>
+    本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 3.0</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+
+      </div>
+    
+	
+    <!-- 打赏 -->
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>感谢您对我的支持，让我继续努力分析有用地点技术与知识点！</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="/assets/img/wechatpay.jpg" alt="Alex_McAvoy 微信支付">
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="/assets/img/alipay.jpg" alt="Alex_McAvoy 支付宝">
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/ml/" rel="tag"># 机器学习</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/ml/325cb37d.html" rel="next" title="多分类问题的拆解策略">
+                <i class="fa fa-chevron-left"></i> 多分类问题的拆解策略
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/ml/d9f8f63d.html" rel="prev" title="信息熵及其相关概念">
+                信息熵及其相关概念 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+	
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/assets/img/head.jpg" alt="Alex_McAvoy">
+            
+              <p class="site-author-name" itemprop="name">Alex_McAvoy</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">293</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">21</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">21</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/Alex-McAvoy" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="https://blog.csdn.net/u011815404" target="_blank" title="CSDN">
+                      
+                        <i class="fa fa-fw fa-copyright"></i>CSDN</a>
+                  </span>
+                
+            </div>
+          
+		  
+          
+          
+            <div class="cc-license motion-element" itemprop="license">
+              <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" class="cc-opacity" target="_blank">
+                <img src="/images/cc-by-nc-sa.svg" alt="Creative Commons">
+              </a>
+            </div>
+          
+		  
+		  <!-- 访客地图 -->
+		  <script type="text/javascript" src="//rf.revolvermaps.com/0/0/5.js?i=50n58yo58ow&amp;m=0&amp;c=ff0000&amp;cr1=ffffff" async="async"></script>
+
+          
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-link"></i>
+                Links
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/sdz20172133" title="神仙队友" target="_blank">神仙队友</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://pxlsdz.gitee.io/" title="神仙队友的另一个博客" target="_blank">神仙队友的另一个博客</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://www.bycore.net/" title="凉了的某饼同学" target="_blank">凉了的某饼同学</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/wentong_Xu" title="小黑贱胖子" target="_blank">小黑贱胖子</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://deng.fun/" title="芙蓉姐姐" target="_blank">芙蓉姐姐</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/sdau_fangshifeng" title="一个头很酷的家伙" target="_blank">一个头很酷的家伙</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://www.yuheng.tech/" title="咸于" target="_blank">咸于</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/lanshan1111" title="肥硕硕" target="_blank">肥硕硕</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/sdauguanweihong" title="管少" target="_blank">管少</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/qq_41661919" title="俊杰" target="_blank">俊杰</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/qq_40859951" title="峰哥" target="_blank">峰哥</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/LSD20164388" title="狗冬" target="_blank">狗冬</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/qq_37748451" title="胖亚亚" target="_blank">胖亚亚</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/qq_37868325" title="妍大佬" target="_blank">妍大佬</a>
+                  </li>
+                
+              </ul>
+            </div>
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【类别不平衡问题】"><span class="nav-number">1.</span> <span class="nav-text">【类别不平衡问题】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【再缩放策略】"><span class="nav-number">2.</span> <span class="nav-text">【再缩放策略】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#基本思想"><span class="nav-number">2.1.</span> <span class="nav-text">基本思想</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#策略的实现"><span class="nav-number">2.2.</span> <span class="nav-text">策略的实现</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【欠采样】"><span class="nav-number">3.</span> <span class="nav-text">【欠采样】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【过采样】"><span class="nav-number">4.</span> <span class="nav-text">【过采样】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【阈值移动】"><span class="nav-number">5.</span> <span class="nav-text">【阈值移动】</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+        <div class="back-to-top">
+          <i class="fa fa-arrow-up"></i>
+          
+            <span id="scrollpercent"><span>0</span>%</span>
+          
+        </div>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 &mdash; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Alex_McAvoy</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+<script>
+(function(){
+    var bp = document.createElement('script');
+    var curProtocol = window.location.protocol.split(':')[0];
+    if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';        
+    }
+    else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+    }
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(bp, s);
+})();
+</script>
+
+
+  
+  
+
+  
+  
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdn.bootcss.com/mathjax/2.7.1/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  
+
+
+  
+
+  
+
+  <script type="text/javascript" src="/js/src/cursor-effects.js"></script>
+</body>
+</html>
