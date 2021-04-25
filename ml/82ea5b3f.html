@@ -114,9 +114,11 @@
 <meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/03-2.png">
 <meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/03-3.png">
 <meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/03-4.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/03-3.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/03-4.png">
 <meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/03-5.png">
 <meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/03-6.png">
-<meta property="og:updated_time" content="2021-04-12T14:05:09.398Z">
+<meta property="og:updated_time" content="2021-04-25T15:05:26.458Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="分类问题评估指标">
 <meta name="twitter:description" content="【概述】对于分类问题来说，其根据所分类别的个数，可分为二分类问题、多分类问题 在二分类问题中，使用的评价指标有：准确率（accuracy）、精确率（Precision）、召回率（Recall）、F1 分数（F1 score）、ROC、AUC、代价敏感错误率、代价曲线等 在多分类问题中，使用的评价指标有： 宏精确率（macro-P）、宏召回率（macro-R）、宏 F1（macro-F1） 、微精确">
@@ -363,7 +365,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  3,729 字
+                  4,202 字
                 </span>
               
 
@@ -379,7 +381,7 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  13 分钟
+                  15 分钟
                 </span>
               
             </div>
@@ -444,20 +446,47 @@
 <h1 id="【ROC-与-AUC】"><a href="#【ROC-与-AUC】" class="headerlink" title="【ROC 与 AUC】"></a>【ROC 与 AUC】</h1><h2 id="ROC-曲线"><a href="#ROC-曲线" class="headerlink" title="ROC 曲线"></a>ROC 曲线</h2><p>在根据预测结果对样例进行排序时，排序本身的质量好坏，体现了综合考虑模型在不同任务下的<strong>期望泛化性能</strong>的好坏，ROC 正是从这个角度出发来研究模型的泛化性能</p>
 <p>ROC 全称是<strong>受试者工作特征（Receiver Operating Characteristic）</strong>，与 P-R 曲线相似，根据模型的预测结果对样例进行排序，按顺序逐个将样本作为正类进行预测，每次计算<strong>真正类率（True Positive Rate，TPR）</strong>、<strong>假正类率（False Positive Rate，FPR）</strong>，并将他们作为纵轴、横轴来绘制曲线</p>
 <p><strong>真正类率</strong>是在所有<strong>实际为正类</strong>的样本中，被<strong>正确判断</strong>为正类的比例，其定义式与召回率相同，即：</p>
-<script type="math/tex; mode=display">TPR=\frac{TP}{TP+FN}</script><p><strong>假正类率</strong>是在所有<strong>实际为负类</strong>的样本中，被<strong>错误判断</strong>为正类的比例，其定义为：</p>
-<script type="math/tex; mode=display">FPR=\frac{FP}{FP+TN}</script><p>如下图，将 TPR 作为纵轴，FPR 作为横轴，即可绘制出 ROC 曲线</p>
+<script type="math/tex; mode=display">
+TPR=\frac{TP}{TP+FN}​</script><p><strong>假正类率</strong>是在所有<strong>实际为负类</strong>的样本中，被<strong>错误判断</strong>为正类的比例，其定义为：</p>
+<script type="math/tex; mode=display">
+FPR=\frac{FP}{FP+TN}</script><p>如下图，将 TPR 作为纵轴，FPR 作为横轴，即可绘制出 ROC 曲线</p>
 <p><img width="300" src="/images/ml/03-3.png"></p>
 <p>在实际应用中，通常是利用有限个测试样例来绘制 ROC 图，此时仅能获得有限个坐标对，无法产生类似上图的光滑 ROC 曲线，只能绘制出如下图的近似 ROC 曲线</p>
 <p><img width="300" src="/images/ml/03-4.png"></p>
 <h2 id="AUC"><a href="#AUC" class="headerlink" title="AUC"></a>AUC</h2><p>在进行模型比较时，与 P-R 图相似，如果一个模型的 ROC 曲线被另一个模型的曲线完全包住，则可断言后者的性能优于前者；若两模型的 ROC 曲线发生交叉，则难以断言两者的优劣</p>
 <p>如果一定要对两交叉的 ROC 曲线对应的模型进行比较，则对两 ROC 曲线的面积，即 <strong>AUC（Area Under ROC Curve）</strong>进行比较</p>
-<p>从定义可知，AUC 可通过对 ROC 曲线下各部分的面积求和取得，假设 ROC 的曲线是由坐标 $\{(x_1,y_1),(x_2,y_2),…,(x_n,y_n)\}$ 的点按序连接而形成的，则 AUC 可估算为：</p>
-<script type="math/tex; mode=display">AUC=\frac{1}{2}\sum_{i=1}^{n-1}(x_{i+1}-x_i)\cdot(y_i+y_{i+1})</script><p>简单来说，AUC 为任取一对正例和负例，正例得分大于负例得分的概率，AUC 越大，模型效果越好</p>
-<p>形式化来看，AUC 考虑的是样本预测的排序质量，因此其与排序误差有着紧密的联系，对于给定的 $n^+$ 个正类和 $n^-$ 个负类，令 $D^+$ 为正类集合，$D^-$ 为负类集合，则排序损失定义为：</p>
-<script type="math/tex; mode=display">\ell_{rank} = \frac{1}{n^+n^-} \sum_{x^+\in D^+} \sum_{x^-\in D^-} \bigl[ I \bigl( f(x^+)<f(x^-))+\frac{1}{2}I(f(x^+)=f(x^-) \bigr) \bigr]</script><p>其中，$I(x)$ 代表指示函数，在 $x$ 为真和假时分别取值 $1$、$0$</p>
-<p>即考虑每一对正例、负例，若正例的预测值小于负例，则记 $1$ 罚分；若相等，则记 $0.5$ 罚分</p>
+<p><img width="300" src="/images/ml/03-3.png"></p>
+<p>从图像的物理意义来看，横轴是 <code>假正类率 FPR</code>，即所有实际为负类但被判为正类的概率；纵轴是 <code>真正类率 TPR</code>，即所有实际为正类也被判正类的概率 </p>
+<p>当 <code>TPR=FPR</code> 时，即上图中的虚线，此时无论真实类别为正类还是为负类的样本，分类器将其预测为正类的概率相等，即分类器对于样本毫无区分能力，与掷骰子没有任何区别</p>
+<p>而希望分类器达到的效果是：对于真实类别为正类，分类器预测为正类的概率，要大于真实类别为负类，分类器预测为正类的概率，即：<code>TPR&gt;FPR</code>，也就是上图中的实线曲线</p>
+<p>在最理想的情况下，没有真实类别为正类，但被错分为负类的样本，即 <code>TPR=1</code>；也没有真实类别为负类，但被错分为正类的样本，即 <code>FPR=0</code>，此时，<code>AUC=1</code></p>
+<hr>
+<p>形式化来看，AUC 考虑的是<strong>样本预测的排序质量</strong></p>
+<p>对于样本容量为 $n$ 的训练集 $D$ 来说，其有 $n^+$ 个正类和 $n^-$ 个负类，令 $D^+$ 为正类集合，$D^-$ 为负类集合</p>
+<p>当在训练集中随机抽取一个样本 $X$ 时，设其被判为正类的概率为 $P$</p>
+<p>对训练集 $D$ 抽取 $n^+$ 个样本，并按概率 $P$ 进行排序，设排序后第 $i$ 个样本的序号为：</p>
+<script type="math/tex; mode=display">
+r_i=n-i+1,\quad i>n^+</script><p>对于排序第 1 的样本，其序号为 $r_1$，概率比他小的有 $n^+-1$ 个正例，$r_1-n^+$ 个负例</p>
+<p>对于排序第 2 的样本，其序号为 $r_2$，概率比他小的有 $n^+-2$ 个正例，$r_i-n^++1$ 个负例</p>
+<p>以此类推，对于排序第 $i$ 的样本，其序号为 $r_i$，概率比他小的有 $n^+-i$ 个正例，$r_i-n^++i-1$ 个负例</p>
+<p>总共是 $n^+\cdot n^-$ 个正负样本对，将上述过程中正样本概率大于负样本的情况求和，有：</p>
+<script type="math/tex; mode=display">
+\begin{align}
+AUC &= \frac{1}{n^+ n^-}\sum_{i=1}^{n^+}(r_i-n^+)+(r_i-n^++1)+...+(r_i-1) \\
+&= \frac{1}{n^+ n^-}\bigl[(\sum_{i=1}^{n^+}r^i)-\frac{n^+(n^++1)}{2}\bigr]
+\end{align}</script><p>根据公式，可以知道， AUC 本质上，就是随机给定一个正样本和一个负样本，分类器输出该正样本为正的概率值比分类器输出该负样本为正的概率值要大的可能性，即：</p>
+<script type="math/tex; mode=display">
+AUC=\frac{1}{n^+ n^-}\sum_{x^+\in D^+} \sum_{x^-\in D^-} \bigl[ I\bigl(f(x^+)>f(x^-)\bigr)+\frac{1}{2}I\bigl(f(x^+)=f(x^-)\bigr) \bigr]</script><p>相应的，排序损失定义为：</p>
+<script type="math/tex; mode=display">
+\ell_{rank} = \frac{1}{n^+n^-} \bigl[ I\bigl(f(x^+)<f(x^-)\bigr)+\frac{1}{2}I\bigl(f(x^+)=f(x^-)\bigr) \bigr]</script><p>其中，$I(x)$ 代表指示函数，在 $x$ 为真和假时分别取值 $1$、$0$</p>
 <p>可以看出，排序损失 $\ell_{rank}$ 对应的是 ROC 曲线上方的面积，若一个正例在 ROC 曲线上对应标记点的坐标为 $(x,y)$，则 $x$ 恰是排序在其前的负例所占的比例，即<strong>假正类率</strong>，故有：</p>
-<script type="math/tex; mode=display">AUC=1-\ell_{rank}</script><h1 id="【代价敏感错误率】"><a href="#【代价敏感错误率】" class="headerlink" title="【代价敏感错误率】"></a>【代价敏感错误率】</h1><h2 id="代价矩阵"><a href="#代价矩阵" class="headerlink" title="代价矩阵"></a>代价矩阵</h2><p>在实际应用中，不同的错误造成的后果不同，为权衡不同错误造成的不同损失，为错误赋予<strong>非均等代价（unequal cost）</strong></p>
+<script type="math/tex; mode=display">
+AUC=1-\ell_{rank}</script><hr>
+<p>在实际应用中，无法产生类似光滑 ROC 曲线，只能绘制出如下图的近似 ROC 曲线</p>
+<p><img width="300" src="/images/ml/03-4.png"></p>
+<p>根据 AUC 的定义，AUC 可通过对 ROC 曲线下各部分的面积求和取得，假设 ROC 的曲线是由坐标 $\{(x_1,y_1),(x_2,y_2),…,(x_n,y_n)\}$ 的点按序连接而形成的，则 AUC 可估算为：</p>
+<script type="math/tex; mode=display">
+AUC=\frac{1}{2}\sum_{i=1}^{n-1}(x_{i+1}-x_i)\cdot(y_i+y_{i+1})</script><h1 id="【代价敏感错误率】"><a href="#【代价敏感错误率】" class="headerlink" title="【代价敏感错误率】"></a>【代价敏感错误率】</h1><h2 id="代价矩阵"><a href="#代价矩阵" class="headerlink" title="代价矩阵"></a>代价矩阵</h2><p>在实际应用中，不同的错误造成的后果不同，为权衡不同错误造成的不同损失，为错误赋予<strong>非均等代价（unequal cost）</strong></p>
 <p>对于二分类问题，设定一个<strong>代价矩阵（cost matrix）</strong>，用 $cost_{ij}$ 代表第 $i$ 类样本预测为第 $j$ 类样本的代价，且 $cost_{ii}=0$，此处的代价是指的<strong>代价比值</strong>，即 5：1 与 50：10 的效果相当</p>
 <p>若将第 $0$ 类判别为第 $1$ 类所造成的损失更大，则 $cost_{01}&gt;cost_{10}$，损失程度相差越大，$cost_{01}$ 与 $cost_{10}$ 差别越大</p>
 <p><img width="300" src="/images/ml/03-5.png"></p>
@@ -670,7 +699,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">290</span>
+                  <span class="site-state-item-count">293</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
