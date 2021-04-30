@@ -112,7 +112,7 @@
 <meta property="og:locale" content="zh-Hans">
 <meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/24-3.png">
 <meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/24-4.png">
-<meta property="og:updated_time" content="2021-04-28T14:54:20.560Z">
+<meta property="og:updated_time" content="2021-04-30T12:54:44.309Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="决策树的特征选择">
 <meta name="twitter:description" content="【概述】如果利用一个特征进行预测的记过与随机选取的结果没有很大的差别，那么这个特征是与预测无关的 为提高决策树学习的效率，要对其进行特征选择，即如何选择最优划分属性，通常特征选择的准则是信息增益（information gain）或信息增益比（information gain radio） 在对信息增益与信息增益比说明之前，应掌握信息熵的相关概念，关于信息熵及其相关概念：点击这里 【信息增益】信息">
@@ -359,7 +359,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  1,844 字
+                  2,041 字
                 </span>
               
 
@@ -375,7 +375,7 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  7 分钟
+                  8 分钟
                 </span>
               
             </div>
@@ -473,7 +473,7 @@ g(D,A_2)=H(D)-H(D|A_2) = 0.324\\
 g(D,A_3)=H(D)-H(D|A_3) = 0.420\\
 g(D,A_4)=H(D)-H(D|A_4) = 0.363
 \end{matrix}</script><p>此时，选择信息增益最大的 $A_3$ 作为最优特征</p>
-<h1 id="【信息增益比】"><a href="#【信息增益比】" class="headerlink" title="【信息增益比】"></a>【信息增益比】</h1><h2 id="信息增益比的计算"><a href="#信息增益比的计算" class="headerlink" title="信息增益比的计算"></a>信息增益比的计算</h2><p>当以信息增益作为划分训练集的特征时，存在<strong>偏向于选择取值较多的特征</strong>的问题，使用<strong>信息增益比（information gain radio）</strong>可以对这个问题进行校正，这是特征选择的另一个标准</p>
+<h1 id="【信息增益比】"><a href="#【信息增益比】" class="headerlink" title="【信息增益比】"></a>【信息增益比】</h1><h2 id="信息增益比的计算"><a href="#信息增益比的计算" class="headerlink" title="信息增益比的计算"></a>信息增益比的计算</h2><p>当以信息增益作为划分训练集的特征时，存在<strong>偏向于选择取值较多的特征</strong>的问题，使用<strong>信息增益比（information gain radio）</strong>可以对这个问题进行校正，使得<strong>偏向于选择取值较少的特征</strong>，这是特征选择的另一个标准</p>
 <p>对于训练集 $D$ 关于特征 $A$ 的信息熵 $H_A(D)$，有：</p>
 <script type="math/tex; mode=display">
 \begin{align}
@@ -481,7 +481,13 @@ H_A(D) &= -\sum_{i=1}^np_i\log p_i \\
 &=-\sum_{i=1}^n\frac{|D_i|}{|D|}\log\frac{|D_i|}{|D|}
 \end{align}</script><p>对于特征 $A$ 与训练集 $D$ 的信息增益比 $g_R(D,A)$，其被定义为信息增益 $g(D,A)$ 与训练集 $D$ 关于特征 $A$ 的信息熵 $H_A(D)$ 的比，即：</p>
 <script type="math/tex; mode=display">
-g_R(D,A) = \frac{g(D,A)}{H_A(D)}</script><h2 id="实例-1"><a href="#实例-1" class="headerlink" title="实例"></a>实例</h2><p>以上例的信息增益为基础，继续计算信息增益比</p>
+g_R(D,A) = \frac{g(D,A)}{H_A(D)}</script><p>可以发现，信息增益比的本质，是在信息增益的基础上乘以一个惩罚参数 $H_A(D)$，即特征 $A$ 取值相同的样本划分到同一个子集中，当特征数量较多时，惩罚参数较小；当特征数量较少时，惩罚参数较大</p>
+<p>基于上述问题，在使用信息增益比时，并不是直接选择信息增益率最大的特征，而是使用一种<strong>启发式方法</strong>：</p>
+<ol>
+<li>在候选特征中找出<strong>信息增益高于平均水平的特征</strong></li>
+<li>在这些高于平均水平的特征中<strong>再选择信息增益率最高</strong>的特征作为特征选择的标准</li>
+</ol>
+<h2 id="实例-1"><a href="#实例-1" class="headerlink" title="实例"></a>实例</h2><p>以上例的信息增益为基础，继续计算信息增益比</p>
 <p>已知各特征的信息增益如下：</p>
 <script type="math/tex; mode=display">
 \begin{matrix}
@@ -490,14 +496,20 @@ g(D,A_2)=H(D)-H(D|A_2) = 0.324\\
 g(D,A_3)=H(D)-H(D|A_3) = 0.420\\
 g(D,A_4)=H(D)-H(D|A_4) = 0.363
 \end{matrix}</script><p>此时，仅需计算各特征的信息增益比即可</p>
-<p><strong><font size="4">1.计算训练集关于各特征的信息熵</font></strong></p>
-<p>对于特征 $A_1$，其有三个取值：<code>青年</code>、<code>中年</code>、<code>老年</code>，划分子集后有 $|D_1|=5$，$|D_2|=5$，$|D_3|=5$，此时：</p>
+<p><strong><font size="4">1.计算平均信息增益，选择高于平均水平的信息增益</font></strong></p>
 <script type="math/tex; mode=display">
 \begin{align}
-H_{A_1}(D) &= -\sum_{i=1}^n\frac{|D_i|}{|D|}\log\frac{|D_i|}{|D|} \\
-&= -(\frac{5}{15}\log\frac{5}{15}+\frac{5}{15}\log\frac{5}{15}+\frac{5}{15}\log\frac{5}{15}) \\
-&= 1.585
-\end{align}</script><p>对于特征 $A_2$，其有两个取值：<code>有</code>、<code>无</code>，划分子集后有 $|D_1|=5$，$|D_2|=10$，此时：</p>
+\bar{g}(D,A) &= \frac{1}{n}\sum\limits_{i=1}^ng(D,A_i) \\
+&= \frac{1}{4}\cdot 1.19 \\
+&= 0.298
+\end{align}</script><p>此时，高于 $\bar{g}(D,A)$ 的有：</p>
+<script type="math/tex; mode=display">
+\begin{matrix}
+g(D,A_2)= 0.324\\
+g(D,A_3)= 0.420\\
+g(D,A_4)= 0.363
+\end{matrix}</script><p><strong><font size="4">2.计算训练集关于各特征的信息熵</font></strong></p>
+<p>对于特征 $A_2$，其有两个取值：<code>有</code>、<code>无</code>，划分子集后有 $|D_1|=5$，$|D_2|=10$，此时：</p>
 <script type="math/tex; mode=display">
 \begin{align}
 H_{A_2}(D) &= -\sum_{i=1}^n\frac{|D_i|}{|D|}\log\frac{|D_i|}{|D|} \\
@@ -515,14 +527,13 @@ H_{A_3}(D) &= -\sum_{i=1}^n\frac{|D_i|}{|D|}\log\frac{|D_i|}{|D|} \\
 H_{A_4}(D) &= -\sum_{i=1}^n\frac{|D_i|}{|D|}\log\frac{|D_i|}{|D|} \\
 &= -(\frac{5}{15}\log\frac{5}{15}+\frac{6}{15}\log\frac{6}{15}+\frac{4}{15}\log\frac{4}{15}) \\
 &= 1.566
-\end{align}</script><p><strong><font size="4">2.计算各特征的信息增益比</font></strong></p>
+\end{align}</script><p><strong><font size="4">3.计算各特征的信息增益比</font></strong></p>
 <script type="math/tex; mode=display">
 \begin{matrix}
-g_R(D,A_1)=\frac{g(D,A_1)}{H_{A_1}(D)}= 0.052 \\
 g_R(D,A_2)=\frac{g(D,A_2)}{H_{A_2}(D)}= 0.353 \\
 g_R(D,A_3)=\frac{g(D,A_3)}{H_{A_3}(D)}= 0.433 \\
 g_R(D,A_4)=\frac{g(D,A_4)}{H_{A_4}(D)}= 0.232 \\
-\end{matrix}</script><p>此时，选择信息增益最大的 $A_3$ 作为最优特征</p>
+\end{matrix}</script><p>此时，选择信息增益比最大的 $A_3$ 作为最优特征</p>
 <h1 id="【基尼指数】"><a href="#【基尼指数】" class="headerlink" title="【基尼指数】"></a>【基尼指数】</h1><p>对于分类与回归树 CART 来说，其一般选用<strong>基尼指数（Gini index）</strong>作为选择最优特征的标准</p>
 <p>假设有 $K$ 个类，样本点属于第 $k$ 类的概率为 $p_k$，则<strong>概率分布的基尼指数</strong>定义为：</p>
 <script type="math/tex; mode=display">
@@ -639,8 +650,8 @@ Gini(D,A) &=\sum_{i=1}^m\frac{|D_i|}{|D|}Gini(D_i) \\
 
           <div class="post-nav-prev post-nav-item">
             
-              <a href="/notes/os/dc54fe0b.html" rel="prev" title="操作系统——OS 概述">
-                操作系统——OS 概述 <i class="fa fa-chevron-right"></i>
+              <a href="/ml/c6faa205.html" rel="prev" title="决策树的 ID3 与 C4.5 生成算法">
+                决策树的 ID3 与 C4.5 生成算法 <i class="fa fa-chevron-right"></i>
               </a>
             
           </div>
@@ -720,7 +731,7 @@ Gini(D,A) &=\sum_{i=1}^m\frac{|D_i|}{|D|}Gini(D_i) \\
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">294</span>
+                  <span class="site-state-item-count">295</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
