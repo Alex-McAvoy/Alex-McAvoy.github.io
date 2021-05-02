@@ -1,0 +1,1077 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+<!-- 实现文章加密 -->
+<script>
+    (function(){
+        if(''){
+            if (prompt('请输入密码') !== ''){
+                alert('密码错误！');
+                history.back();
+            }
+        }
+    })();
+</script>
+
+
+
+  
+  
+    
+    
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+  <link href="/lib/pace/pace-theme-corner-indicator.min.css?v=1.0.2" rel="stylesheet">
+
+
+
+
+  
+  
+  <link rel="stylesheet" media="all" href="/lib/Han/dist/han.min.css?v=3.3">
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="机器学习,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="【概述】剪枝（pruning）是决策树处理过拟合的主要手段，即通过主动去掉一些分支来降低过拟合的风险 决策树剪枝的基本策略有预剪枝（pre-pruning）、后剪枝（post-pruning）两种，在实际应用中，往往使用后剪枝策略更多一些 【预剪枝】预剪枝是在决策树生成过程中进行的剪枝，其基于贪心策略，不仅可以降低过拟合的风险，而且还可以减少训练时间，但可能会出现欠拟合现象 预剪枝是在决策树生成过">
+<meta name="keywords" content="机器学习">
+<meta property="og:type" content="article">
+<meta property="og:title" content="决策树的剪枝策略">
+<meta property="og:url" content="https://alex-mcavoy.github.io/ml/1a3614c.html">
+<meta property="og:site_name" content="Alex_McAvoy">
+<meta property="og:description" content="【概述】剪枝（pruning）是决策树处理过拟合的主要手段，即通过主动去掉一些分支来降低过拟合的风险 决策树剪枝的基本策略有预剪枝（pre-pruning）、后剪枝（post-pruning）两种，在实际应用中，往往使用后剪枝策略更多一些 【预剪枝】预剪枝是在决策树生成过程中进行的剪枝，其基于贪心策略，不仅可以降低过拟合的风险，而且还可以减少训练时间，但可能会出现欠拟合现象 预剪枝是在决策树生成过">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/26-1.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/26-2.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/26-3.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/26-1.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/26-1.png">
+<meta property="og:updated_time" content="2021-05-02T03:35:50.013Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="决策树的剪枝策略">
+<meta name="twitter:description" content="【概述】剪枝（pruning）是决策树处理过拟合的主要手段，即通过主动去掉一些分支来降低过拟合的风险 决策树剪枝的基本策略有预剪枝（pre-pruning）、后剪枝（post-pruning）两种，在实际应用中，往往使用后剪枝策略更多一些 【预剪枝】预剪枝是在决策树生成过程中进行的剪枝，其基于贪心策略，不仅可以降低过拟合的风险，而且还可以减少训练时间，但可能会出现欠拟合现象 预剪枝是在决策树生成过">
+<meta name="twitter:image" content="https://alex-mcavoy.github.io/images/ml/26-1.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":true,"scrollpercent":true,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://alex-mcavoy.github.io/ml/1a3614c.html">
+
+
+
+
+
+  <title>决策树的剪枝策略 | Alex_McAvoy</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Alex_McAvoy</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/ml/1a3614c.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Alex_McAvoy">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/assets/img/head.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Alex_McAvoy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">决策树的剪枝策略</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-06-27T13:44:00+08:00">
+                2019-06-27
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/ml/" itemprop="url" rel="index">
+                    <span itemprop="name">机器学习</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  2,513 字
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">
+                  9 分钟
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body han-init-context" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="【概述】"><a href="#【概述】" class="headerlink" title="【概述】"></a>【概述】</h1><p><strong>剪枝（pruning）</strong>是决策树处理过拟合的主要手段，即通过主动去掉一些分支来降低过拟合的风险</p>
+<p>决策树剪枝的基本策略有<strong>预剪枝（pre-pruning）</strong>、<strong>后剪枝（post-pruning）</strong>两种，在实际应用中，往往使用后剪枝策略更多一些</p>
+<h1 id="【预剪枝】"><a href="#【预剪枝】" class="headerlink" title="【预剪枝】"></a>【预剪枝】</h1><p>预剪枝是在决策树生成过程中进行的剪枝，其基于<strong>贪心策略</strong>，不仅可以降低过拟合的风险，而且还可以减少训练时间，但可能会出现<strong>欠拟合现象</strong></p>
+<p>预剪枝是在决策树生成过程中进行的剪枝，常用的方法有：</p>
+<ol>
+<li>提前设定决策树的高度，当达到这个高度时，停止构建决策树</li>
+<li>当达到某节点的实例具有相同的特征向量，停止树的生长</li>
+<li>提前设定阈值，当达到某个节点的样例个数小于该阈值的时，停止树的生长（该方法无法用于数据量较小的训练样例）</li>
+<li>提前设定阈值，每次扩展决策树后，计算其对系统性能的增益，若小于该阈值，则停止生长</li>
+<li>对每个结点在划分前进行估计，若当前结点的划分无法使决策树的泛化性能提升，则停止划分，并将当前结点标记为叶结点</li>
+</ol>
+<h1 id="【后剪枝】"><a href="#【后剪枝】" class="headerlink" title="【后剪枝】"></a>【后剪枝】</h1><h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>后剪枝是在决策树生成之后，对于一棵完整的决策树，按照<strong>树的前序遍历或后序遍历</strong>的顺序，对分支结点进行考察，若分支结点对应的子树替换为叶结点能够带来决策树的泛化性能提升，则将子树替换为叶结点</p>
+<p>目前主要应用的后剪枝方法有三种：</p>
+<ul>
+<li>误差降低剪枝（Reduced Error Pruning，REP）</li>
+<li>悲观错误剪枝（Pessimistic Error Pruning，PEP）</li>
+<li>代价复杂度剪枝（Cost-Complexity  Pruning，CCP）</li>
+</ul>
+<p>此外，常见的后剪枝方法还有：基于错误的剪枝（Error-Based  Pruning，EBP）、最小错误剪枝（Minimum  Error Pruning，MEP）、临界值剪枝（Critical Value Pruning，CVP）、最优剪枝（Optimal Pruning，OPP）等，这里不再详细介绍</p>
+<h2 id="误差降低剪枝"><a href="#误差降低剪枝" class="headerlink" title="误差降低剪枝"></a>误差降低剪枝</h2><p><strong>误差降低剪枝（Reduced Error Pruning，REP）</strong>是最简单粗暴的后剪枝方法，在利用训练样本生成决策树后，按照<strong>树的后序遍历</strong>算法，对于每个分支结点计算修剪前后在验证集上的<strong>分类错误率</strong>，来决定是否修剪该结点</p>
+<p>算法流程如下：</p>
+<ol>
+<li>按照树的<strong>后序遍历顺序</strong>，依次决定 $n$ 个分支节点是否需要被修剪</li>
+<li>对于第 $i$ 个分支结点，假设要删除该分支结点的子树，使其成为叶结点，并赋予训练样本最常见的分类</li>
+<li>用<strong>验证样本</strong>计算修剪前、修剪后分类的<strong>错误率</strong></li>
+<li>当修剪后的分类错误率<strong>小于</strong>修剪前的分类错误率时，删除该节点下的子树</li>
+<li>当 $i=n$ 时，终止算法，否则，令 $i=i+1$，执行步骤 2</li>
+</ol>
+<p>误差降低剪枝使用了与训练集、测试集独立的验证集，验证集中的样本没有参与决策树的生成过程，一定程度上可以解决过拟合问题，但也可能会产生过剪枝的问题</p>
+<hr>
+<p>以下图为例，假设某训练集产生的决策树如下：</p>
+<p><img width="400" src="/images/ml/26-1.png"></p>
+<p>其中，<code>T4</code> 结点中 13 和 7 表示该节点覆盖的样本中目标变量为 <code>1</code> 和 <code>0</code> 的个数</p>
+<p>假设用这个决策树拟合验证样本后的结果如下：</p>
+<p><img width="400" src="/images/ml/26-2.png"></p>
+<p>按照 <code>T5</code>、<code>T6</code>、<code>T4</code> 的顺序，计算修剪前后的错误率，依次决定每个节点是否需要被修剪：</p>
+<p><img width="500" src="/images/ml/26-3.png"></p>
+<p>在判断 <code>T4</code> 是否修剪前，<code>T7</code>、<code>T8</code> 已被删除，<code>T5</code> 成为新的叶子节点，可以看到最终 <code>T4</code> 下的全部子树都被删除</p>
+<h2 id="悲观错误剪枝"><a href="#悲观错误剪枝" class="headerlink" title="悲观错误剪枝"></a>悲观错误剪枝</h2><p>在 <code>C4.5</code> 中，所使用的剪枝策略，就是<strong>悲观错误剪枝（Pessimistic Error Pruning，PEP）</strong>策略</p>
+<p><code>PEP</code> 也是根据剪枝前后分类的错误率来决定是否剪枝，但与 <code>REP</code> 不同的是，<code>PEP</code> 不需要使用验证集，且 <code>PEP</code> 是按照<strong>树的前序遍历</strong>顺序剪枝的</p>
+<p>设 $T$ 为考虑是否剪枝的分支结点，$t$ 为该结点下的叶结点，$N_t$ 表示叶结点 $t$ 覆盖的样本个数，$e_t$ 表示叶结点 $t$ 的错误分类样本个数，那么分支结点 $T$ 的<strong>分类错误率</strong>为：</p>
+<script type="math/tex; mode=display">
+E(T_t)=\frac{\sum_{t\in T}(e_t+\frac{1}{2})}{N_T}</script><p>其中，$\frac{1}{2}$ 是经验性惩罚因子，这是因为生成决策树与剪枝时使用的是相同的训练样本，那么对于<strong>每个结点</strong>，剪枝后分类错误率一定是会上升的，故而在计算分类错误率时，每个结点都要加上一个惩罚因子</p>
+<p>对于分类错误率 $E(T_t)$，其含义是：每一个样本有 $E(T_t)$ 的概率分类正确，$1- E(T_t)$ 的概率分类错误，可以认为分类错误的次数服从伯努利分布，其误判次数为：</p>
+<script type="math/tex; mode=display">
+E(T_t)\cdot N_T</script><p>标准差为：</p>
+<script type="math/tex; mode=display">
+\sqrt{N_T\cdot E(T_t)\cdot (1-E(T_t))}</script><p>如果对分支结点 $T$ 进行剪枝，当 $T$ 成为叶结点后的分类错误率为：</p>
+<script type="math/tex; mode=display">
+E(T)=\frac{e_T+\frac{1}{2}}{N_T}</script><p>一般规定，当子树的误判次数大于对应叶节点的误判个数时，就决定剪枝，即满足下式就进行剪枝：</p>
+<script type="math/tex; mode=display">
+E(T_t)\cdot N_T+\sqrt{N_T\cdot E(T_t)\cdot (1-E(T_t))}\geq E(T)\cdot N_T</script><p>悲观错误剪枝的准确度较高，且不需要分离训练样本和验证样本，对样本量较少的情况比较有利</p>
+<p>同时，每棵子树最多只需要访问一次，效率较高，但是由于方向是树的前序遍历方向，可能会造成某些不必要的剪枝</p>
+<hr>
+<p>以误差降低剪枝中的例子为例</p>
+<p><img width="400" src="/images/ml/26-1.png"></p>
+<p>考虑 <code>T4</code> 结点，有：</p>
+<script type="math/tex; mode=display">
+E(T_4)=7</script><p>对于其叶结点，有：</p>
+<script type="math/tex; mode=display">
+E(T_7)=0,E(T_8)=2,E(T_9)=1,E(T_{10})=1</script><p>则错误率为：</p>
+<script type="math/tex; mode=display">
+E(T_t)=\frac{(0+2+1+1)+4\cdot\frac{1}{2}}{20}=0.3</script><p>标准差：</p>
+<script type="math/tex; mode=display">
+S_e=\sqrt{(20\cdot 0.3\cdot(1-0.3)}=2.05</script><p>当 $T$ 成为叶结点后的分类错误率为：</p>
+<script type="math/tex; mode=display">
+E(T)=\frac{7}{20}</script><p>根据悲观错误剪枝的判断式：</p>
+<script type="math/tex; mode=display">
+E(T_t)\cdot N_T+\sqrt{N_T\cdot E(T_t)\cdot (1-E(T_t))}\geq E(T)\cdot N_T</script><p>有：</p>
+<script type="math/tex; mode=display">
+0.3\cdot20+2.05\geq \frac{7}{20}\cdot7</script><p>因此根据结点 <code>T4</code> 需要剪枝</p>
+<h2 id="代价复杂度剪枝"><a href="#代价复杂度剪枝" class="headerlink" title="代价复杂度剪枝"></a>代价复杂度剪枝</h2><h3 id="概述-1"><a href="#概述-1" class="headerlink" title="概述"></a>概述</h3><p>在 <code>CART</code> 中，所使用的剪枝策略，就是<strong>代价复杂度剪枝（Cost-Complexity  Pruning，CCP）</strong>策略，其按照<strong>树的后序遍历</strong>顺序从生成算法产生的决策树底端开始剪枝，根据剪枝的顺序，得到一系列的剪枝树 $\{T_0, T_1, T_2,…,  T_m\}$，其中 $T_0$ 为原始决策树，$T_m$ 为根结点，$T_{i+1}$ 为 $T_i$ 剪枝后的结果，然后通过交叉验证法在独立的验证集上对剪枝树序列进行测试，从中选择最优子树</p>
+<h3 id="代价函数"><a href="#代价函数" class="headerlink" title="代价函数"></a>代价函数</h3><p>对于任意子树 $T$，其叶结点个数为 $|T|$，取代价复杂度参数 $\alpha\geq 0$ ，树 $T$ 的代价函数定义为：</p>
+<script type="math/tex; mode=display">
+C_{\alpha}(T) = C(T)+\alpha|T|</script><p>在上述公式中，$C(T)$ 表示对训练数据的预测误差，用于表示模型与训练数据的拟合程度；$|T|$ 表示模型复杂度，即子树的叶结点个数；$\alpha$ 为代价复杂度参数，用于权衡训练数据的拟合程度和模型复杂度</p>
+<p>对于固定的 $\alpha$，一点存在使代价函数 $C_a(T)$ 最小的子树 $T_{\alpha}$，$T_{\alpha}$ 在代价函数 $C_{\alpha}$ 最小的意义下是最优的，因此，剪枝就是在代价复杂度参数 $\alpha$ 确定时，选择代价函数最小的模型</p>
+<p>对于代价复杂度参数 $\alpha$ 来说，$\alpha$ 越大，最优子树 $T_{\alpha}$ 就越小；$\alpha$ 越小，最优子树 $\alpha$ 就越大；在极端情况下，当 $\alpha=0$ 时，仅考虑模型与训练数据的拟合程度 $C_T$，不考虑模型的复杂度 $|T|$，此时整体树是最优的；当 $\alpha\rightarrow\infty$ 时，不考虑模型与训练数据的拟合程度 $C_T$，仅考虑模型的复杂度 $|T|$，此时由根结点组成的单结点树是最优的</p>
+<h3 id="代价复杂度参数"><a href="#代价复杂度参数" class="headerlink" title="代价复杂度参数"></a>代价复杂度参数</h3><p>下面给出代价复杂度参数 $\alpha$ 的定义：</p>
+<p>设 $T$ 为考虑是否剪枝的分支结点，$t$ 为该结点下的叶结点，$e_T$ 表示结点 $T$ 的分类错误率，$p_T$ 表示 $T$ 结点所覆盖的样本数占总样本数的比例，$|T_t|$ 表示 $T$ 结点下叶结点的个数</p>
+<p>那么，对于结点 $T$ 下错误分类的样本个数占总样本个数的比例为：</p>
+<script type="math/tex; mode=display">
+R(T)=e_T\cdot p_T</script><p>对于结点 $T$ 下的所有叶结点 $t$，错误分类的样本个数占总样本个数的比例为：</p>
+<script type="math/tex; mode=display">
+R(T_t)=\sum_{t\in T}e_t\cdot p_t</script><p>则，代价复杂度参数定义为：</p>
+<script type="math/tex; mode=display">
+\alpha=\frac{R(T)-R(T_t)}{T_t-1}</script><hr>
+<p>同样以误差降低剪枝中的例子为例，给出代价复杂度参数 $\alpha$ 的计算实例</p>
+<p><img width="400" src="/images/ml/26-1.png"></p>
+<p>假设总样本数为 $60$，考虑 <code>T4</code> 结点，有：</p>
+<script type="math/tex; mode=display">
+R(T)=\frac{7}{20}\cdot \frac{20}{60}=\frac{7}{60}</script><p>对于 <code>T4</code> 结点之下的所有叶结点，有：</p>
+<script type="math/tex; mode=display">
+R(T_t)=\frac{0}{6}\cdot\frac{6}{60}+\frac{2}{6}\cdot\frac{6}{60}+\frac{1}{3}\cdot\frac{3}{60}+\frac{1}{5}\cdot\frac{5}{60}=\frac{4}{60}</script><p>此时，代价复杂度参数为：</p>
+<script type="math/tex; mode=display">
+\alpha=\frac{\frac{7}{60}-\frac{4}{60}}{4-1}=\frac{1}{60}</script><h3 id="子树序列的生成"><a href="#子树序列的生成" class="headerlink" title="子树序列的生成"></a>子树序列的生成</h3><p>在有了代价函数和代价复杂度参数后，开始循环地对子树进行剪枝，算法流程如下：</p>
+<p>输入：<code>CART</code> 生成的决策树 $T_0$</p>
+<p>输出：决策树子树序列 $\{T_1,T_2,…,T_m\}$</p>
+<ol>
+<li>令 $k=0$，$T=T_0$，$\alpha=+\infty$</li>
+<li>按照树的后序遍历的顺序，计算子树 $T$ 的所有分支结点 $T_t$ 的代价复杂度参数 $\alpha$</li>
+<li>选择最小的代价复杂度参数 $\alpha_{min}$ 所对应的分支结点 $T_{min}$ 进行剪枝，得到子树 $T$（若多个分支结点具有相同最小的代价复杂度参数，则选择结点数最多的分支结点进行剪枝）</li>
+<li>令 $k=k+1$，$\alpha_k=\alpha_{min}$，$T_k=T$</li>
+<li>若 $T_k$ 不是由根结点及两个叶结点构成的树，则返回步骤 2，继续进行剪枝，否则令 $T_k=T_m$</li>
+</ol>
+<h3 id="选取最优决策树"><a href="#选取最优决策树" class="headerlink" title="选取最优决策树"></a>选取最优决策树</h3><p>对于剪枝得到的决策树子树序列 $\{T_1,T_2,…,T_m\}$，利用独立的验证集，测试子树序列中各子树的基尼指数</p>
+<p>具有最小基尼指数的决策树，即最优决策树</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    <!-- 版权说明 -->
+    
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者：</strong>
+    Alex_McAvoy
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://alex-mcavoy.github.io/ml/1a3614c.html" title="决策树的剪枝策略">https://alex-mcavoy.github.io/ml/1a3614c.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>
+    本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 3.0</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+
+      </div>
+    
+	
+    <!-- 打赏 -->
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>感谢您对我的支持，让我继续努力分析有用地点技术与知识点！</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="/assets/img/wechatpay.jpg" alt="Alex_McAvoy 微信支付">
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="/assets/img/alipay.jpg" alt="Alex_McAvoy 支付宝">
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/ml/" rel="tag"># 机器学习</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/ml/9690b9de.html" rel="next" title="决策树的特征选择">
+                <i class="fa fa-chevron-left"></i> 决策树的特征选择
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/ml/c6faa205.html" rel="prev" title="决策树的 ID3 与 C4.5 生成算法">
+                决策树的 ID3 与 C4.5 生成算法 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+	
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/assets/img/head.jpg" alt="Alex_McAvoy">
+            
+              <p class="site-author-name" itemprop="name">Alex_McAvoy</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">297</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">21</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">21</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/Alex-McAvoy" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="https://blog.csdn.net/u011815404" target="_blank" title="CSDN">
+                      
+                        <i class="fa fa-fw fa-copyright"></i>CSDN</a>
+                  </span>
+                
+            </div>
+          
+		  
+          
+          
+            <div class="cc-license motion-element" itemprop="license">
+              <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" class="cc-opacity" target="_blank">
+                <img src="/images/cc-by-nc-sa.svg" alt="Creative Commons">
+              </a>
+            </div>
+          
+		  
+		  <!-- 访客地图 -->
+		  <script type="text/javascript" src="//rf.revolvermaps.com/0/0/5.js?i=50n58yo58ow&amp;m=0&amp;c=ff0000&amp;cr1=ffffff" async="async"></script>
+
+          
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-link"></i>
+                Links
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/sdz20172133" title="神仙队友" target="_blank">神仙队友</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://pxlsdz.gitee.io/" title="神仙队友的另一个博客" target="_blank">神仙队友的另一个博客</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://www.bycore.net/" title="凉了的某饼同学" target="_blank">凉了的某饼同学</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/wentong_Xu" title="小黑贱胖子" target="_blank">小黑贱胖子</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://deng.fun/" title="芙蓉姐姐" target="_blank">芙蓉姐姐</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/sdau_fangshifeng" title="一个头很酷的家伙" target="_blank">一个头很酷的家伙</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://www.yuheng.tech/" title="咸于" target="_blank">咸于</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/lanshan1111" title="肥硕硕" target="_blank">肥硕硕</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/sdauguanweihong" title="管少" target="_blank">管少</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/qq_41661919" title="俊杰" target="_blank">俊杰</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/qq_40859951" title="峰哥" target="_blank">峰哥</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/LSD20164388" title="狗冬" target="_blank">狗冬</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/qq_37748451" title="胖亚亚" target="_blank">胖亚亚</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/qq_37868325" title="妍大佬" target="_blank">妍大佬</a>
+                  </li>
+                
+              </ul>
+            </div>
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【概述】"><span class="nav-number">1.</span> <span class="nav-text">【概述】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【预剪枝】"><span class="nav-number">2.</span> <span class="nav-text">【预剪枝】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【后剪枝】"><span class="nav-number">3.</span> <span class="nav-text">【后剪枝】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#概述"><span class="nav-number">3.1.</span> <span class="nav-text">概述</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#误差降低剪枝"><span class="nav-number">3.2.</span> <span class="nav-text">误差降低剪枝</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#悲观错误剪枝"><span class="nav-number">3.3.</span> <span class="nav-text">悲观错误剪枝</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#代价复杂度剪枝"><span class="nav-number">3.4.</span> <span class="nav-text">代价复杂度剪枝</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#概述-1"><span class="nav-number">3.4.1.</span> <span class="nav-text">概述</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#代价函数"><span class="nav-number">3.4.2.</span> <span class="nav-text">代价函数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#代价复杂度参数"><span class="nav-number">3.4.3.</span> <span class="nav-text">代价复杂度参数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#子树序列的生成"><span class="nav-number">3.4.4.</span> <span class="nav-text">子树序列的生成</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#选取最优决策树"><span class="nav-number">3.4.5.</span> <span class="nav-text">选取最优决策树</span></a></li></ol></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+        <div class="back-to-top">
+          <i class="fa fa-arrow-up"></i>
+          
+            <span id="scrollpercent"><span>0</span>%</span>
+          
+        </div>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 &mdash; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Alex_McAvoy</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+<script>
+(function(){
+    var bp = document.createElement('script');
+    var curProtocol = window.location.protocol.split(':')[0];
+    if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';        
+    }
+    else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+    }
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(bp, s);
+})();
+</script>
+
+
+  
+  
+
+  
+  
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdn.bootcss.com/mathjax/2.7.1/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  
+
+
+  
+
+  
+
+  <script type="text/javascript" src="/js/src/cursor-effects.js"></script>
+</body>
+</html>

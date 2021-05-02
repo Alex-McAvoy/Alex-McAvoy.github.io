@@ -112,7 +112,7 @@
 <meta property="og:locale" content="zh-Hans">
 <meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/24-1.png">
 <meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/24-2.png">
-<meta property="og:updated_time" content="2021-04-30T14:41:17.261Z">
+<meta property="og:updated_time" content="2021-05-02T13:59:46.230Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="决策树概述">
 <meta name="twitter:description" content="【概述】决策树（Decision Tree）是一种用于分类和回归的机器学习方法，其对于复杂的预测问题，通过建立树模型产生分支结点，依照规则递归地分割数据集，使得问题从结构上划分为不同的子问题 决策树本质是从训练集中归纳出一组规则，在给出一个新的输入后，根据规则给出相应的输出，由于与训练集不矛盾的决策树可能有多个，需要选择一个与训练数据矛盾较小的决策树，同时具有较好的泛化能力 从另一个角度来看，决策">
@@ -359,7 +359,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  980 字
+                  1,473 字
                 </span>
               
 
@@ -375,7 +375,7 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  3 分钟
+                  5 分钟
                 </span>
               
             </div>
@@ -419,11 +419,30 @@
 <p>常见的决策树生成算法有：<code>ID3</code>、<code>C4.5</code>、<code>CART</code></p>
 <p>其中，<code>ID3</code> 是最基础的决策树生成算法，其不存在决策树剪枝这个过程，<code>C4.5</code> 在 <code>ID3</code> 的基础上进行了若干改进，其中一项改进就是进行了剪枝</p>
 <p>此外，<code>ID3</code> 无法对连续值进行处理，<code>C4.5</code> 在 <code>ID3</code> 的基础上采用<strong>连续特征离散化策略</strong>，将连续型特征转为离散型特征，但这种转换过程可能会破坏连续型变量的内在性质，也就是说，<code>ID3</code> 与 <code>C4.5</code> 所生成的决策树，都是<strong>分类决策树</strong>，只能用来处理分类问题</p>
-<p>进一步，在 <code>C4.5</code> 的基础上又有了 <code>CART</code>，其既可以用于处理分类问题，也可以用于回归问题</p>
+<p>进一步，在 <code>C4.5</code> 的基础上又有了 <code>CART</code>，其是<strong>分类回归树</strong>，既可以用于处理分类问题，也可以用于回归问题</p>
 <hr>
 <p>关于决策树的特征选择：<a href="https://alex-mcavoy.github.io/ml/9690b9de.html">点击这里</a></p>
+<p>关于决策树的剪枝策略：<a href="https://alex-mcavoy.github.io/ml/1a3614c.html">点击这里</a></p>
 <p>关于 <code>ID3</code> 与 <code>C4.5</code> 的详细介绍：<a href="https://alex-mcavoy.github.io/ml/c6faa205.html">点击这里</a></p>
-<p>关于 <code>CART</code> 的详细介绍：点击这里</p>
+<p>关于 <code>CART</code> 的详细介绍：<a href="https://alex-mcavoy.github.io/ml/729a7bb2.html">点击这里</a></p>
+<h1 id="【决策树结点停止分裂的条件】"><a href="#【决策树结点停止分裂的条件】" class="headerlink" title="【决策树结点停止分裂的条件】"></a>【决策树结点停止分裂的条件】</h1><p>无论是使用 <code>ID3</code>、<code>C4.5</code> 还是使用 <code>CART</code>，在构建决策树时，决策树不可能不限制地生长，总有停止分裂的时候</p>
+<p>最极端的情况是当结点分裂到只剩下一个数据点时自动结束分裂，但这种情况下决策树的结构过于复杂，而且预测的精度不高</p>
+<p>一般情况下，为降低决策树复杂度，并提高预测的精度，会适当提前终止节点的分裂</p>
+<p>常见的决策树结点停止分裂的条件有：</p>
+<p><strong><font size="4">1.最小节点数</font></strong></p>
+<p>当节点的数据量小于一个指定的数量时，不继续分裂</p>
+<p>有两个原因：</p>
+<ol>
+<li>数据量较少时，再做分裂容易强化噪声数据的作用</li>
+<li>提前结束分裂，在一定程度上有利于降低过拟合的影响</li>
+</ol>
+<p><strong><font size="4">2.熵或者基尼值小于阀值</font></strong></p>
+<p>熵和基尼指数的大小表示数据的复杂程度，当熵或者基尼值过小时，表示数据的纯度比较大，如果熵或者基尼值小于一定程度数，结点停止分裂</p>
+<p><strong><font size="4">3.决策树的深度达到指定的条件</font></strong></p>
+<p>结点的深度可以理解为结点与决策树跟结点的距离，例如，根结点的子结点的深度为 1，因为这些结点与跟结点的距离为 1，子结点的深度要比父结点的深度大 1</p>
+<p>决策树的深度是所有叶结点的最大深度，当深度到达指定的上限大小时，停止分裂</p>
+<p><strong><font size="4">4.所有特征已经使用完毕，不能继续进行分裂</font></strong></p>
+<p>被动式停止分裂的条件，当已经没有可分的属性时，直接将当前节点设置为叶结点</p>
 
       
     </div>
@@ -594,7 +613,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">295</span>
+                  <span class="site-state-item-count">297</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -740,7 +759,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【概述】"><span class="nav-number">1.</span> <span class="nav-text">【概述】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【决策树结构】"><span class="nav-number">2.</span> <span class="nav-text">【决策树结构】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【决策树学习】"><span class="nav-number">3.</span> <span class="nav-text">【决策树学习】</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【概述】"><span class="nav-number">1.</span> <span class="nav-text">【概述】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【决策树结构】"><span class="nav-number">2.</span> <span class="nav-text">【决策树结构】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【决策树学习】"><span class="nav-number">3.</span> <span class="nav-text">【决策树学习】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【决策树结点停止分裂的条件】"><span class="nav-number">4.</span> <span class="nav-text">【决策树结点停止分裂的条件】</span></a></li></ol></div>
             
 
           </div>
