@@ -1,0 +1,1181 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+<!-- 实现文章加密 -->
+<script>
+    (function(){
+        if(''){
+            if (prompt('请输入密码') !== ''){
+                alert('密码错误！');
+                history.back();
+            }
+        }
+    })();
+</script>
+
+
+
+  
+  
+    
+    
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+  <link href="/lib/pace/pace-theme-corner-indicator.min.css?v=1.0.2" rel="stylesheet">
+
+
+
+
+  
+  
+  <link rel="stylesheet" media="all" href="/lib/Han/dist/han.min.css?v=3.3">
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="机器学习,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="Reference  详解最大熵模型 最大熵模型原理 深入机器学习系列21-最大熵模型   【最大熵原理】最大熵原理在 信息熵及其相关概念 中对信息熵进行了介绍，而最大熵原理，就是认为：在所有可能的概率分布中，熵最大的模型是最好的模型 对于来自参数空间 $\mathcal{X}$ 的离散随机变量 $X$，其概率分布为：  P(X=x_i)=p_i,\quad i=1,2,...,n则信息熵为：">
+<meta name="keywords" content="机器学习">
+<meta property="og:type" content="article">
+<meta property="og:title" content="最大熵模型">
+<meta property="og:url" content="https://alex-mcavoy.github.io/ml/ba8a14c4.html">
+<meta property="og:site_name" content="Alex_McAvoy">
+<meta property="og:description" content="Reference  详解最大熵模型 最大熵模型原理 深入机器学习系列21-最大熵模型   【最大熵原理】最大熵原理在 信息熵及其相关概念 中对信息熵进行了介绍，而最大熵原理，就是认为：在所有可能的概率分布中，熵最大的模型是最好的模型 对于来自参数空间 $\mathcal{X}$ 的离散随机变量 $X$，其概率分布为：  P(X=x_i)=p_i,\quad i=1,2,...,n则信息熵为：">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/30-1.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/30-2.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/30-3.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/30-4.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/30-5.png">
+<meta property="og:updated_time" content="2021-05-04T15:56:09.771Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="最大熵模型">
+<meta name="twitter:description" content="Reference  详解最大熵模型 最大熵模型原理 深入机器学习系列21-最大熵模型   【最大熵原理】最大熵原理在 信息熵及其相关概念 中对信息熵进行了介绍，而最大熵原理，就是认为：在所有可能的概率分布中，熵最大的模型是最好的模型 对于来自参数空间 $\mathcal{X}$ 的离散随机变量 $X$，其概率分布为：  P(X=x_i)=p_i,\quad i=1,2,...,n则信息熵为：">
+<meta name="twitter:image" content="https://alex-mcavoy.github.io/images/ml/30-1.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":true,"scrollpercent":true,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://alex-mcavoy.github.io/ml/ba8a14c4.html">
+
+
+
+
+
+  <title>最大熵模型 | Alex_McAvoy</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Alex_McAvoy</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/ml/ba8a14c4.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Alex_McAvoy">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/assets/img/head.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Alex_McAvoy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">最大熵模型</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-07-05T20:40:00+08:00">
+                2019-07-05
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/ml/" itemprop="url" rel="index">
+                    <span itemprop="name">机器学习</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  2,415 字
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">
+                  9 分钟
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body han-init-context" itemprop="articleBody">
+
+      
+      
+
+      
+        <blockquote>
+<p>Reference</p>
+<ul>
+<li><a href="https://blog.csdn.net/ccblogger/article/details/81843304" target="_blank" rel="noopener">详解最大熵模型</a></li>
+<li><a href="https://xueqiu.com/8566534281/151009557" target="_blank" rel="noopener">最大熵模型原理</a></li>
+<li><a href="https://zhuanlan.zhihu.com/p/29978153" target="_blank" rel="noopener">深入机器学习系列21-最大熵模型</a></li>
+</ul>
+</blockquote>
+<h1 id="【最大熵原理】"><a href="#【最大熵原理】" class="headerlink" title="【最大熵原理】"></a>【最大熵原理】</h1><h2 id="最大熵原理"><a href="#最大熵原理" class="headerlink" title="最大熵原理"></a>最大熵原理</h2><p>在 <a href="https://alex-mcavoy.github.io/ml/d9f8f63d.html">信息熵及其相关概念</a> 中对信息熵进行了介绍，而最大熵原理，就是认为：<strong>在所有可能的概率分布中，熵最大的模型是最好的模型</strong></p>
+<p>对于来自参数空间 $\mathcal{X}$ 的离散随机变量 $X$，其概率分布为：</p>
+<script type="math/tex; mode=display">
+P(X=x_i)=p_i,\quad i=1,2,...,n</script><p>则信息熵为：</p>
+<script type="math/tex; mode=display">
+H(X)=-\sum_{i=1}^n p_i\log p_i</script><p>其取值范围为：</p>
+<script type="math/tex; mode=display">
+0\leq H(X) \leq \log n</script><p>当 $X$ 只有一个分类时，信息熵取最小值 $H(X)=0$；而当 $X$ 的分布为均匀分布，即 $X$ 中 $n$ 个分类出现的概率相同时，信息熵取最大值 $H(X)=\log n$，此时 $p_i=\frac{1}{n}$ </p>
+<p>也就是说，所谓最大熵原理，就是在求解概率模型时，在满足<strong>约束条件</strong>的情况下，对于未知情况不做任何的主观假设，即将<strong>不确定部分视为等可能的</strong>，此时求得的模型为熵最大模型</p>
+<h2 id="几何解释"><a href="#几何解释" class="headerlink" title="几何解释"></a>几何解释</h2><p>对于概率模型集合 $\mathcal{P}$，用欧式空间中的<strong>单纯形（simplex）</strong>表示</p>
+<p>具体来说，对于有 $k$ 个取值的离散型随机变量，使用 $k-1$ 维单纯形来表示，在单纯形中，一个点代表一个模型，整个单纯形代表了模型集合</p>
+<p><img width="150" src="/images/ml/30-1.png"></p>
+<p>举例来说，假设随机变量 $X$ 其可能的取值有：$\{A,B,C\}$，将使用 2 维单纯形来表示随机变量 $X$，并将随机变量 $X$ 的三个取值 $A$、$B$、$C$ 设为 2 维单纯形的三个顶点</p>
+<p>设单纯形中任意一点 $P$ 到三边距离和为 $1$（在正三角形中，恒等于三角形的高），点到边的距离为对应取值的概率</p>
+<p>若给定概率 $P(A)=P(B)=P(C)=\frac{1}{3}$，则可用单纯形表示为：</p>
+<p><img width="150" src="/images/ml/30-2.png"></p>
+<p>同理，若给定概率 $P(A)=1,P(B)=P(C)=0$，则可用单纯形表示为：</p>
+<p><img width="150" src="/images/ml/30-3.png"></p>
+<p>一条直线对应一个约束条件，直线的交集对应于满足所有约束条件的模型集合</p>
+<p><img width="150" src="/images/ml/30-4.png"></p>
+<p>学习的目的，就是在所有可能的模型集合中，选择最优模型，最大熵原理，给出了最优模型选择的一个准则</p>
+<h2 id="实例"><a href="#实例" class="headerlink" title="实例"></a>实例</h2><p>举例来说，假设随机变量 $X$ 其可能的取值有：$\{A,B,C,D,E\}$，现在要估计其取各个值的概率 $P(A)$ 、$P(B)$ 、$P(C)$ 、$P(D)$ 、$P(E)$ </p>
+<p>已知的是，这些概率值满足以下约束条件：</p>
+<script type="math/tex; mode=display">
+P(A)+P(B)+P(C)+P(D)+P(E)=1</script><p>满足这个约束条件的概率分布有无穷个，在没有任何信息的情况下，若仍要对概率分布进行估计，将 $X$ 的各取值的概率视为均等的，即：</p>
+<script type="math/tex; mode=display">
+P(A)=P(B)=P(C)=P(D)=P(E)=\frac{1}{5}</script><p>此时，在等概率的情况下，熵最大</p>
+<p>进一步，若给出了某些约束条件，则在给定约束条件的基础上，对其他缺少的未知信息的情况下，认为其他是等概率的</p>
+<p>具体来说，在上例的基础上，给出了约束条件：</p>
+<script type="math/tex; mode=display">
+P(A)+P(B)=\frac{3}{10}</script><p>此时，可认为 $A$、$B$ 是等概率的， $C$、$D$、$E$ 是等概率的，即有：</p>
+<script type="math/tex; mode=display">
+\begin{gather}
+P(A)=P(B)=\frac{3}{20}\\
+P(C)=P(D)=P(E)=\frac{7}{30}
+\end{gather}</script><h1 id="【最大熵模型】"><a href="#【最大熵模型】" class="headerlink" title="【最大熵模型】"></a>【最大熵模型】</h1><h2 id="分类模型"><a href="#分类模型" class="headerlink" title="分类模型"></a>分类模型</h2><p>假设分类模型为一条件概率分布 $P(Y|X)$</p>
+<p>其中，$X\in\mathcal{X}\subseteq R^n $ 为输入，$Y\in\mathcal{Y}\subseteq R^n $ 为输出，$\mathcal{X}$ 与 $\mathcal{Y}$ 分别为输入空间与输出空间</p>
+<p>该模型的含义为：对于给定的输入 $X$，以条件概率 $P(Y|X)$ 的概率输出 $Y$</p>
+<h2 id="特征函数"><a href="#特征函数" class="headerlink" title="特征函数"></a>特征函数</h2><p><strong>特征函数（feature function）</strong>用于描述输入 $x$ 与输出 $y$ 之间的某一事实，其定义为：</p>
+<script type="math/tex; mode=display">
+f(x,y)=\left\{\begin{array}{rl}
+1,& x,y\:\:满足某一事实 \\
+0,& 否则
+\end{array}\right.</script><p>其是一个二值函数，用于将数据集数学化</p>
+<p>举例来说，对于如下数据集：</p>
+<p><img width="150" src="/images/ml/30-5.png"></p>
+<p>取第一列为 $x$，第二列为 $y$，可以为该数据集写出一些特征函数，例如：</p>
+<script type="math/tex; mode=display">
+f(x,y)=\left\{\begin{array}{rl}
+1,& if:\:x=cloudy\:\:and\:\:y=outdoor \\
+0,& else
+\end{array}\right.</script><p>如此，可以为每个 <code>&lt;特征，标签&gt;</code> 对都做一个如上的特征函数，以实现数据集数学化</p>
+<h2 id="经验分布"><a href="#经验分布" class="headerlink" title="经验分布"></a>经验分布</h2><p>对于给定训练集，可将训练数据当做由随机变量 $(X,Y)$ 产生，则可根据训练数据确定联合分布 $P(X,Y)$ 的经验分布 $\tilde{P}(X,Y)$ 与边缘分布 $P(X)$ 的经验分布 $\tilde{P}(X)$</p>
+<p>记 $v(X=x,Y=y)$ 为训练集中样本 $(x,y)$ 的出现频数，$v(X=x)$ 为训练集中输入 $x$ 的出现频数，$N$ 为样本容量，则对于两个经验分布，有：</p>
+<script type="math/tex; mode=display">
+\begin{gather}
+\tilde{P}(X=x,Y=y)=\frac{v(X=x,Y=y)}{N} \\
+\tilde{P}(X=x)=\frac{v(X=x)}{N}
+\end{gather}</script><h2 id="约束条件"><a href="#约束条件" class="headerlink" title="约束条件"></a>约束条件</h2><p>对于来自参数空间 $\mathcal{X}$ 的离散随机变量 $X$，其概率分布为：</p>
+<script type="math/tex; mode=display">
+P(X=x_i)=p_i,\quad i=1,2,...,n</script><p>我们知道，随机变量 $X$ 的数学期望为：</p>
+<script type="math/tex; mode=display">
+E(X)=\sum_{i=1}^nx_ip_i</script><p>若 $Y=f(X)$，则关于 $X$ 的函数 $Y$ 的期望为：</p>
+<script type="math/tex; mode=display">
+E(Y)=\sum_{i=1}^nf(x_i)p_i</script><p>按照期望的定义，对于任意的特征函数 $f(x,y)$，我们用 $E_{\tilde{P}}(f)$ 表示特征函数 $f(x,y)$ 关于经验分布 $\tilde{P}(X,Y)$ 的期望，有：</p>
+<script type="math/tex; mode=display">
+E_{\tilde{P}}(f)=\sum_{x,y}\tilde{P}(x,y)f(x,y)</script><p>对于任意的特征函数 $f(x,y)$，用 $E_P(f)$ 表示关于模型 $P(Y|X)$ 与经验分布 $\tilde{P}(X)$ 的期望，即：</p>
+<script type="math/tex; mode=display">
+E_P(f)=\sum_{x,y}\tilde{P}(x)P(y|x)f(x,y)</script><p>对于模型 $P(Y|X)$，我们希望特征 $f(x,y)$ 的期望$E_{\tilde{P}}(f)$ 应该与从训练集中得到的期望 $E_P(f)$ 是一致的，为此，提出特征约束：</p>
+<script type="math/tex; mode=display">
+E_p(f)=E_{\tilde{P}}(f)</script><p>即：</p>
+<script type="math/tex; mode=display">
+\sum_{x,y}\tilde{P}(x)P(y|x)f(x,y)=\sum_{x,y}\tilde{P}(x,y)f(x,y)</script><p>上式即为最大熵模型中要满足的约束条件</p>
+<p>需要注意的是，由于特征函数是对数据集实现数学化的，每个 <code>&lt;特征，标签&gt;</code> 对都会做一个特征函数，因此，若有 $n$ 个特征函数 $f_i(x,y)$ 的话，相应地，就有 $n$ 个约束条件</p>
+<p>满足所有约束条件的模型集合为：</p>
+<script type="math/tex; mode=display">
+\mathcal{C}\equiv\{P\in\mathcal{P}|E_P(f_i)=E_{\tilde{P}}(f_i),i=1,2,...,n\}</script><h2 id="最大熵模型"><a href="#最大熵模型" class="headerlink" title="最大熵模型"></a>最大熵模型</h2><p>对于给定的训练集 $T$，我们的目标是根据最大熵原理，选择一个最优的分类器</p>
+<p>对于从训练集获得的特征函数和约束条件，将信息熵的概念应用到条件分布中</p>
+<p>对于条件概率分布 $P(Y|X)$ 上的条件熵为：</p>
+<script type="math/tex; mode=display">
+\begin{align}
+H(Y|X) &= -\sum_{x,y}P(y,x)\log P(y|x) \\
+&= -\sum_{x,y}\tilde{P}(x)P(y|x)\log P(y|x)
+\end{align}</script><p>此时，在约束条件的模型集合 $\mathcal{C}$ 中，条件熵最大的模型，即为最大熵模型</p>
+<p>要注意的是，式中的对数取自然对数</p>
+<h1 id="【最大熵模型的学习】"><a href="#【最大熵模型的学习】" class="headerlink" title="【最大熵模型的学习】"></a>【最大熵模型的学习】</h1><h2 id="约束最优化问题"><a href="#约束最优化问题" class="headerlink" title="约束最优化问题"></a>约束最优化问题</h2><p>最大熵模型的学习过程，即求解最大熵模型的过程，其可以形式化为约束最优化问题</p>
+<p>对于给定的训练集 $T=\{(x_1,y_1),(x_2,y_2),…,(x_N,y_N)\}$ 与特征函数 $f_i(x,y),i=1,2,…,n$，最大熵模型的学习等价于下述的约束最优化问题：</p>
+<script type="math/tex; mode=display">
+\begin{gather}
+\max_{P\in\mathcal{C}} & H(P)=-\sum_{x,y}\tilde{P}(x)P(y|x)\log P(y|x) \\
+s.t. & \left\{\begin{array}{rl}
+\sum\limits_{y}P(y|x) &=& 1 &\\
+E_P(f_i) &=& E_{\tilde{P}}(f_i), & i=1,2,...,n
+\end{array}\right.
+
+\end{gather}</script><p>按照最优化问题的习惯，将最大值问题改写为等价的最小值问题：</p>
+<script type="math/tex; mode=display">
+\begin{gather}
+\min_{P\in\mathcal{C}} & -H(P)=\sum_{x,y}\tilde{P}(x)P(y|x)\log P(y|x) \\
+s.t. & \left\{\begin{array}{rl}
+\sum_\limits yP(y|x) &=& 1&  \\
+E_{\tilde{P}}(f_i) - E_P(f_i) &=& 0, & i=1,2,...,n
+\end{array}\right.
+
+\end{gather}</script><p>此时，求解约束最优化问题所得出的解，即最大熵模型学习的解</p>
+<h2 id="拉格朗日乘子法求解"><a href="#拉格朗日乘子法求解" class="headerlink" title="拉格朗日乘子法求解"></a>拉格朗日乘子法求解</h2><p>关于拉格朗日乘子法与对偶性：<a href="https://alex-mcavoy.github.io/ml/763e2d04.html">点击这里</a></p>
+<p>引入拉格朗日乘子 $w_0,w_1,…,w_n$，并定义拉格朗日函数：</p>
+<script type="math/tex; mode=display">
+\begin{align}
+L(P,w) \equiv &-H(P) + w_0\bigl[1-\sum_y P(y|x)\bigr] + \sum_{i=1}^nw_i\bigl[E_{\tilde{P}}(f_i)-E_P(f_i)\bigr] \\
+=& \sum_{x,y}\tilde{P}(x)P(y|x)\log P(y|x) + w_0\bigl[1-\sum_y P(y|x)\bigr] \\
+&+ \sum_{i=1}^nw_i\bigl[ \sum_{x,y}\tilde{P}(x,y)f_i(x,y) - \sum_{x,y}\tilde{P}(x)P(y|x)f_i(x,y) \bigr]
+\end{align}</script><p>此时，最优化的原始问题为：</p>
+<script type="math/tex; mode=display">
+\min_{P\in \mathcal{C}}\:\max_{w}\:L(P,w)</script><p>其对偶问题为：</p>
+<script type="math/tex; mode=display">
+\max_{w}\:\min_{P\in\mathcal{C}}\:L(P,w)</script><p>由于拉格朗日函数 $L(P,w)$ 是 $P$ 的凸函数，且其满足 <code>Slater 条件</code>，故原始问题的解与对偶问题的解是等价的，故而可以通过求解对偶问题来求解原始问题</p>
+<hr>
+<p>首先求解对偶问题内部的极小化问题 $\min\limits_{P\in\mathcal{C}}\:L(P,w)$，其是 $w$ 的函数，即为<strong>对偶函数</strong>，将其记为 $\Psi(w)$，有：</p>
+<script type="math/tex; mode=display">
+\Psi(w)= \min\limits_{P\in\mathcal{C}}\:L(P,w)=L(P_w,w)</script><p>将其解记为：</p>
+<script type="math/tex; mode=display">
+P_w=\arg\min_{P\in\mathcal{C}}L(P,w)=P_w(y|x)</script><p>具体地，计算 $L(P,w)$ 对 $P(y|x)$ 的偏导数，即：</p>
+<script type="math/tex; mode=display">
+\begin{align}
+\frac{\partial L(P,w)}{\partial P(y|x)} &= \sum_{x,y}\tilde{P}(x)\bigl[\log P(y|x)+1\bigr]-\sum_y w_0-\sum_{x,y}\tilde{P}(x)\sum_{i=1}^nw_if_i(x,y) \\
+&= \sum_{x,y}\tilde{P}(x)\bigl[ \log P(y|x)+1-w_0-\sum_{i=1}^n w_if_i(x,y) \bigr]
+\end{align}</script><p>令偏导数 $\frac{\partial L(P,w)}{\partial P(y|x)}=0$，即：</p>
+<script type="math/tex; mode=display">
+\begin{gather}
+\sum_{x,y}\tilde{P}(x)\bigl[ \log P(y|x)+1-w_0-\sum_{i=1}^n w_if_i(x,y) \bigr]=0\\
+\end{gather}</script><p>在已知 $\tilde{P}(x)&gt;0$ 的情况下，有：</p>
+<script type="math/tex; mode=display">
+\begin{gather}
+\log P(y|x) &=& \sum_{i=1}^nw_if_i(x,y)+w_0-1 \\
+P(y|x) &=& exp\bigl[ \sum_{i=1}^nw_if_i(x,y)+w_0-1 \bigr]
+\end{gather}</script><p>即：</p>
+<script type="math/tex; mode=display">
+P(y|x)=\frac{1}{exp(1-w_0)}\cdot exp(\sum_{i=1}^nw_if_i(x,y))</script><p>由于 $\sum\limits_y P(y|x)=1$，根据<strong>等概率原则</strong>可得：</p>
+<script type="math/tex; mode=display">
+P_w(y|x)=\frac{1}{Z_w(x)}exp(\sum_{i=1}^nw_if_i(x,y))</script><p>其中，对于 $Z_w(x)$ 称为<strong>归一化因子</strong>，对于归一化因子，有：</p>
+<script type="math/tex; mode=display">
+Z_w(x)=\sum_yexp(\sum_{i=1}^nw_if_i(x,y))</script><p>其引入是为了保证 $P_w(y|x)$ 是概率</p>
+<p>此时所得到的对偶函数 $\Psi(w)$ 的解 $P_w=P_w(y|x)$ 即为<strong>最大熵模型</strong>，相应地，对偶函数 $\Psi(w)$ 为：</p>
+<script type="math/tex; mode=display">
+\Psi(w)=-\sum_x\tilde{P}(x)\log Z_w(x)+\sum_{i=1}^nw_iE_{\tilde{P}}(f_i)</script><p>接着，求解对偶问题外部的极大化问题：</p>
+<script type="math/tex; mode=display">
+\max_w \Psi(w)</script><p>将其解记为 $w^*$，有：</p>
+<script type="math/tex; mode=display">
+w^*=\arg \max_w \Psi(w)</script><p>此时，即将一个有约束的最优化问题，转换为一个没有约束的最优化问题，可应用最优化算法来求对偶函数 $\Psi(w)$ 的极大化，从而得到最优解 $w^{*}$ 以表示 $P^{*}\in\mathcal{C}$</p>
+<p>而学习到的 $P^{*}=P_{w^{*}}=P_{w^{*}}(y|x)$ 就是最大熵模型，也就是说，最大熵模型的学习归结为对偶函数 $\Psi(w)$ 的极大化</p>
+<h2 id="最大似然估计求解"><a href="#最大似然估计求解" class="headerlink" title="最大似然估计求解"></a>最大似然估计求解</h2><h1 id="【实例】"><a href="#【实例】" class="headerlink" title="【实例】"></a>【实例】</h1><p>假设随机变量 $X$ 有 5 个取值 $\{A,B,C,D,E\}$，对应取值的概率分别为 $P(A)$、$P(B)$、$P(C)$、$P(D)$、$P(E)$，存在如下约束条件：</p>
+<script type="math/tex; mode=display">
+\begin{gather}
+P(A)+P(B)=\frac{3}{10}\\
+P(A)+P(B)+P(C)+P(D)+P(E)=1
+\end{gather}</script><p>要求学习最大熵模型</p>
+<hr>
+<p>为表示方便，令 $x_1$、$x_2$、$x_3$、$x_4$、$x_5$ 表示 $A$、$B$、$C$、$D$、$E$</p>
+<p>于是，关于经验分布 $\tilde{P}(X)$ 的期望为：</p>
+<script type="math/tex; mode=display">
+E_{\tilde{P}}=P(x_1)+P(x_2)</script><p>关于模型 $P(Y|X)$ 与经验分布 $\tilde{P}(X)$ 的期望为：</p>
+<script type="math/tex; mode=display">
+E_P=\tilde{P}(x_1)+\tilde{P}(x_2)=\frac{3}{10}</script><p>此时，最大熵模型学习的最优化问题为：</p>
+<script type="math/tex; mode=display">
+\begin{gather}
+\min_{P\in\mathcal{C}} & -H(P)=\sum_{i=1}^5 P(x_i)\log P(x  _i) \\
+s.t. & \left\{\begin{array}{rl}
+\sum\limits_{i=1}^5 P(x_i) &= \sum\limits_{i=1}^5 \tilde{P}(x_i) = 1  \\
+E_{\tilde{P}}-E_P &= 0
+\end{array}\right.
+
+\end{gather}</script><p>引入拉格朗日乘子 $w_0$、$w_1$，并定义拉格朗日函数：</p>
+<script type="math/tex; mode=display">
+L(P,w)=\sum_{i=1}^5P(x_i)\log P(x_i) + w_0\bigl[ 1-\sum_{i=1}^5P(x_i)\bigr] + w_1\bigl[ P(x_1)+P(x_2)-\frac{3}{10}\bigr]</script><p>根据拉格朗日对偶性，通过求解对偶问题来得到原始问题的解，即求解：</p>
+<script type="math/tex; mode=display">
+\max_w\:\min_P\:L(P,w)</script><p>首先求解 $L(P,W)$ 关于 $P$ 的极小化问题 $\Psi(w)$ ，求偏导数 $\frac{\partial L(P,w)}{\partial P(x)}$，有：</p>
+<script type="math/tex; mode=display">
+\begin{gather}
+\frac{\partial L(P,w)}{\partial P(x_1)} &=& \log P(x_1)+1 -w_0+w_1\\
+\frac{\partial L(P,w)}{\partial P(x_2)} &=& \log P(x_2)+1 -w_0+w_1\\
+\frac{\partial L(P,w)}{\partial P(x_3)} &=& \log P(x_3)+1 -w_0\\
+\frac{\partial L(P,w)}{\partial P(x_4)} &=& \log P(x_4)+1 -w_0\\
+\frac{\partial L(P,w)}{\partial P(x_5)} &=& \log P(x_5)+1 -w_0\\
+\end{gather}</script><p>令各项偏导数为 $0$，有：</p>
+<script type="math/tex; mode=display">
+\begin{gather}
+P(x_1)=P(x_2)=e^{w_0-w_1-1}\\
+P(x_3)=P(x_4)=P(x_5)=e^{w_0-1}
+\end{gather}</script><p>故对偶函数为：</p>
+<script type="math/tex; mode=display">
+\Psi(w)=-2e^{w_0-w1-1}-3e^{w_0-1}-\frac{3}{10}w_1+w_0</script><p>接着，解 $\Psi(w)$ 的关于 $w$ 的极大化问题</p>
+<p>分别求 $\Psi(w)$ 对 $w_0$、$w_1$ 的偏导，并令其为 $0$，联立后有：</p>
+<script type="math/tex; mode=display">
+\begin{gather}
+e^{w_0-w_1-1}=\frac{3}{20}\\
+e^{w_0-1}=\frac{7}{30}
+\end{gather}</script><p>故可得概率分布为：</p>
+<script type="math/tex; mode=display">
+\begin{gather}
+P(x_1)=P(x_2)=\frac{3}{20}\\
+P(x_3)=P(x_4)=P(x_5)=\frac{7}{30}
+\end{gather}</script>
+      
+    </div>
+    
+    
+    
+
+    
+
+    <!-- 版权说明 -->
+    
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者：</strong>
+    Alex_McAvoy
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://alex-mcavoy.github.io/ml/ba8a14c4.html" title="最大熵模型">https://alex-mcavoy.github.io/ml/ba8a14c4.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>
+    本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 3.0</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+
+      </div>
+    
+	
+    <!-- 打赏 -->
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>感谢您对我的支持，让我继续努力分析有用地点技术与知识点！</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="/assets/img/wechatpay.jpg" alt="Alex_McAvoy 微信支付">
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="/assets/img/alipay.jpg" alt="Alex_McAvoy 支付宝">
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/ml/" rel="tag"># 机器学习</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/ml/763e2d04.html" rel="next" title="拉格朗日乘子法与对偶性">
+                <i class="fa fa-chevron-left"></i> 拉格朗日乘子法与对偶性
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/notes/os/dc54fe0b.html" rel="prev" title="操作系统——OS 概述">
+                操作系统——OS 概述 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+	
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/assets/img/head.jpg" alt="Alex_McAvoy">
+            
+              <p class="site-author-name" itemprop="name">Alex_McAvoy</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">299</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">21</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">21</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/Alex-McAvoy" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="https://blog.csdn.net/u011815404" target="_blank" title="CSDN">
+                      
+                        <i class="fa fa-fw fa-copyright"></i>CSDN</a>
+                  </span>
+                
+            </div>
+          
+		  
+          
+          
+            <div class="cc-license motion-element" itemprop="license">
+              <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" class="cc-opacity" target="_blank">
+                <img src="/images/cc-by-nc-sa.svg" alt="Creative Commons">
+              </a>
+            </div>
+          
+		  
+		  <!-- 访客地图 -->
+		  <script type="text/javascript" src="//rf.revolvermaps.com/0/0/5.js?i=50n58yo58ow&amp;m=0&amp;c=ff0000&amp;cr1=ffffff" async="async"></script>
+
+          
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-link"></i>
+                Links
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/sdz20172133" title="神仙队友" target="_blank">神仙队友</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://pxlsdz.gitee.io/" title="神仙队友的另一个博客" target="_blank">神仙队友的另一个博客</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://www.bycore.net/" title="凉了的某饼同学" target="_blank">凉了的某饼同学</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/wentong_Xu" title="小黑贱胖子" target="_blank">小黑贱胖子</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://deng.fun/" title="芙蓉姐姐" target="_blank">芙蓉姐姐</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/sdau_fangshifeng" title="一个头很酷的家伙" target="_blank">一个头很酷的家伙</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://www.yuheng.tech/" title="咸于" target="_blank">咸于</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/lanshan1111" title="肥硕硕" target="_blank">肥硕硕</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/sdauguanweihong" title="管少" target="_blank">管少</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/qq_41661919" title="俊杰" target="_blank">俊杰</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/qq_40859951" title="峰哥" target="_blank">峰哥</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/LSD20164388" title="狗冬" target="_blank">狗冬</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/qq_37748451" title="胖亚亚" target="_blank">胖亚亚</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/qq_37868325" title="妍大佬" target="_blank">妍大佬</a>
+                  </li>
+                
+              </ul>
+            </div>
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【最大熵原理】"><span class="nav-number">1.</span> <span class="nav-text">【最大熵原理】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#最大熵原理"><span class="nav-number">1.1.</span> <span class="nav-text">最大熵原理</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#几何解释"><span class="nav-number">1.2.</span> <span class="nav-text">几何解释</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#实例"><span class="nav-number">1.3.</span> <span class="nav-text">实例</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【最大熵模型】"><span class="nav-number">2.</span> <span class="nav-text">【最大熵模型】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#分类模型"><span class="nav-number">2.1.</span> <span class="nav-text">分类模型</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#特征函数"><span class="nav-number">2.2.</span> <span class="nav-text">特征函数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#经验分布"><span class="nav-number">2.3.</span> <span class="nav-text">经验分布</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#约束条件"><span class="nav-number">2.4.</span> <span class="nav-text">约束条件</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#最大熵模型"><span class="nav-number">2.5.</span> <span class="nav-text">最大熵模型</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【最大熵模型的学习】"><span class="nav-number">3.</span> <span class="nav-text">【最大熵模型的学习】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#约束最优化问题"><span class="nav-number">3.1.</span> <span class="nav-text">约束最优化问题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#拉格朗日乘子法求解"><span class="nav-number">3.2.</span> <span class="nav-text">拉格朗日乘子法求解</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#最大似然估计求解"><span class="nav-number">3.3.</span> <span class="nav-text">最大似然估计求解</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【实例】"><span class="nav-number">4.</span> <span class="nav-text">【实例】</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+        <div class="back-to-top">
+          <i class="fa fa-arrow-up"></i>
+          
+            <span id="scrollpercent"><span>0</span>%</span>
+          
+        </div>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 &mdash; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Alex_McAvoy</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+<script>
+(function(){
+    var bp = document.createElement('script');
+    var curProtocol = window.location.protocol.split(':')[0];
+    if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';        
+    }
+    else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+    }
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(bp, s);
+})();
+</script>
+
+
+  
+  
+
+  
+  
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdn.bootcss.com/mathjax/2.7.1/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  
+
+
+  
+
+  
+
+  <script type="text/javascript" src="/js/src/cursor-effects.js"></script>
+</body>
+</html>
