@@ -112,7 +112,7 @@
 <meta property="og:locale" content="zh-Hans">
 <meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/18-1.png">
 <meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/18-2.gif">
-<meta property="og:updated_time" content="2021-05-04T09:15:03.884Z">
+<meta property="og:updated_time" content="2021-05-07T15:51:13.643Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="牛顿法与拟牛顿法">
 <meta name="twitter:description" content="Reference  牛顿法与拟牛顿法 牛顿法与拟牛顿法学习笔记（一）牛顿法 牛顿法与拟牛顿法学习笔记（二）拟牛顿条件 牛顿法与拟牛顿法学习笔记（三）DFP 算法 牛顿法与拟牛顿法学习笔记（四）BFGS 算法 牛顿法与拟牛顿法学习笔记（五）L-BFGS 算法 梯度下降法、牛顿法和拟牛顿法   【概述】牛顿法（Newton method）和拟牛顿法（quasi Newton method）是求解非">
@@ -652,9 +652,9 @@ G_{k+1} &= \quad (V_k^TV_{k-1}^T...V_1^TV_0^T) G_0 (V_0V_1...V_{k-1}V_k)
 \\ &\quad + (V_k^TV_{k-1}^T)(\rho_{k-2}\vec{\delta_{k-2}}\vec{\delta_{k-2}}^T)(V_{k-1}V_k)
 \\ &\quad + V_k^T(\rho_{k-1}\vec{\delta_{k-1}}\vec{\delta_{k-1}}^T)V_k
 \\ &\quad + \rho_k\vec{\delta_k}\vec{\delta_k}^T
-\end{align}</script><p>可见，计算 $G_{k+1}$ 需要用到向量序列 $\{\vec{\delta_i},\vec{y_i}\}_{i=0}^k$，因此，若从 $\vec{\delta_0},\vec{y_0}$ 开始连续地存储 $m$ 组的话，只能依次计算到 $G_m$</p>
+\end{align}</script><p>可见，计算 $G_{k+1}$ 需要用到向量序列 $\{(\vec{\delta_i},\vec{y_i})\}_{i=0}^k$，因此，若从 $\vec{\delta_0},\vec{y_0}$ 开始连续地存储 $m$ 组的话，只能依次计算到 $G_m$</p>
 <p>也就是说，如果想要求 $G_{m+1},G_{m+2},…$ 的话，就要考虑丢弃一些最早生成的向量</p>
-<p>举例来说，如果要计算 $G_{m+1}$，就保存 $\{\vec{\delta_i},\vec{y_i}\}_{i=1}^{m}$，丢弃 $\{\vec{\delta_0},\vec{y_0}\}$，如果要计算 $G_{m+2}$，就保存 $\{\vec{\delta_i},\vec{y_i}\}_{i=2}^{m+1}$，丢弃 $\{\vec{\delta_i},\vec{y_i}\}_{i=0}^{1}$</p>
+<p>举例来说，如果要计算 $G_{m+1}$，就保存 $\{(\vec{\delta_i},\vec{y_i})\}_{i=1}^{m}$，丢弃 $\{(\vec{\delta_0},\vec{y_0})\}$，如果要计算 $G_{m+2}$，就保存 $\{(\vec{\delta_i},\vec{y_i})\}_{i=2}^{m+1}$，丢弃 $\{(\vec{\delta_i},\vec{y_i})\}_{i=0}^{1}$</p>
 <p>在舍弃一些向量后，就只能近似计算了，当 $k+1&gt;m$ 时，按照上述的 $G_{k+1}$ 可以构造近似计算公式，即：</p>
 <script type="math/tex; mode=display">
 \begin{align}
@@ -707,13 +707,13 @@ FOR \quad i&=L-1,L-2,...,1,0 \quad DO\quad\{ &
 \\ \vec{r_{i+1}} &=\vec{r_i}+(\alpha_i-\beta_i)\vec{\delta_j};
 \\ \}\quad\quad\quad\quad
 \end{align}</script><p>最后求出的 $\vec{r_L}$ 即为 $H_k\vec{g_k}$ 的值</p>
-<h2 id="Broydent-类算法"><a href="#Broydent-类算法" class="headerlink" title="Broydent 类算法"></a>Broydent 类算法</h2><p>将由 DFP 算法的迭代公式得到的 $D_{k+1}$ 记作 $G^{DEP}$：</p>
+<h2 id="Broydent-类算法"><a href="#Broydent-类算法" class="headerlink" title="Broydent 类算法"></a>Broydent 类算法</h2><p>将由 DFP 算法的迭代公式得到的 $D_{k+1}$ 记作 $G^{DFP}$：</p>
 <script type="math/tex; mode=display">
-G^{DEP}=D_{k+1}=D_k+\frac{\vec{\delta_k}\vec{\delta_k}^T}{\vec{\delta_k}^T\vec{y_k}}-\frac{D_k\vec{y_k}\vec{y_k}^TD_k}{\vec{y_k}^TD_k\vec{y_k}},\quad k=0,1,2,...</script><p>将由 BFGS 算法的迭代公式得到的 $G_{k+1}$ 记作 $G^{BFGS}$：</p>
+G^{DFP}=D_{k+1}=D_k+\frac{\vec{\delta_k}\vec{\delta_k}^T}{\vec{\delta_k}^T\vec{y_k}}-\frac{D_k\vec{y_k}\vec{y_k}^TD_k}{\vec{y_k}^TD_k\vec{y_k}},\quad k=0,1,2,...</script><p>将由 BFGS 算法的迭代公式得到的 $G_{k+1}$ 记作 $G^{BFGS}$：</p>
 <script type="math/tex; mode=display">
-G^{BFGS}=G_{k+1} = (I-\frac{\vec{\delta_k}\vec{y_k}^T}{\vec{y_k}^T\vec{\delta_k}})G_k(I-\frac{\vec{y_k}\vec{\delta_k}^T}{\vec{y_k}^T\vec{\delta_k}})+\frac{\vec{\delta_k}\vec{\delta_k}^T}{\vec{y_k}^T\vec{\delta_k}}</script><p>由于 $G^{DEP}$ 与 $G^{BFGS}$ 均满足拟牛顿条件，因此他们的线性组合也满足拟牛顿条件，且是正定的，即：</p>
+G^{BFGS}=G_{k+1} = (I-\frac{\vec{\delta_k}\vec{y_k}^T}{\vec{y_k}^T\vec{\delta_k}})G_k(I-\frac{\vec{y_k}\vec{\delta_k}^T}{\vec{y_k}^T\vec{\delta_k}})+\frac{\vec{\delta_k}\vec{\delta_k}^T}{\vec{y_k}^T\vec{\delta_k}}</script><p>由于 $G^{DFP}$ 与 $G^{BFGS}$ 均满足拟牛顿条件，因此他们的线性组合也满足拟牛顿条件，且是正定的，即：</p>
 <script type="math/tex; mode=display">
-G_{k+1}=\alpha G^{DEP}+(1-\alpha)G^{BFGS},\quad 0\leq\alpha\leq 1</script><p>这样就得到了<strong>一类拟牛顿法</strong>，称为 Broyden 类算法</p>
+G_{k+1}=\alpha G^{DFP}+(1-\alpha)G^{BFGS},\quad 0\leq\alpha\leq 1</script><p>这样就得到了<strong>一类拟牛顿法</strong>，称为 Broyden 类算法</p>
 
       
     </div>
@@ -803,8 +803,8 @@ G_{k+1}=\alpha G^{DEP}+(1-\alpha)G^{BFGS},\quad 0\leq\alpha\leq 1</script><p>这
 
           <div class="post-nav-prev post-nav-item">
             
-              <a href="/ml/129a3efa.html" rel="prev" title="二元 Logistic 回归">
-                二元 Logistic 回归 <i class="fa fa-chevron-right"></i>
+              <a href="/ml/129a3efa.html" rel="prev" title="一元 Logistic 回归">
+                一元 Logistic 回归 <i class="fa fa-chevron-right"></i>
               </a>
             
           </div>
@@ -884,7 +884,7 @@ G_{k+1}=\alpha G^{DEP}+(1-\alpha)G^{BFGS},\quad 0\leq\alpha\leq 1</script><p>这
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">299</span>
+                  <span class="site-state-item-count">300</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
