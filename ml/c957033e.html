@@ -102,23 +102,22 @@
 
 
 
-<meta name="description" content="【多分类问题】当分类数据超过两类时，即为多分类问题 从训练集的角度来看，二分类问题的数据集看起来如下图：  而对于一个三类别分类问题，其数据集看起来如下图：  【多元 Logistic 回归】引入我们知道，二元 Logistic 回归可以解决二分类问题，通过批量梯度下降法或牛顿迭代法来拟合 $\theta$ 参数，进一步找出决策边界，从而将数据集分为正类和负类 借鉴这种思想，我们对二元 Logis">
+<meta name="description" content="【假设形式】假设函数在多元线性回归中，有假设函数：  \begin{align} f(\vec{x_i}) &amp;=\theta_0 + \theta_1 x_i^{(1)} + \theta_2 x_i^{(2)} + ... + \theta_m x_i^{(m)}\\ &amp;= \Theta^{T}X_i \end{align}参考一元 Logistic 回归的做法，将激活函数 $g(z)$ 引入，">
 <meta name="keywords" content="机器学习">
 <meta property="og:type" content="article">
 <meta property="og:title" content="多元 Logistic 回归">
 <meta property="og:url" content="https://alex-mcavoy.github.io/ml/c957033e.html">
 <meta property="og:site_name" content="Alex_McAvoy">
-<meta property="og:description" content="【多分类问题】当分类数据超过两类时，即为多分类问题 从训练集的角度来看，二分类问题的数据集看起来如下图：  而对于一个三类别分类问题，其数据集看起来如下图：  【多元 Logistic 回归】引入我们知道，二元 Logistic 回归可以解决二分类问题，通过批量梯度下降法或牛顿迭代法来拟合 $\theta$ 参数，进一步找出决策边界，从而将数据集分为正类和负类 借鉴这种思想，我们对二元 Logis">
+<meta property="og:description" content="【假设形式】假设函数在多元线性回归中，有假设函数：  \begin{align} f(\vec{x_i}) &amp;=\theta_0 + \theta_1 x_i^{(1)} + \theta_2 x_i^{(2)} + ... + \theta_m x_i^{(m)}\\ &amp;= \Theta^{T}X_i \end{align}参考一元 Logistic 回归的做法，将激活函数 $g(z)$ 引入，">
 <meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/19-2.png">
 <meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/20-1.png">
 <meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/20-2.png">
-<meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/20-3.png">
-<meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/20-4.png">
-<meta property="og:updated_time" content="2021-04-21T11:26:56.531Z">
+<meta property="og:updated_time" content="2021-05-30T17:51:35.138Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="多元 Logistic 回归">
-<meta name="twitter:description" content="【多分类问题】当分类数据超过两类时，即为多分类问题 从训练集的角度来看，二分类问题的数据集看起来如下图：  而对于一个三类别分类问题，其数据集看起来如下图：  【多元 Logistic 回归】引入我们知道，二元 Logistic 回归可以解决二分类问题，通过批量梯度下降法或牛顿迭代法来拟合 $\theta$ 参数，进一步找出决策边界，从而将数据集分为正类和负类 借鉴这种思想，我们对二元 Logis">
-<meta name="twitter:image" content="https://alex-mcavoy.github.io/images/ml/20-1.png">
+<meta name="twitter:description" content="【假设形式】假设函数在多元线性回归中，有假设函数：  \begin{align} f(\vec{x_i}) &amp;=\theta_0 + \theta_1 x_i^{(1)} + \theta_2 x_i^{(2)} + ... + \theta_m x_i^{(m)}\\ &amp;= \Theta^{T}X_i \end{align}参考一元 Logistic 回归的做法，将激活函数 $g(z)$ 引入，">
+<meta name="twitter:image" content="https://alex-mcavoy.github.io/images/ml/19-2.png">
 
 
 
@@ -361,7 +360,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  781 字
+                  1,977 字
                 </span>
               
 
@@ -377,7 +376,7 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  3 分钟
+                  8 分钟
                 </span>
               
             </div>
@@ -398,49 +397,169 @@
       
 
       
-        <h1 id="【多分类问题】"><a href="#【多分类问题】" class="headerlink" title="【多分类问题】"></a>【多分类问题】</h1><p>当分类数据超过两类时，即为<strong>多分类问题</strong></p>
-<p>从训练集的角度来看，二分类问题的数据集看起来如下图：</p>
-<p><img width="250" src="/images/ml/20-1.png"></p>
-<p>而对于一个三类别分类问题，其数据集看起来如下图：</p>
-<p><img width="250" src="/images/ml/20-2.png"></p>
-<h1 id="【多元-Logistic-回归】"><a href="#【多元-Logistic-回归】" class="headerlink" title="【多元 Logistic 回归】"></a>【多元 Logistic 回归】</h1><h2 id="引入"><a href="#引入" class="headerlink" title="引入"></a>引入</h2><p>我们知道，二元 Logistic 回归可以解决二分类问题，通过批量梯度下降法或牛顿迭代法来拟合 $\theta$ 参数，进一步找出决策边界，从而将数据集分为正类和负类</p>
-<p>借鉴这种思想，我们对二元 Logistic 回归进行推广，用于多分类问题，即<strong>多元 Logistic 回归（multi-nominal logistic regression）</strong></p>
-<p>本文以下部分仅介绍采取的 <code>OvO</code> 划分策略的多元 Logistic 回归，<code>OvR</code> 与 <code>MvM</code>  策略下的多元 Logistic 回归不再介绍</p>
-<p>关于划分策略详见：<a href="https://alex-mcavoy.github.io/ml/325cb37d.html">多分类问题的拆解策略</a></p>
-<h2 id="三分类问题"><a href="#三分类问题" class="headerlink" title="三分类问题"></a>三分类问题</h2><p>首先从最基本的多分类问题开始，即三分类问题</p>
-<p>假设训练集数据如下图，其包含三个类别</p>
-<p><img width="250" src="/images/ml/20-3.png"></p>
-<p>首先要做的，就是利用拆解策略将这个三分类问题转换为三个独立的二分类问题</p>
-<p>从类别 1 开始依次创建三个伪训练集：</p>
-<ul>
-<li>类别 1 为正类，类别 2 与 类别 3 为负类</li>
-<li>类别 2 为正类，类别 1 与 类别 3 为负类</li>
-<li>类别 3 为正类，类别 1 与 类别 2 为负类</li>
-</ul>
-<p>然后对这三个伪训练集分别创建分类器：$f_1(\vec{x_i}), f_2(\vec{x_i}),f_3(\vec{x_i})$</p>
-<p>根据二元 Logistic 回归的后验概率形式，有：</p>
+        <h1 id="【假设形式】"><a href="#【假设形式】" class="headerlink" title="【假设形式】"></a>【假设形式】</h1><h2 id="假设函数"><a href="#假设函数" class="headerlink" title="假设函数"></a>假设函数</h2><p>在多元线性回归中，有假设函数：</p>
 <script type="math/tex; mode=display">
-f_k(\vec{x_i})=P(y=k|\vec{x_i};\Theta^{(k)}),\quad k=1,2,3</script><p>之后，利用二元 Logistic 回归来拟合参数 $\Theta^{(1)},\Theta^{(2)},\Theta^{(3)}$，从而得到三个决策边界：</p>
-<p><img src="/images/ml/20-4.png"></p>
-<p>也就是说，每个分类器都针对其中一种情况进行训练：</p>
-<ul>
-<li>当 $k=1$ 时，$f_k(\vec{x_i})$ 计算的是 $y=1$ 的概率是多少</li>
-<li>当 $k=2$ 时，$f_k(\vec{x_i})$ 计算的是 $y=2$ 的概率是多少</li>
-<li>当 $k=3$ 时，$f_k(\vec{x_i})$ 计算的是 $y=3$ 的概率是多少</li>
-</ul>
-<p>最后，为了做出预测，当输入新的特征值 $\vec{x}$ 后，在这三个分类器中分别输入 $\vec{x}$，然后选择最大的 $f_k(\vec{x_i})$ 的值，即可信度最高、效果最好的分类器，此时得到的概率值，就是要预测的 $y$ 值</p>
-<h2 id="多分类问题"><a href="#多分类问题" class="headerlink" title="多分类问题"></a>多分类问题</h2><p>将三元分类问题进行推广，假设有 $K$ 个类别</p>
-<p>那么首先，要对 $K$ 个类别依次创建 $K$ 个<strong>伪训练集</strong>，然后分别创建分类器，得到的一系列模型可记为：</p>
+\begin{align}
+f(\vec{x_i}) &=\theta_0 + \theta_1 x_i^{(1)} + \theta_2 x_i^{(2)} + ... + \theta_m x_i^{(m)}\\
+&= \Theta^{T}X_i
+\end{align}</script><p>参考一元 Logistic 回归的做法，将激活函数 $g(z)$ 引入，此时，多元 Logistic 回归的假设函数如下：</p>
 <script type="math/tex; mode=display">
-f_k(\vec{x_i})=P(y=k|\vec{x_i};\Theta^{(k)}),\quad k=1,2,...,K</script><p>然后利用批量梯度下降法来拟合 $\theta$ 参数，从而找到这 $K$ 个分类器各自的决策边界，其中 $K$ 对应每一个可能的 $y=k$</p>
-<p>当要做预测时，将特征值 $\vec{x}$ 分别代入这 $k$ 个分类器，进行预测，最后选择一个让 $f_k(\vec{x_i})$ 最大的 $k$，即：</p>
+f(\vec{x_i})=g(\Theta^TX_i)</script><h2 id="激活函数"><a href="#激活函数" class="headerlink" title="激活函数"></a>激活函数</h2><p>在多元 Logistic 回归中，使用的激活函数仍为 <code>sigmoid</code> 函数 $\sigma(z)=\frac{1}{1+e^{-z}}$</p>
+<p>将假设函数 $f(\vec{x_i})$ 记为 $\hat{y_i}$，则可以写作：</p>
 <script type="math/tex; mode=display">
-\max\{f_k(\vec{x_i})\}</script><p>要注意的是，当将二元 Logistic 回归推广到多元 Logistic 回归时，对于分类器：$f_k(\vec{x_i})=P(y=k|\vec{x_i};\Theta^{(k)})$，有：</p>
+\hat{y_i}=\frac{1}{1+e^{-\Theta^TX_i}}</script><h2 id="后验概率"><a href="#后验概率" class="headerlink" title="后验概率"></a>后验概率</h2><p>在多元 Logistic 回归中，假设函数是当输入为 $\vec{x_i}$ 时，输出 $y_i=1$ 的概率估计</p>
+<p>也就是说，假设函数 $\hat{y_i}$ 可以视为后验概率 $P(y_i=1|\vec{x_i};\Theta)$，即在给定概率参数为 $\Theta$ 对具有 $\vec{x_i}$ 特征的条件下 $y_i=1$ 时的概率</p>
+<script type="math/tex; mode=display">
+\hat{y_i} = P(y_i=1|\vec{x_i};\Theta)</script><p>对于二分类问题，输出值非 $0$ 即 $1$，因此可以计算出 $y_i=0$ 的概率，即：</p>
+<script type="math/tex; mode=display">
+\begin{align}
+P(y_i=0 | \vec{x_i};\Theta) &= 
+ 1- P(y_i=1|\vec{x_i};\Theta) 
+\\&=  1 - \hat{y_i}
+\end{align}</script><p>对于假设函数</p>
+<script type="math/tex; mode=display">
+\hat{y_i}=\frac{1}{1+e^{-\Theta^TX_i}}</script><p>显然有：</p>
 <script type="math/tex; mode=display">
 \left\{\begin{array}{rl}
-P(y=k|\vec{x_i};\Theta^{(k)};\Theta) &=& \frac{e^{\Theta X_i}}{1+\sum\limits_{k=1}^{k-1}e^{\Theta X_i}}, & k=1,2,...,K-1
-\\P(y=k|\vec{x_i};\Theta^{(k)};\Theta) &=& \frac{1}{1+\sum\limits_{k=1}^{k-1}e^{\Theta X_i}}, & k=K
-\end{array} \right.</script>
+P(y_i=1|\vec{x_i};\theta) &=& \frac{e^{\Theta^T X_i}}{1+e^{\Theta^T X_i}}
+\\ P(y_i=0 | \vec{x_i};\theta) &=& \frac{1}{1+e^{\Theta^T X_i}}
+\end{array} \right.</script><h2 id="对数几率"><a href="#对数几率" class="headerlink" title="对数几率"></a>对数几率</h2><p>对于多元 Logistic 回归的假设函数：</p>
+<script type="math/tex; mode=display">
+\hat{y_i}=\frac{1}{1+e^{-\Theta^TX_i}}</script><p>其同样将 $\hat{y_i}$ 视为样本 $\vec{x_i}$ 作为正例的可能性，则 $1-\hat{y_i}$ 是其为反例的可能性，两者的比值仍称为<strong>几率（odds）</strong>：</p>
+<script type="math/tex; mode=display">
+\frac{\hat{y_i}}{1-\hat{y_i}}</script><p>其反映了 $\vec{x_i}$ 作为正例的相对可能性</p>
+<p>当假设输出标记 $\hat{y_i}$ 是在指数尺度上变化时，可对几率取对数，称为<strong>对数几率（log odds）</strong>，即：</p>
+<script type="math/tex; mode=display">
+logit(p)=\ln \frac{\hat{y_i}}{1-\hat{y_i}}</script><p>将几率对数作为模型逼近的目标，将假设函数带入，有：</p>
+<script type="math/tex; mode=display">
+\ln \frac{\hat{y_i}}{1-\hat{y_i}}=\Theta^TX_i</script><p>将 $\hat{y_i}$ 视为后验概率估计 $P(\hat{y_i}=1|\vec{x_i})$ 后，对数几率亦可写为：</p>
+<script type="math/tex; mode=display">
+\ln \frac{P(y_i=1|\vec{x_i};\Theta)}{P(y_i=0|\vec{x_i};\Theta)}=\Theta^TX_i</script><h1 id="【代价函数】"><a href="#【代价函数】" class="headerlink" title="【代价函数】"></a>【代价函数】</h1><h2 id="引入"><a href="#引入" class="headerlink" title="引入"></a>引入</h2><p>与一元 Logistic 回归类似，在多元 Logistic 回归中，当使用梯度下降法时，将假设函数 $f(\vec{x_i})=\frac{1}{1+e^{-\Theta^TX_i}}$ 带入多元线性回归中的代价函数中：</p>
+<script type="math/tex; mode=display">
+J(\theta) = \frac{1}{2n}\sum_{i=1}^n(f(\vec{x_i}) - y_i)^2</script><p>画出代价函数的图像，会发现可能是一个类似下图的<strong>非凸函数</strong>，即有许多局部最优值，如果将梯度下降法用在这样一个函数上，无法保证其能收敛到全局最小值</p>
+<p><img width="250" src="/images/ml/19-2.png"></p>
+<p>因此，为了保证使用梯度下降法使得代价函数收敛到全局最小值，代价函数需要是一个凸函数，那么就要另找一个不同的代价函数</p>
+<h2 id="损失函数"><a href="#损失函数" class="headerlink" title="损失函数"></a>损失函数</h2><p>与一元 Logistic 回归类似，先考虑单样本时的代价函数，即损失函数 $L(\hat{y_i},y_i)$，由于损失函数是用于衡量单次预测结果的指标，那么 $L(\hat{y_i},y_i)$ 描述的应该是<strong>模型值与真实值的差</strong></p>
+<p>对于给定数据集 $D=\{(\vec{x_1},y_1),(\vec{x_2},y_2),…,(\vec{x_n},y_n)\}$，利用<strong>极大似然法（maximum likelihood method）</strong>对参数 $\Theta$ 进行估计：</p>
+<script type="math/tex; mode=display">
+L(\hat{y_i},y_i)=\left\{\begin{matrix}
+\ln \hat{y_i},&y_i=1
+\\ \ln(1-\hat{y_i}),&y_i=0
+\end{matrix}\right.</script><p>将 $L(\hat{y_i},y_i)$ 项进行化简后有：</p>
+<script type="math/tex; mode=display">
+L(\hat{y_i},y_i) = y_i\cdot(-\ln \hat{y_i}) + (1-y_i)\cdot(-\ln(1-\hat{y_i}))</script><h2 id="代价函数"><a href="#代价函数" class="headerlink" title="代价函数"></a>代价函数</h2><p>在有了单项样本的损失函数后，将其推广到全部样本之上，整个训练集的代价函数就是单项样本的损失函数 $L(\hat{y_i},y_i)$ 在训练集范围上的和，即：</p>
+<script type="math/tex; mode=display">
+\begin{align}
+J(\Theta) &= \sum_{i=1}^nL(\hat{y_i},y_i)
+
+\\ &= \sum_{i=1}^n -y_i\ln\frac{\hat{y_i}}{1-\hat{y_i}}+\ln(1+\frac{\hat{y_i}}{1-\hat{y_i}})
+\end{align}</script><p>根据<strong>对数几率</strong>：</p>
+<script type="math/tex; mode=display">
+\ln \frac{\hat{y_i}}{1-\hat{y_i}}=\Theta^TX_i</script><p>有：</p>
+<script type="math/tex; mode=display">
+\begin{align}
+J(\Theta) &= \sum_{i=1}^n -y_i\ln\frac{\hat{y_i}}{1-\hat{y_i}}+\ln(1+\frac{\hat{y_i}}{1-\hat{y_i}})
+\\ &= \sum_{i=1}^n -y_i\Theta^TX_i+\ln(1+e^{\Theta^TX_i})
+\end{align}</script><p>接下来要做的，就是要最小化代价函数，为训练集拟合出 $\theta$ 参数，即：</p>
+<script type="math/tex; mode=display">
+(\Theta^T)^* = \arg \min_{\Theta} J(\Theta)</script><p>代价函数 $J(\Theta)$ 是关于 $\Theta$ 的高阶可导连续凸函数，根据<strong>凸优化理论</strong>，利用<strong>梯度下降法</strong>或是<strong>牛顿迭代法</strong>均可取其最优解</p>
+<h1 id="【梯度下降法】"><a href="#【梯度下降法】" class="headerlink" title="【梯度下降法】"></a>【梯度下降法】</h1><h2 id="批量梯度下降"><a href="#批量梯度下降" class="headerlink" title="批量梯度下降"></a>批量梯度下降</h2><p>我们依旧使用<strong>批量梯度下降法（BGD，Batch Gradient Descent）</strong>来最小化代价函数：</p>
+<script type="math/tex; mode=display">
+\begin{align}
+J(\Theta) &=\sum_{i=1}^ny_i\cdot(-\ln \hat{y_i}) + (1-y_i)\cdot(-\ln(1-\hat{y_i}))
+\\ &=-\sum_{i=1}^ny_i\cdot\ln \hat{y_i} + (1-y_i)\cdot \ln(1-\hat{y_i})
+\end{align}</script><p>即将下列公式<strong>重复直到收敛</strong>为止：</p>
+<script type="math/tex; mode=display">
+\theta_j = \theta_j - \alpha \frac{\partial}{\partial \theta_j}J(\Theta)</script><p>公式的核心仍为偏导数项 $\frac{\partial}{\partial \theta_j}J(\Theta)$，对其进行化简：</p>
+<script type="math/tex; mode=display">
+\begin{align*}\frac{\partial}{\partial \theta_j}J(\theta)
+ &= -\sum_{i=1}^n \bigl[ y_i \ln\hat{y_i} + (1-y_i)\ln(1-\hat{y_i}) \bigr]
+\\ &= -\sum_{i=1}^n y_i \frac{1}{\hat{y_i}} \frac{\partial \hat{y_i}}{\partial \theta_j} - (1-y_i) \frac{1}{1-\hat{y_i}}\frac{\partial \hat{y_i}}{\partial \theta_j}
+\\ &= -\sum_{i=1}^n \bigl[ \bigl( \frac{y_i}{g(\Theta^TX_i)} - \frac{1-y_i}{1-g(\Theta^TX_i)} \bigr) \frac{\partial g(\Theta^TX_i)}{\partial \theta_j} \bigr]
+\\  &= -\sum_{i=1}^n \bigl[ \bigl( \frac{y_i}{g(\Theta^TX_i)} - \frac{1-y_i}{1-g(\Theta^TX_i)} \bigr) g(\Theta^T X_i)(1-g(\Theta^T X_i)) \frac{\partial \Theta^TX_i}{\partial \theta_j} \bigr]
+\\ &= -\sum_{i=1}^n \bigl[ \bigl(y_i(1-g(\Theta^T X_i)) - (1-y_i)g(\Theta^TX_i) \bigr)x_i^{(j)} \bigr]
+\\ &= -\sum_{i=1}^n \bigl[ \bigl( y_i - g(\Theta^T X_i) \bigr) x_i^{(j)} \bigr]
+\\ &= \sum_{i=1}^n \bigl[ \bigl( g(\Theta^T X_i) - y_i \bigr) x_i^{(j)} \bigr]
+\\ &= \sum_{i=1}^n (\hat{y_i} - y_i)x_i^{(j)}
+\end{align*}</script><p>因此，只需将下列公式<strong>重复至收敛</strong>即可：</p>
+<script type="math/tex; mode=display">
+\theta_j = \theta_j - \alpha \sum_{i=1}^n (\hat{y_i} - y_i)x_i^{(j)}, \quad j=0,1,...,m</script><p>注：关于 $\frac{\partial}{\partial \theta_j}g(\Theta^TX_i)$ 的推导如下：</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+\frac{\partial g(\theta^TX_i)}{\partial \theta_j}
+ &= -\frac{e^{-\Theta^TX_i}}{(1+e^{-\Theta^TX_i})^2} \frac{\partial(-\Theta^TX_i)}{\partial \theta_j}
+ \\ 
+ &= g(\Theta^TX_i)(1-g(\Theta^TX_i))\frac{\partial \Theta^TX_i}{\partial \theta_j}
+\end{align*}</script><h2 id="正则化"><a href="#正则化" class="headerlink" title="正则化"></a>正则化</h2><p>对于多元 Logistic 回归，在没有正则化项的情况下，最小化代价函数的方法是将下列公式迭代直至收敛：</p>
+<script type="math/tex; mode=display">
+\theta_j = \theta_j - \alpha \sum_{i=1}^n (\hat{y_i} - y_i)x_i^{(j)}, \quad j=0,1,...,m</script><p>我们要惩罚的对象是 $\theta_1,\theta_2,\dots,\theta_m$，因此，需要将代价函数进行分离：</p>
+<script type="math/tex; mode=display">
+\left\{\begin{array}{rl}
+\theta_0 &=& \theta_0 - \alpha\sum\limits_{i=1}^n  (\hat{y_i}-y_i) \cdot x_i^{(0)}
+\\ \theta_j &=& \theta_j - \alpha\sum\limits_{i=1}^n  (\hat{y_i}-y_i) \cdot x_i^{(j)}, & j = 1,2,...,m
+\end{array} \right.</script><p>利用 $l_2$ - 范数作为正则化项，对代价函数进行修改，有：</p>
+<script type="math/tex; mode=display">
+J(\theta) = -\sum_{i=1}^ny_i\cdot\ln \hat{y_i} + (1-y_i)\cdot \ln(1-\hat{y_i}) + \lambda\sum_{j=1}^m\theta_j^2,\quad j=1,2,...,m</script><p>对 $J(\theta)$ 求偏导，根据加法求导法则与幂函数求导法则，修改后的代价函数的偏导数只需在修改前的偏导数后加上对 $\lambda\sum\limits_{j=1}^m\theta_j^2$ 求偏导的结果，即：</p>
+<script type="math/tex; mode=display">
+\frac{\partial}{\partial\theta_j}( \lambda\sum\limits_{j=1}^m\theta_j^2)=2\lambda\theta_j</script><p>因此，组合后有：</p>
+<script type="math/tex; mode=display">
+\left\{\begin{array}{rl}
+\theta_0 &=& \theta_0 - \alpha\sum\limits_{i=1}^n  (\hat{y_i}-y_i) \cdot x_i^{(0)}
+\\ \theta_j &=& \theta_j - \alpha[\sum\limits_{i=1}^n  (\hat{y_i}-y_i) \cdot x_i^{(j)} + 2\lambda\theta_j] & j=1,2,...,m
+\end{array} \right.</script><h1 id="【牛顿迭代法】"><a href="#【牛顿迭代法】" class="headerlink" title="【牛顿迭代法】"></a>【牛顿迭代法】</h1><p>对于无约束极小化问题：</p>
+<script type="math/tex; mode=display">
+(\Theta^T)^* = \arg \min_{\Theta} J(\Theta)</script><p>在使用牛顿迭代法时，第 $k+1$ 轮迭代解为：</p>
+<script type="math/tex; mode=display">
+\begin{align}
+\Theta_{k+1}&=\Theta_k-H_k^{-1}\cdot \vec{g_k}
+\\ &= \Theta_k-(\frac{\partial^2J(\Theta)}{\partial \Theta\partial\Theta^T})^{-1}\frac{\partial J(\Theta)}{\partial \Theta}
+\end{align}</script><p>关于牛顿迭代法的详细介绍：<a href="https://alex-mcavoy.github.io/ml/9550a8b2.html">点击这里</a></p>
+<p>可以发现，式子的核心是对代价函数  $J(\Theta)$ 求一、二阶导数，而对于代价函数 $J(\Theta)$ 有：</p>
+<script type="math/tex; mode=display">
+\begin{align}
+J(\Theta) &=\sum_{i=1}^ny_i\cdot(-\ln \hat{y_i}) + (1-y_i)\cdot(-\ln(1-\hat{y_i}))
+\\ &=-\sum_{i=1}^ny_i\cdot\ln \hat{y_i} + (1-y_i)\cdot \ln(1-\hat{y_i})
+\end{align}</script><p>下面，对其求一阶导数，有：</p>
+<script type="math/tex; mode=display">
+\frac{\partial J(\Theta)}{\partial \Theta}=\sum_{i=1}^n (\hat{y_i} - y_i)x_i^{(j)}</script><p>进一步，求二阶导数，有：</p>
+<script type="math/tex; mode=display">
+\begin{align}
+\frac{\partial^2 J(\Theta)}{\partial \Theta\partial \Theta^T} &= \frac{\partial }{\partial \Theta^T}\sum_{i=1}^n (\hat{y_i} - y_i)x_i^{(j)}
+\\ &= \frac{\partial }{\partial \Theta^T} \sum_{i=1}^n(\frac{1}{1+e^{-\Theta^TX_i}}-y_i)x_i^{(j)}
+\\ &= \sum_{i=1}^n x_i^{(j)} (x_i^{(j)})^T\hat{y_i}(1-\hat{y_i})
+\end{align}</script><p>因此，组合后有：</p>
+<script type="math/tex; mode=display">
+\begin{align}
+\Theta_{k+1}&=\Theta_k-H_k^{-1}\cdot \vec{g_k}
+\\ &= \Theta_k-(\frac{\partial^2J(\Theta)}{\partial \Theta\partial\Theta^T})^{-1}\frac{\partial J(\Theta)}{\partial \Theta}
+\\ &= \Theta_k-  \sum_{i=1}^n x_i^{(j)} (x_i^{(j)})^T\hat{y_i}(1-\hat{y_i})\sum_{i=1}^n (\hat{y_i} - y_i)x_i^{(j)}
+\end{align}</script><h1 id="【决策边界】"><a href="#【决策边界】" class="headerlink" title="【决策边界】"></a>【决策边界】</h1><p><strong>决策边界（Decision Boundary）</strong>是假设函数的一个属性，其决定于 $\theta$ 参数，一旦通过训练集拟合出了 $\theta$ 参数，就确定了决策边界</p>
+<p>首先来看假设函数：</p>
+<script type="math/tex; mode=display">
+\hat{y_i}=\frac{1}{1+e^{-\Theta^TX_i)}}</script><p>我们给出 <code>sigmoid</code> 函数的图像，来看一下假设函数何时会预测 $y=0$，何时又会预测 $y=1$</p>
+<p><img width="250" src="/images/ml/20-1.png"></p>
+<p>根据 <code>sigmoid</code> 函数图像的对称性，我们可以认为，只要假设函数输出 $y=1$ 的概率大于或等于 $0.5$，那么意味着 $y=1$，相反地，只要假设函数输出 $y=0$ 的概率小于 $0.5$，那么意味着 $y=0$，即：</p>
+<script type="math/tex; mode=display">
+\left\{\begin{matrix}
+y=1, & \hat{y_i}\geq 0.5
+\\y=0, & \hat{y_i}< 0.5
+\end{matrix}\right.</script><p>同时，对于 <code>sigmoid</code> 函数 $g(z)=\frac{1}{1+e^{-z}}$ 来说，只要 $z \geq 0$，就有 $g(z) \geq 0.5$</p>
+<p>也就是说，只要 $\Theta^TX_i \geq 0$，那么 $\hat{y_i} \geq 0.5$，我们就预测 $y=1$，同理，只要 $\Theta^TX_i &lt; 0$，那么 $\hat{y_i} &lt; 0.5$，我们就预测 $y=0$</p>
+<p>而<strong>决策边界</strong>，是一条直线，其将预测值为 $1$ 和 $0$ 的两个区域分隔开来，这一条线对应的就是 $\hat{y_i}=0.5$，即 $\Theta^TX_i=0$ 时所对应的线</p>
+<hr>
+<p>如下图，假设有一个存在两个特征的模型：$\hat{y_i}=g(\theta_0+\theta_1x_1+\theta_2x_2)$</p>
+<p>通过训练集拟合出的 $\theta$ 的参数矩阵转置 $\Theta^T=[-3,1,1]$，则：</p>
+<ul>
+<li><p>当 $\Theta^TX \geq 0$，即：$-3+x_1+x_2 \geq 0$ 时，模型预测 $y=1$</p>
+</li>
+<li><p>当 $\Theta^TX &lt; 0$，即：$-3+x_1+x_2 &lt; 0$ 时，模型预测 $y=0$</p>
+</li>
+</ul>
+<p>此时，$x_1+x_2=3$ 就是该模型的决策边界</p>
+<p><img width="250" src="/images/ml/20-2.png"></p>
+<h1 id="【实现】"><a href="#【实现】" class="headerlink" title="【实现】"></a>【实现】</h1><p>以 sklearn 中的鸢尾花数据集为例，选取其前两个特征实现 Logistic 回归</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> pandas <span class="keyword">as</span> pd</span><br><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"><span class="keyword">import</span> matplotlib.pyplot <span class="keyword">as</span> plt</span><br><span class="line"><span class="keyword">from</span> sklearn.datasets <span class="keyword">import</span> load_iris</span><br><span class="line"><span class="keyword">from</span> sklearn.model_selection <span class="keyword">import</span> train_test_split</span><br><span class="line"><span class="keyword">from</span> sklearn.linear_model <span class="keyword">import</span> LogisticRegression</span><br><span class="line"><span class="keyword">from</span> sklearn.metrics <span class="keyword">import</span> accuracy_score</span><br><span class="line"><span class="keyword">from</span> sklearn.metrics <span class="keyword">import</span> confusion_matrix</span><br><span class="line"></span><br><span class="line"><span class="comment"># 特征提取</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">deal_data</span><span class="params">()</span>:</span></span><br><span class="line">    iris = load_iris()  <span class="comment"># sklearn的鸢尾花数据集</span></span><br><span class="line">    df = pd.DataFrame(iris.data, columns=iris.feature_names)</span><br><span class="line">    df[<span class="string">'result'</span>] = iris.target</span><br><span class="line">    df.columns = [<span class="string">'sepal length'</span>, <span class="string">'sepal width'</span>,</span><br><span class="line">                  <span class="string">'petal length'</span>, <span class="string">'petal width'</span>, <span class="string">'result'</span>]</span><br><span class="line">    <span class="comment"># iris分为三类，前50行一类，51-100行一类，101-150行一类</span></span><br><span class="line">    <span class="comment"># 为演示Logistic回归处理二分类问题，仅取前100行数据</span></span><br><span class="line">    data = np.array(df.iloc[:<span class="number">100</span>, [<span class="number">0</span>, <span class="number">1</span>, <span class="number">-1</span>]])</span><br><span class="line">    <span class="keyword">return</span> data[:, :<span class="number">2</span>], data[:, <span class="number">-1</span>]</span><br><span class="line"></span><br><span class="line"><span class="comment"># 训练模型</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">train_model</span><span class="params">(x, y)</span>:</span></span><br><span class="line">    <span class="comment"># 建立Logistic模型</span></span><br><span class="line">    model = LogisticRegression(random_state=<span class="number">0</span>)</span><br><span class="line">    <span class="comment"># 训练</span></span><br><span class="line">    model.fit(x, y)</span><br><span class="line">    <span class="keyword">return</span> model</span><br><span class="line"></span><br><span class="line"><span class="comment"># 评估</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">estimate</span><span class="params">(y_test, y_pred, X_train, y_train, model)</span>:</span></span><br><span class="line">    <span class="comment"># 混淆矩阵评估</span></span><br><span class="line">    confusion = confusion_matrix(y_test, y_pred)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 准确率评估</span></span><br><span class="line">    accuracy = accuracy_score(y_true=y_train, y_pred=model.predict(X_train))</span><br><span class="line"></span><br><span class="line">    print(confusion)</span><br><span class="line">    print(accuracy)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 决策边界</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">decision_boundary</span><span class="params">(model, X, y)</span>:</span></span><br><span class="line">    theta_0 = model.intercept_[<span class="number">0</span>]</span><br><span class="line">    theta_1 = model.coef_[<span class="number">0</span>][<span class="number">0</span>]</span><br><span class="line">    theta_2 = model.coef_[<span class="number">0</span>][<span class="number">1</span>]</span><br><span class="line"></span><br><span class="line">    x_ponit = np.arange(<span class="number">4</span>, <span class="number">8</span>)</span><br><span class="line">    y_linear = -(theta_1*x_ponit + theta_0)/theta_2</span><br><span class="line"></span><br><span class="line">    plt.figure(figsize=(<span class="number">6</span>, <span class="number">4</span>))</span><br><span class="line">    plt.plot(x_ponit, y_linear, c=<span class="string">'r'</span>)</span><br><span class="line">    plt.scatter(X[:, <span class="number">0</span>], X[:, <span class="number">1</span>], c=y)</span><br><span class="line">    plt.show()</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:</span><br><span class="line">    <span class="comment"># 特征提取</span></span><br><span class="line">    X, y = deal_data()</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 简单交叉验证</span></span><br><span class="line">    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=<span class="number">0.3</span>)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 训练模型</span></span><br><span class="line">    model = train_model(X_train, y_train)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 预测结果</span></span><br><span class="line">    y_pred = model.predict(X_test)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 评估</span></span><br><span class="line">    estimate(y_test, y_pred, X_train, y_train, model)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 决策边界</span></span><br><span class="line">    decision_boundary(model, X, y)</span><br></pre></td></tr></table></figure>
+
       
     </div>
     
@@ -756,7 +875,7 @@ P(y=k|\vec{x_i};\Theta^{(k)};\Theta) &=& \frac{e^{\Theta X_i}}{1+\sum\limits_{k=
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【多分类问题】"><span class="nav-number">1.</span> <span class="nav-text">【多分类问题】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【多元-Logistic-回归】"><span class="nav-number">2.</span> <span class="nav-text">【多元 Logistic 回归】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#引入"><span class="nav-number">2.1.</span> <span class="nav-text">引入</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三分类问题"><span class="nav-number">2.2.</span> <span class="nav-text">三分类问题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#多分类问题"><span class="nav-number">2.3.</span> <span class="nav-text">多分类问题</span></a></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【假设形式】"><span class="nav-number">1.</span> <span class="nav-text">【假设形式】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#假设函数"><span class="nav-number">1.1.</span> <span class="nav-text">假设函数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#激活函数"><span class="nav-number">1.2.</span> <span class="nav-text">激活函数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#后验概率"><span class="nav-number">1.3.</span> <span class="nav-text">后验概率</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#对数几率"><span class="nav-number">1.4.</span> <span class="nav-text">对数几率</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【代价函数】"><span class="nav-number">2.</span> <span class="nav-text">【代价函数】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#引入"><span class="nav-number">2.1.</span> <span class="nav-text">引入</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#损失函数"><span class="nav-number">2.2.</span> <span class="nav-text">损失函数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#代价函数"><span class="nav-number">2.3.</span> <span class="nav-text">代价函数</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【梯度下降法】"><span class="nav-number">3.</span> <span class="nav-text">【梯度下降法】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#批量梯度下降"><span class="nav-number">3.1.</span> <span class="nav-text">批量梯度下降</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#正则化"><span class="nav-number">3.2.</span> <span class="nav-text">正则化</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【牛顿迭代法】"><span class="nav-number">4.</span> <span class="nav-text">【牛顿迭代法】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【决策边界】"><span class="nav-number">5.</span> <span class="nav-text">【决策边界】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【实现】"><span class="nav-number">6.</span> <span class="nav-text">【实现】</span></a></li></ol></div>
             
 
           </div>
