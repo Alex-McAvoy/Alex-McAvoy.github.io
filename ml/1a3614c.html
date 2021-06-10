@@ -115,7 +115,7 @@
 <meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/26-3.png">
 <meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/26-1.png">
 <meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/26-1.png">
-<meta property="og:updated_time" content="2021-05-31T16:38:40.186Z">
+<meta property="og:updated_time" content="2021-06-09T18:04:06.464Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="决策树的剪枝策略">
 <meta name="twitter:description" content="【概述】剪枝（pruning）是决策树处理过拟合的主要手段，即通过主动去掉一些分支来降低过拟合的风险 决策树剪枝的基本策略有预剪枝（pre-pruning）、后剪枝（post-pruning）两种，在实际应用中，往往使用后剪枝策略更多一些 【预剪枝】预剪枝是在决策树生成过程中进行的剪枝，其基于贪心策略，不仅可以降低过拟合的风险，而且还可以减少训练时间，但可能会出现欠拟合现象 预剪枝是在决策树生成过">
@@ -362,7 +362,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  2,474 字
+                  2,492 字
                 </span>
               
 
@@ -441,7 +441,7 @@
 <p>设 $T$ 为考虑是否剪枝的分支结点，$t$ 为该结点下的叶结点，$N_t$ 表示叶结点 $t$ 覆盖的样本个数，$e_t$ 表示叶结点 $t$ 的错误分类样本个数，那么分支结点 $T$ 的<strong>分类错误率</strong>为：</p>
 <script type="math/tex; mode=display">
 E(T_t)=\frac{\sum_{t\in T}(e_t+\frac{1}{2})}{N_T}</script><p>其中，$\frac{1}{2}$ 是经验性惩罚因子，这是因为生成决策树与剪枝时使用的是相同的训练样本，那么对于<strong>每个结点</strong>，剪枝后分类错误率一定是会上升的，故而在计算分类错误率时，每个结点都要加上一个惩罚因子</p>
-<p>对于分类错误率 $E(T_t)$，其含义是：每一个样本有 $E(T_t)$ 的概率分类正确，$1- E(T_t)$ 的概率分类错误，可以认为分类错误的次数服从伯努利分布，其误判次数为：</p>
+<p>对于分类错误率 $E(T_t)$，其含义是：每一个样本有 $E(T_t)$ 的概率分类错误，$1- E(T_t)$ 的概率分类正确，可以认为分类错误的次数服从伯努利分布，其误判次数为：</p>
 <script type="math/tex; mode=display">
 E(T_t)\cdot N_T</script><p>标准差为：</p>
 <script type="math/tex; mode=display">
@@ -454,11 +454,11 @@ E(T_t)\cdot N_T+\sqrt{N_T\cdot E(T_t)\cdot (1-E(T_t))}\geq E(T)\cdot N_T</script
 <hr>
 <p>以误差降低剪枝中的例子为例</p>
 <p><img width="400" src="/images/ml/26-1.png"></p>
-<p>考虑 <code>T4</code> 结点，有：</p>
+<p>考虑 <code>T4</code> 结点其错误分类样本个数，有：</p>
 <script type="math/tex; mode=display">
-E(T_4)=7</script><p>对于其叶结点，有：</p>
+e(T_4)=7</script><p>对于其叶结点的错误分类样本个数，有：</p>
 <script type="math/tex; mode=display">
-E(T_7)=0,E(T_8)=2,E(T_9)=1,E(T_{10})=1</script><p>则错误率为：</p>
+e(T_7)=0,e(T_8)=2,e(T_9)=1,e(T_{10})=1</script><p>则错误率为：</p>
 <script type="math/tex; mode=display">
 E(T_t)=\frac{(0+2+1+1)+4\cdot\frac{1}{2}}{20}=0.3</script><p>标准差：</p>
 <script type="math/tex; mode=display">
@@ -468,7 +468,7 @@ E(T)=\frac{7}{20}</script><p>根据悲观错误剪枝的判断式：</p>
 <script type="math/tex; mode=display">
 E(T_t)\cdot N_T+\sqrt{N_T\cdot E(T_t)\cdot (1-E(T_t))}\geq E(T)\cdot N_T</script><p>有：</p>
 <script type="math/tex; mode=display">
-0.3\cdot20+2.05\geq \frac{7}{20}\cdot7</script><p>因此根据结点 <code>T4</code> 需要剪枝</p>
+0.3\cdot20+2.05\geq \frac{7}{20}\cdot20</script><p>因此根据结点 <code>T4</code> 需要剪枝</p>
 <h2 id="代价复杂度剪枝"><a href="#代价复杂度剪枝" class="headerlink" title="代价复杂度剪枝"></a>代价复杂度剪枝</h2><h3 id="概述-1"><a href="#概述-1" class="headerlink" title="概述"></a>概述</h3><p>在 <code>CART</code> 中，所使用的剪枝策略，就是<strong>代价复杂度剪枝（Cost-Complexity  Pruning，CCP）</strong>策略，其按照<strong>树的后序遍历</strong>顺序从生成算法产生的决策树底端开始剪枝，根据剪枝的顺序，得到一系列的剪枝树 $\{T_0, T_1, T_2,…,  T_m\}$，其中 $T_0$ 为原始决策树，$T_m$ 为根结点，$T_{i+1}$ 为 $T_i$ 剪枝后的结果，然后通过交叉验证法在独立的验证集上对剪枝树序列进行测试，从中选择最优子树</p>
 <h3 id="代价函数"><a href="#代价函数" class="headerlink" title="代价函数"></a>代价函数</h3><p>对于任意子树 $T$，其叶结点个数为 $|T|$，取代价复杂度参数 $\alpha\geq 0$ ，树 $T$ 的代价函数定义为：</p>
 <script type="math/tex; mode=display">
