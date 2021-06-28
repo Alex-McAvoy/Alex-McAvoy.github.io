@@ -112,7 +112,7 @@
 <meta property="og:locale" content="zh-Hans">
 <meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/35-1.png">
 <meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/35-2.png">
-<meta property="og:updated_time" content="2021-06-16T18:11:47.973Z">
+<meta property="og:updated_time" content="2021-06-24T06:28:07.366Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="朴素贝叶斯">
 <meta name="twitter:description" content="【概述】贝叶斯分类模型是基于贝叶斯定理与特征条件独立假设的分类模型，朴素贝叶斯（naive Bayes）是贝叶斯分类模型中最简单、最常见的一种分类方法，该方法从概率论的角度来进行分类预测，实现简单，预测效率高 贝叶斯定理、贝叶斯分类模型、朴素贝叶斯三者关系如下：  之所以叫做朴素贝叶斯，一方面是其基于贝叶斯定理，另一方面，朴素是指其基于特征独立性假设，各特征不会相互影响，大大减少了计算概率的难度">
@@ -359,7 +359,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  2,902 字
+                  2,996 字
                 </span>
               
 
@@ -453,7 +453,9 @@ f(x) &= \arg \min_{y\in\mathcal{Y}}\sum_{k=1}^K L(c_k,y)P(c_k|X=x) \\
 &= \arg \min_{y\in\mathcal{Y}}[1-P(y=c_k|X=x)] \\
 &= \arg \max_{y\in\mathcal{Y}}P(y=c_k|X=x)
 \end{align}</script><p>可以发现，在朴素贝叶斯中，期望风险最小化与后验概率最大化是等价的</p>
-<h1 id="【朴素贝叶斯参数估计】"><a href="#【朴素贝叶斯参数估计】" class="headerlink" title="【朴素贝叶斯参数估计】"></a>【朴素贝叶斯参数估计】</h1><p>在朴素贝叶斯分类器中，我们知道朴素贝叶斯的学习就意味着估计 $P(Y=c_k)$ 与 $P(X^{(j)}=x^{(j)}|Y=c_k)$，此时，可以使用极大似然估计或贝叶斯估计来对两者进行参数估计</p>
+<h1 id="【朴素贝叶斯参数估计】"><a href="#【朴素贝叶斯参数估计】" class="headerlink" title="【朴素贝叶斯参数估计】"></a>【朴素贝叶斯参数估计】</h1><h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>在朴素贝叶斯分类器中，我们知道朴素贝叶斯的学习就意味着估计 $P(Y=c_k)$ 与 $P(X^{(j)}=x^{(j)}|Y=c_k)$，此时，可以使用极大似然估计来对参数进行估计</p>
+<p>对于离散型随机变量，由于是直接将频率当做概率，因此若一个属性未出现，计算出的概率为  $0$</p>
+<p>为避免这种错误，使用贝叶斯估计，通过引入 $\lambda=1$ 进行拉普拉斯平滑修正，假设了特征值和类别的均匀分布，但当样本数目足够大时，该影响会被消除</p>
 <h2 id="极大似然估计"><a href="#极大似然估计" class="headerlink" title="极大似然估计"></a>极大似然估计</h2><p>对于先验概率 $P(Y=c_k)$，其极大似然估计为：</p>
 <script type="math/tex; mode=display">
 P(Y=c_k)=\frac{1}{N}\sum_{i=1}^N I(y_i=c_k)</script><p>假设第 $j$ 个特征 $x^{(j)}$ 可能取值的集合为 $\{a_{j1},a_{j2},…,a_{jS_j}\}$，$a_{jl}$ 代表第 $j$ 个特征可能取的第 $l$ 个值</p>
@@ -525,7 +527,7 @@ P(X^{(3)}=A_3|Y=C_1)=\frac{1+1}{4+3}=\frac{2}{7} & P(X^{(3)}=A_3|Y=C_2)=\frac{2+
 y=\arg \max_{c_k}P(Y=c_k)\prod_{j}P(X^{(j)}=x^{(j)}|Y=c_k)：</script><p>可得：</p>
 <script type="math/tex; mode=display">
 P(A_1A_2A_3|C_1)P(C_1)=\frac{18}{343}>P(A_1A_2A_3|C_2)P(C_2)=\frac{9}{343}</script><p>综上，对于给定身高为 <code>高</code>，体重为 <code>中</code>，鞋码为 <code>中</code> 的数据，应是 $C_1$ 类别，为男性</p>
-<h1 id="【实现】"><a href="#【实现】" class="headerlink" title="【实现】"></a>【实现】</h1><h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>sklearn 中提供了若干朴素贝叶斯的实现算法，对于不同的朴素贝叶斯实现，主要是对 $P(X^{(j)}=x^{(j)}|Y=c_k)$ 的分布假设不同，以采用不同的参数估计方式</p>
+<h1 id="【实现】"><a href="#【实现】" class="headerlink" title="【实现】"></a>【实现】</h1><h2 id="概述-1"><a href="#概述-1" class="headerlink" title="概述"></a>概述</h2><p>sklearn 中提供了若干朴素贝叶斯的实现算法，对于不同的朴素贝叶斯实现，主要是对 $P(X^{(j)}=x^{(j)}|Y=c_k)$ 的分布假设不同，以采用不同的参数估计方式</p>
 <p>对于朴素贝叶斯来说，其主要就是计算 $P(X^{(j)}=x^{(j)}|Y=c_k)$，一旦 $P(X^{(j)}=x^{(j)}|Y=c_k)$ 确定，最终所属每个类别的概率自然也就轻易得出</p>
 <p>常用的三种朴素贝叶斯为：</p>
 <ul>
@@ -654,8 +656,8 @@ P(X^{(j)}=x^{(j)}|Y=c_k)=\frac{N_{c_k}^{(j)}+\alpha}{N_{c_k}+n\alpha}</script><p
 
           <div class="post-nav-prev post-nav-item">
             
-              <a href="/ml/cb24fd43.html" rel="prev" title="半朴素贝叶斯与贝叶斯网络">
-                半朴素贝叶斯与贝叶斯网络 <i class="fa fa-chevron-right"></i>
+              <a href="/ml/cb24fd43.html" rel="prev" title="半朴素贝叶斯">
+                半朴素贝叶斯 <i class="fa fa-chevron-right"></i>
               </a>
             
           </div>
@@ -735,7 +737,7 @@ P(X^{(j)}=x^{(j)}|Y=c_k)=\frac{N_{c_k}^{(j)}+\alpha}{N_{c_k}+n\alpha}</script><p
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">305</span>
+                  <span class="site-state-item-count">309</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -881,7 +883,7 @@ P(X^{(j)}=x^{(j)}|Y=c_k)=\frac{N_{c_k}^{(j)}+\alpha}{N_{c_k}+n\alpha}</script><p
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【概述】"><span class="nav-number">1.</span> <span class="nav-text">【概述】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【贝叶斯定理】"><span class="nav-number">2.</span> <span class="nav-text">【贝叶斯定理】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【朴素贝叶斯分类器】"><span class="nav-number">3.</span> <span class="nav-text">【朴素贝叶斯分类器】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#朴素贝叶斯模型"><span class="nav-number">3.1.</span> <span class="nav-text">朴素贝叶斯模型</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#后验概率最大化与期望风险最小化"><span class="nav-number">3.2.</span> <span class="nav-text">后验概率最大化与期望风险最小化</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【朴素贝叶斯参数估计】"><span class="nav-number">4.</span> <span class="nav-text">【朴素贝叶斯参数估计】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#极大似然估计"><span class="nav-number">4.1.</span> <span class="nav-text">极大似然估计</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#贝叶斯估计"><span class="nav-number">4.2.</span> <span class="nav-text">贝叶斯估计</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【实例】"><span class="nav-number">5.</span> <span class="nav-text">【实例】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#问题描述"><span class="nav-number">5.1.</span> <span class="nav-text">问题描述</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#问题分析"><span class="nav-number">5.2.</span> <span class="nav-text">问题分析</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#极大似然估计-1"><span class="nav-number">5.3.</span> <span class="nav-text">极大似然估计</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#贝叶斯估计-1"><span class="nav-number">5.4.</span> <span class="nav-text">贝叶斯估计</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【实现】"><span class="nav-number">6.</span> <span class="nav-text">【实现】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#概述"><span class="nav-number">6.1.</span> <span class="nav-text">概述</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#高斯朴素贝叶斯"><span class="nav-number">6.2.</span> <span class="nav-text">高斯朴素贝叶斯</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#伯努利朴素贝叶斯"><span class="nav-number">6.3.</span> <span class="nav-text">伯努利朴素贝叶斯</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#多项式朴素贝叶斯"><span class="nav-number">6.4.</span> <span class="nav-text">多项式朴素贝叶斯</span></a></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【概述】"><span class="nav-number">1.</span> <span class="nav-text">【概述】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【贝叶斯定理】"><span class="nav-number">2.</span> <span class="nav-text">【贝叶斯定理】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【朴素贝叶斯分类器】"><span class="nav-number">3.</span> <span class="nav-text">【朴素贝叶斯分类器】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#朴素贝叶斯模型"><span class="nav-number">3.1.</span> <span class="nav-text">朴素贝叶斯模型</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#后验概率最大化与期望风险最小化"><span class="nav-number">3.2.</span> <span class="nav-text">后验概率最大化与期望风险最小化</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【朴素贝叶斯参数估计】"><span class="nav-number">4.</span> <span class="nav-text">【朴素贝叶斯参数估计】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#概述"><span class="nav-number">4.1.</span> <span class="nav-text">概述</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#极大似然估计"><span class="nav-number">4.2.</span> <span class="nav-text">极大似然估计</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#贝叶斯估计"><span class="nav-number">4.3.</span> <span class="nav-text">贝叶斯估计</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【实例】"><span class="nav-number">5.</span> <span class="nav-text">【实例】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#问题描述"><span class="nav-number">5.1.</span> <span class="nav-text">问题描述</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#问题分析"><span class="nav-number">5.2.</span> <span class="nav-text">问题分析</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#极大似然估计-1"><span class="nav-number">5.3.</span> <span class="nav-text">极大似然估计</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#贝叶斯估计-1"><span class="nav-number">5.4.</span> <span class="nav-text">贝叶斯估计</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【实现】"><span class="nav-number">6.</span> <span class="nav-text">【实现】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#概述-1"><span class="nav-number">6.1.</span> <span class="nav-text">概述</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#高斯朴素贝叶斯"><span class="nav-number">6.2.</span> <span class="nav-text">高斯朴素贝叶斯</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#伯努利朴素贝叶斯"><span class="nav-number">6.3.</span> <span class="nav-text">伯努利朴素贝叶斯</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#多项式朴素贝叶斯"><span class="nav-number">6.4.</span> <span class="nav-text">多项式朴素贝叶斯</span></a></li></ol></li></ol></div>
             
 
           </div>

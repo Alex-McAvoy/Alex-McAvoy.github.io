@@ -1,0 +1,1432 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+<!-- 实现文章加密 -->
+<script>
+    (function(){
+        if(''){
+            if (prompt('请输入密码') !== ''){
+                alert('密码错误！');
+                history.back();
+            }
+        }
+    })();
+</script>
+
+
+
+  
+  
+    
+    
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+  <link href="/lib/pace/pace-theme-corner-indicator.min.css?v=1.0.2" rel="stylesheet">
+
+
+
+
+  
+  
+  <link rel="stylesheet" media="all" href="/lib/Han/dist/han.min.css?v=3.3">
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="机器学习,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="【引入】在 感知机中，介绍了单层感知机：  f(\vec{x})=sigmoid(\vec{w}\cdot\vec{x}+\theta)其可以处理线性可分的二分类问题 而与（AND）、或（OR）、非（NOT）均可认为是一线性可分问题，即这三种逻辑电路均可使用单层感知机来实现 对于异或（XOR）来说，其是一线性不可分问题，无法使用单层感知机来实现，考虑到异或可以通过与、或、非来组合实现：  a⊕b">
+<meta name="keywords" content="机器学习">
+<meta property="og:type" content="article">
+<meta property="og:title" content="多层感知机与 BP 算法">
+<meta property="og:url" content="https://alex-mcavoy.github.io/ml/c3f7cdb7.html">
+<meta property="og:site_name" content="Alex_McAvoy">
+<meta property="og:description" content="【引入】在 感知机中，介绍了单层感知机：  f(\vec{x})=sigmoid(\vec{w}\cdot\vec{x}+\theta)其可以处理线性可分的二分类问题 而与（AND）、或（OR）、非（NOT）均可认为是一线性可分问题，即这三种逻辑电路均可使用单层感知机来实现 对于异或（XOR）来说，其是一线性不可分问题，无法使用单层感知机来实现，考虑到异或可以通过与、或、非来组合实现：  a⊕b">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/40-1.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/40-2.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/40-3.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/40-4.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/40-5.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/40-6.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/40-7.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/40-8.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/40-9.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/40-10.gif">
+<meta property="og:updated_time" content="2021-06-27T14:22:22.479Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="多层感知机与 BP 算法">
+<meta name="twitter:description" content="【引入】在 感知机中，介绍了单层感知机：  f(\vec{x})=sigmoid(\vec{w}\cdot\vec{x}+\theta)其可以处理线性可分的二分类问题 而与（AND）、或（OR）、非（NOT）均可认为是一线性可分问题，即这三种逻辑电路均可使用单层感知机来实现 对于异或（XOR）来说，其是一线性不可分问题，无法使用单层感知机来实现，考虑到异或可以通过与、或、非来组合实现：  a⊕b">
+<meta name="twitter:image" content="https://alex-mcavoy.github.io/images/ml/40-1.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":true,"scrollpercent":true,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://alex-mcavoy.github.io/ml/c3f7cdb7.html">
+
+
+
+
+
+  <title>多层感知机与 BP 算法 | Alex_McAvoy</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Alex_McAvoy</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/ml/c3f7cdb7.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Alex_McAvoy">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/assets/img/head.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Alex_McAvoy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">多层感知机与 BP 算法</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-07-26T15:20:00+08:00">
+                2019-07-26
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/ml/" itemprop="url" rel="index">
+                    <span itemprop="name">机器学习</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  3,685 字
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">
+                  14 分钟
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body han-init-context" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="【引入】"><a href="#【引入】" class="headerlink" title="【引入】"></a>【引入】</h1><p>在 <a href="https://alex-mcavoy.github.io/ml/18592060.html">感知机</a>中，介绍了单层感知机：</p>
+<script type="math/tex; mode=display">
+f(\vec{x})=sigmoid(\vec{w}\cdot\vec{x}+\theta)</script><p>其可以处理线性可分的二分类问题</p>
+<p>而<strong>与（AND）</strong>、<strong>或（OR）</strong>、<strong>非（NOT）</strong>均可认为是一线性可分问题，即这三种逻辑电路均可使用单层感知机来实现</p>
+<p>对于<strong>异或（XOR）</strong>来说，其是一线性不可分问题，无法使用单层感知机来实现，考虑到异或可以通过与、或、非来组合实现：</p>
+<script type="math/tex; mode=display">
+a⊕b = (¬a ∧ b) ∨ (a ∧¬b)</script><p>那么，借鉴这种思想，将多个感知机进行连接，形成层级结构，由此有了<strong>多层感知机（Muti-Layer Perceptron，MLP）</strong></p>
+<h1 id="【从与或非到异或】"><a href="#【从与或非到异或】" class="headerlink" title="【从与或非到异或】"></a>【从与或非到异或】</h1><h2 id="与门"><a href="#与门" class="headerlink" title="与门"></a>与门</h2><p>与门，是具有两个输入和一个输出的门电路，在两个输入均为 $1$ 时输出 $1$，其他情况输出 $0$</p>
+<p>其真值表如下：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:center">$x_1$</th>
+<th style="text-align:center">$x_2$</th>
+<th style="text-align:center">$y$</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">0</td>
+<td style="text-align:center">0</td>
+<td style="text-align:center">0</td>
+</tr>
+<tr>
+<td style="text-align:center">0</td>
+<td style="text-align:center">1</td>
+<td style="text-align:center">0</td>
+</tr>
+<tr>
+<td style="text-align:center">1</td>
+<td style="text-align:center">0</td>
+<td style="text-align:center">0</td>
+</tr>
+<tr>
+<td style="text-align:center">1</td>
+<td style="text-align:center">1</td>
+<td style="text-align:center">1</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>若想使用感知机来表示与门，需要做的就是确定参数 $w_1,w_2$ 与阈值 $\theta$，使得在给定二值输入时，感知机的输出能够满足真值表</p>
+<p>满足真值表条件的参数的选择方案有无数种，这里选取较为简单的一种，即：</p>
+<script type="math/tex; mode=display">
+\begin{matrix}
+w_1=1 & w_2=1 & \theta=-2
+\end{matrix}</script><p>此时，有：</p>
+<script type="math/tex; mode=display">
+y=sigmoid(x_1+x_2-2)</script><p>仅当 $x_1=x_2=1$ 时，有 $y=1$</p>
+<p>其分离超平面如下：</p>
+<p><img width="300" src="/images/ml/40-1.png"></p>
+<h2 id="或门"><a href="#或门" class="headerlink" title="或门"></a>或门</h2><p>或门，是具有两个输入和一个输出的门电路，在两个输入中的任意一个为 $1$ 时输出 $1$，在两个输入全为 $0$ 时输出 $0$</p>
+<p>其真值表如下：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:center">$x_1$</th>
+<th style="text-align:center">$x_2$</th>
+<th style="text-align:center">$y$</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">0</td>
+<td style="text-align:center">0</td>
+<td style="text-align:center">0</td>
+</tr>
+<tr>
+<td style="text-align:center">0</td>
+<td style="text-align:center">1</td>
+<td style="text-align:center">1</td>
+</tr>
+<tr>
+<td style="text-align:center">1</td>
+<td style="text-align:center">0</td>
+<td style="text-align:center">1</td>
+</tr>
+<tr>
+<td style="text-align:center">1</td>
+<td style="text-align:center">1</td>
+<td style="text-align:center">1</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>若想使用感知机来表示或门，需要做的就是确定参数 $w_1,w_2$ 与阈值 $\theta$，使得在给定二值输入时，感知机的输出能够满足真值表</p>
+<p>满足真值表条件的参数的选择方案有无数种，这里选取较为简单的一种，即：</p>
+<script type="math/tex; mode=display">
+\begin{matrix}
+w_1=1 & w_2=1 & \theta=-0.5
+\end{matrix}</script><p>此时，有：</p>
+<script type="math/tex; mode=display">
+y=sigmoid(x_1+x_2-0.5)</script><p>当 $x_1=1$ 或 $x_2=1$ 时，有 $y=1$</p>
+<p>其分离超平面如下：</p>
+<p><img width="300" src="/images/ml/40-2.png"></p>
+<h2 id="非门"><a href="#非门" class="headerlink" title="非门"></a>非门</h2><p>非门，是具有一个输入和一个输出的门电路，在输入为 $1$ 时输出 $0$，输入为 $0$ 时输出 $1$</p>
+<p>其真值表如下：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:center">$x$</th>
+<th style="text-align:center">$y$</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">0</td>
+<td style="text-align:center">1</td>
+</tr>
+<tr>
+<td style="text-align:center">1</td>
+<td style="text-align:center">0</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>若想使用感知机来表示非门，需要做的就是确定参数 $w$ 与阈值 $\theta$，使得在给定输入时，感知机的输出能够满足真值表</p>
+<p>满足真值表条件的参数的选择方案有无数种，这里选取较为简单的一种，即：</p>
+<script type="math/tex; mode=display">
+\begin{matrix}
+w=-1 & \theta=0.5
+\end{matrix}</script><p>此时，有：</p>
+<script type="math/tex; mode=display">
+y=sigmoid(-x+0.5)</script><p>当 $x=1$ 时，有 $y=0$；当 $x=0$ 时，有 $y=1$</p>
+<p>其分离超平面如下：</p>
+<p><img width="300" src="/images/ml/40-3.png"></p>
+<h2 id="异或门"><a href="#异或门" class="headerlink" title="异或门"></a>异或门</h2><p>异或门，是具有两个输入和一个输出的门电路，在两个输入相同时输出 $0$，在两个输入不同时输出 $1$</p>
+<p>其真值表如下：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:center">$x_1$</th>
+<th style="text-align:center">$x_2$</th>
+<th style="text-align:center">$y$</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">0</td>
+<td style="text-align:center">0</td>
+<td style="text-align:center">0</td>
+</tr>
+<tr>
+<td style="text-align:center">0</td>
+<td style="text-align:center">1</td>
+<td style="text-align:center">1</td>
+</tr>
+<tr>
+<td style="text-align:center">1</td>
+<td style="text-align:center">0</td>
+<td style="text-align:center">1</td>
+</tr>
+<tr>
+<td style="text-align:center">1</td>
+<td style="text-align:center">1</td>
+<td style="text-align:center">0</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>其分离超平面如下：</p>
+<p><img width="300" src="/images/ml/40-4.png"></p>
+<p>可以看出，若想将其分开，只能通过如下图的曲线来分割</p>
+<p><img width="300" src="/images/ml/40-5.png"></p>
+<p>可以发现，异或问题是一个非线性可分问题，单层感知机无法进行实现</p>
+<hr>
+<p>在数字电路中，异或门可以通过与门、非门、或门的组合来实现</p>
+<p><img width="500" src="/images/ml/40-6.png"></p>
+<p>根据上面的数字电路图，给出真值表：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:center">$x_1$</th>
+<th style="text-align:center">$x_2$</th>
+<th style="text-align:center">$s_1$</th>
+<th style="text-align:center">$s_2$</th>
+<th style="text-align:center">$y$</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">0</td>
+<td style="text-align:center">0</td>
+<td style="text-align:center">1</td>
+<td style="text-align:center">0</td>
+<td style="text-align:center">0</td>
+</tr>
+<tr>
+<td style="text-align:center">0</td>
+<td style="text-align:center">1</td>
+<td style="text-align:center">1</td>
+<td style="text-align:center">1</td>
+<td style="text-align:center">1</td>
+</tr>
+<tr>
+<td style="text-align:center">1</td>
+<td style="text-align:center">0</td>
+<td style="text-align:center">1</td>
+<td style="text-align:center">1</td>
+<td style="text-align:center">1</td>
+</tr>
+<tr>
+<td style="text-align:center">1</td>
+<td style="text-align:center">1</td>
+<td style="text-align:center">0</td>
+<td style="text-align:center">1</td>
+<td style="text-align:center">0</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>那么，参考真值表，可以构建出如下由 <code>MP 神经元</code> 构成的网络图，即最简单的多层感知机</p>
+<p><img width="500" src="/images/ml/40-7.png"></p>
+<p>其中，第 $0$ 层为<strong>输入层（Input Layer）</strong>，该层不涉及到计算；第 $1$ 层用于处理数据，被称为<strong>隐藏层（Hidden Layer）</strong>，第 $2$ 层为<strong>输出层（Output Layer）</strong>，将隐藏层的输出进行处理，作为整个多层感知机的输出</p>
+<h1 id="【多层感知机】"><a href="#【多层感知机】" class="headerlink" title="【多层感知机】"></a>【多层感知机】</h1><p><strong>多层感知机（Multi-Layer Perceptron，MLP）</strong>，也叫<strong>人工神经网络（Artificial Neural Network，ANN）</strong>，是最简单的神经网络结构，其除了输入层和输出层外，中间可以有多个隐藏层，最简单的 MLP 只包含一个隐藏层</p>
+<p><img width="500" src="/images/ml/40-8.png"></p>
+<p>如上图所示的多层感知机，每层神经元与下一层神经元完全互连，且神经元间不存在同层连接与跨层连接，这样的神经网络结构被称为<strong>多层前馈神经网络（multi-layer feedforward neural networks）</strong></p>
+<p>对于多层前馈神经网络来说，输入层用于接收外接输入，隐藏层与输出层对输入进行处理，并由输出层输出，因此，上图所示的多层感知机，其层数为 $2$，一般称为两层网络</p>
+<p>第 $0$ 层为输入层，该层不涉及到计算；第 $1$ 层为隐藏层，含有 $5$ 个 MP 神经元；第 $2$ 层为输出层，含有 $3$ 个 MP 神经元</p>
+<p>设第 $1$ 层权重为 $W_h$，阈值为 $\theta_h$，激活函数为 $f(\cdot)$，则该多层感知机隐藏层的输出为：</p>
+<script type="math/tex; mode=display">
+H=f(XW_h+\theta_h)</script><p>设第 $2$ 层权重为 $W_o$，阈值为 $\theta_o$，则该多层感知机的输出为：</p>
+<script type="math/tex; mode=display">
+\begin{matrix}
+O=HW_o+\theta_o
+\end{matrix}</script><p>将上述两个式子联立，可得：</p>
+<script type="math/tex; mode=display">
+O=f(XW_h+\theta_h)W_o+\theta_o</script><p>在分类问题中，将输出层的输出单元个数设为 $1$ ，并对输出 $O$ 进行 <code>softmax</code> 运算，将输出转换为分类概率</p>
+<h1 id="【反向传播算法】"><a href="#【反向传播算法】" class="headerlink" title="【反向传播算法】"></a>【反向传播算法】</h1><h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>神经网络的学习过程，就是根据训练数据来调整<strong>神经元间的连接权重</strong>以及<strong>每个神经元的阈值</strong></p>
+<p>多层网络结构显然要比单层感知机结构复杂的多，因此，在训练多层网络时，使用随机梯度下降法对参数进行更新的感知机学习算法明显不足，这就需要更加强大的算法</p>
+<p><strong>反向传播（error BackPropagation，BP）算法</strong>，是迄今为止最成功的神经网络训练算法，其不仅可用于多层前馈神经网络中，还可用于其他神经网络，但通常说到 <code>BP 网络</code> 时，一般是指用 BP 算法所训练的多层前馈神经网络，此外，在实际应用中，当使用神经网络建模时，大多使用 BP 算法进行训练</p>
+<p>BP 算法是一种迭代学习算法，在迭代的每一轮中采用感知机学习算法对参数进行更新，其仍是基于<strong>梯度下降法</strong>，以目标的负梯度方向对参数进行调整</p>
+<h2 id="符号假设"><a href="#符号假设" class="headerlink" title="符号假设"></a>符号假设</h2><p>对于给定训练集 $T=\{(\vec{x}_1,\vec{y}_1),(\vec{x}_2,\vec{y}_2),…,(\vec{x}_N,\vec{y}_N)\}$，其中输入样本 $\vec{x}_i=(x_i^{(1)},x_i^{(2)},…,x_i^{(n)})\in\mathcal{X}=R^{\:n}$，输出样本 $\vec{y}_i=(y_i^{(1)},y_i^{(2)},…,y_i^{(m)})\in\mathcal{Y}=R^{\:m}$，即输入样本由 $n$ 个特征描述，输出 $m$ 维实值向量</p>
+<p>为便于讨论，下图给出了一个拥有 $n$ 个输入神经元、$m$ 个输出神经元、$H$ 个隐藏层神经元的多层前馈网络结构</p>
+<p><img width="500" src="/images/ml/40-9.png"></p>
+<p>其中，输入层第 $i$ 个神经元与隐藏层第 $h$ 个神经元的连接权用 $v_{ih}$ 表示，隐藏层第 $h$ 个神经元与输出层第 $j$ 个神经元的连接权用 $w_{hj}$ 表示，输出层第 $j$ 个神经元阈值用 $\theta_j$ 表示，隐藏层第 $h$ 个神经元阈值用 $\gamma_h$ 表示</p>
+<p>可以发现，网络中有 $(n+m+1)H+m$ 个参数要确定：</p>
+<ul>
+<li>输入层到隐藏层的 $n\times H$ 个权值（输入层第 $i$ 个到隐藏层第 $h$ 个：$v_{ih}$）</li>
+<li>隐藏层到输出层的 $H\times m$ 个权值（隐藏层第 $h$ 个到输出层第 $j$ 个： $w_{hj}$）</li>
+<li>$H$ 个隐藏层神经元的阈值（隐藏层第 $h$ 个：$\gamma_h$）</li>
+<li>$m$ 个输出层神经元的阈值（输出层第 $j$ 个：$\theta_j$）</li>
+</ul>
+<p>记隐藏层第 $h$ 个神经元收到的输入为 $\alpha_h=\sum\limits_{i=1}^nv_{ih}x^{(i)}$，隐藏层第 $h$ 个神经元的输出为 $b_h = f(\alpha_h-\gamma_h)$，输出层第 $j$ 个神经元收到的输入为 $\beta_j=\sum\limits_{h=1}^Hw_{hj}b_h$</p>
+<h2 id="代价函数"><a href="#代价函数" class="headerlink" title="代价函数"></a>代价函数</h2><p>假设隐藏层与输出层神经元所使用的激活函数 $f(\cdot)$ 均使用 <code>sigmoid 函数</code>，那么，对于训练集给出的某一输入样本 $(\vec{x}_k,\vec{y}_k)$，其通过神经网络的输出为 $\hat{\vec{y}}_k=(\hat{y_k}^{(1)},\hat{y_k}^{(2)},…,\hat{y_k}^{(m)})$ </p>
+<p>根据 MP 神经元，有：</p>
+<script type="math/tex; mode=display">
+\hat{y}_k^{(j)}=f(\beta_j-\theta_j)</script><p>这个过程被称为多层前馈神经网络的<strong>前向传播（Forward propagation，FP）</strong></p>
+<p>而神经网络在输入样本 $(\vec{x}_k,\vec{y}_k)$ 上的均方误差为：</p>
+<script type="math/tex; mode=display">
+MSE_{k}=\frac{1}{m}\sum_{j=1}^m(\hat{y}_k^{(j)}-y_k^{(j)})^2</script><p>为便于求导，对 $MSE_k$ 整体乘以 $\frac{m}{2}$，此时得到的函数为每一样本的代价函数，即：</p>
+<script type="math/tex; mode=display">
+E_k=\frac{1}{2}\sum_{j=1}^m(\hat{y}_k^{(j)}-y_k^{(j)})^2</script><hidden id="back">
+
+<h2 id="参数更新估计式"><a href="#参数更新估计式" class="headerlink" title="参数更新估计式"></a>参数更新估计式</h2><p>BP 算法基于<strong>梯度下降法</strong>，以目标的<strong>负梯度方向</strong>对参数进行更新估计，对于任意参数 $v$，其更新估计式为：</p>
+<script type="math/tex; mode=display">
+v=v+\triangle v</script><p>值得注意的是，<strong>参数更新的方向是从后向前</strong>，即先更新输出层的连接权与阈值 $\triangle w_{hj}$ 与 $\triangle \theta_j$，再更新隐藏层的连接权与阈值 $\triangle v_{ih}$ 与 $\triangle \gamma_h$，这也是算法被称为反向传播的原因</p>
+<p>那么，对于代价函数 $E_k$，给定学习率 $\eta$，有：</p>
+<script type="math/tex; mode=display">
+\begin{matrix}
+\triangle w_{hj} = -\eta\frac{\partial E_k}{\partial w_{hj}} & \triangle v_{jh} = -\eta\frac{\partial E_k}{\partial v_{jh}}   \\
+\triangle \theta_j = -\eta\frac{\partial E_k}{\partial \theta_j} & \triangle \gamma_h = -\eta\frac{\partial E_k}{\partial \gamma_h} \\
+\end{matrix}</script><p>经过推导，可得：</p>
+<script type="math/tex; mode=display">
+\begin{matrix}
+\triangle w_{hj} = \eta g_jb_h & \triangle v_{jh} = \eta e_hx_i \\
+\triangle \theta_j = -\eta g_j & \triangle \gamma_h = -\eta e_h \\
+\end{matrix}</script><p>其中，$g_j$ 为输出层神经元的梯度项，$e_h$ 为隐藏层神经元的梯度项，有：</p>
+<script type="math/tex; mode=display">
+\begin{matrix}
+g_j = \hat{y}_k^{(j)}(1-\hat{y}_k^{(j)})(y_k^{(j)}-\hat{y}_k^{(j)}) \\
+e_h = b_h(1-b_h)\sum\limits_{j=1}^mw_{hj}g_j
+\end{matrix}</script><p><strong>关于具体的推导过程，见：<a href="#anchor">附：详细推导</a></strong></p>
+<h2 id="算法流程"><a href="#算法流程" class="headerlink" title="算法流程"></a>算法流程</h2><p>输入：训练集 $T=\{(\vec{x_1},\vec{y_1}),(\vec{x_2},\vec{y_2}),…,(\vec{x_N},\vec{y_N})\}$，其中输入样本 $\vec{x}_i=(x_i^{(1)},x_i^{(2)},…,x_i^{(n)})\in\mathcal{X}=R^{\:n}$，输出样本 $\vec{y}_i=(y_i^{(1)},y_i^{(2)},…,y_i^{(m)})\in\mathcal{Y}=R^{\:m}$，学习率 $0&lt;\eta\leq1$</p>
+<p>输出：连接权与阈值确定的多层前馈神经网络</p>
+<p>算法步骤：</p>
+<p>1.在 $(0,1)$ 范围内，随机初始化网络中所有的连接权与阈值</p>
+<p>2.对于训练集中的每个样本，执行以下步骤：</p>
+<p>1）根据下式，计算当前样本的输出 $\hat{\vec{y}}_k=(\hat{y_k}^{(1)},\hat{y_k}^{(2)},…,\hat{y_k}^{(m)})$</p>
+<script type="math/tex; mode=display">
+\hat{y}_k^{(j)}=f(\beta_j-\theta_j)</script><p>2）根据下式，计算输出层神经元的梯度项 $g_j$</p>
+<script type="math/tex; mode=display">
+g_j = \hat{y}_k^{(j)}(1-\hat{y}_k^{(j)})(y_k^{(j)}-\hat{y}_k^{(j)})</script><p>3）根据下式，计算隐藏层神经元的梯度项 $e_h$</p>
+<script type="math/tex; mode=display">
+e_h = b_h(1-b_h)\sum\limits_{j=1}^mw_{hj}g_j</script><p>4）根据下述的参数更新估计式，更新连接权 $w_{hj},v_{ih}$ 与阈值 $\theta_j,\gamma_h$</p>
+<script type="math/tex; mode=display">
+\begin{matrix}
+\triangle w_{hj} = \eta g_jb_h & \triangle v_{jh} = \eta e_hx_i \\
+\triangle \theta_j = -\eta g_j & \triangle \gamma_h = -\eta e_h \\
+\end{matrix}</script><p>3.重复步骤 2，直到训练集的累计误差 $E$ 达到要求的值</p>
+<script type="math/tex; mode=display">
+E=\frac{1}{N}\sum_{k=1}^N E_k</script><hr>
+<p>通过上述算法流程可以发现，对于每个训练集中的每个训练样本，BP 算法先将输入提供给输入层单元，然后逐层将信号前传，直到产生输出层结果（步骤 2.1）</p>
+<p>之后，再计算输出层的误差（步骤 2.2），将误差逆向传播至隐藏层（步骤 2.3），根据隐藏层神经元的误差对连接权和阈值进行调整（步骤 2.4）</p>
+<p>下图给出了一个多层前馈神经网络的 FP 与 BP 的完整过程</p>
+<p><img width="500" src="/images/ml/40-10.gif"></p>
+<h2 id="过拟合"><a href="#过拟合" class="headerlink" title="过拟合"></a>过拟合</h2><p>对于一个隐藏层包含足够多的神经元的多层前馈神经网络，能够以任意精度逼近任意复杂度的连续函数，但如何设置隐藏层神经元个数仍然是个未解问题，在实际应用中，常采用<strong>试错法</strong>来解决</p>
+<p>正因为多层前馈神经网络强大的表示能力，BP 神经网络经常会出现<strong>过拟合</strong></p>
+<p>为避免过拟合问题的发生，常采用以下策略进行缓解：</p>
+<ol>
+<li>正则化（Regularizatoin）：在目标函数中增加用于描述网络复杂度的部分</li>
+<li>随机失活（Dropout）：训练过程中，每次按一定的概率随机地删除一部分隐藏单元，删除概率一般设为 50%</li>
+<li>提前终止（Early Stoping）：在模型对训练数据集迭代收敛前，通过停止迭代来防止过拟合</li>
+</ol>
+<p>关于上述策略的详细介绍：<a href="https://alex-mcavoy.github.io/ml/d9259ca2.html">点击这里</a></p>
+<hidden id="anchor">
+
+<h2 id="附：详细推导"><a href="#附：详细推导" class="headerlink" title="附：详细推导"></a>附：详细推导</h2><h3 id="输出层连接权-triangle-w-hj"><a href="#输出层连接权-triangle-w-hj" class="headerlink" title="输出层连接权 $\triangle w_{hj}$"></a>输出层连接权 $\triangle w_{hj}$</h3><p>对于代价函数 $E_k$，给定学习率 $\eta$，有：</p>
+<script type="math/tex; mode=display">
+\triangle w_{hj} = -\eta\frac{\partial E_k}{\partial w_{hj}}</script><p>由于隐藏层第 $h$ 个神经元到输出层第 $j$ 个神经元的权值 $w_{hj}$，先影响到第 $j$ 个输出层神经元的输入 $\beta_j$，再影响到其输出值 $\hat{y}_k^{(j)}$，最后再影响到 $E_k$</p>
+<p>根据影响过程，可将求导部分进行拆分，有：</p>
+<script type="math/tex; mode=display">
+\frac{\partial E_k}{\partial w_{hj}}=\frac{\partial E_k}{\partial \hat{y}_k^{(j)}} \cdot \frac{\partial \hat{y}_k^{(j)}}{\partial \beta_j} \cdot \frac{\partial \beta_j}{ \partial w_{hj}}</script><p>进一步，考虑到 $\beta_j$ 为输出层第 $j$ 个神经元收到的输入，$\hat{y}_k^{(j)}$ 为第 $k$ 个训练样本的第 $j$ 个输出单元的输出，$E_k$ 为网络的代价函数，即：</p>
+<script type="math/tex; mode=display">
+\begin{matrix}
+\beta_j=\sum\limits_{h=1}^Hw_{hj}b_h \\ 
+\hat{y}_k^{(j)}=f(\beta_j-\theta_j) \\
+E_k=\frac{1}{2}\sum\limits_{j=1}^m(\hat{y}_k^{(j)}-y_k^{(j)})^2
+\end{matrix}</script><p>因此，有：</p>
+<script type="math/tex; mode=display">
+\begin{align}
+\frac{\partial E_k}{\partial w_{hj}} &= \frac{\partial E_k}{\partial \hat{y}_k^{(j)}} \cdot \frac{\partial \hat{y}_k^{(j)}}{\partial \beta_j} \cdot \frac{\partial \beta_j}{ \partial w_{hj}} \\
+&= \frac{\partial E_k}{\partial \hat{y}_k^{(j)}} \cdot \frac{\partial \hat{y}_k^{(j)}}{\partial \beta_j} \cdot b_h \\
+&= \frac{\partial \frac{1}{2}\sum\limits_{j=1}^m(\hat{y}_k^{(j)}-y_k^{(j)})^2}{\partial \hat{y}_k^{(j)}} \cdot \frac{\partial f(\beta_j-\theta_j)}{\partial \beta_j} \cdot b_h \\
+&= (\hat{y}_k^{(j)}-y_k^{(j)}) \cdot f'_{\beta_j}(\beta_j-\theta_j) \cdot b_h \\
+\end{align}</script><p>由于激活函数 $f(\cdot)$ 为 <code>sigmoid 函数</code>，其导数为：</p>
+<script type="math/tex; mode=display">
+f'(x)=f(x)(1-f(x))</script><p>故有：</p>
+<script type="math/tex; mode=display">
+\begin{align}
+\frac{\partial E_k}{\partial w_{hj}} &= (\hat{y}_k^{(j)}-y_k^{(j)}) \cdot f'_{\beta_j}(\beta_j-\theta_j) \cdot b_h \\
+&= (\hat{y}_k^{(j)}-y_k^{(j)}) f(\beta_j-\theta_j)(1-f(\beta_j-\theta_j))b_h \\
+&= (\hat{y}_k^{(j)}-y_k^{(j)})\hat{y}_k^{(j)}(1-\hat{y}_k^{(j)})b_h \\
+&= -\hat{y}_k^{(j)}(1-\hat{y}_k^{(j)})(y_k^{(j)}-\hat{y}_k^{(j)})b_h
+\end{align}</script><p>记 $g_j=\hat{y}_k^{(j)}(1-\hat{y}_k^{(j)})(y_k^{(j)}-\hat{y}_k^{(j)})$，有：</p>
+<script type="math/tex; mode=display">
+\frac{\partial E_k}{\partial w_{hj}}=-g_jb_h</script><p>即：</p>
+<script type="math/tex; mode=display">
+\begin{align}
+\triangle w_{hj} &= -\eta\frac{\partial E_k}{\partial w_{hj}} \\
+&= -\eta \cdot (-g_jb_h) \\
+&= \eta g_jb_h
+\end{align}</script><h3 id="输出层阈值-triangle-theta-j"><a href="#输出层阈值-triangle-theta-j" class="headerlink" title="输出层阈值 $\triangle \theta_j$"></a>输出层阈值 $\triangle \theta_j$</h3><p>对于代价函数 $E_k$，给定学习率 $\eta$，有：</p>
+<script type="math/tex; mode=display">
+\triangle \theta_j = -\eta\frac{\partial E_k}{\partial \theta_j}</script><p>仿照输出层连接权的拆分过程，可将求导部分进行拆分，有：</p>
+<script type="math/tex; mode=display">
+\frac{\partial E_k}{\partial \theta_j}=\frac{\partial E_k}{\partial \hat{y}_k^{(j)}} \cdot \frac{\partial \hat{y}_k^{(j)}}{\partial \theta_j}</script><p>进一步，考虑到 $\hat{y}_k^{(j)}$ 为第 $k$ 个训练样本的第 $j$ 个输出单元的输出，$E_k$ 为网络的代价函数，即：</p>
+<script type="math/tex; mode=display">
+\begin{matrix}
+\hat{y}_k^{(j)}=f(\beta_j-\theta_j) \\
+E_k=\frac{1}{2}\sum\limits_{j=1}^m(\hat{y}_k^{(j)}-y_k^{(j)})^2
+\end{matrix}</script><p>因此，有：</p>
+<script type="math/tex; mode=display">
+\begin{align}
+\frac{\partial E_k}{\partial \theta_j} &= \frac{\partial E_k}{\partial \hat{y}_k^{(j)}} \cdot \frac{\partial \hat{y}_k^{(j)}}{\partial \theta_j}  \\
+&= \frac{\partial \frac{1}{2}\sum\limits_{j=1}^m(\hat{y}_k^{(j)}-y_k^{(j)})^2}{\partial \hat{y}_k^{(j)}} \cdot \frac{\partial f(\beta_j-\theta_j)}{\partial \theta_j}  \\
+&= (\hat{y}_k^{(j)}-y_k^{(j)}) \cdot [-f'_{\theta_j}(\beta_j-\theta_j)] \\
+\end{align}</script><p>由于激活函数 $f(\cdot)$ 为 <code>sigmoid 函数</code>，其导数为：</p>
+<script type="math/tex; mode=display">
+f'(x)=f(x)(1-f(x))</script><p>故有：</p>
+<script type="math/tex; mode=display">
+\begin{align}
+\frac{\partial E_k}{\partial \theta_j} &= -(\hat{y}_k^{(j)}-y_k^{(j)})  f'_{\theta_j}(\beta_j-\theta_j)  \\
+&= -(\hat{y}_k^{(j)}-y_k^{(j)}) f(\beta_j-\theta_j)(1-f(\beta_j-\theta_j)) \\
+&= -(\hat{y}_k^{(j)}-y_k^{(j)})\hat{y}_k^{(j)}(1-\hat{y}_k^{(j)}) \\
+&= \hat{y}_k^{(j)}(1-\hat{y}_k^{(j)})(y_k^{(j)}-\hat{y}_k^{(j)})
+\end{align}</script><p>记 $g_j=\hat{y}_k^{(j)}(1-\hat{y}_k^{(j)})(y_k^{(j)}-\hat{y}_k^{(j)})$，有：</p>
+<script type="math/tex; mode=display">
+\frac{\partial E_k}{\partial \theta_j}=g_j</script><p>即：</p>
+<script type="math/tex; mode=display">
+\begin{align}
+\triangle \theta_j &= -\eta\frac{\partial E_k}{\partial \theta_j} \\
+&= -\eta g_j
+\end{align}</script><h3 id="隐藏层连接权-triangle-v-jh"><a href="#隐藏层连接权-triangle-v-jh" class="headerlink" title="隐藏层连接权 $\triangle v_{jh}$"></a>隐藏层连接权 $\triangle v_{jh}$</h3><p>对于代价函数 $E_k$，给定学习率 $\eta$，有：</p>
+<script type="math/tex; mode=display">
+\triangle v_{ih} = -\eta\frac{\partial E_k}{\partial v_{jh}}</script><p>由于隐藏层第 $h$ 个神经元到输出层第 $j$ 个神经元的权值 $v_{jh}$，先影响到第 $h$ 个隐藏层神经元的输入 $\alpha_h$，再影响到其输出值 $b_h$，之后再影响输出层第 $j$ 个神经元收到的输入 $\beta_j$，继而影响到其输出值 $\hat{y}_k^{(j)}$，最后再影响到 </p>
+<p>$E_k$根据影响过程，可将求导部分进行拆分，有：</p>
+<script type="math/tex; mode=display">
+\frac{\partial E_k}{\partial v_{ih}} = \bigl[ -\sum_{j=1}^m \frac{\partial E_k}{\partial \hat{y}_k^{(j)}} \cdot \frac{\partial \hat{y}_k^{(j)}}{\partial \beta_j} \cdot \frac{\partial \beta_j}{\partial b_h}\bigr] \cdot \frac{\partial b_h}{\partial \alpha_h} \cdot \frac{\partial \alpha_h}{ \partial v_{ih}}</script><p>进一步，考虑到 $b_h$ 为隐藏层第 $h$ 个神经元的输出，$\alpha_h$ 为隐藏层第 $h$ 个神经元收到的输入，$\beta_j$ 为输出层第 $j$ 个神经元收到的输入，$\hat{y}_k^{(j)}$ 为第 $k$ 个训练样本的第 $j$ 个输出单元的输出，$E_k$ 为网络的代价函数，即：</p>
+<script type="math/tex; mode=display">
+\begin{matrix}
+\alpha_h=\sum\limits_{i=1}^nv_{ih}x^{(i)} \\
+\beta_j=\sum\limits_{h=1}^Hw_{hj}b_h\\
+b_h = f(\alpha_h-\gamma_h)\\
+\hat{y}_k^{(j)}=f(\beta_j-\theta_j)\\
+E_k=\frac{1}{2}\sum\limits_{j=1}^m(\hat{y}_k^{(j)}-y_k^{(j)})^2
+\end{matrix}</script><p>因此，有：</p>
+<script type="math/tex; mode=display">
+\begin{align}
+\frac{\partial E_k}{\partial v_{ih}} &= \bigl[ \sum_{j=1}^m \frac{\partial E_k}{\partial \hat{y}_k^{(j)}} \cdot \frac{\partial \hat{y}_k^{(j)}}{\partial \beta_j} \cdot \frac{\partial \beta_j}{\partial b_h}\bigr] \cdot \frac{\partial b_h}{\partial \alpha_h} \cdot \frac{\partial \alpha_h}{ \partial v_{ih}} \\
+&= \bigl[ \sum_{j=1}^m \frac{\partial \frac{1}{2}\sum\limits_{j=1}^m(\hat{y}_k^{(j)}-y_k^{(j)})^2}{\partial \hat{y}_k^{(j)}} \cdot \frac{\partial f(\beta_j-\theta_j)}{\partial \beta_j} \cdot w_{hj} \bigr] \cdot f'_{\alpha_h}(\alpha_h-\gamma_h) \cdot x^{(i)} \\
+&= \bigl[ \sum_{j=1}^m(\hat{y}_k^{(j)}-y_k^{(j)}) \cdot f'_{\beta_j}(\beta_j-\theta_j)\cdot w_{hj} \bigr] \cdot f'_{\alpha_h}(\alpha_h-\gamma_h) \cdot x^{(i)} \\
+\end{align}</script><p>由于激活函数 $f(\cdot)$ 为 <code>sigmoid 函数</code>，其导数为：</p>
+<script type="math/tex; mode=display">
+f'(x)=f(x)(1-f(x))</script><p>故有：</p>
+<script type="math/tex; mode=display">
+\begin{align}
+\frac{\partial E_k}{\partial v_{ih}} &= \bigl[ \sum_{j=1}^m (\hat{y}_k^{(j)}-y_k^{(j)}) \cdot f'_{\beta_j}(\beta_j-\theta_j)  \cdot w_{hj} \bigr]\cdot f'_{\alpha_h}(\alpha_h-\gamma_h) \cdot x^{(i)} \\
+&=  \bigl[\sum_{j=1}^m (\hat{y}_k^{(j)}-y_k^{(j)}) \cdot f(\beta_j-\theta_j)\cdot(1-f(\beta_j-\theta_j)) \cdot w_{hj} \bigr] f'_{\alpha_h}(\alpha_h-\gamma_h) \cdot x^{(i)} \\
+&= \bigl[ \sum_{j=1}^m (\hat{y}_k^{(j)}-y_k^{(j)})\hat{y}_k^{(j)}(1-\hat{y}_k^{(j)}) \cdot w_{hj} \bigr] \cdot f'_{\alpha_h}(\alpha_h-\gamma_h) \cdot x^{(i)} \\
+&= \bigl[ \sum_{j=1}^m (\hat{y}_k^{(j)}-y_k^{(j)})\hat{y}_k^{(j)}(1-\hat{y}_k^{(j)}) \cdot w_{hj} \bigr]\cdot f(\alpha_h-\gamma_h)\cdot(1-f(\alpha_h-\gamma_h)) \cdot x^{(i)} \\
+&= \bigl[ \sum_{j=1}^m (\hat{y}_k^{(j)}-y_k^{(j)})\hat{y}_k^{(j)}(1-\hat{y}_k^{(j)}) \cdot w_{hj} \bigr]\cdot b_h(1-b_h) \cdot x^{(i)} \\
+&= -x^{(i)}\cdot b_h(1-b_h)\sum_{j=1}^m \hat{y}_k^{(j)}(1-\hat{y}_k^{(j)})(y_k^{(j)}-\hat{y}_k^{(j)}) w_{hj}
+\end{align}</script><p>记 $g_j=\hat{y}_k^{(j)}(1-\hat{y}_k^{(j)})(y_k^{(j)}-\hat{y}_k^{(j)})$，有：</p>
+<script type="math/tex; mode=display">
+\frac{\partial E_k}{\partial v_{ih}} = -x^{(i)}\cdot b_h(1-b_h)\sum_{j=1}^mw_{hj}g_j</script><p>记 $e_h=b_h(1-b_h)\sum\limits_{j=1}^mw_{hj}g_j$，有：</p>
+<script type="math/tex; mode=display">
+\frac{\partial E_k}{\partial v_{ih}}=-e_h x^{(i)}</script><p>即：</p>
+<script type="math/tex; mode=display">
+\begin{align}
+\triangle v_{ih} &= -\eta\frac{\partial E_k}{\partial v_{ih}} \\
+&= -\eta \cdot (-e_h x^{(i)}) \\
+&= \eta e_h x^{(i)}
+\end{align}</script><h3 id="隐藏层阈值-triangle-gamma-h"><a href="#隐藏层阈值-triangle-gamma-h" class="headerlink" title="隐藏层阈值 $\triangle \gamma_h$"></a>隐藏层阈值 $\triangle \gamma_h$</h3><p>对于代价函数 $E_k$，给定学习率 $\eta$，有：</p>
+<script type="math/tex; mode=display">
+\triangle \gamma_h = -\eta\frac{\partial E_k}{\partial \gamma_h}</script><p>仿照输出层连接权的拆分过程，可将求导部分进行拆分，有：</p>
+<script type="math/tex; mode=display">
+\frac{\partial E_k}{\partial \gamma_h} = \bigl[ -\sum_{j=1}^m \frac{\partial E_k}{\partial \hat{y}_k^{(j)}} \cdot \frac{\partial \hat{y}_k^{(j)}}{\partial \beta_j} \cdot \frac{\partial \beta_j}{\partial b_h}\bigr] \cdot \frac{\partial b_h}{\partial \gamma_h}</script><p>进一步，考虑到 $b_h$ 为隐藏层第 $h$ 个神经元的输出，$\beta_j$ 为输出层第 $j$ 个神经元收到的输入，$\hat{y}_k^{(j)}$ 为第 $k$ 个训练样本的第 $j$ 个输出单元的输出，$E_k$ 为网络的代价函数，即：</p>
+<script type="math/tex; mode=display">
+\begin{matrix}
+\beta_j=\sum\limits_{h=1}^Hw_{hj}b_h\\
+b_h = f(\alpha_h-\gamma_h)\\
+\hat{y}_k^{(j)}=f(\beta_j-\theta_j)\\
+E_k=\frac{1}{2}\sum\limits_{j=1}^m(\hat{y}_k^{(j)}-y_k^{(j)})^2
+\end{matrix}</script><p>因此，有：</p>
+<script type="math/tex; mode=display">
+\begin{align}
+\frac{\partial E_k}{\partial \gamma_h} &= \bigl[ \sum_{j=1}^m \frac{\partial E_k}{\partial \hat{y}_k^{(j)}} \cdot \frac{\partial \hat{y}_k^{(j)}}{\partial \beta_j} \cdot \frac{\partial \beta_j}{\partial b_h}\bigr] \cdot \frac{\partial b_h}{\partial \gamma_h} \\
+&= \bigl[ \sum_{j=1}^m \frac{\partial \frac{1}{2}\sum\limits_{j=1}^m(\hat{y}_k^{(j)}-y_k^{(j)})^2}{\partial \hat{y}_k^{(j)}} \cdot \frac{\partial f(\beta_j-\theta_j)}{\partial \beta_j} \cdot w_{hj} \bigr] \cdot [-f'_{\gamma_h}(\alpha_h-\gamma_h)] \\
+&= \bigl[ \sum_{j=1}^m(\hat{y}_k^{(j)}-y_k^{(j)}) \cdot f'_{\beta_j}(\beta_j-\theta_j)\cdot w_{hj} \bigr] \cdot [-f'_{\gamma_h}(\alpha_h-\gamma_h)] \\
+\end{align}</script><p>由于激活函数 $f(\cdot)$ 为 <code>sigmoid 函数</code>，其导数为：</p>
+<script type="math/tex; mode=display">
+f'(x)=f(x)(1-f(x))</script><p>故有：</p>
+<script type="math/tex; mode=display">
+\begin{align}
+\frac{\partial E_k}{\partial \gamma_h} &= \bigl[ \sum_{j=1}^m(\hat{y}_k^{(j)}-y_k^{(j)}) \cdot f'_{\beta_j}(\beta_j-\theta_j)\cdot w_{hj} \bigr] \cdot [-f'_{\gamma_h}(\alpha_h-\gamma_h)] \\
+&=  \bigl[\sum_{j=1}^m (\hat{y}_k^{(j)}-y_k^{(j)}) \cdot f(\beta_j-\theta_j)\cdot(1-f(\beta_j-\theta_j)) \cdot w_{hj} \bigr] \cdot [-f'_{\gamma_h}(\alpha_h-\gamma_h)]  \\
+&= \bigl[ \sum_{j=1}^m (\hat{y}_k^{(j)}-y_k^{(j)})\hat{y}_k^{(j)}(1-\hat{y}_k^{(j)}) \cdot w_{hj} \bigr] \cdot [-f'_{\gamma_h}(\alpha_h-\gamma_h)]  \\
+&= \bigl[ \sum_{j=1}^m (\hat{y}_k^{(j)}-y_k^{(j)})\hat{y}_k^{(j)}(1-\hat{y}_k^{(j)}) \cdot w_{hj} \bigr]\cdot f(\alpha_h-\gamma_h)\cdot [-f'_{\gamma_h}(\alpha_h-\gamma_h)] \\
+&= -\bigl[ \sum_{j=1}^m (\hat{y}_k^{(j)}-y_k^{(j)})\hat{y}_k^{(j)}(1-\hat{y}_k^{(j)}) \cdot w_{hj} \bigr]\cdot b_h(1-b_h)\\
+&= b_h(1-b_h)\sum_{j=1}^m \hat{y}_k^{(j)}(1-\hat{y}_k^{(j)})(y_k^{(j)}-\hat{y}_k^{(j)}) w_{hj}
+\end{align}</script><p>记 $g_j=\hat{y}_k^{(j)}(1-\hat{y}_k^{(j)})(y_k^{(j)}-\hat{y}_k^{(j)})$，有：</p>
+<script type="math/tex; mode=display">
+\frac{\partial E_k}{\partial \gamma_h} =  b_h(1-b_h)\sum_{j=1}^mw_{hj}g_j</script><p>记 $e_h=b_h(1-b_h)\sum\limits_{j=1}^mw_{hj}g_j$，有：</p>
+<script type="math/tex; mode=display">
+\frac{\partial E_k}{\partial \gamma_h}=e_h</script><p>即：</p>
+<script type="math/tex; mode=display">
+\begin{align}
+\triangle \gamma_h &= -\eta\frac{\partial E_k}{\partial v_{ih}} \\
+&= -\eta \cdot e_h\\
+\end{align}</script><p><a href="#back">点击返回</a></p>
+</hidden></hidden>
+      
+    </div>
+    
+    
+    
+
+    
+
+    <!-- 版权说明 -->
+    
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者：</strong>
+    Alex_McAvoy
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://alex-mcavoy.github.io/ml/c3f7cdb7.html" title="多层感知机与 BP 算法">https://alex-mcavoy.github.io/ml/c3f7cdb7.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>
+    本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 3.0</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+
+      </div>
+    
+	
+    <!-- 打赏 -->
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>感谢您对我的支持，让我继续努力分析有用地点技术与知识点！</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="/assets/img/wechatpay.jpg" alt="Alex_McAvoy 微信支付">
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="/assets/img/alipay.jpg" alt="Alex_McAvoy 支付宝">
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/ml/" rel="tag"># 机器学习</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/ml/18592060.html" rel="next" title="感知机">
+                <i class="fa fa-chevron-left"></i> 感知机
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/notes/os/dc54fe0b.html" rel="prev" title="操作系统——OS 概述">
+                操作系统——OS 概述 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+	
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/assets/img/head.jpg" alt="Alex_McAvoy">
+            
+              <p class="site-author-name" itemprop="name">Alex_McAvoy</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">309</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">21</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">21</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/Alex-McAvoy" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="https://blog.csdn.net/u011815404" target="_blank" title="CSDN">
+                      
+                        <i class="fa fa-fw fa-copyright"></i>CSDN</a>
+                  </span>
+                
+            </div>
+          
+		  
+          
+          
+            <div class="cc-license motion-element" itemprop="license">
+              <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" class="cc-opacity" target="_blank">
+                <img src="/images/cc-by-nc-sa.svg" alt="Creative Commons">
+              </a>
+            </div>
+          
+		  
+		  <!-- 访客地图 -->
+		  <script type="text/javascript" src="//rf.revolvermaps.com/0/0/5.js?i=50n58yo58ow&amp;m=0&amp;c=ff0000&amp;cr1=ffffff" async="async"></script>
+
+          
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-link"></i>
+                Links
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/sdz20172133" title="神仙队友" target="_blank">神仙队友</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://pxlsdz.gitee.io/" title="神仙队友的另一个博客" target="_blank">神仙队友的另一个博客</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://www.bycore.net/" title="凉了的某饼同学" target="_blank">凉了的某饼同学</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/wentong_Xu" title="小黑贱胖子" target="_blank">小黑贱胖子</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://deng.fun/" title="芙蓉姐姐" target="_blank">芙蓉姐姐</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/sdau_fangshifeng" title="一个头很酷的家伙" target="_blank">一个头很酷的家伙</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://www.yuheng.tech/" title="咸于" target="_blank">咸于</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/lanshan1111" title="肥硕硕" target="_blank">肥硕硕</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/sdauguanweihong" title="管少" target="_blank">管少</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/qq_41661919" title="俊杰" target="_blank">俊杰</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/qq_40859951" title="峰哥" target="_blank">峰哥</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/LSD20164388" title="狗冬" target="_blank">狗冬</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/qq_37748451" title="胖亚亚" target="_blank">胖亚亚</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/qq_37868325" title="妍大佬" target="_blank">妍大佬</a>
+                  </li>
+                
+              </ul>
+            </div>
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【引入】"><span class="nav-number">1.</span> <span class="nav-text">【引入】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【从与或非到异或】"><span class="nav-number">2.</span> <span class="nav-text">【从与或非到异或】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#与门"><span class="nav-number">2.1.</span> <span class="nav-text">与门</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#或门"><span class="nav-number">2.2.</span> <span class="nav-text">或门</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#非门"><span class="nav-number">2.3.</span> <span class="nav-text">非门</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#异或门"><span class="nav-number">2.4.</span> <span class="nav-text">异或门</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【多层感知机】"><span class="nav-number">3.</span> <span class="nav-text">【多层感知机】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【反向传播算法】"><span class="nav-number">4.</span> <span class="nav-text">【反向传播算法】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#概述"><span class="nav-number">4.1.</span> <span class="nav-text">概述</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#符号假设"><span class="nav-number">4.2.</span> <span class="nav-text">符号假设</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#代价函数"><span class="nav-number">4.3.</span> <span class="nav-text">代价函数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参数更新估计式"><span class="nav-number">4.4.</span> <span class="nav-text">参数更新估计式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#算法流程"><span class="nav-number">4.5.</span> <span class="nav-text">算法流程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#过拟合"><span class="nav-number">4.6.</span> <span class="nav-text">过拟合</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#附：详细推导"><span class="nav-number">4.7.</span> <span class="nav-text">附：详细推导</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#输出层连接权-triangle-w-hj"><span class="nav-number">4.7.1.</span> <span class="nav-text">输出层连接权 $\triangle w_{hj}$</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#输出层阈值-triangle-theta-j"><span class="nav-number">4.7.2.</span> <span class="nav-text">输出层阈值 $\triangle \theta_j$</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#隐藏层连接权-triangle-v-jh"><span class="nav-number">4.7.3.</span> <span class="nav-text">隐藏层连接权 $\triangle v_{jh}$</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#隐藏层阈值-triangle-gamma-h"><span class="nav-number">4.7.4.</span> <span class="nav-text">隐藏层阈值 $\triangle \gamma_h$</span></a></li></ol></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+        <div class="back-to-top">
+          <i class="fa fa-arrow-up"></i>
+          
+            <span id="scrollpercent"><span>0</span>%</span>
+          
+        </div>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 &mdash; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Alex_McAvoy</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+<script>
+(function(){
+    var bp = document.createElement('script');
+    var curProtocol = window.location.protocol.split(':')[0];
+    if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';        
+    }
+    else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+    }
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(bp, s);
+})();
+</script>
+
+
+  
+  
+
+  
+  
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdn.bootcss.com/mathjax/2.7.1/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  
+
+
+  
+
+  
+
+  <script type="text/javascript" src="/js/src/cursor-effects.js"></script>
+</body>
+</html>

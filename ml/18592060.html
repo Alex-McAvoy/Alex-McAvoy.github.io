@@ -1,0 +1,1183 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+<!-- 实现文章加密 -->
+<script>
+    (function(){
+        if(''){
+            if (prompt('请输入密码') !== ''){
+                alert('密码错误！');
+                history.back();
+            }
+        }
+    })();
+</script>
+
+
+
+  
+  
+    
+    
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+  <link href="/lib/pace/pace-theme-corner-indicator.min.css?v=1.0.2" rel="stylesheet">
+
+
+
+
+  
+  
+  <link rel="stylesheet" media="all" href="/lib/Han/dist/han.min.css?v=3.3">
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="机器学习,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="【概述】感知机（Perceptron）是神经网络和支持向量机的起源算法，从结构上来讲，其分为单层感知机（Single Layer Perceptron）和多层感知机（Multi-Layer Perceptron） 单层感知机就是 MP 神经元，其一般用于处理线性可分的二分类问题，多层感知机是多个 MP 神经元的累叠，通过增加层数来处理线性不可分问题 单层感知机与 MP 神经元最主要的区别，是在于感">
+<meta name="keywords" content="机器学习">
+<meta property="og:type" content="article">
+<meta property="og:title" content="感知机">
+<meta property="og:url" content="https://alex-mcavoy.github.io/ml/18592060.html">
+<meta property="og:site_name" content="Alex_McAvoy">
+<meta property="og:description" content="【概述】感知机（Perceptron）是神经网络和支持向量机的起源算法，从结构上来讲，其分为单层感知机（Single Layer Perceptron）和多层感知机（Multi-Layer Perceptron） 单层感知机就是 MP 神经元，其一般用于处理线性可分的二分类问题，多层感知机是多个 MP 神经元的累叠，通过增加层数来处理线性不可分问题 单层感知机与 MP 神经元最主要的区别，是在于感">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/39-1.png">
+<meta property="og:updated_time" content="2021-06-26T12:52:55.909Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="感知机">
+<meta name="twitter:description" content="【概述】感知机（Perceptron）是神经网络和支持向量机的起源算法，从结构上来讲，其分为单层感知机（Single Layer Perceptron）和多层感知机（Multi-Layer Perceptron） 单层感知机就是 MP 神经元，其一般用于处理线性可分的二分类问题，多层感知机是多个 MP 神经元的累叠，通过增加层数来处理线性不可分问题 单层感知机与 MP 神经元最主要的区别，是在于感">
+<meta name="twitter:image" content="https://alex-mcavoy.github.io/images/ml/39-1.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":true,"scrollpercent":true,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://alex-mcavoy.github.io/ml/18592060.html">
+
+
+
+
+
+  <title>感知机 | Alex_McAvoy</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Alex_McAvoy</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/ml/18592060.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Alex_McAvoy">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/assets/img/head.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Alex_McAvoy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">感知机</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-07-24T20:33:00+08:00">
+                2019-07-24
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/ml/" itemprop="url" rel="index">
+                    <span itemprop="name">机器学习</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  3,668 字
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">
+                  15 分钟
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body han-init-context" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="【概述】"><a href="#【概述】" class="headerlink" title="【概述】"></a>【概述】</h1><p><strong>感知机（Perceptron）</strong>是神经网络和支持向量机的起源算法，从结构上来讲，其分为<strong>单层感知机（Single Layer Perceptron）</strong>和<strong>多层感知机（Multi-Layer Perceptron）</strong></p>
+<p>单层感知机就是 MP 神经元，其一般用于处理<strong>线性可分的二分类问题</strong>，多层感知机是多个 MP 神经元的累叠，通过增加层数来处理<strong>线性不可分问题</strong></p>
+<p>单层感知机与 MP 神经元最主要的区别，是在于感知机引入了损失函数与参数学习的过程，这是为什么将感知机称为最初的神经网络模型的原因</p>
+<p>本文仅介绍单层感知机，为便于表述，以下内容所提到的感知机，均为单层感知机</p>
+<h1 id="【感知机模型】"><a href="#【感知机模型】" class="headerlink" title="【感知机模型】"></a>【感知机模型】</h1><h2 id="假设形式"><a href="#假设形式" class="headerlink" title="假设形式"></a>假设形式</h2><p>设输入空间 $\mathcal{X}\in R^{\:n}$，输出空间 $\mathcal{Y}=\{-1,+1\}$，输入 $\vec{x}=(x^{(1)},x^{(2)},…,x^{(n)})\in\mathcal{X}$ 为实例的特征向量，对应于输入空间的点，输出 $y\in\mathcal{Y}$ 为实例的类别</p>
+<p>在感知机中，激活函数一般使用 $sigmoid(\cdot)$ 函数：</p>
+<script type="math/tex; mode=display">
+f(\vec{x})=sigmoid(\vec{w}\cdot \vec{x}+\theta)=\left\{\begin{array}{rl}
++1, & \vec{w}\cdot \vec{x}+\theta \geq 0\\
+-1, & \vec{w}\cdot \vec{x}+\theta<0
+\end{array} \right.</script><p>其中，$\vec{w}\in R^{\:n}$ 为<strong>权值（weight）</strong>，$\theta\in R$ 为<strong>阈值（threshold）</strong>，$\vec{w}\cdot \vec{x}$ 表示 $\vec{w}$ 与 $\vec{x}$ 的内积</p>
+<p>可以发现，感知机与 <code>MP 神经元</code> 本质上是一致的，只是为了便于表达，将阈值 $\theta$ 取负值，从而将 $\vec{w}\cdot\vec{x}-\theta$ 的减法变为 $\vec{w}\cdot\vec{x}+\theta$ 的加法</p>
+<p>而线性方程 $\vec{w}\cdot \vec{x}+\theta=0$ 对应于特征空间 $R^{\:n}$ 中的一个超平面 $S$，其中权值 $w$ 为超平面的法向量，偏置 $b$ 是超平面的截距，这个超平面 $S$ 被称为<strong>分离超平面（separating hyperplane）</strong>，其将特征空间划分为两个部分，位于两部分的点被分为正负两类</p>
+<p><img width="300" src="/images/ml/39-1.png"></p>
+<h2 id="数据集的线性可分性"><a href="#数据集的线性可分性" class="headerlink" title="数据集的线性可分性"></a>数据集的线性可分性</h2><p>对于给定训练集 $T=\{(\vec{x_1},y_1),…,(\vec{x_i},y_i),…,(\vec{x_N},y_N)\}$，其中 $\vec{x_i}=(x^{(1)}_i,x^{(2)}_i,…,x^{(n)}_i)\in\mathcal{X}=R^{\:n}$，$y_i\in\mathcal{Y}=\{+1,-1\}$</p>
+<p>若存在某个分离超平面 $S:\vec{w}\cdot\vec{x}+\theta=0$ 能够将训练集的正样本点与负样本点完全正确地划分到分离超平面的两侧，即：</p>
+<ul>
+<li>对于所有的 $y_i=+1$ 的样本 $i$，有：$\vec{w}\cdot\vec{x}+\theta&gt;0$</li>
+<li>对于所有的 $y_i=-1$ 的样本 $i$，有：$\vec{w}\cdot\vec{x}+\theta&lt;0$</li>
+</ul>
+<p>则称训练集 $T$ 为<strong>线性可分数据集（linearly separable data set）</strong>，否则，称训练集 $T$ 为<strong>线性不可分数据集（linearly inseparable data set）</strong></p>
+<h2 id="损失函数"><a href="#损失函数" class="headerlink" title="损失函数"></a>损失函数</h2><p>假设训练集是线性可分的，感知机学习的目标是求得一个能够将训练集正样本和负样本完全正确分开的分离超平面，为找出这样的分离超平面，即求得感知机的模型参数 $w$ 和阈值 $\theta$，为此，需要定义经验损失函数并将该损失函数极小化</p>
+<p>在感知机模型中，最直观的损失函数是误分类样本点的个数，但这样的损失函数不是 $w$ 与 $\theta$ 的连续可导函数，不易优化，因此，在感知机中一般选用<strong>误分类样本点到超平面 $S$ 的总距离</strong>作为损失函数</p>
+<p>对于输入空间 $R^{\:n}$ 中任一点 $\vec{x_0}$，其到超平面 $S$ 的距离为：</p>
+<script type="math/tex; mode=display">
+d_0=\frac{1}{||\vec{w}||_2}|\vec{w}\cdot\vec{x_0}+\theta|</script><p>对于误分类的样本 $(\vec{x_j},y_j)$ 来说，有：</p>
+<ul>
+<li>当 $\vec{w}\cdot\vec{x_j}+\theta&gt;0$ 时，$y_j=-1$</li>
+<li>当 $\vec{w}\cdot\vec{x_j}+\theta&lt;0$ 时，$y_j=+1$</li>
+</ul>
+<p>即：</p>
+<script type="math/tex; mode=display">
+-y_j(\vec{w}\cdot\vec{x_j}+\theta)>0</script><p>由此，误分类点 $\vec{x_j}$ 到超平面 $S$ 的距离为：</p>
+<script type="math/tex; mode=display">
+d_i=-\frac{1}{||\vec{w}||_2} y_j (\vec{w}\cdot\vec{x_j}+\theta)</script><p>那么，假设超平面 $S$ 的误分类点的集合为 $E$，则所有误分类点到超平面 $S$ 的总距离为：</p>
+<script type="math/tex; mode=display">
+d_{M}=-\frac{1}{||\vec{w}||_2} \sum_{\vec{x_j}\in E}y_j (\vec{w}\cdot\vec{x_j}+\theta)</script><p>那么，对于给定训练集 $T=\{(\vec{x_1},y_1),…,(\vec{x_i},y_i),…,(\vec{x_N},y_N)\}$，其中 $\vec{x_i}=(x^{(1)}_i,x^{(2)}_i,…,x^{(n)}_i)\in\mathcal{X}=R^{\:n}$，$y_i\in\mathcal{Y}=\{+1,-1\}$</p>
+<p>对于误分类点集 $E=\{(\vec{x_1},y_1),…,(\vec{x_j},y_j),…,(\vec{x_M},y_M)\},M\leq N$，其中 $\vec{x_j}=(x^{(1)}_j,x^{(2)}_j,…,x^{(n)}_j)\in\mathcal{X}=R^{\:n}$，$y_j\in\mathcal{Y}=\{+1,-1\}$</p>
+<p>感知机 $f(\vec{x})=sigmoid(\vec{w}\cdot \vec{x}+\theta)$ 的损失函数为：</p>
+<script type="math/tex; mode=display">
+L(\vec{w},\theta)=-\sum_{j=1}^M y_j (\vec{w}\cdot\vec{x_j}+\theta)</script><p>即不考虑 $\frac{1}{||\vec{w}||_2}$ 的所有误分类点到超平面 $S$ 的总距离</p>
+<p>显然，$L(\vec{w},\theta)$ 是非负的，若没有误分类点，则 $L(\vec{w},\theta)=0$，同时，误分类点越少，误分类点就距离超平面越近，损失函数值也就越小</p>
+<h1 id="【感知机学习】"><a href="#【感知机学习】" class="headerlink" title="【感知机学习】"></a>【感知机学习】</h1><h2 id="原始形式与对偶形式"><a href="#原始形式与对偶形式" class="headerlink" title="原始形式与对偶形式"></a>原始形式与对偶形式</h2><p>对于感知机模型，其损失函数为：</p>
+<script type="math/tex; mode=display">
+L(\vec{w},\theta)=-\sum_{j=1}^M y_j (\vec{w}\cdot\vec{x_j}+\theta)</script><p>这时感知机学习问题就转换为求解损失函数的最优化问题，即：</p>
+<script type="math/tex; mode=display">
+\min_{\vec{w},\theta}L(\vec{w},\theta)=-\sum_{j=1}^M y_j (\vec{w}\cdot\vec{x_j}+\theta)</script><p>对于上述的损失函数极小化问题，感知机一般选用<strong>随机梯度下降法</strong>进行求解，对于感知机学习算法，存在两种方法：原始形式、对偶形式</p>
+<h2 id="感知机学习算法原始形式"><a href="#感知机学习算法原始形式" class="headerlink" title="感知机学习算法原始形式"></a>感知机学习算法原始形式</h2><p>开始时，随机选取一个超平面 $\vec{w_0},\theta_0$，一般取 $\vec{w_0}=0,\theta_0=0$ 然后用梯度下降法不断地极小化损失函数，极小化过程中，每次随机选取一个误分类点使其梯度下降</p>
+<p>假设误分类点集合 $M$ 是固定的，那么损失函数 $L(\vec{w},\theta)$ 的梯度由以下公式给出：</p>
+<script type="math/tex; mode=display">
+\left\{\begin{array}{rl}
+\triangledown_{\vec{w}}L(\vec{w},\theta) &=& -\sum\limits_{j=1}^M y_j\vec{x_j} \\
+\triangledown_{\theta}L(\vec{w},\theta) &=& -\sum\limits_{j=1}^M y_j
+\end{array} \right.</script><p>在误分类点集合 $E$ 中，随机选取一个误分类点 $(\vec{x_j},y_j)$，对 $\vec{w}$ 和 $\theta$ 进行更新，有：</p>
+<script type="math/tex; mode=display">
+\left\{\begin{array}{rl}
+\vec{w}' &=& \vec{w} + \alpha y_j\vec{x_j}  \\
+\theta' &=& \theta + \alpha y_j
+\end{array} \right.</script><p>其中，$0&lt;\alpha\leq1$ 为学习率</p>
+<p>这样，通过上述的更新公式，可以不断迭代以使损失函数 $L(\vec{w},\theta)$ 不断减小，直到为 $0$</p>
+<p>也就是说，当一个样本点被误分类，即位于分离超平面的错误一侧时，就调整 $w$ 与 $\theta$ 的值，使超平面向该误分类点一侧移动，以减少该误分类点与超平面的距离，直到超平面越过该误分类点使其被正确分类</p>
+<hr>
+<p>根据以上的描述，给出感知机学习算法的原始形式</p>
+<p>输入：训练集 $T=\{(\vec{x_1},y_1),(\vec{x_2},y_2),…,(\vec{x_N},y_N)\}$，其中 $\vec{x_i}=(x^{(1)}_i,x^{(2)}_i,…,x^{(n)}_i)\in\mathcal{X}=R^{\:n}$，$y_i\in\mathcal{Y}=\{+1,-1\}$，学习率 $0&lt;\alpha\leq1$</p>
+<p>输出：参数 $\vec{w}$，阈值 $\theta$，感知机模型 $f(\vec{x})=sigmoid(\vec{w}\cdot\vec{x}+\theta)$</p>
+<p>算法步骤：</p>
+<ol>
+<li>随机选取参数与阈值的初值 $\vec{w_0},\theta_0$</li>
+<li>在训练集中随机选取样本 $(\vec{x_i},y_i)$</li>
+<li>若 $y_i(\vec{w}\cdot\vec{x_i}+\theta)\leq 0$，更新 $\vec{w}$ 与 $\theta$<script type="math/tex; mode=display">
+\left\{\begin{array}{rl}
+\vec{w} &=& \vec{w} + \alpha y_i\vec{x}_i  \\
+\theta &=& \theta + \alpha y_i
+\end{array} \right.</script></li>
+<li>转至步骤 2，直到训练集中没有误分类点</li>
+</ol>
+<h2 id="感知机学习算法对偶形式"><a href="#感知机学习算法对偶形式" class="headerlink" title="感知机学习算法对偶形式"></a>感知机学习算法对偶形式</h2><p>对偶形式的基本想法是：将参数 $\vec{w}$ 和阈值 $\theta$ 表示为样本特征 $\vec{x}_i$ 和样本类别 $y_i$ 的线性组合形式，通过求解其系数来求得 $\vec{w}$ 和 $\theta$</p>
+<p>不失一般性，假设原始形式的初值均为 $0$，即：</p>
+<script type="math/tex; mode=display">
+\vec{w}_0=0,\theta_0=0</script><p>对于误分点 $(\vec{x}_i,y_i)$，通过以下迭代公式对 $\vec{w}$ 和 $\theta$ 进行修改</p>
+<script type="math/tex; mode=display">
+\left\{\begin{array}{rl}
+\vec{w} &=& \vec{w}+\alpha y_i\vec{x}_i \\
+\vec{\theta} &=& \vec{\theta}+\alpha y_i
+\end{array} \right.</script><p>假设修改 $n$ 次，则 $\vec{w}$ 和 $\theta$ 关于 $(\vec{x}_i,y_i)$ 的增量分别是 $n_i\alpha y_i\vec{x}_i$ 与 $n_i\alpha y_i$，那么，最后学习到的 $\vec{w}$ 和 $\theta$ 可以表示为：</p>
+<script type="math/tex; mode=display">
+\left\{\begin{array}{rl}
+\vec{w} &=& \sum\limits_{i=1}^N n_i\alpha y_i\vec{x}_i \\
+\vec{\theta} &=& \sum\limits_{i=1}^N n_i\alpha y_i
+\end{array} \right.</script><p>当 $\alpha=1$ 时，$\vec{w}$ 和 $\theta$ 被表示第 $i$ 个样本点由于误分类而进行更新的次数</p>
+<p>更新次数越多，意味着样本点距离超平面越近，也就越难被分类</p>
+<hr>
+<p>根据以上的描述，给出感知机学习算法的对偶形式</p>
+<p>输入：线性可分训练集 $T=\{(\vec{x_1},y_1),(\vec{x_2},y_2),…,(\vec{x_N},y_N)\}$，其中 $\vec{x_i}=(x^{(1)}_i,x^{(2)}_i,…,x^{(n)}_i)\in\mathcal{X}=R^{\:n}$，$y_i\in\mathcal{Y}=\{+1,-1\}$，学习率 $0&lt;\alpha\leq1$</p>
+<p>输出：增量 $\vec{\eta}=\alpha(n_1,n_2,…,n_N)^T$，阈值 $\theta$，感知机模型 $f(\vec{x})=sigmoid \bigl( (\sum\limits_{j=1}^N\eta_j y_j\vec{x}_j) \cdot \vec{x}+\theta \bigr)$</p>
+<p>算法步骤：</p>
+<ol>
+<li>选取增量与阈值的初值 $\vec{\eta}_0,\theta_0$，取 $\vec{\eta}_0=0,\theta_0=0$</li>
+<li>在训练集中随机选取样本 $(\vec{x_i},y_i)$</li>
+<li>若 $y_i\bigl( (\sum\limits_{j=1}^N\eta_j y_j\vec{x}_j)\cdot\vec{x_i}+\theta \bigr) \leq 0$，更新 $\eta_j$ 与 $\theta$</li>
+</ol>
+<script type="math/tex; mode=display">
+\left\{\begin{array}{rl}
+\eta_i &=& \eta_i + \alpha  \\
+\theta &=& \theta + \alpha y_i
+\end{array} \right.</script><ol>
+<li>转至步骤 2，直到训练集中没有误分类点</li>
+</ol>
+<p>由于对偶形式中训练样本仅以内积的形式出现，为处理方便，通常预先将训练集中样本间的内积计算出来并以矩阵的形式存储，这个矩阵是一个半正定矩阵，被称为<strong>格拉姆矩阵（Gram Matrix）</strong>，即：</p>
+<script type="math/tex; mode=display">
+G =  [ \vec{x}_i\cdot \vec{x_j} ]_{N\times N}</script><h2 id="时间复杂度分析"><a href="#时间复杂度分析" class="headerlink" title="时间复杂度分析"></a>时间复杂度分析</h2><p>原始形式与对偶形式则两种方法在寻找误分类样本点的过程是一样的，只是在找到一个误分点时两者后续的参数更新方法不同，这就导致了两者的时间复杂度不同</p>
+<p>对于样本数量为 $N$，特征数量为 $n$ 的训练集，两者时间复杂度如下：</p>
+<ul>
+<li>原始形式：每次计算 $\vec{w}\cdot\vec{x}$，计算该内积的复杂度为 $O(n)$</li>
+<li><p>对偶形式：提前将 $\vec{x_i}$ 与 $\vec{x_j}$ 的内积存储在 Gram 矩阵中，因此只需要扫描一遍数据集，找到一个误分点后直接加上，时间复杂度为 $O(N)$</p>
+<p>因此，选择哪种计算方法取决于训练集的样本数量和特征数量的大小</p>
+</li>
+</ul>
+<h2 id="感知机学习算法的收敛性"><a href="#感知机学习算法的收敛性" class="headerlink" title="感知机学习算法的收敛性"></a>感知机学习算法的收敛性</h2><p><strong>对于线性可分数据集，感知机学习算法原始形式收敛</strong>，即：经过有限次迭代后，可以得到一个训练集完全正确划分的分离超平面及感知机模型</p>
+<p>首先将阈值 $\theta$ 并入权重 $\vec{w}$ 中，记作：</p>
+<script type="math/tex; mode=display">
+W=(\vec{w}^T,\theta)^T</script><p>同时，将输入向量 $\vec{x}$ 进行扩充，加入常数 $1$，记作：</p>
+<script type="math/tex; mode=display">
+X=(\vec{x}^T,1)^T</script><p>由此，$W,X\in R^{n+1}$，且有：</p>
+<script type="math/tex; mode=display">
+WX=\vec{w}\cdot\vec{x}+\theta</script><p>设训练集 $T=\{(\vec{x_1},y_1),(\vec{x_2},y_2),…,(\vec{x_N},y_N)\}$ 是线性可分的，那么根据数据集的线性可分性，存在超平面 $S$ 可将训练集完全正确分开，设该超平面为：</p>
+<script type="math/tex; mode=display">
+W_{opt}X=\vec{w}_{opt}\cdot\vec{x}+\theta_{opt}=0</script><p>取 $||W_{opt}||_2=1$，对于有限的 $i=1,2,…,N$，均有：</p>
+<script type="math/tex; mode=display">
+y_i(W_{opt}X_i)=y_i(\vec{w}_{opt}\cdot \vec{x}_i+\theta_{opt})>0</script><p>令：</p>
+<script type="math/tex; mode=display">
+\gamma=\min_i \{y_i(\vec{w}_{opt}\vec{x}_i+\theta_{opt})\}</script><p>故有：</p>
+<script type="math/tex; mode=display">
+y_i(W_{opt}X_i)=y_i(\vec{w}_{opt}\cdot\vec{x}_i+\theta)\geq \gamma=\min_i \{y_i(\vec{w}_{opt}\vec{x}_i+\theta_{opt})\}</script><p>感知机学习算法一般从 $\vec{w}=0,\theta=0$ 开始迭代，当样本被误分类时，更新权重与阈值</p>
+<p>取 $W_{k-1}$ 为第 $k$ 个误分类样本之前的扩充权重向量，即：</p>
+<script type="math/tex; mode=display">
+W_{k-1}=(\vec{w}_{k-1}^T,\theta_{k-1})^T</script><p>假设 $(\vec{x}_j,y_j)$ 是第 $k$ 个被误分类，即被 $W_{k-1}=(\vec{w}_{k-1}^T,\theta_{k-1})^T$ 误分类的样本，则其满足：</p>
+<script type="math/tex; mode=display">
+y_j(W_{k-1}X_j)=y_j(\vec{w}_{k-1}\cdot x_j+\theta_{k-1})\leq0</script><p>且权重 $\vec{w}$ 与阈值 $\theta$ 的更新为：</p>
+<script type="math/tex; mode=display">
+\left\{\begin{array}{rl}
+\vec{w}_k &=& \vec{w}_{k-1} + \alpha y_j\vec{x}_j  \\
+\theta_k &=& \theta_{k-1} + \alpha y_j
+\end{array} \right.</script><p>即：</p>
+<script type="math/tex; mode=display">
+W_k=W_{k-1}+\alpha y_jX_j</script><p>考虑将训练集线性可分的超平面 $S:W_{opt}X=0$，有：</p>
+<script type="math/tex; mode=display">
+\begin{align}
+W_kW_{opt} &= W_{k-1}W_{opt}+\alpha y_jW_{opt}X_j \\
+&\geq W_{k-1}W_{opt}+\alpha\cdot\min_j \{y_jW_{opt}X_j\} 
+\end{align}</script><p>由于 $\min\limits_j\{y_jW_{opt}X_j\}=\min\limits_j \{y_j(\vec{w}_{opt}\vec{x}_j+\theta_{opt})\}=\gamma$，故有：</p>
+<script type="math/tex; mode=display">
+W_kW_{opt}\geq W_{k-1}W_{opt}+\alpha\gamma</script><p>根据上式进行递推，有：</p>
+<script type="math/tex; mode=display">
+\begin{align}
+W_kW_{opt} &\geq W_{k-1}W_{opt}+\alpha\gamma \\
+&\geq W_{k-2}W_{opt}+2\alpha\gamma \\
+&\geq ...\\
+&\geq k\alpha\gamma
+\end{align}</script><p>即：</p>
+<script type="math/tex; mode=display">
+W_kW_{opt}\geq k\alpha\gamma</script><p>进一步，考虑到：</p>
+<script type="math/tex; mode=display">
+W_k=W_{k-1}+\alpha y_jX_j</script><p>对其两边同取 $l_2$ 范数的平方，有：</p>
+<script type="math/tex; mode=display">
+\begin{align}
+||W_k||_2^2 = ||W_{k-1}||_2^2+2\alpha y_iW_{k-1}X_j+\alpha^2||X_j||_2^2
+\end{align}</script><p>根据第 $k$ 个被误分类样本所满足的条件：</p>
+<script type="math/tex; mode=display">
+y_j(W_{k-1}X_j)=y_j(\vec{w}_{k-1}\cdot x_j+\theta_{k-1})\leq0</script><p>有：</p>
+<script type="math/tex; mode=display">
+2\alpha y_jW_{k-1}X_j\leq0</script><p>故：</p>
+<script type="math/tex; mode=display">
+\begin{align}
+||W_k||_2^2 &= ||W_{k-1}||_2^2 + 2\alpha y_iW_{k-1}X_j + \alpha^2||X_j||_2^2 \\
+&\leq ||W_{k-1}||_2^2  + \alpha^2||X_j||_2^2
+\end{align}</script><p>令 $R=\max\limits_{1\leq i\leq N}||X_i||_2$，则有：</p>
+<script type="math/tex; mode=display">
+\begin{align}
+||W_k||_2^2 &= ||W_{k-1}||_2^2 + 2\alpha y_iW_{k-1}X_j + \alpha^2||X_j||_2^2 \\
+&\leq ||W_{k-1}||_2^2  + \alpha^2||X_j||_2^2 \\
+&\leq ||W_{k-1}||_2^2  + \alpha^2R^2
+\end{align}</script><p>结合递推不等式：</p>
+<script type="math/tex; mode=display">
+W_k=W_{k-1}+\alpha y_jX_j</script><p>故有：</p>
+<script type="math/tex; mode=display">
+\begin{align}
+||W_k||_2^2 &= ||W_{k-1}||_2^2 + 2\alpha y_iW_{k-1}X_j + \alpha^2||X_j||_2^2 \\
+&\leq ||W_{k-1}||_2^2  + \alpha^2||X_j||_2^2 \\
+&\leq ||W_{k-1}||_2^2  + \alpha^2R^2 \\
+&\leq ||W_{k-2}||_2^2  + 2\alpha^2R^2 \\
+&\leq ...\\
+&\leq k\alpha^2R^2
+\end{align}</script><p>即：</p>
+<script type="math/tex; mode=display">
+||W_k||_2^2\leq k\alpha^2R^2</script><p>根据 $W_kW_{opt}\geq k\alpha\gamma$，结合上式，有：</p>
+<script type="math/tex; mode=display">
+k\alpha\gamma \leq W_kW_{opt} \leq ||W_k||_2||W_{opt}||_2\leq \sqrt{k}\alpha R</script><p>即：</p>
+<script type="math/tex; mode=display">
+k^2\gamma^2\leq kR^2</script><p>故有：</p>
+<script type="math/tex; mode=display">
+k\leq (\frac{R}{\gamma})^2</script><hr>
+<p>上述推导过程即为，<code>Novikoff 定理</code> 的证明过程，其内容表述如下：</p>
+<p>设训练集 $T=\{(\vec{x_1},y_1),(\vec{x_2},y_2),…,(\vec{x_N},y_N)\}$ 是线性可分的，其中 $\vec{x_i}=(x^{(1)}_i,x^{(2)}_i,…,x^{(n)}_i)\in\mathcal{X}=R^{\:n}$，$y_i\in\mathcal{Y}=\{+1,-1\}$，则：</p>
+<ol>
+<li>存在满足条件 $||W_{opt}||_2=1$ 的超平面 $S:W_{opt}X=\vec{w}_{opt}\cdot\vec{x}+\theta_{opt}=0$ 将训练集完全正确分开，且存在 $\gamma&gt;0$，对所有的 $i=1,2,…,N$，有：<script type="math/tex; mode=display">
+y_i(W_{opt}X_i)=y_i(\vec{w}_{opt}\cdot\vec{x}_i+\theta_{opt})\geq \gamma</script></li>
+<li>令 $R=\max\limits_{i}||X_i||_2$，则感知机学习算法原始形式在训练集上的误分类次数 $k$ 满足以下不等式：<script type="math/tex; mode=display">
+k\leq (\frac{R}{\gamma})^2</script></li>
+</ol>
+<p>该定理表明，分离超平面下样本点的<strong>函数间隔</strong> $y_i(\vec{w}_{opt}\cdot\vec{x}_i+\theta_{opt})$ 存在下界，<strong>误分类次数</strong> $k$ 存在上界，经过有限次搜索可以找到将训练集完全正确分开的分离超平面</p>
+<p>也就是说，当训练集线性可分时，感知机学习算法原始形式是迭代收敛的</p>
+<p>而当训练集线性不可分时，感知机学习算法原始形式是不迭代收敛的，迭代结果会发生震荡，为处理训练集线性不可分的情况，由此出现了<strong>多层感知机（Multi-Layer Perceptron）</strong>，详细介绍：<a href="https://alex-mcavoy.github.io/ml/c3f7cdb7.html">点击这里</a></p>
+<h1 id="【实现】"><a href="#【实现】" class="headerlink" title="【实现】"></a>【实现】</h1><p>以 sklearn 中的鸢尾花数据集为例，实现感知机</p>
+<p>为便于可视化，选用数据中前两个特征作为最终的样本特征</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> pandas <span class="keyword">as</span> pd</span><br><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"><span class="keyword">import</span> matplotlib.pyplot <span class="keyword">as</span> plt</span><br><span class="line"><span class="keyword">from</span> sklearn.datasets <span class="keyword">import</span> load_iris</span><br><span class="line"><span class="keyword">from</span> sklearn.datasets <span class="keyword">import</span> load_iris</span><br><span class="line"><span class="keyword">from</span> sklearn.model_selection <span class="keyword">import</span> train_test_split</span><br><span class="line"><span class="keyword">from</span> sklearn.linear_model <span class="keyword">import</span> Perceptron</span><br><span class="line"></span><br><span class="line"><span class="comment"># 特征提取</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">deal_data</span><span class="params">()</span>:</span></span><br><span class="line">    iris = load_iris()  <span class="comment"># sklearn的鸢尾花数据集</span></span><br><span class="line">    df = pd.DataFrame(iris.data, columns=iris.feature_names)</span><br><span class="line">    df[<span class="string">'result'</span>] = iris.target</span><br><span class="line">    df.columns = [<span class="string">'sepal length'</span>, <span class="string">'sepal width'</span>,</span><br><span class="line">                  <span class="string">'petal length'</span>, <span class="string">'petal width'</span>, <span class="string">'result'</span>]</span><br><span class="line">    <span class="comment"># iris分为三类，前50行一类，51-100行一类，101-150行一类</span></span><br><span class="line">    <span class="comment"># 使用数据集中前两个分类即前100行的数据，作为二分类问题的数据</span></span><br><span class="line">    <span class="comment"># 同时，选用前两个特征作为样本特征</span></span><br><span class="line">    data = np.array(df.iloc[:<span class="number">100</span>, [<span class="number">0</span>, <span class="number">1</span>, <span class="number">-1</span>]])</span><br><span class="line">    <span class="keyword">return</span> data[:, :<span class="number">2</span>], data[:, <span class="number">-1</span>]</span><br><span class="line"></span><br><span class="line"><span class="comment"># 训练模型</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">train_model</span><span class="params">(features, labels)</span>:</span></span><br><span class="line">    <span class="comment"># 建立感知机模型</span></span><br><span class="line">    <span class="comment"># tol参数设置一个特定值，当本次迭代损失与上次迭代损失的差小于一个特定值时，停止迭代；若设置为None，将会一直迭代，直至差为0</span></span><br><span class="line">    model = Perceptron(tol=<span class="literal">None</span>)</span><br><span class="line">    <span class="comment"># 训练</span></span><br><span class="line">    model.fit(features, labels)</span><br><span class="line">    <span class="keyword">return</span> model</span><br><span class="line"></span><br><span class="line"><span class="comment"># 模型评估</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">estimate</span><span class="params">(features, labels, model)</span>:</span></span><br><span class="line">    <span class="comment"># 准确率评估</span></span><br><span class="line">    accuracy = model.score(features, labels)</span><br><span class="line">    <span class="keyword">return</span> accuracy</span><br><span class="line"></span><br><span class="line"><span class="comment"># 决策边界可视化</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">decision_boundary</span><span class="params">(features, labels, model)</span>:</span></span><br><span class="line">    <span class="comment"># 样本点</span></span><br><span class="line">    plt.scatter(features[:<span class="number">50</span>, <span class="number">0</span>], features[:<span class="number">50</span>, <span class="number">1</span>], c=<span class="string">'b'</span>, label=<span class="string">'Iris-setosa'</span>,)</span><br><span class="line">    plt.scatter(features[<span class="number">50</span>:<span class="number">100</span>, <span class="number">0</span>], features[<span class="number">50</span>:<span class="number">100</span>, <span class="number">1</span>], c=<span class="string">'orange'</span>, label=<span class="string">'Iris-versicolor'</span>)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 分离超平面</span></span><br><span class="line">    x_ponits = np.arange(<span class="number">4</span>, <span class="number">8</span>)</span><br><span class="line">    y_ = -(model.coef_[<span class="number">0</span>][<span class="number">0</span>]*x_ponits + model.intercept_)/model.coef_[<span class="number">0</span>][<span class="number">1</span>]</span><br><span class="line">    plt.plot(x_ponits, y_)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 其他部分</span></span><br><span class="line">    plt.legend()  <span class="comment"># 显示图例</span></span><br><span class="line">    plt.xlabel(<span class="string">'sepal length'</span>)</span><br><span class="line">    plt.ylabel(<span class="string">'sepal width'</span>)</span><br><span class="line">    plt.show()</span><br><span class="line">    </span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:</span><br><span class="line">    <span class="comment"># 特征提取</span></span><br><span class="line">    X, y = deal_data()</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 简单交叉验证</span></span><br><span class="line">    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=<span class="number">0.3</span>)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 训练模型</span></span><br><span class="line">    model = train_model(X_train, y_train)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 预测结果</span></span><br><span class="line">    y_pred = model.predict(X_test)</span><br><span class="line">    print(<span class="string">"y test:"</span>, y_test) <span class="comment"># 测试集y值</span></span><br><span class="line">    print(<span class="string">"y pred:"</span>, y_pred) <span class="comment"># 预测y值</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 模型评估</span></span><br><span class="line">    accuracy = estimate(X_test, y_test, model) <span class="comment"># 测试集accuracy</span></span><br><span class="line">    print(<span class="string">"accuracy = "</span>, accuracy)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 决策边界可视化</span></span><br><span class="line">    decision_boundary(X, y, model)</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    <!-- 版权说明 -->
+    
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者：</strong>
+    Alex_McAvoy
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://alex-mcavoy.github.io/ml/18592060.html" title="感知机">https://alex-mcavoy.github.io/ml/18592060.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>
+    本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 3.0</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+
+      </div>
+    
+	
+    <!-- 打赏 -->
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>感谢您对我的支持，让我继续努力分析有用地点技术与知识点！</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="/assets/img/wechatpay.jpg" alt="Alex_McAvoy 微信支付">
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="/assets/img/alipay.jpg" alt="Alex_McAvoy 支付宝">
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/ml/" rel="tag"># 机器学习</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/ml/aa378dc.html" rel="next" title="MP 神经元">
+                <i class="fa fa-chevron-left"></i> MP 神经元
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/ml/c3f7cdb7.html" rel="prev" title="多层感知机与 BP 算法">
+                多层感知机与 BP 算法 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+	
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/assets/img/head.jpg" alt="Alex_McAvoy">
+            
+              <p class="site-author-name" itemprop="name">Alex_McAvoy</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">309</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">21</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">21</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/Alex-McAvoy" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="https://blog.csdn.net/u011815404" target="_blank" title="CSDN">
+                      
+                        <i class="fa fa-fw fa-copyright"></i>CSDN</a>
+                  </span>
+                
+            </div>
+          
+		  
+          
+          
+            <div class="cc-license motion-element" itemprop="license">
+              <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" class="cc-opacity" target="_blank">
+                <img src="/images/cc-by-nc-sa.svg" alt="Creative Commons">
+              </a>
+            </div>
+          
+		  
+		  <!-- 访客地图 -->
+		  <script type="text/javascript" src="//rf.revolvermaps.com/0/0/5.js?i=50n58yo58ow&amp;m=0&amp;c=ff0000&amp;cr1=ffffff" async="async"></script>
+
+          
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-link"></i>
+                Links
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/sdz20172133" title="神仙队友" target="_blank">神仙队友</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://pxlsdz.gitee.io/" title="神仙队友的另一个博客" target="_blank">神仙队友的另一个博客</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://www.bycore.net/" title="凉了的某饼同学" target="_blank">凉了的某饼同学</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/wentong_Xu" title="小黑贱胖子" target="_blank">小黑贱胖子</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://deng.fun/" title="芙蓉姐姐" target="_blank">芙蓉姐姐</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/sdau_fangshifeng" title="一个头很酷的家伙" target="_blank">一个头很酷的家伙</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://www.yuheng.tech/" title="咸于" target="_blank">咸于</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/lanshan1111" title="肥硕硕" target="_blank">肥硕硕</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/sdauguanweihong" title="管少" target="_blank">管少</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/qq_41661919" title="俊杰" target="_blank">俊杰</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/qq_40859951" title="峰哥" target="_blank">峰哥</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/LSD20164388" title="狗冬" target="_blank">狗冬</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/qq_37748451" title="胖亚亚" target="_blank">胖亚亚</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/qq_37868325" title="妍大佬" target="_blank">妍大佬</a>
+                  </li>
+                
+              </ul>
+            </div>
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【概述】"><span class="nav-number">1.</span> <span class="nav-text">【概述】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【感知机模型】"><span class="nav-number">2.</span> <span class="nav-text">【感知机模型】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#假设形式"><span class="nav-number">2.1.</span> <span class="nav-text">假设形式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#数据集的线性可分性"><span class="nav-number">2.2.</span> <span class="nav-text">数据集的线性可分性</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#损失函数"><span class="nav-number">2.3.</span> <span class="nav-text">损失函数</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【感知机学习】"><span class="nav-number">3.</span> <span class="nav-text">【感知机学习】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#原始形式与对偶形式"><span class="nav-number">3.1.</span> <span class="nav-text">原始形式与对偶形式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#感知机学习算法原始形式"><span class="nav-number">3.2.</span> <span class="nav-text">感知机学习算法原始形式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#感知机学习算法对偶形式"><span class="nav-number">3.3.</span> <span class="nav-text">感知机学习算法对偶形式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#时间复杂度分析"><span class="nav-number">3.4.</span> <span class="nav-text">时间复杂度分析</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#感知机学习算法的收敛性"><span class="nav-number">3.5.</span> <span class="nav-text">感知机学习算法的收敛性</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【实现】"><span class="nav-number">4.</span> <span class="nav-text">【实现】</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+        <div class="back-to-top">
+          <i class="fa fa-arrow-up"></i>
+          
+            <span id="scrollpercent"><span>0</span>%</span>
+          
+        </div>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 &mdash; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Alex_McAvoy</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+<script>
+(function(){
+    var bp = document.createElement('script');
+    var curProtocol = window.location.protocol.split(':')[0];
+    if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';        
+    }
+    else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+    }
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(bp, s);
+})();
+</script>
+
+
+  
+  
+
+  
+  
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdn.bootcss.com/mathjax/2.7.1/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  
+
+
+  
+
+  
+
+  <script type="text/javascript" src="/js/src/cursor-effects.js"></script>
+</body>
+</html>
