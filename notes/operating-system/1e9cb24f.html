@@ -1,0 +1,1049 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+<!-- 实现文章加密 -->
+<script>
+    (function(){
+        if(''){
+            if (prompt('请输入密码') !== ''){
+                alert('密码错误！');
+                history.back();
+            }
+        }
+    })();
+</script>
+
+
+
+  
+  
+    
+    
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+  <link href="/lib/pace/pace-theme-corner-indicator.min.css?v=1.0.2" rel="stylesheet">
+
+
+
+
+  
+  
+  <link rel="stylesheet" media="all" href="/lib/Han/dist/han.min.css?v=3.3">
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="学习笔记,操作系统,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="【进程的层次结构】层次结构在 OS 中，允许一个进程创建另一个进程，通常将创建进程的进程称为父进程，将被创建的进程称为子进程，子进程可以继续创建更多孙进程，以此类推，由此便形成了一个进程的层次结构。 在 UNIX 中，进程与其子孙进程共同组成了一个进程组。 而在 Windows 中，所有的进程都具有相同的地位，如果一个进程创建另外的进程时创建进程获得了一个句柄，其作用相当于一个令牌，可以用来控制被">
+<meta name="keywords" content="学习笔记,操作系统">
+<meta property="og:type" content="article">
+<meta property="og:title" content="操作系统——进程控制">
+<meta property="og:url" content="https://alex-mcavoy.github.io/notes/operating-system/1e9cb24f.html">
+<meta property="og:site_name" content="Alex_McAvoy">
+<meta property="og:description" content="【进程的层次结构】层次结构在 OS 中，允许一个进程创建另一个进程，通常将创建进程的进程称为父进程，将被创建的进程称为子进程，子进程可以继续创建更多孙进程，以此类推，由此便形成了一个进程的层次结构。 在 UNIX 中，进程与其子孙进程共同组成了一个进程组。 而在 Windows 中，所有的进程都具有相同的地位，如果一个进程创建另外的进程时创建进程获得了一个句柄，其作用相当于一个令牌，可以用来控制被">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/os/06-1.png">
+<meta property="og:updated_time" content="2021-07-04T00:59:46.300Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="操作系统——进程控制">
+<meta name="twitter:description" content="【进程的层次结构】层次结构在 OS 中，允许一个进程创建另一个进程，通常将创建进程的进程称为父进程，将被创建的进程称为子进程，子进程可以继续创建更多孙进程，以此类推，由此便形成了一个进程的层次结构。 在 UNIX 中，进程与其子孙进程共同组成了一个进程组。 而在 Windows 中，所有的进程都具有相同的地位，如果一个进程创建另外的进程时创建进程获得了一个句柄，其作用相当于一个令牌，可以用来控制被">
+<meta name="twitter:image" content="https://alex-mcavoy.github.io/images/notes/os/06-1.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":true,"scrollpercent":true,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://alex-mcavoy.github.io/notes/operating-system/1e9cb24f.html">
+
+
+
+
+
+  <title>操作系统——进程控制 | Alex_McAvoy</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Alex_McAvoy</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/notes/operating-system/1e9cb24f.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Alex_McAvoy">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/assets/img/head.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Alex_McAvoy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">操作系统——进程控制</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-11-08T21:22:03+08:00">
+                2019-11-08
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/notes/" itemprop="url" rel="index">
+                    <span itemprop="name">学习笔记</span>
+                  </a>
+                </span>
+
+                
+                
+                  ， 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/notes/operating-system/" itemprop="url" rel="index">
+                    <span itemprop="name">操作系统</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  2,080 字
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">
+                  7 分钟
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body han-init-context" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="【进程的层次结构】"><a href="#【进程的层次结构】" class="headerlink" title="【进程的层次结构】"></a>【进程的层次结构】</h1><h2 id="层次结构"><a href="#层次结构" class="headerlink" title="层次结构"></a>层次结构</h2><p>在 OS 中，允许一个进程创建另一个进程，通常将创建进程的进程称为<strong>父进程</strong>，将被创建的进程称为<strong>子进程</strong>，子进程可以继续创建更多<strong>孙进程</strong>，以此类推，由此便形成了一个进程的层次结构。</p>
+<p>在 UNIX 中，进程与其子孙进程共同组成了一个进程组。</p>
+<p>而在 Windows 中，所有的进程都具有相同的地位，如果一个进程创建另外的进程时创建进程获得了一个句柄，其作用相当于一个令牌，可以用来控制被创建的进程，但这个句柄是可传递的，也就是说，获得了句柄的进程拥有控制其他进程的权力，因此，进程之间的关系不是层次关系，而是获得句柄与否、控制与被控制的简单关系。</p>
+<h2 id="进程图"><a href="#进程图" class="headerlink" title="进程图"></a>进程图</h2><p>为了形象地描述一个进程的家族关系，从而引入了<strong>进程图</strong>。</p>
+<p>简单来说，进程图就是用于描述进程间关系的一棵<strong>有向树</strong>，如下图，图中结点代表进程，有向边代表创建关系。</p>
+<p><img src="/images/notes/os/06-1.png" alt="load unsuccessful"></p>
+<h1 id="【进程的创建】"><a href="#【进程的创建】" class="headerlink" title="【进程的创建】"></a>【进程的创建】</h1><h2 id="引起进程创建的事件"><a href="#引起进程创建的事件" class="headerlink" title="引起进程创建的事件"></a>引起进程创建的事件</h2><p>为使程序间能并发运行，应先为它们分别创建进程，导致一个进程去创建另一个进程的典型事件有四类：</p>
+<ul>
+<li><strong>用户登录</strong>：分时系统中，用户在终端登录成功后，系统为该用户创建一个进程，并插入就绪队列中</li>
+<li><strong>作业调度</strong>：当作业调度程序按一定算法调度到某些作业时，会将它们装入内存，并创建进程，然后插入就绪队列中</li>
+<li><strong>提供服务</strong>：当运行中的用户程序提出功能请求时，系统会创建相应的服务进程</li>
+<li><strong>应用请求</strong>：用户进程自己创建新进程，以便新进程以同创建者进程并发运行的方式完成特定任务</li>
+</ul>
+<h2 id="进程的创建过程"><a href="#进程的创建过程" class="headerlink" title="进程的创建过程"></a>进程的创建过程</h2><p>在系统中，每当出现了创建新进程的请求后，OS 便调用进程<strong>创建原语 Creat</strong>，按下述步骤创建一个新进程：</p>
+<ol>
+<li><strong>申请空白 PCB</strong>：申请唯一的数字标识符，并从 PCB 集合中获取一个空白 PCB</li>
+<li><strong>为新进程分配所需资源</strong>：从 OS 或新进程的父进程获得各种物理、逻辑资源</li>
+<li><strong>初始化 PCB</strong>：初始化标识信息、处理机状态信息、处理机控制信息</li>
+<li><strong>将新进程插入就绪队列</strong>：若就绪队列能接纳新进程，则将新进程插入就绪队列</li>
+</ol>
+<h1 id="【进程的终止】"><a href="#【进程的终止】" class="headerlink" title="【进程的终止】"></a>【进程的终止】</h1><h2 id="引起进程终止的事件"><a href="#引起进程终止的事件" class="headerlink" title="引起进程终止的事件"></a>引起进程终止的事件</h2><p>引起进程终止的事件可分为有以下三类：</p>
+<ul>
+<li><strong>正常结束</strong>：进程的任务已经完成，准备退出运行</li>
+<li><strong>异常结束</strong>：进程在运行时发生了某种异常事件，使得程序无法继续运行，常见的有：越界错误、保护错误、非法指令、运行超时、I/O 故障等</li>
+<li><strong>外界干预</strong>：进程应外界请求而终止运行，常见的干预有：父进程终止、父进程请求、OS 干预、操作员干预等</li>
+</ul>
+<h2 id="进程的终止过程"><a href="#进程的终止过程" class="headerlink" title="进程的终止过程"></a>进程的终止过程</h2><p>若系统中发生了要求终止进程的某事件，OS 将调用进程<strong>终止原语 Destroy</strong> ，按下述步骤终止指定的进程：</p>
+<ol>
+<li><strong>读取终止进程的状态</strong>：根据被终止进程的标识符，从 PCB 集合中检索出该进程的 PCB，从而读出该进程的状态<ul>
+<li><strong>执行态</strong>：若被终止进程处于执行态，立即终止该进程，并置调度标志为真，用于指示该进程被终止后应重新进行调度</li>
+<li><strong>有子孙进程</strong>：若被终止进程有子孙进程，应将其所有子孙进程全部终止，防止成为不可控进程</li>
+</ul>
+</li>
+<li><strong>归还全部资源</strong>：将被终止进程所拥有的全部资源归还给父进程或 OS</li>
+<li><strong>移出 PCB</strong>：将终止进程 PCB 从所在队列中移出，等待其他程序搜集信息</li>
+</ol>
+<h1 id="【进程的阻塞与唤醒】"><a href="#【进程的阻塞与唤醒】" class="headerlink" title="【进程的阻塞与唤醒】"></a>【进程的阻塞与唤醒】</h1><h2 id="引起进程阻塞与唤醒的事件"><a href="#引起进程阻塞与唤醒的事件" class="headerlink" title="引起进程阻塞与唤醒的事件"></a>引起进程阻塞与唤醒的事件</h2><p>引起进程阻塞或唤醒的事件有以下四种：</p>
+<ul>
+<li><strong>向系统请求共享资源失败</strong>：进程在向系统请求共享资源时，由于系统已无足够的资源分配，此时进程将转为阻塞状态，当其他进程释放出足够的资源后，请求进程才被唤醒</li>
+<li><strong>等待某种操作的完成</strong>：当进程启动某种操作后，若该进程必须在该操作完成后才能继续执行，则应先将该进程阻塞，等待操作完成后再将其唤醒</li>
+<li><strong>新数据尚未到达</strong>：对于相互合作的进程，若一进程需要另一进程提供的数据后才能对该数据进行处理，则当数据未到达时，该进程只能处于阻塞状态，直到数据到达，才会将其唤醒</li>
+<li><strong>等待新任务的到达</strong>：在某些系统中，往往会设置一些特定的系统进程，每当这种进程完成任务后就将自己阻塞起来，等待新任务的到来后，才被唤醒</li>
+</ul>
+<h2 id="进程的阻塞过程"><a href="#进程的阻塞过程" class="headerlink" title="进程的阻塞过程"></a>进程的阻塞过程</h2><p>正在执行的进程，如果发生了上述某事件，进程便通过调用<strong>阻塞原语 block</strong> 将自己阻塞，可见阻塞是进程自身的一种主动行为，其步骤如下：</p>
+<ol>
+<li><strong>停止执行</strong>：若该进程还处于执行状态，则应立即停止执行</li>
+<li><strong>改变 PCB 状态</strong>：将 PCB 中的现行状态由执行改为阻塞</li>
+<li><strong>插入阻塞队列</strong>：将改变现行状态后的 PCB 插入阻塞队列</li>
+<li><strong>转进程调度</strong>：将处理机分配给另一就绪进程</li>
+<li><strong>进行进程切换</strong>：保留被阻塞进程的处理机状态，按新进程的 PCB 中的处理机状态设置 CPU 环境</li>
+</ol>
+<h2 id="进程的唤醒过程"><a href="#进程的唤醒过程" class="headerlink" title="进程的唤醒过程"></a>进程的唤醒过程</h2><p>当被阻塞进程所期待的事件发生时，则有关进程调用<strong>唤醒原语 wakeup</strong>，将等待该事件的进程唤醒，其执行过程如下：</p>
+<ol>
+<li><strong>移出阻塞队列：</strong>将被阻塞的进程从等待该事件的阻塞队列中移出</li>
+<li><strong>改变 PCB 状态</strong>：将 PCB 中的现行状态由阻塞改为就绪</li>
+<li><strong>插入就绪队列</strong>：将该 PCB 插入就绪队列中</li>
+</ol>
+<p>值得注意的是，block 原语与 wakeup 原语是一对作用相反的原语，在使用它们时，必须<strong>成对使用</strong>，即如果某进程中调用了阻塞原语，则必须在与之相合作、相关的进程中安排一条相应的唤醒原语，以便能唤醒被阻塞进程。否则，阻塞进程将会因不能被唤醒而永久处于阻塞状态。</p>
+<h1 id="【进程的挂起与激活】"><a href="#【进程的挂起与激活】" class="headerlink" title="【进程的挂起与激活】"></a>【进程的挂起与激活】</h1><h2 id="进程的挂起过程"><a href="#进程的挂起过程" class="headerlink" title="进程的挂起过程"></a>进程的挂起过程</h2><p>当系统中出现引起进程挂起的事件时，OS 将利用<strong>挂起原语 suspend</strong> 指定进程挂起，其步骤如下：</p>
+<ol>
+<li><strong>检查被挂起进程状态</strong>：若被挂起的进程处于活动就绪态，就改为静止就绪；若处于活动阻塞态，就改为静止阻塞</li>
+<li><strong>复制 PCB 到指定区域</strong>：为方便用户或父进程检查进程运行情况，将该进程的 PCB 复制到某指定的内存区域</li>
+<li><strong>重新调度</strong>：若被挂起的进程正在执行，则转向调度程序重新调度<br>需要注意的是，进程只能挂起自己或其子孙进程</li>
+</ol>
+<h2 id="进程的激活过程"><a href="#进程的激活过程" class="headerlink" title="进程的激活过程"></a>进程的激活过程</h2><p>当系统中出现引起进程激活的事件时，OS 将利用<strong>激活原语 active</strong> 指定进程激活，其步骤如下：</p>
+<ol>
+<li><strong>调入内存</strong>：若挂起进程处于外存上，首先将其调入内存</li>
+<li><strong>检查被激活进程状态</strong>：若被激活的进程处于静止就绪态，就改为活动就绪；若处于静止阻塞态，就改为活动阻塞</li>
+</ol>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    <!-- 版权说明 -->
+    
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者：</strong>
+    Alex_McAvoy
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://alex-mcavoy.github.io/notes/operating-system/1e9cb24f.html" title="操作系统——进程控制">https://alex-mcavoy.github.io/notes/operating-system/1e9cb24f.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>
+    本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 3.0</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+
+      </div>
+    
+	
+    <!-- 打赏 -->
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>感谢您对我的支持，让我继续努力分析有用地点技术与知识点！</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="/assets/img/wechatpay.jpg" alt="Alex_McAvoy 微信支付">
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="/assets/img/alipay.jpg" alt="Alex_McAvoy 支付宝">
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/notes/" rel="tag"># 学习笔记</a>
+          
+            <a href="/tags/operating-system/" rel="tag"># 操作系统</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/notes/operating-system/c489141.html" rel="next" title="操作系统——进程的描述">
+                <i class="fa fa-chevron-left"></i> 操作系统——进程的描述
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/notes/operating-system/5ee0ee5d.html" rel="prev" title="操作系统——进程同步">
+                操作系统——进程同步 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+	
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/assets/img/head.jpg" alt="Alex_McAvoy">
+            
+              <p class="site-author-name" itemprop="name">Alex_McAvoy</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">322</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">22</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">22</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/Alex-McAvoy" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="https://blog.csdn.net/u011815404" target="_blank" title="CSDN">
+                      
+                        <i class="fa fa-fw fa-copyright"></i>CSDN</a>
+                  </span>
+                
+            </div>
+          
+		  
+          
+          
+            <div class="cc-license motion-element" itemprop="license">
+              <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" class="cc-opacity" target="_blank">
+                <img src="/images/cc-by-nc-sa.svg" alt="Creative Commons">
+              </a>
+            </div>
+          
+		  
+		  <!-- 访客地图 -->
+		  <script type="text/javascript" src="//rf.revolvermaps.com/0/0/5.js?i=50n58yo58ow&amp;m=0&amp;c=ff0000&amp;cr1=ffffff" async="async"></script>
+
+          
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-link"></i>
+                Links
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/sdz20172133" title="神仙队友" target="_blank">神仙队友</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://pxlsdz.gitee.io/" title="神仙队友的另一个博客" target="_blank">神仙队友的另一个博客</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://www.bycore.net/" title="凉了的某饼同学" target="_blank">凉了的某饼同学</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/wentong_Xu" title="小黑贱胖子" target="_blank">小黑贱胖子</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://deng.fun/" title="芙蓉姐姐" target="_blank">芙蓉姐姐</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/sdau_fangshifeng" title="一个头很酷的家伙" target="_blank">一个头很酷的家伙</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://www.yuheng.tech/" title="咸于" target="_blank">咸于</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/lanshan1111" title="肥硕硕" target="_blank">肥硕硕</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/sdauguanweihong" title="管少" target="_blank">管少</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/qq_41661919" title="俊杰" target="_blank">俊杰</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/qq_40859951" title="峰哥" target="_blank">峰哥</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/LSD20164388" title="狗冬" target="_blank">狗冬</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/qq_37748451" title="胖亚亚" target="_blank">胖亚亚</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/qq_37868325" title="妍大佬" target="_blank">妍大佬</a>
+                  </li>
+                
+              </ul>
+            </div>
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【进程的层次结构】"><span class="nav-number">1.</span> <span class="nav-text">【进程的层次结构】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#层次结构"><span class="nav-number">1.1.</span> <span class="nav-text">层次结构</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#进程图"><span class="nav-number">1.2.</span> <span class="nav-text">进程图</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【进程的创建】"><span class="nav-number">2.</span> <span class="nav-text">【进程的创建】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#引起进程创建的事件"><span class="nav-number">2.1.</span> <span class="nav-text">引起进程创建的事件</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#进程的创建过程"><span class="nav-number">2.2.</span> <span class="nav-text">进程的创建过程</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【进程的终止】"><span class="nav-number">3.</span> <span class="nav-text">【进程的终止】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#引起进程终止的事件"><span class="nav-number">3.1.</span> <span class="nav-text">引起进程终止的事件</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#进程的终止过程"><span class="nav-number">3.2.</span> <span class="nav-text">进程的终止过程</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【进程的阻塞与唤醒】"><span class="nav-number">4.</span> <span class="nav-text">【进程的阻塞与唤醒】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#引起进程阻塞与唤醒的事件"><span class="nav-number">4.1.</span> <span class="nav-text">引起进程阻塞与唤醒的事件</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#进程的阻塞过程"><span class="nav-number">4.2.</span> <span class="nav-text">进程的阻塞过程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#进程的唤醒过程"><span class="nav-number">4.3.</span> <span class="nav-text">进程的唤醒过程</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【进程的挂起与激活】"><span class="nav-number">5.</span> <span class="nav-text">【进程的挂起与激活】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#进程的挂起过程"><span class="nav-number">5.1.</span> <span class="nav-text">进程的挂起过程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#进程的激活过程"><span class="nav-number">5.2.</span> <span class="nav-text">进程的激活过程</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+        <div class="back-to-top">
+          <i class="fa fa-arrow-up"></i>
+          
+            <span id="scrollpercent"><span>0</span>%</span>
+          
+        </div>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 &mdash; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Alex_McAvoy</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+<script>
+(function(){
+    var bp = document.createElement('script');
+    var curProtocol = window.location.protocol.split(':')[0];
+    if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';        
+    }
+    else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+    }
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(bp, s);
+})();
+</script>
+
+
+  
+  
+
+  
+  
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdn.bootcss.com/mathjax/2.7.1/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  
+
+
+  
+
+  
+
+  <script type="text/javascript" src="/js/src/cursor-effects.js"></script>
+</body>
+</html>

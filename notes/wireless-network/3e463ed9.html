@@ -1,0 +1,1188 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+<!-- 实现文章加密 -->
+<script>
+    (function(){
+        if(''){
+            if (prompt('请输入密码') !== ''){
+                alert('密码错误！');
+                history.back();
+            }
+        }
+    })();
+</script>
+
+
+
+  
+  
+    
+    
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+  <link href="/lib/pace/pace-theme-corner-indicator.min.css?v=1.0.2" rel="stylesheet">
+
+
+
+
+  
+  
+  <link rel="stylesheet" media="all" href="/lib/Han/dist/han.min.css?v=3.3">
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="学习笔记,无线网络,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="【概述】在网络层中，针对 Ad-Hoc 网络的平面结构和层次结构，开发出了平面寻址的平面路由和分层寻址的分层路由，以满足两种体系结构的路由需要。  【表驱动路由】DSDV 协议从 DV 到 DSDV对于传统的距离矢量路由协议（DV 协议），其基于 Bellman-Ford 算法，利用距离向量来进行路由表的更新，每个结点都维持一张路由表，其中含有：所有可达目的地 Dest、到目的地的下一跳 Next">
+<meta name="keywords" content="学习笔记,无线网络">
+<meta property="og:type" content="article">
+<meta property="og:title" content="无线自组织网络的路由协议">
+<meta property="og:url" content="https://alex-mcavoy.github.io/notes/wireless-network/3e463ed9.html">
+<meta property="og:site_name" content="Alex_McAvoy">
+<meta property="og:description" content="【概述】在网络层中，针对 Ad-Hoc 网络的平面结构和层次结构，开发出了平面寻址的平面路由和分层寻址的分层路由，以满足两种体系结构的路由需要。  【表驱动路由】DSDV 协议从 DV 到 DSDV对于传统的距离矢量路由协议（DV 协议），其基于 Bellman-Ford 算法，利用距离向量来进行路由表的更新，每个结点都维持一张路由表，其中含有：所有可达目的地 Dest、到目的地的下一跳 Next">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/wireless-network/10-1.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/wireless-network/10-2.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/wireless-network/10-3.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/wireless-network/10-4.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/wireless-network/10-5.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/wireless-network/10-6.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/wireless-network/10-7.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/wireless-network/10-8.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/wireless-network/10-9.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/wireless-network/10-10.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/wireless-network/10-11.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/wireless-network/10-12.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/wireless-network/10-13.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/wireless-network/10-14.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/wireless-network/10-15.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/wireless-network/10-16.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/wireless-network/10-17.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/wireless-network/10-18.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/wireless-network/10-19.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/wireless-network/10-20.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/wireless-network/10-21.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/wireless-network/10-22.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/wireless-network/10-23.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/wireless-network/10-24.png">
+<meta property="og:updated_time" content="2021-07-04T01:45:46.029Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="无线自组织网络的路由协议">
+<meta name="twitter:description" content="【概述】在网络层中，针对 Ad-Hoc 网络的平面结构和层次结构，开发出了平面寻址的平面路由和分层寻址的分层路由，以满足两种体系结构的路由需要。  【表驱动路由】DSDV 协议从 DV 到 DSDV对于传统的距离矢量路由协议（DV 协议），其基于 Bellman-Ford 算法，利用距离向量来进行路由表的更新，每个结点都维持一张路由表，其中含有：所有可达目的地 Dest、到目的地的下一跳 Next">
+<meta name="twitter:image" content="https://alex-mcavoy.github.io/images/notes/wireless-network/10-1.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":true,"scrollpercent":true,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://alex-mcavoy.github.io/notes/wireless-network/3e463ed9.html">
+
+
+
+
+
+  <title>无线自组织网络的路由协议 | Alex_McAvoy</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Alex_McAvoy</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/notes/wireless-network/3e463ed9.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Alex_McAvoy">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/assets/img/head.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Alex_McAvoy">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">无线自组织网络的路由协议</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-05-02T22:34:00+08:00">
+                2020-05-02
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/notes/" itemprop="url" rel="index">
+                    <span itemprop="name">学习笔记</span>
+                  </a>
+                </span>
+
+                
+                
+                  ， 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/notes/wireless-network/" itemprop="url" rel="index">
+                    <span itemprop="name">无线网络</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  4,955 字
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">
+                  17 分钟
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body han-init-context" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="【概述】"><a href="#【概述】" class="headerlink" title="【概述】"></a>【概述】</h1><p>在网络层中，针对 Ad-Hoc 网络的平面结构和层次结构，开发出了平面寻址的平面路由和分层寻址的分层路由，以满足两种体系结构的路由需要。</p>
+<p><img width="400" src="/images/notes/wireless-network/10-1.png"></p>
+<h1 id="【表驱动路由】"><a href="#【表驱动路由】" class="headerlink" title="【表驱动路由】"></a>【表驱动路由】</h1><h2 id="DSDV-协议"><a href="#DSDV-协议" class="headerlink" title="DSDV 协议"></a>DSDV 协议</h2><h3 id="从-DV-到-DSDV"><a href="#从-DV-到-DSDV" class="headerlink" title="从 DV 到 DSDV"></a>从 DV 到 DSDV</h3><p>对于传统的距离矢量路由协议（DV 协议），其基于 Bellman-Ford 算法，利用距离向量来进行路由表的更新，每个结点都维持一张路由表，其中含有：<strong>所有可达目的地 Dest、到目的地的下一跳 Next、到目的地的跳计数 Metric</strong>，定期的将路由表发给所有邻居。</p>
+<p>如下图，是一个使用 DV 协议的路由表传播过程</p>
+<p><img width="400" src="/images/notes/wireless-network/10-2.png"></p>
+<p>但 DV 协议存在无法发现路由回路从而导致无穷计算的问题，并不适用于  Ad-Hoc 网络，因此，在距离矢量协议（DV 协议）的基础上出现了其改进算法目的节点序列距离矢量协议（DSDV 协议）。</p>
+<p>DSDV 协议保持了 DV 协议的简单性，通过对新出现的路由表带有目的地序列标号，能够确保无路由回路，同时，当路由表发生重大变化时，立即启动路由通告（Route Advertisement），以保证对拓扑变化做出快速反应。</p>
+<p>DSDV 协议非常简单，几乎和 DV 协议一致，只是通过目的地赋予序号值来防止出现路由回环，其不存在路由发现带来的延迟，但使用该协议会使得没有节点睡眠，同时多数路由信息几乎从不使用，开销过大。</p>
+<h3 id="DSDV-路由表"><a href="#DSDV-路由表" class="headerlink" title="DSDV 路由表"></a>DSDV 路由表</h3><p>DSDV 的路由表在 DV 路由表<strong>所有可达目的地 Dest、到目的地的下一跳 Next、到目的地的跳计数 Metric </strong>的基础上加了三项：</p>
+<ul>
+<li>序列号 Seq.no：Sequence Number，由目的端确定，用来保证不出现路由回环</li>
+<li>创建时间 Install Time：记录该路由表的创建时间，以用来删除表中过时路由信息</li>
+<li>稳定数据 Stable Data：指向其他表的指针，包含有关路由如何稳定的信息，用于缓解路由波动</li>
+</ul>
+<h3 id="路由通告"><a href="#路由通告" class="headerlink" title="路由通告"></a>路由通告</h3><p>路由通告（Route Advertisement），是当路由表发生重大变化时执行的操作，这使得 DSDV 协议能够快速应对网络拓扑变化。</p>
+<p>该操作会向每个邻居通告自己的路由信息，包括：</p>
+<ul>
+<li>目的地址 Dest</li>
+<li>到目的地的跳数 Metric</li>
+<li>目的地序列号 Seq.no</li>
+</ul>
+<p>在告知路由信息时，设置序列号 Seq.no 遵循如下规则：</p>
+<ul>
+<li>每次通告将自己的序号递增 2，且要求只用偶数值</li>
+<li>若一个节点不再可达（timeout），则将该节点的序号递增 1（奇数值），并置跳数 metric=∞</li>
+</ul>
+<p><img width="400" src="/images/notes/wireless-network/10-3.png"></p>
+<h3 id="路由选择"><a href="#路由选择" class="headerlink" title="路由选择"></a>路由选择</h3><p>在一个节点收到路由表时，会将收到的路由更新信息与自己的路由表进行比较。</p>
+<p>为确保使用的总是来自目的地的最新路由信息，会选择目的地序号大的路由，如果目的地序号相同，则选择具有较好 metric 值的路由。</p>
+<h3 id="拓扑变化"><a href="#拓扑变化" class="headerlink" title="拓扑变化"></a>拓扑变化</h3><p>在网络拓扑结构发生变化时，路由会做出响应的响应：</p>
+<ul>
+<li>立即通告：有关新路由、链路中断、metric 变化的信息立刻传播给邻居</li>
+<li>更新：<ul>
+<li>完全更新：发送自己路由表的全部路由信息</li>
+<li>增量更新：仅发送路由表中有变化的表项，使用一个分组即可完成更新</li>
+</ul>
+</li>
+</ul>
+<p>如下两图，是增加一个新结点 D 后的路由变化</p>
+<p><img width="400" src="/images/notes/wireless-network/10-4.png"><br><img width="400" src="/images/notes/wireless-network/10-5.png"></p>
+<p>当网络拓扑变化时，得益于 DSDV 协议的立即通告，其能够很好的解决<strong>回环和无穷计算问题</strong>。</p>
+<p><img width="400" src="/images/notes/wireless-network/10-6.png"><br><img width="400" src="/images/notes/wireless-network/10-7.png"></p>
+<h3 id="路由波动"><a href="#路由波动" class="headerlink" title="路由波动"></a>路由波动</h3><p>当任一节点更新路由，会导致不必要的路由通告，即路由表的波动，这是由序列号带来的。</p>
+<p>例如：A 收到来自 P 路由的更新消息 （D，15，D-102），也收到来自 Q 路由的更新信息（D，14，D-102），这就造成了不必要的路由通告（D，15，D-102）</p>
+<p><img width="120" src="/images/notes/wireless-network/10-8.png"></p>
+<p>为减缓路由波动，常采用的方法是记录不同表中<strong>给定序号值的路由过时数据</strong>，以及<strong>最近 Setting Time</strong> 和<strong>平均 Setting Time</strong>，其中，<strong>Setting Time=第一条路由和最好路由的到达时间间隔</strong></p>
+<p>这样，当在新序号第一条路由到达时更新路由表，但延迟广播该条路由，<strong>推迟的时间=2*（avg.Setting Time）</strong></p>
+<h2 id="OLSR-协议"><a href="#OLSR-协议" class="headerlink" title="OLSR 协议"></a>OLSR 协议</h2><p>优化的链路状态路由协议（OLSR，Optimized Link State Routing Protocol）是先应式的链路状态路由协议，是基于<strong>多点中继</strong>概念的对常规表驱动路由协议的改进，其继承了链路状态协议的稳定性，同时最小化了报文转发前的等待时间。</p>
+<p>OLSR 协议的核心是<strong>多点转播（MPRs）</strong>，即在广播洪泛的过程中挑选的转发广播的节点。</p>
+<p>在链路状态更新消息过程中，只包含某个节点的邻居节点的分组会变小，广播产生的也会通信量减少，只有 MPR 结点才会重传分组，同时，MPR 结点只会报告字节与 MPR 选择器间的链路。</p>
+<h2 id="TBRPF-协议"><a href="#TBRPF-协议" class="headerlink" title="TBRPF 协议"></a>TBRPF 协议</h2><p>基于拓扑广播的逆向路径转发（TBRPF，Topology Broadcast based on Reverse-Path Forwarding）本质上是一种 LS 协议。</p>
+<p>该协议由邻居发现模块、路由模块组成，与传统链路状态协议相比，该协议的拓扑更新消息更小，路由开销更少，更适合拓扑迅速变化的无线网络。</p>
+<h1 id="【按需驱动路由】"><a href="#【按需驱动路由】" class="headerlink" title="【按需驱动路由】"></a>【按需驱动路由】</h1><h2 id="DSR-协议"><a href="#DSR-协议" class="headerlink" title="DSR 协议"></a>DSR 协议</h2><h3 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h3><p>动态源路由协议（DSR，Dynamic Source Routing protocol）是<strong>基于源路由概念的按需自适应路由协议</strong>，其允许节点动态地发现到任何目的地的源路由，中间节点不必存储转发分组所需的路由信息，而是采用 Cache 来存放路由信息，同时允许网络完全自我组织和自我配置，但存在陈旧路由。</p>
+<p>DSR 协议简单而有效，网络开销较小，是 Ad-Hoc 网络的首选路由协议。</p>
+<p>DSR 协议有如下假设：</p>
+<ul>
+<li>所有节点都愿意参与协议工作</li>
+<li>当节点收到损坏分组时，能检测出来并丢弃</li>
+<li>节点的移动速度相对于分组的传输延迟，以及底层网络硬件的无限传输范围来说，相对温和</li>
+<li>节点的无线网络接口硬件可以混杂模式（Promiscuous）工作，即接口将收到的每个帧都上交给驱动器软件，不会针对目的地址进行过滤</li>
+<li>任何一对节点之间的无线通信能力可不同</li>
+<li>每个节点只能宣称一个 IP 地址</li>
+</ul>
+<h3 id="DSR-协议描述"><a href="#DSR-协议描述" class="headerlink" title="DSR 协议描述"></a>DSR 协议描述</h3><p>DSR 协议由两个相互协同的机制组成：</p>
+<ul>
+<li>Route discovery：路由发现，用于发现路由<ul>
+<li>由需要发送数据给节点 D 的节点 S 使用</li>
+<li>该过程只在 S 需要发送数据，并且不知道到 D 的路由时才启动</li>
+</ul>
+</li>
+<li>Route maintenance：路由维护，用于维护路由<ul>
+<li>节点 S 在给 D 发送数据时，要能检测出由于网络拓扑动态变化导致源路由中断的情况</li>
+<li>当前的源路由不能用时，节点 S 会切换到另一条已知的路由，或者重新发起 Route discovery 来寻找新路由</li>
+</ul>
+</li>
+</ul>
+<p>DSR 协议的路由发现和路由维护都是按需进行的，既不需要周期性地发送路由广播分组，也不需要感测链路状态，更不需要邻居检测，同时其不依赖于任何底层协议，仅需要维护路径上结点间的路由，能够完全地消除路由环路，并且能够同时提供多条路由。</p>
+<p>但相较于周期性通告来说，DSR 协议的每个分组都要携带完整路由的信息，这不仅增大了开销，还降低了网络带宽利用率，同时，会引起过时路由问题。</p>
+<h3 id="DSR-多路径"><a href="#DSR-多路径" class="headerlink" title="DSR 多路径"></a>DSR 多路径</h3><p>在 DSR 协议中，如果正在使用的一条路径中断，节点可立即切换到另一条缓存的路由，这样多条路由的缓存可避免每次路由中断后执行路由发现，减少了开销。</p>
+<p>多路径的获得途径有以下三种：</p>
+<ul>
+<li>作为路由发现的响应</li>
+<li>其他路由控制包和数据包中的路由信息</li>
+<li>为任何目的地缓存多条路由</li>
+</ul>
+<h3 id="路由发现"><a href="#路由发现" class="headerlink" title="路由发现"></a>路由发现</h3><h4 id="过程"><a href="#过程" class="headerlink" title="过程"></a>过程</h4><p>当源节点将路由请求消息（Route Request）作为局部广播分组发送时，这个分组包含两个参数：</p>
+<ul>
+<li>Request id：请求 id</li>
+<li>List：初始为空的链表，用于记录路由发现包经过的结点</li>
+</ul>
+<p>如下图，A 是路由发现的发起者，E 是路由发现的目标</p>
+<p><img width="500" src="/images/notes/wireless-network/10-9.png"></p>
+<p>如果目标结点 E 收到请求包，那么会给请求源 A 回答一个路由回复消息（Route Reply），其值是 List 的拷贝，当路由请求源收到 Route Reply 后，会在本地的路由 Cache 中缓存该路由信息。</p>
+<p><img width="500" src="/images/notes/wireless-network/10-10.png"></p>
+<p>Route Request 记录了一条从路由发现发起端到本节点的路由，Route Reply 给出了一条从目标端到发起端的反向路由，数据分组给出记录了一条从数据报源端到目标端的正向路由。</p>
+<h4 id="无穷迭代路由发现"><a href="#无穷迭代路由发现" class="headerlink" title="无穷迭代路由发现"></a>无穷迭代路由发现</h4><p>如果网络存在单向链路，且目标端在路由 Cache 中未找到去往发起端的路由信息，那么会发起新一轮路由发现过程，来寻找一条路径，这就造成了<strong>无穷迭代路由发现</strong>。</p>
+<p>为避免上述问题，DSR 规定目标端可使用 Route Request 中记录的路由，作为返回的 Route Reply 的源路由，这样首选逆向路由，不仅可以避免无穷迭代路由的发现过程，还可以避免第二次路由发现过程带来的开销。</p>
+<h4 id="路由缓存"><a href="#路由缓存" class="headerlink" title="路由缓存"></a>路由缓存</h4><p>如果两个节点间的链路是双向的，那么在缓存侦听时获得的路由信息会被缓存。</p>
+<p>如下图，假设 C 与 X 间的链路是双向的，那么在从节点 V 到节点 Z 的路由发现过程中，C 会缓存如下路由</p>
+<p><img width="500" src="/images/notes/wireless-network/10-11.png"></p>
+<p>收到路由请求包的中间结点可以使用自己的路由 Cache 缓存的到目标节点的路由信息应答路由请求，即：<strong>Route Reply中的路由记录=路由请求中的 List+缓存的路由</strong>，需要注意的是，在返回 Route Reply 前，要检查是否存在路由环路，若存在则需要丢弃。</p>
+<p><img width="200" src="/images/notes/wireless-network/10-12.png"></p>
+<h4 id="应答风暴"><a href="#应答风暴" class="headerlink" title="应答风暴"></a>应答风暴</h4><p>应答风暴（Route Reply 风暴）是指：当一个节点广播针对某目标端的路由请求时，若其邻居的 Cache 中都有该目标端的路由，每个邻居都试图以自己的缓存路由响应。</p>
+<p><img width="200" src="/images/notes/wireless-network/10-13.png"></p>
+<p>应答风暴会加剧局部网络冲突，且浪费网络带宽，为预防应答风暴，可采用以下三种方法：</p>
+<ul>
+<li>节点将网络接口置于混杂接收方式（promiscuous）</li>
+<li>延迟发送 ROUTE REPLY</li>
+<li>同时侦听路由请求端是否在用更短的路径发送</li>
+</ul>
+<h3 id="路由维护"><a href="#路由维护" class="headerlink" title="路由维护"></a>路由维护</h3><h4 id="过程-1"><a href="#过程-1" class="headerlink" title="过程"></a>过程</h4><p>路由维护过程会确保每个节点能够使用源路由发送或转发的数据分组被路由的下一跳接收，当没有收到下一跳的确认时，会不断地重发，直至最大重试次数。</p>
+<p>如果数据分组被重发了最大次数，但仍未收到下一跳的确认，那么节点要向源端路由发送路由错误消息（Route Error），并指明中断的链路。</p>
+<p>同时，分组的源端会将该路由从路由缓存中删除。</p>
+<p>之后，若源端路由缓存中存在另一条到目标的路由，那么会重发此分组，否则，重新开始路由发现过程。</p>
+<p><img width="500" src="/images/notes/wireless-network/10-14.png"></p>
+<p>在新一轮的路由发现过程中，新的 Route Request 会捎带 Route Error 的内容，以便通告所有邻居特定链路中断情况，由此保证之后收到的 Route Reply 不是原来的过时路由。</p>
+<p><img width="500" src="/images/notes/wireless-network/10-15.png"></p>
+<h4 id="营救分组"><a href="#营救分组" class="headerlink" title="营救分组"></a>营救分组</h4><p>如果节点在自己的缓存路由中发现有到目标的路由，那么在报告 Route Error 后会努力<strong>营救分组（Slavaging）</strong>。</p>
+<p>营救分组有两种方式：</p>
+<ul>
+<li>将分组的源路由替换成缓存的路径</li>
+<li>保留分组源路由的前缀，用缓存的路由替换分组源路由的后缀</li>
+</ul>
+<p><img width="500" src="/images/notes/wireless-network/10-16.png"></p>
+<h4 id="路由最短自动化"><a href="#路由最短自动化" class="headerlink" title="路由最短自动化"></a>路由最短自动化</h4><p>数据分组使用的源路由在一个或多个中间节点不需要时，节点会给数据分组的源端发回一个免费的 ROUTE REPLY 消息，从而能够自动实行路由最短化。</p>
+<p><img width="500" src="/images/notes/wireless-network/10-17.png"></p>
+<h4 id="缓存否定消息"><a href="#缓存否定消息" class="headerlink" title="缓存否定消息"></a>缓存否定消息</h4><p>节点收到 ROUTE ERROR 后，其实并不是简单地删除该路由，而是会将特定链路中断信息缓存一段时间，这样随后收到的所有包含该中断链路的路由都很容易判断为不可用，但缓存的链路中断信息必须超时删除，以便在该链路恢复工作时可用。</p>
+<p><img width="500" src="/images/notes/wireless-network/10-18.png"></p>
+<h2 id="AODV-协议"><a href="#AODV-协议" class="headerlink" title="AODV 协议"></a>AODV 协议</h2><p>Ad-Hoc 按需距离矢量路由协议（AODV，Ad-Hoc On demand Distance Vector routing）是 DSDV 协议和 DSR 协议的综合。</p>
+<p>其借用了 DSR 协议中路由发现和路由维护的基础，采用 DSDV 协议逐跳路由（hop-by-hop）、顺序编号和路由维护阶段的周期更新机制。</p>
+<p>同时，其使用了分布式的、基于路由表的路由方式和三个主要消息：路由请求(RREQ)、路由应答(RREP)、路由出错(RRER)</p>
+<h1 id="【分层路由】"><a href="#【分层路由】" class="headerlink" title="【分层路由】"></a>【分层路由】</h1><h2 id="概述-1"><a href="#概述-1" class="headerlink" title="概述"></a>概述</h2><p>在 Ad-Hoc 的层次结构中，一些节点组成一个簇（Cluster）或者分区（Zone），并对这些内外节点指定不同的功能，同时，这些簇或者分区可组成较大的超簇（Super-Cluster）或者超分区（Super-Zone）。</p>
+<p>在簇内，所有的节点都与簇头（Cluster Head）直接通信，且簇内节点间的通信一般是两跳；而分区的大小没有限制，分区内节点的通信可多跳。</p>
+<p>在分层路由协议的设计上，遵循以下原则：</p>
+<ul>
+<li>减少参与路由计算的节点数，以降低交换路由信息的通信开销，同时要缩短路由表的长度和维护开销</li>
+<li>通过分区策略来产生较为稳定的子网，以减少拓扑结构变化对路由协议带来的影响</li>
+</ul>
+<h2 id="ZRP-协议"><a href="#ZRP-协议" class="headerlink" title="ZRP 协议"></a>ZRP 协议</h2><h3 id="概述-2"><a href="#概述-2" class="headerlink" title="概述"></a>概述</h3><p>分区路由协议（ZRP，Zone Routing Protocol），是目前最常用的分层路由协议。</p>
+<p>在 ZRP 协议中，整个网络被分成若干个以节点为中心、一定跳数为半径的分区，分区内的节点数与设定的域半径有关。</p>
+<p>域半径和路由域的定义如下：</p>
+<ul>
+<li>域半径：Zone Radius，指定每个节点维护的域，以跳计数</li>
+<li>路由域：Routing Zone，所有包含在域半径内的节点</li>
+<li>边界节点：Border，最小距离正好等于域半径的节点</li>
+</ul>
+<p><img width="500" src="/images/notes/wireless-network/10-19.png"></p>
+<p>ZRP 协议只允许目的域内的节点应答，延长了源节点获得路由的时间，其不仅需要周期性地广播分组，还需要消耗一定的电源能量和网络带宽，此外，路由域半径的设置将直接影响路由的效率，而每个节点可动态自动配置自己的优化域半径。</p>
+<p>由于 ZRP 协议混合的独立域路由框架，使得其支持节点非统一的独立配置，其能够较好地适应网络的时空特性，同时，自适应的架构重构能力使得在网络特性的变化方面更加鲁棒，令协议具有很好的扩展性。</p>
+<h3 id="域路由架构"><a href="#域路由架构" class="headerlink" title="域路由架构"></a>域路由架构</h3><p>ZRP 协议混合使用了主动路由策略和按需源路由策略。</p>
+<p>对于域内的节点通信，使用域内路由协议；对于跨域节点通信，使用域间路由协议；对于边界结点通信，使用边界传播协议。</p>
+<p><strong>区内路由协议（IARP, IntrAzone Routing Protocol）</strong>采用传统的主动路由法，其支持距离向量和链路状态两种路由策略，节点之间通过周期性地交互路由表获得到 Zone 内各节点的最新路由。</p>
+<p><strong>区间路由协议（IERP, IntErzone Routing Protocol）</strong>采用按需路由协议，负责寻找区外节点的路由。</p>
+<p><strong>边界传播协议（BRP, Bordercast Resolution Protocol）</strong>使得路由查询分组只在边界节点之间广播。</p>
+<p>对于域内路由的维护，会周期性地交换路由信息；对于域间路由的维护，当链路断开时，节点可以通知源节点，也可以进行局部查找路由，查找方法与域间路由协议中的路由查找相同，只是查找的范围较小。</p>
+<p>需要注意的是，对于 IERP 协议，其会利用<strong>边界广播机制</strong>来确定节点中继：</p>
+<ol>
+<li>源节点 S 构造字节的边界广播树</li>
+<li>S 根据未覆盖的外围节点选择再广播节点</li>
+<li>S 通过转发节点发送查询包给再广播节点</li>
+<li>再广播节点收到查询包后，自己就变成边界广播节点</li>
+<li>重复上述过程</li>
+</ol>
+<p><img width="200" src="/images/notes/wireless-network/10-20.png"></p>
+<h3 id="IARP-协议"><a href="#IARP-协议" class="headerlink" title="IARP 协议"></a>IARP 协议</h3><p>IARP 协议用于域内节点通信，其采用主动策略维护本地路由信息。</p>
+<p>构造路由域的前提是了解自己的邻居，有两种方法：</p>
+<ul>
+<li>通过 MAC 协议</li>
+<li>通过邻居发现协议（NDP 协议）</li>
+</ul>
+<p>每个节点给域内一些节点发送<strong>区域构建数据包（Zone Building Packets）</strong>，使得节点了解自己的发送域。</p>
+<p>同时，每个节点将路由更新包的 TTL 设置为域内最远节点的距离。</p>
+<h3 id="IERP-协议"><a href="#IERP-协议" class="headerlink" title="IERP 协议"></a>IERP 协议</h3><p>IERP 协议用于域间节点通信，域间路由发现基于 BRP 协议，按需发现全局路由。</p>
+<p>当本地没有数据报的目的地路由时，会进行路由发现过程。</p>
+<p>首先数据报源产生一个路由查询包，利用边界广播算法来确定该查询包的一组节点中继。</p>
+<p>对于收到查询包的节点，会检查目标节点是否在自己的路由域中，或者检查本地路由 Cache 中是否存有目标路由信息。</p>
+<p>若有，则会返回一个路由响应包给源端，若没有，则会边界广播查询包。</p>
+<h3 id="BRP-协议"><a href="#BRP-协议" class="headerlink" title="BRP 协议"></a>BRP 协议</h3><p>BRP 协议使用 IARP 提供的拓扑信息，组播路由查询包到外围节点，广播接收者（Bordercast）在边界广播查询到自己的外围节点，直至发现一条到目标的路由。</p>
+<p><img width="200" src="/images/notes/wireless-network/10-21.png"></p>
+<h3 id="实例"><a href="#实例" class="headerlink" title="实例"></a>实例</h3><p>假设域半径为 2，源节点为 S，目标结点为 M，那么 S 的域中结点为：$Z(S)=\{A,B,C,D,E,F,G,H\}$</p>
+<p><img width="300" src="/images/notes/wireless-network/10-22.png"></p>
+<p>如果目的节点不属于 $Z(S)$，则源节点 S 发路由请求给本域的边界节点 $\{H,G,B,C,E\}$，然后这些节点在各自的路由域中查找是否有到目的地的路由。</p>
+<p><img width="300" src="/images/notes/wireless-network/10-23.png"></p>
+<p>如果目标节点在某个边界节点的区中，则该边界节点给源节点 S 发送路由应答消息，然后 S 在可能的多个路由应答消息中选择一条最短路由。</p>
+<p><img width="300" src="/images/notes/wireless-network/10-24.png"></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    <!-- 版权说明 -->
+    
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者：</strong>
+    Alex_McAvoy
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://alex-mcavoy.github.io/notes/wireless-network/3e463ed9.html" title="无线自组织网络的路由协议">https://alex-mcavoy.github.io/notes/wireless-network/3e463ed9.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>
+    本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 3.0</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+
+      </div>
+    
+	
+    <!-- 打赏 -->
+    
+      <div>
+        <div style="padding: 10px 0; margin: 20px auto; width: 90%; text-align: center;">
+  <div>感谢您对我的支持，让我继续努力分析有用地点技术与知识点！</div>
+  <button id="rewardButton" disable="enable" onclick="var qr = document.getElementById('QR'); if (qr.style.display === 'none') {qr.style.display='block';} else {qr.style.display='none'}">
+    <span>打赏</span>
+  </button>
+  <div id="QR" style="display: none;">
+
+    
+      <div id="wechat" style="display: inline-block">
+        <img id="wechat_qr" src="/assets/img/wechatpay.jpg" alt="Alex_McAvoy 微信支付">
+        <p>微信支付</p>
+      </div>
+    
+
+    
+      <div id="alipay" style="display: inline-block">
+        <img id="alipay_qr" src="/assets/img/alipay.jpg" alt="Alex_McAvoy 支付宝">
+        <p>支付宝</p>
+      </div>
+    
+
+    
+
+  </div>
+</div>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/notes/" rel="tag"># 学习笔记</a>
+          
+            <a href="/tags/wireless-network/" rel="tag"># 无线网络</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/matlab/8dc8eb69.html" rel="next" title="Matlab——IO操作">
+                <i class="fa fa-chevron-left"></i> Matlab——IO操作
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/matlab/66bf937f.html" rel="prev" title="Matlab——插值法">
+                Matlab——插值法 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+	
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/assets/img/head.jpg" alt="Alex_McAvoy">
+            
+              <p class="site-author-name" itemprop="name">Alex_McAvoy</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">322</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">22</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">22</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/Alex-McAvoy" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="https://blog.csdn.net/u011815404" target="_blank" title="CSDN">
+                      
+                        <i class="fa fa-fw fa-copyright"></i>CSDN</a>
+                  </span>
+                
+            </div>
+          
+		  
+          
+          
+            <div class="cc-license motion-element" itemprop="license">
+              <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" class="cc-opacity" target="_blank">
+                <img src="/images/cc-by-nc-sa.svg" alt="Creative Commons">
+              </a>
+            </div>
+          
+		  
+		  <!-- 访客地图 -->
+		  <script type="text/javascript" src="//rf.revolvermaps.com/0/0/5.js?i=50n58yo58ow&amp;m=0&amp;c=ff0000&amp;cr1=ffffff" async="async"></script>
+
+          
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-inline">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-link"></i>
+                Links
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/sdz20172133" title="神仙队友" target="_blank">神仙队友</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://pxlsdz.gitee.io/" title="神仙队友的另一个博客" target="_blank">神仙队友的另一个博客</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://www.bycore.net/" title="凉了的某饼同学" target="_blank">凉了的某饼同学</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/wentong_Xu" title="小黑贱胖子" target="_blank">小黑贱胖子</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://deng.fun/" title="芙蓉姐姐" target="_blank">芙蓉姐姐</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/sdau_fangshifeng" title="一个头很酷的家伙" target="_blank">一个头很酷的家伙</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://www.yuheng.tech/" title="咸于" target="_blank">咸于</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/lanshan1111" title="肥硕硕" target="_blank">肥硕硕</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/sdauguanweihong" title="管少" target="_blank">管少</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/qq_41661919" title="俊杰" target="_blank">俊杰</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/qq_40859951" title="峰哥" target="_blank">峰哥</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/LSD20164388" title="狗冬" target="_blank">狗冬</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/qq_37748451" title="胖亚亚" target="_blank">胖亚亚</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://blog.csdn.net/qq_37868325" title="妍大佬" target="_blank">妍大佬</a>
+                  </li>
+                
+              </ul>
+            </div>
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【概述】"><span class="nav-number">1.</span> <span class="nav-text">【概述】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【表驱动路由】"><span class="nav-number">2.</span> <span class="nav-text">【表驱动路由】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#DSDV-协议"><span class="nav-number">2.1.</span> <span class="nav-text">DSDV 协议</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#从-DV-到-DSDV"><span class="nav-number">2.1.1.</span> <span class="nav-text">从 DV 到 DSDV</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#DSDV-路由表"><span class="nav-number">2.1.2.</span> <span class="nav-text">DSDV 路由表</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#路由通告"><span class="nav-number">2.1.3.</span> <span class="nav-text">路由通告</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#路由选择"><span class="nav-number">2.1.4.</span> <span class="nav-text">路由选择</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#拓扑变化"><span class="nav-number">2.1.5.</span> <span class="nav-text">拓扑变化</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#路由波动"><span class="nav-number">2.1.6.</span> <span class="nav-text">路由波动</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#OLSR-协议"><span class="nav-number">2.2.</span> <span class="nav-text">OLSR 协议</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#TBRPF-协议"><span class="nav-number">2.3.</span> <span class="nav-text">TBRPF 协议</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【按需驱动路由】"><span class="nav-number">3.</span> <span class="nav-text">【按需驱动路由】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#DSR-协议"><span class="nav-number">3.1.</span> <span class="nav-text">DSR 协议</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#概述"><span class="nav-number">3.1.1.</span> <span class="nav-text">概述</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#DSR-协议描述"><span class="nav-number">3.1.2.</span> <span class="nav-text">DSR 协议描述</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#DSR-多路径"><span class="nav-number">3.1.3.</span> <span class="nav-text">DSR 多路径</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#路由发现"><span class="nav-number">3.1.4.</span> <span class="nav-text">路由发现</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#过程"><span class="nav-number">3.1.4.1.</span> <span class="nav-text">过程</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#无穷迭代路由发现"><span class="nav-number">3.1.4.2.</span> <span class="nav-text">无穷迭代路由发现</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#路由缓存"><span class="nav-number">3.1.4.3.</span> <span class="nav-text">路由缓存</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#应答风暴"><span class="nav-number">3.1.4.4.</span> <span class="nav-text">应答风暴</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#路由维护"><span class="nav-number">3.1.5.</span> <span class="nav-text">路由维护</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#过程-1"><span class="nav-number">3.1.5.1.</span> <span class="nav-text">过程</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#营救分组"><span class="nav-number">3.1.5.2.</span> <span class="nav-text">营救分组</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#路由最短自动化"><span class="nav-number">3.1.5.3.</span> <span class="nav-text">路由最短自动化</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#缓存否定消息"><span class="nav-number">3.1.5.4.</span> <span class="nav-text">缓存否定消息</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#AODV-协议"><span class="nav-number">3.2.</span> <span class="nav-text">AODV 协议</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【分层路由】"><span class="nav-number">4.</span> <span class="nav-text">【分层路由】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#概述-1"><span class="nav-number">4.1.</span> <span class="nav-text">概述</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ZRP-协议"><span class="nav-number">4.2.</span> <span class="nav-text">ZRP 协议</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#概述-2"><span class="nav-number">4.2.1.</span> <span class="nav-text">概述</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#域路由架构"><span class="nav-number">4.2.2.</span> <span class="nav-text">域路由架构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#IARP-协议"><span class="nav-number">4.2.3.</span> <span class="nav-text">IARP 协议</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#IERP-协议"><span class="nav-number">4.2.4.</span> <span class="nav-text">IERP 协议</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#BRP-协议"><span class="nav-number">4.2.5.</span> <span class="nav-text">BRP 协议</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#实例"><span class="nav-number">4.2.6.</span> <span class="nav-text">实例</span></a></li></ol></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+        <div class="back-to-top">
+          <i class="fa fa-arrow-up"></i>
+          
+            <span id="scrollpercent"><span>0</span>%</span>
+          
+        </div>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 &mdash; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Alex_McAvoy</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+<script>
+(function(){
+    var bp = document.createElement('script');
+    var curProtocol = window.location.protocol.split(':')[0];
+    if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';        
+    }
+    else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+    }
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(bp, s);
+})();
+</script>
+
+
+  
+  
+
+  
+  
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdn.bootcss.com/mathjax/2.7.1/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  
+
+
+  
+
+  
+
+  <script type="text/javascript" src="/js/src/cursor-effects.js"></script>
+</body>
+</html>
