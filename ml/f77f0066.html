@@ -112,7 +112,7 @@
 <meta property="og:locale" content="zh-Hans">
 <meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/35-1.png">
 <meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/35-2.png">
-<meta property="og:updated_time" content="2021-06-24T06:28:07.366Z">
+<meta property="og:updated_time" content="2021-07-07T10:57:49.644Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="朴素贝叶斯">
 <meta name="twitter:description" content="【概述】贝叶斯分类模型是基于贝叶斯定理与特征条件独立假设的分类模型，朴素贝叶斯（naive Bayes）是贝叶斯分类模型中最简单、最常见的一种分类方法，该方法从概率论的角度来进行分类预测，实现简单，预测效率高 贝叶斯定理、贝叶斯分类模型、朴素贝叶斯三者关系如下：  之所以叫做朴素贝叶斯，一方面是其基于贝叶斯定理，另一方面，朴素是指其基于特征独立性假设，各特征不会相互影响，大大减少了计算概率的难度">
@@ -359,7 +359,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  2,996 字
+                  3,101 字
                 </span>
               
 
@@ -428,11 +428,11 @@ P(A)=\sum_{i=1}^nP(A|B_i)P(B_i)</script><p>对于给定的输入 $x$，通过学
 \begin{align}
 P(Y=c_k|X=\vec{x}) &= \frac{P(X=\vec{x}|Y=c_k)P(Y=c_k)}{P(X=\vec{x})} \\
 &=\frac{P(X=\vec{x}|Y=c_k)P(Y=c_k)}{\sum\limits_{k'=1}^KP(X=\vec{x}|Y=c_{k'})P(Y=c_{k'})}\\
-&= \frac{P(Y=c_k)\prod\limits_{j=1}^nP(X^{(j)}=x^{(j)}|Y=c_k)}{\sum\limits_{k'=1}^KP(Y=c_{k'})\prod\limits_{j=1}^nP(X^{(j)})=x^{(j)}|Y=c_{k'})}
+&= \frac{P(Y=c_k)\prod\limits_{j=1}^nP(X^{(j)}=x^{(j)}|Y=c_k)}{\sum\limits_{k'=1}^KP(Y=c_{k'})\prod\limits_{j=1}^nP(X^{(j)}=x^{(j)}|Y=c_{k'})}
 
 \end{align}</script><p>于是，朴素贝叶斯分类器可表示为：</p>
 <script type="math/tex; mode=display">
-y=f(x)=\arg\max_{c_k}\frac{P(Y=c_k)\prod\limits_{j=1}^nP(X^{(j)}=x^{(j)}|Y=c_k)}{\sum\limits_{k'=1}^KP(Y=c_{k'})\prod\limits_{j=1}^nP(X^{(j)})=x^{(j)}|Y=c_{k'})}</script><p>可以注意到，上式中，分母对所有的 $c_k$ 都是相同的，将分母同时忽略，有：</p>
+y=f(x)=\arg\max_{c_k}\frac{P(Y=c_k)\prod\limits_{j=1}^nP(X^{(j)}=x^{(j)}|Y=c_k)}{\sum\limits_{k'=1}^KP(Y=c_{k'})\prod\limits_{j=1}^nP(X^{(j)}=x^{(j)}|Y=c_{k'})}</script><p>可以注意到，上式中，分母对所有的 $c_k$ 都是相同的，将分母同时忽略，有：</p>
 <script type="math/tex; mode=display">
 y=\arg\max_{c_k} P(Y=c_k)\prod\limits_{j=1}^nP(X^{(j)}=x^{(j)}|Y=c_k)</script><p>此时，模型学习意味着估计 $P(Y=c_k)$ 与 $P(X^{(j)}=x^{(j)}|Y=c_k)$ 即可</p>
 <h2 id="后验概率最大化与期望风险最小化"><a href="#后验概率最大化与期望风险最小化" class="headerlink" title="后验概率最大化与期望风险最小化"></a>后验概率最大化与期望风险最小化</h2><p>对于分类决策函数 $f(X)$，假设使用 0-1 损失函数：</p>
@@ -456,16 +456,34 @@ f(x) &= \arg \min_{y\in\mathcal{Y}}\sum_{k=1}^K L(c_k,y)P(c_k|X=x) \\
 <h1 id="【朴素贝叶斯参数估计】"><a href="#【朴素贝叶斯参数估计】" class="headerlink" title="【朴素贝叶斯参数估计】"></a>【朴素贝叶斯参数估计】</h1><h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>在朴素贝叶斯分类器中，我们知道朴素贝叶斯的学习就意味着估计 $P(Y=c_k)$ 与 $P(X^{(j)}=x^{(j)}|Y=c_k)$，此时，可以使用极大似然估计来对参数进行估计</p>
 <p>对于离散型随机变量，由于是直接将频率当做概率，因此若一个属性未出现，计算出的概率为  $0$</p>
 <p>为避免这种错误，使用贝叶斯估计，通过引入 $\lambda=1$ 进行拉普拉斯平滑修正，假设了特征值和类别的均匀分布，但当样本数目足够大时，该影响会被消除</p>
-<h2 id="极大似然估计"><a href="#极大似然估计" class="headerlink" title="极大似然估计"></a>极大似然估计</h2><p>对于先验概率 $P(Y=c_k)$，其极大似然估计为：</p>
+<h2 id="极大似然估计"><a href="#极大似然估计" class="headerlink" title="极大似然估计"></a>极大似然估计</h2><p>对于后验概率 $P(y|x)$ 来说，其满足：</p>
 <script type="math/tex; mode=display">
-P(Y=c_k)=\frac{1}{N}\sum_{i=1}^N I(y_i=c_k)</script><p>假设第 $j$ 个特征 $x^{(j)}$ 可能取值的集合为 $\{a_{j1},a_{j2},…,a_{jS_j}\}$，$a_{jl}$ 代表第 $j$ 个特征可能取的第 $l$ 个值</p>
-<p>对于似然概率 $P(X^{(j)}=a_{jl}|Y=c_k)$ ，其极大似然估计为：</p>
+P(y|x)=\frac{P(x|y)P(y)}{P(x)}</script><p>其中，$P(x)$、$P(y)$ 为先验概率，$P(x|y)$ 为似然概率</p>
+<p>我们知道，朴素贝叶斯的学习就意味着估计先验概率 $P(Y=c_k)$ 与似然概率 $P(X^{(j)}=x^{(j)}|Y=c_k)$</p>
+<p>那么，似然概率为：</p>
+<script type="math/tex; mode=display">
+P(X^{(j)}=x^{(j)}|Y=c_k)=\frac{P(Y=c_k|X^{(j)}=x^{(j)})P(X^{(j)}=x^{(j)})}{P(Y=c_k)}</script><p>其中，先验概率 $P(Y=c_k)$ 可以在经验统计中得出，即：</p>
+<script type="math/tex; mode=display">
+P(Y=c_k)=\frac{1}{N}\sum_{i=1}^N I(y_i=c_k)</script><p>对于 $P(Y=c_k|X^{(j)}=x^{(j)})P(X^{(j)}=x^{(j)})$ 来说，根据条件概率公式：</p>
+<script type="math/tex; mode=display">
+P(A|B)=\frac{P(AB)}{P(B)}</script><p>有：</p>
+<script type="math/tex; mode=display">
+P(Y=c_k|X^{(j)}=x^{(j)})P(X^{(j)}=x^{(j)})=P(X^{(j)}=x^{(j)},Y=c_k)</script><p>假设第 $j$ 个特征 $x^{(j)}$ 可能取值的集合为 $\{a_{j1},a_{j2},…,a_{jS_j}\}$，$a_{jl}$ 代表第 $j$ 个特征可能取的第 $l$ 个值，那么有：</p>
+<script type="math/tex; mode=display">
+P(X^{(j)}=x^{(j)},Y=c_k)=\frac{1}{N}\sum\limits_{i=1}^N I(x_i^{(j)}=a_{jl},y_i=c_k)</script><p>其中，$j=1,2,…,n$，$l=1,2,…,S_j$，$k=1,2,…,K$</p>
+<p>于是，似然概率为：</p>
+<script type="math/tex; mode=display">
+\begin{align}
+P(X^{(j)}=a_{jl}|Y=c_k)&= \frac{P(Y=c_k|X^{(j)}=x^{(j)})P(X^{(j)}=x^{(j)})}{P(Y=c_k)} \\
+&= \frac{P(X^{(j)}=x^{(j)},Y=c_k)}{P(Y=c_k)} \\
+&= \frac{\frac{1}{N}\sum\limits_{i=1}^N I(x_i^{(j)}=a_{jl},y_i=c_k)}{\frac{1}{N}\sum\limits_{i=1}^N I(y_i=c_k)} \\
+&= \frac{\sum\limits_{i=1}^N I(x_i^{(j)}=a_{jl},y_i=c_k)}{\sum\limits_{i=1}^N I(y_i=c_k)}
+\end{align}</script><p>即：</p>
 <script type="math/tex; mode=display">
 P(X^{(j)}=a_{jl}|Y=c_k) = \frac{\sum\limits_{i=1}^N I(x_i^{(j)}=a_{jl},y_i=c_k)}{\sum\limits_{i=1}^N I(y_i=c_k)}</script><p>其中，$j=1,2,…,n$，$l=1,2,…,S_j$，$k=1,2,…,K$</p>
-<h2 id="贝叶斯估计"><a href="#贝叶斯估计" class="headerlink" title="贝叶斯估计"></a>贝叶斯估计</h2><p>设 $\lambda\geq0$，则对于先验概率 $P(Y=c_k)$，其贝叶斯估计为：</p>
+<h2 id="贝叶斯估计"><a href="#贝叶斯估计" class="headerlink" title="贝叶斯估计"></a>贝叶斯估计</h2><p>与极大似然估计相似，对于贝叶斯估计，设 $\lambda\geq0$，则对于先验概率 $P(Y=c_k)$，有：</p>
 <script type="math/tex; mode=display">
-P_{\lambda}(Y=c_k)=\frac{\sum\limits_{i=1}^N I(y_i=c_k) + \lambda}{N+\lambda K}</script><p>假设第 $j$ 个特征 $x^{(j)}$ 可能取值的集合为 $\{a_{j1},a_{j2},…,a_{jS_j}\}$，$a_{jl}$ 代表第 $j$ 个特征可能取的第 $l$ 个值</p>
-<p>对于似然概率 $P(X^{(j)}=a_{jl}|Y=c_k)$ ，其贝叶斯估计为：</p>
+P_{\lambda}(Y=c_k)=\frac{1}{N+\lambda K}\bigl[\sum\limits_{i=1}^N I(y_i=c_k) + \lambda \bigr]</script><p>进一步，假设第 $j$ 个特征 $x^{(j)}$ 可能取值的集合为 $\{a_{j1},a_{j2},…,a_{jS_j}\}$，$a_{jl}$ 代表第 $j$ 个特征可能取的第 $l$ 个值，那么有：</p>
 <script type="math/tex; mode=display">
 P_{\lambda}(X^{(j)}=a_{jl}|Y=c_k)=\frac{\sum\limits_{i=1}^N I(x_i^{(j)}=a_{jl},y_i=c_k)+\lambda }{\sum\limits_{i=1}^N I(y_i=c_k)+\lambda S_j}</script><p>其中，$j=1,2,…,n$，$l=1,2,…,S_j$，$k=1,2,…,K$</p>
 <hr>
@@ -475,7 +493,7 @@ P_{\lambda}(X^{(j)}=a_{jl}|Y=c_k)=\frac{\sum\limits_{i=1}^N I(x_i^{(j)}=a_{jl},y
 <script type="math/tex; mode=display">
 \begin{matrix}
 P_{\lambda}(X^{(j)}=a_{jl}|Y=c_k)>0 \\
-\sum_{l=1}^{S_j}P(X^{(j)}=a_{jl}|Y=c_k)=1
+\sum\limits_{l=1}^{S_j}P(X^{(j)}=a_{jl}|Y=c_k)=1
 \end{matrix}</script><h1 id="【实例】"><a href="#【实例】" class="headerlink" title="【实例】"></a>【实例】</h1><h2 id="问题描述"><a href="#问题描述" class="headerlink" title="问题描述"></a>问题描述</h2><p>现给出一个身高为 <code>高</code>，体重为 <code>中</code>，鞋码为 <code>中</code> 的数据，根据下图中的数据，判断这个数据是男是女</p>
 <p><img width="500" src="/images/ml/35-2.png"></p>
 <h2 id="问题分析"><a href="#问题分析" class="headerlink" title="问题分析"></a>问题分析</h2><p>设特征：身高为 <code>高</code> 为 $A_1$，体重为 <code>中</code> 为 $A_2$，鞋码为 <code>中</code> 为 $A_3$，类别：男 $C_1$，女 $C_2$</p>
