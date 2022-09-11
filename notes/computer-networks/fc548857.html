@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.9.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/img/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/assets/img/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/pace-js@1/themes/blue/pace-theme-minimal.css">
+  <script src="//cdn.jsdelivr.net/npm/pace-js@1/pace.min.js"></script>
+
+
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"alex-mcavoy.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":16,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":true,"color":"#ff0000","save":"manual"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":true},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.json"};
+  </script>
+
+  <meta name="description" content="【概述】域名系统（Domain Name System，DNS）是因特网使用的命名系统，用来将便于记忆的含有特定含义的主机名转换为便于机器处理的 IP 地址 因特网的域名系统被设计为一个联机分布式数据库系统，并采用 C/S 模型，运行在 UDP 协议之上，使用 53 号端口">
+<meta name="keywords" content="学习笔记,网络相关,计算机网络">
+<meta property="og:type" content="article">
+<meta property="og:title" content="域名系统 DNS">
+<meta property="og:url" content="https://alex-mcavoy.github.io/notes/computer-networks/fc548857.html">
+<meta property="og:site_name" content="Alex_McAvoy">
+<meta property="og:description" content="【概述】域名系统（Domain Name System，DNS）是因特网使用的命名系统，用来将便于记忆的含有特定含义的主机名转换为便于机器处理的 IP 地址 因特网的域名系统被设计为一个联机分布式数据库系统，并采用 C/S 模型，运行在 UDP 协议之上，使用 53 号端口">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/computer-networks/53-1.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/computer-networks/53-2.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/computer-networks/53-3.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/computer-networks/53-4.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/computer-networks/53-5.png">
+<meta property="og:updated_time" content="2021-08-29T13:57:12.240Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="域名系统 DNS">
+<meta name="twitter:description" content="【概述】域名系统（Domain Name System，DNS）是因特网使用的命名系统，用来将便于记忆的含有特定含义的主机名转换为便于机器处理的 IP 地址 因特网的域名系统被设计为一个联机分布式数据库系统，并采用 C/S 模型，运行在 UDP 协议之上，使用 53 号端口">
+<meta name="twitter:image" content="https://alex-mcavoy.github.io/images/notes/computer-networks/53-1.png">
+
+<link rel="canonical" href="https://alex-mcavoy.github.io/notes/computer-networks/fc548857.html">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>域名系统 DNS | Alex_McAvoy</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Alex_McAvoy</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">想要成为渔夫的猎手</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+
+	
+	
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/notes/computer-networks/fc548857.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/assets/img/head.jpg">
+      <meta itemprop="name" content="Alex_McAvoy">
+      <meta itemprop="description" content="想要成为渔夫的猎手">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Alex_McAvoy">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          域名系统 DNS
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-11-12 13:12:00" itemprop="dateCreated datePublished" datetime="2019-11-12T13:12:00+08:00">2019-11-12</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/notes/" itemprop="url" rel="index"><span itemprop="name">学习笔记</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/notes/computer-networks/" itemprop="url" rel="index"><span itemprop="name">计算机网络</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>2.8k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>3 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="【概述】"><a href="#【概述】" class="headerlink" title="【概述】"></a>【概述】</h1><p><strong>域名系统（Domain Name System，DNS）</strong>是因特网使用的命名系统，用来将便于记忆的含有特定含义的主机名转换为便于机器处理的 IP 地址</p>
+<p>因特网的域名系统被设计为一个<strong>联机分布式数据库系统</strong>，并采用 <strong>C/S 模型</strong>，运行在 <strong>UDP 协议</strong>之上，使用 <strong>53 号端口</strong></p>
+<p>从概念上讲，DNS 分为三个部分：层次域名空间、域名服务器、域名解析</p>
+<hr>
+<p>需要注意的是，域名与 IP 地址、MAC 地址、主机等均不存在一一对应的关系</p>
+<p>如果一个主机利用两块网卡采用<strong>服务器双线接入</strong>的方式连接到不同的两个网络，那么会具有两个 IP 地址，每个网卡对应一个 MAC 地址，那么这两个 IP 地址就可以映射到同一个域名上</p>
+<p>而多个主机之间可采用<strong>负载均衡</strong>的方式，映射到同一个域名上；一个主机也可以采用<strong>虚拟主机</strong>的方式，映射到多个域名上</p>
+<h1 id="【层次域名空间】"><a href="#【层次域名空间】" class="headerlink" title="【层次域名空间】"></a>【层次域名空间】</h1><h2 id="域与域名"><a href="#域与域名" class="headerlink" title="域与域名"></a>域与域名</h2><p>因特网采用<strong>层次树形结构</strong>的命名方法，使得任何一个连接在因特网上的主机或路由器，都有一个唯一的层次结构名字，即<strong>域名（Domain Name）</strong></p>
+<p><strong>域</strong>，是命名空间中一个可被管理的划分，其可进一步划分为子域，还可继续划分为子域的子域，这样就形成了顶级域、二级域、三级域等</p>
+<p>每一个域名都是由标号序列组成，各标号之间用 <code>.</code> 来隔开，对于标号序列来说，其要求如下：</p>
+<ul>
+<li>标号中的英文不分大小写</li>
+<li>标号中除连字符 <code>-</code> 外不能使用其他标点符号</li>
+<li>每一个标号不超过 $63$ 个字符，多标号组成的完整域名不超过 $255$ 个字符</li>
+<li>级别最低的域名写在最左边，级别最高的域名写在最右边</li>
+</ul>
+<p>举例来说，对于域名 <code>www.baidu.com</code>，其中 <code>www</code> 为三级域名，级别最低；<code>baidu</code> 为二级域名；<code>com</code> 为顶级域名，级别最高</p>
+<h2 id="顶级域名"><a href="#顶级域名" class="headerlink" title="顶级域名"></a>顶级域名</h2><p><strong>顶级域名（Top Level Domain，TLD）</strong>是最高级别的域名，其有以下三大类：</p>
+<p><strong><font size="4">1）国家顶级域名 nTLD</font></strong></p>
+<p>国家顶级域名，是国家和某些地区的域名，例如：<code>.cn</code> 表示中国，<code>.us</code> 表示美国，<code>.uk</code> 表示英国</p>
+<p><strong><font size="4">2）通用顶级域名 gTLD</font></strong></p>
+<p>最早的通用顶级域名有：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:center">域名</th>
+<th style="text-align:center">用途</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center"><code>.com</code></td>
+<td style="text-align:center">公司和企业</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>.org</code></td>
+<td style="text-align:center">非赢利性组织</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>.net</code></td>
+<td style="text-align:center">网络服务机构</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>.int</code></td>
+<td style="text-align:center">国际组织</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>.edu</code></td>
+<td style="text-align:center">美国专用的教育机构</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>.gov</code></td>
+<td style="text-align:center">美国专用的政府部门</td>
+</tr>
+<tr>
+<td style="text-align:center"><code>.mil</code></td>
+<td style="text-align:center">美国专用的军事部门</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>除以上通用顶级域名外，后续又增加了若干通用顶级域名，如 <code>.museum</code> 表示博物馆、<code>.name</code> 表示个人、<code>.pro</code> 表示有证书的专业人员等</p>
+<p><strong><font size="4">3）基础结构域名</font></strong></p>
+<p>基础结构域名只有一个，即 <code>arpa</code>，用于反向域名解析，因此又称反向域名</p>
+<h2 id="域名空间结构"><a href="#域名空间结构" class="headerlink" title="域名空间结构"></a>域名空间结构</h2><p>在域名系统中，每个域分别由不同的组织管理，每个组织都可以将它的域再分成一定数目的子域，再将这些子域委托给其他机构管理</p>
+<p>对于国家顶级域名来说，会交由各国相关机构管理，在国家域名下注册的二级域名，均由该国家自行确定</p>
+<p>下图展示了域名空间的结构</p>
+<p><img width="500" src="/images/notes/computer-networks/53-1.png"></p>
+<h1 id="【域名服务器】"><a href="#【域名服务器】" class="headerlink" title="【域名服务器】"></a>【域名服务器】</h1><h2 id="区"><a href="#区" class="headerlink" title="区"></a>区</h2><p>域名到 IP 地址的解析是由运行在<strong>域名服务器</strong>上的程序完成的，一个服务器所负责管辖的范围被称为<strong>区</strong>，各单位根据具体情况来划分自己管辖的区，但要求在一个区中的所有结点必须是能够连通的</p>
+<p>同时，每个区会设置相应的<strong>权限域名服务器</strong>，用来保存该区中所有的主机域名到 IP 地址的映射</p>
+<p>下图给出了区的不同划分方法的例子</p>
+<p><img width="500" src="/images/notes/computer-networks/53-2.png"></p>
+<p>此外，每一个域名服务器不仅能够进行域名到 IP 地址的解析，还必须要具有连向其他域名服务器的信息，当自己不能进行域名解析时，要知道能去什么地方找到别的域名服务器来解析</p>
+<h2 id="域名服务器层次"><a href="#域名服务器层次" class="headerlink" title="域名服务器层次"></a>域名服务器层次</h2><p>DNS 采用<strong>层次分布式</strong>设置了大量的域名服务器，因特网上所有域名到 IP 地址的映射，分布地存储在 DNS 系统中的域名服务器中，没有一台域名服务器具有因特网上所有主机的映射</p>
+<p><img width="500" src="/images/notes/computer-networks/53-3.png"></p>
+<p>根据域名服务器的层次，可分为四种类型的域名服务器：</p>
+<p><strong><font size="4">1.根域名服务器</font></strong></p>
+<p>根域名服务器是<strong>最高层次</strong>的域名服务器，其用来管辖顶级域，每个根域名服务器都知道所有的顶级域名服务器的 IP 地址</p>
+<p>因特网上总共设置了 $13$ 个不同 IP 地址的根域名服务器，全世界共有几百台服务器来组成这 $13$ 套根域名服务器，从而方便用户，使世界上大部分 DNS 域名服务器都能就近找到一个根域名服务器</p>
+<p>无论是哪一个本地域名服务器，若要对因特网上任何一个域名进行解析，只要自己无法解析，就会首先求助根域名服务器，根域名服务器会告诉本地域名服务器下一步应该去寻找哪个顶级域名服务器查询</p>
+<p><strong><font size="4">2.顶级域名服务器</font></strong></p>
+<p>顶级域名服务器负责管理该顶级域名服务器注册的所有二级域名，当 DNS 查询请求时，就给出相应的回答，可能是最终的结果，也可能是下一步应当查找的域名服务器的 IP 地址</p>
+<p><strong><font size="4">3.权限域名服务器</font></strong></p>
+<p>权限域名服务器又称<strong>授权域名服务器</strong>，每一个主机都会在权限域名服务器上登记</p>
+<p>通常来说，为保障可靠性，一台主机最少会在两个授权域名服务器上登记，其一定可以将其管辖的主机名转换成该主机的 IP 地址</p>
+<p>通常来说，许多域名服务器在同时充当权限域名服务器与本地域名服务器</p>
+<p><strong><font size="4">4.本地域名服务器</font></strong></p>
+<p>每一个因特网服务提供商 ISP，或者每一个单位，甚至一个单位中的一个部门，都可以拥有一个本地域名服务器</p>
+<p>当一个主机发出 DNS 查询请求时，这个查询请求报文会最先发送给本地域名服务器进行查询</p>
+<p>实际上，在 Windows 系统中配置<strong>本地连接</strong>时，填写的 DNS 服务器地址，就是该本地域名服务器的地址</p>
+<h1 id="【域名解析】"><a href="#【域名解析】" class="headerlink" title="【域名解析】"></a>【域名解析】</h1><h2 id="域名解析过程"><a href="#域名解析过程" class="headerlink" title="域名解析过程"></a>域名解析过程</h2><p>域名解析是指将域名映射层 IP 地址，或将 IP 地址映射成域名的过程，前者称为<strong>正向解析</strong>，后者称为<strong>反向解析</strong>，当客户端需要域名解析时，通过本机的 DNS 客户端构造一个 DNS 请求报文，以 UDP 数据报方式发往本地域名服务器</p>
+<p>当本地主机所询问的本地域名服务器不知道被查询域名的 IP 地址时，会向根域名服务器发送<strong>查询请求报文</strong>，之后根域名服务器要么采用<strong>递归查询</strong>的方法，代替本地域名服务器以 DNS 客户的身份进行查询，给出查询到的 IP 地址，要么采用<strong>迭代查询</strong>的方法，告诉本地域名服务器下一步应该向哪一个域名服务器进行查询</p>
+<p>下图给出了使用递归查询的示例，当本地域名服务器以 DNS 客户的身份向根域名服务器发送查询请求报文后，根域名服务器会代替该主机进行查询，递归地在其他几个域名服务器之间进行查询</p>
+<p><img width="500" src="/images/notes/computer-networks/53-4.png"></p>
+<p>下图则给出了使用迭代查询的示例，当本地域名服务器以 DNS 客户的身份向根域名服务器发送查询请求报文后，要么给出要查询的 IP 地址，要么告诉本地域名服务器下一步应该向哪一个顶级域名服务器进行查询，之后，本地服务器会向这个顶级域名服务器进行后续查询，同样，顶级域名服务器收到查询报文后，要么给出查询的 IP 地址，要么告诉本地域名服务器下一步应向哪个权限域名服务器查询</p>
+<p><img width="500" src="/images/notes/computer-networks/53-5.png"></p>
+<h2 id="域名服务器高速缓存"><a href="#域名服务器高速缓存" class="headerlink" title="域名服务器高速缓存"></a>域名服务器高速缓存</h2><p>为提高 DNS 的查询效率，同时减少因特网上 DNS 查询报文的数量，域名服务器中广泛使用了<strong>高速缓存</strong></p>
+<p>当一个 DNS 服务器收到 DNS 查询结果时，其能将该 DNS 信息缓存在高速缓存中</p>
+<p>这样，当另一个相同的域名查询到达该 DNS 服务器时，该服务器能够直接提供要求的 IP 地址，不需再向其他 DNS 服务器询问</p>
+<p>由于主机名与 IP 地址之间的映射不是永久的，因此 DNS 服务器会在一段时候后丢弃高速缓存中的信息</p>
+
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>感谢您对我的支持，让我继续努力分享有用的技术与知识点！</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/wechatpay.jpg" alt="Alex_McAvoy 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/alipay.jpg" alt="Alex_McAvoy 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Alex_McAvoy
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://alex-mcavoy.github.io/notes/computer-networks/fc548857.html" title="域名系统 DNS">https://alex-mcavoy.github.io/notes/computer-networks/fc548857.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/notes/" rel="tag"># 学习笔记</a>
+              <a href="/tags/network/" rel="tag"># 网络相关</a>
+              <a href="/tags/computer-networks/" rel="tag"># 计算机网络</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/notes/operating-system/d9c2550.html" rel="prev" title="进程控制">
+      <i class="fa fa-chevron-left"></i> 进程控制
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/notes/computer-networks/34e9705e.html" rel="next" title="电子邮件">
+      电子邮件 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【概述】"><span class="nav-number">1.</span> <span class="nav-text">【概述】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【层次域名空间】"><span class="nav-number">2.</span> <span class="nav-text">【层次域名空间】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#域与域名"><span class="nav-number">2.1.</span> <span class="nav-text">域与域名</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#顶级域名"><span class="nav-number">2.2.</span> <span class="nav-text">顶级域名</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#域名空间结构"><span class="nav-number">2.3.</span> <span class="nav-text">域名空间结构</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【域名服务器】"><span class="nav-number">3.</span> <span class="nav-text">【域名服务器】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#区"><span class="nav-number">3.1.</span> <span class="nav-text">区</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#域名服务器层次"><span class="nav-number">3.2.</span> <span class="nav-text">域名服务器层次</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【域名解析】"><span class="nav-number">4.</span> <span class="nav-text">【域名解析】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#域名解析过程"><span class="nav-number">4.1.</span> <span class="nav-text">域名解析过程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#域名服务器高速缓存"><span class="nav-number">4.2.</span> <span class="nav-text">域名服务器高速缓存</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">  
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Alex_McAvoy"
+      src="/assets/img/head.jpg">
+  <p class="site-author-name" itemprop="name">Alex_McAvoy</p>
+  <div class="site-description" itemprop="description">想要成为渔夫的猎手</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">535</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">57</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">62</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Alex-McAvoy" title="GitHub → https://github.com/Alex-McAvoy" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/u011815404" title="CSDN → https://blog.csdn.net/u011815404" rel="noopener" target="_blank"><i class="fas fa-copyright fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+<!-- 访客地图 -->
+<script type="text/javascript" src="//rf.revolvermaps.com/0/0/5.js?i=50n58yo58ow&amp;m=0&amp;c=ff0000&amp;cr1=ffffff&amp;s=140" async="async"></script>
+
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdz20172133" title="https://blog.csdn.net/sdz20172133" rel="noopener" target="_blank">神仙队友</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://pxlsdz.gitee.io/" title="https://pxlsdz.gitee.io/" rel="noopener" target="_blank">神仙队友的另一个博客</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://bycore.net" title="https://bycore.net" rel="noopener" target="_blank">凉了的某饼同学</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://kris-cn.github.io/" title="http://kris-cn.github.io/" rel="noopener" target="_blank">翟孙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://deng.fun/" title="http://deng.fun/" rel="noopener" target="_blank">芙蓉姐姐</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdau_fangshifeng" title="https://blog.csdn.net/sdau_fangshifeng" rel="noopener" target="_blank">一个头很酷的家伙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/wentong_Xu" title="https://blog.csdn.net/wentong_Xu" rel="noopener" target="_blank">小黑贱胖子</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.yuheng.tech/" title="https://www.yuheng.tech/" rel="noopener" target="_blank">咸于</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/lanshan1111" title="https://blog.csdn.net/lanshan1111" rel="noopener" target="_blank">肥硕硕</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdauguanweihong" title="https://blog.csdn.net/sdauguanweihong" rel="noopener" target="_blank">管少</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_41661919" title="https://blog.csdn.net/qq_41661919" rel="noopener" target="_blank">俊杰</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_40859951" title="https://blog.csdn.net/qq_40859951" rel="noopener" target="_blank">峰哥</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/LSD20164388" title="https://blog.csdn.net/LSD20164388" rel="noopener" target="_blank">狗冬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37748451" title="https://blog.csdn.net/qq_37748451" rel="noopener" target="_blank">胖亚亚</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37868325" title="https://blog.csdn.net/qq_37868325" rel="noopener" target="_blank">妍大佬</a>
+        </li>
+    </ul>
+  </div>
+
+		
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+  
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Alex_McAvoy</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+</br>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script><script src="/js/bookmark.js"></script>
+
+
+
+  
+
+
+
+
+  <script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '48fd73a538d3fa927f65',
+      clientSecret: '56618aefeee90bac3c20de8d51bb0b985d67252d',
+      repo        : 'Gitalk-Comment',
+      owner       : 'Alex-McAvoy',
+      admin       : ['Alex-McAvoy'],
+      id          : '00398ce91052b2521905fce965f163b6',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+  
+  <!-- 鼠标单击粒子特效 -->
+  <script type="text/javascript" src="/js/cursor-effects.js"></script>
+  <!-- 多级目录 -->
+  <script type="text/javascript" src="/js/category.js"></script>
+  
+</body>
+</html>

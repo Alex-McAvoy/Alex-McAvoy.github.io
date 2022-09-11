@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.9.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/img/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/assets/img/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/pace-js@1/themes/blue/pace-theme-minimal.css">
+  <script src="//cdn.jsdelivr.net/npm/pace-js@1/pace.min.js"></script>
+
+
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"alex-mcavoy.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":16,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":true,"color":"#ff0000","save":"manual"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":true},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.json"};
+  </script>
+
+  <meta name="description" content="【概述】为解决 IP 地址耗尽的问题，从分类 IP 的基础上发展出了网络地址转换 NAT、无类别编址 CIDR 的方法，但这两种方法只是延长了 IP 地址分配的结束时间，随着时间的增长 IP 地址总有耗尽的一天 为此，开发了 具有更大地址空间的 IPv6">
+<meta name="keywords" content="学习笔记,网络相关,计算机网络">
+<meta property="og:type" content="article">
+<meta property="og:title" content="IPv6">
+<meta property="og:url" content="https://alex-mcavoy.github.io/notes/computer-networks/1d3badf2.html">
+<meta property="og:site_name" content="Alex_McAvoy">
+<meta property="og:description" content="【概述】为解决 IP 地址耗尽的问题，从分类 IP 的基础上发展出了网络地址转换 NAT、无类别编址 CIDR 的方法，但这两种方法只是延长了 IP 地址分配的结束时间，随着时间的增长 IP 地址总有耗尽的一天 为此，开发了 具有更大地址空间的 IPv6">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/computer-networks/35-1.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/computer-networks/35-2.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/computer-networks/35-3.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/computer-networks/35-4.png">
+<meta property="og:updated_time" content="2021-08-29T13:47:34.327Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="IPv6">
+<meta name="twitter:description" content="【概述】为解决 IP 地址耗尽的问题，从分类 IP 的基础上发展出了网络地址转换 NAT、无类别编址 CIDR 的方法，但这两种方法只是延长了 IP 地址分配的结束时间，随着时间的增长 IP 地址总有耗尽的一天 为此，开发了 具有更大地址空间的 IPv6">
+<meta name="twitter:image" content="https://alex-mcavoy.github.io/images/notes/computer-networks/35-1.png">
+
+<link rel="canonical" href="https://alex-mcavoy.github.io/notes/computer-networks/1d3badf2.html">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>IPv6 | Alex_McAvoy</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Alex_McAvoy</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">想要成为渔夫的猎手</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+
+	
+	
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/notes/computer-networks/1d3badf2.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/assets/img/head.jpg">
+      <meta itemprop="name" content="Alex_McAvoy">
+      <meta itemprop="description" content="想要成为渔夫的猎手">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Alex_McAvoy">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          IPv6
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-10-18 22:55:00" itemprop="dateCreated datePublished" datetime="2019-10-18T22:55:00+08:00">2019-10-18</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/notes/" itemprop="url" rel="index"><span itemprop="name">学习笔记</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/notes/computer-networks/" itemprop="url" rel="index"><span itemprop="name">计算机网络</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>1.8k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>2 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="【概述】"><a href="#【概述】" class="headerlink" title="【概述】"></a>【概述】</h1><p>为解决 IP 地址耗尽的问题，从分类 IP 的基础上发展出了网络地址转换 NAT、无类别编址 CIDR 的方法，但这两种方法只是延长了 IP 地址分配的结束时间，随着时间的增长 IP 地址总有耗尽的一天</p>
+<p>为此，开发了 具有更大地址空间的 IPv6</p>
+<h1 id="【与-IPv4-的对比】"><a href="#【与-IPv4-的对比】" class="headerlink" title="【与 IPv4 的对比】"></a>【与 IPv4 的对比】</h1><p>与 IPv4 相比，IPv6 具有以下特点：</p>
+<ul>
+<li>地址长度从 $32bit$ 扩展到了 $128bit$</li>
+<li>减少不必要的功能，首部字段数减少到仅有 $8$ 个</li>
+<li>路由一般不对扩展首部检查，同时提供 <strong>QoS 服务</strong></li>
+<li>支持即插即用，自动配置，IPv4 若想自动配置需要采用 DHCP</li>
+<li><strong>只允许源站进行分片</strong>，对于发送时经过的主机和路由器来说，若数据报过大则丢弃，同时向主机发送 <strong>ICMP 分组过大报文</strong></li>
+<li>使用 ICMPv6 版本，其在 ICMP 的基础上又加了一系列的报文（例如：ICMP 分组过大报文）</li>
+</ul>
+<h1 id="【IPv6-数据报格式】"><a href="#【IPv6-数据报格式】" class="headerlink" title="【IPv6 数据报格式】"></a>【IPv6 数据报格式】</h1><p>下图展示了 IPv6 数据报的一般形式，直观来看，相较于 IPv4 数据报，其将固定字段变为基本首部，将可选字段变为扩展首部，同时，引入了有效载荷的概念</p>
+<p><img width="500" src="/images/notes/computer-networks/35-1.png"></p>
+<p>对于 IPv6 的基本首部，具体格式如下：</p>
+<p><img width="500" src="/images/notes/computer-networks/35-2.png"></p>
+<p>其中，各字段含义如下：</p>
+<ul>
+<li>版本：占 $4bit$，指明协议的版本，对于 IPv6 来说，该字段总是 $6$</li>
+<li>通信量类：占 $8bit$，用来区分不同 IPv6 数据报的类别或优先级，目前正在进行不同的通信量类性能的实验</li>
+<li>流标号：占 $20bit$，<strong>流</strong>是网络上从特定源点到特定终点的一系列数据报，流所经过的路径上的路由器都保证指明的服务质量，所有属于同一个流的数据报都具有同样的流标号</li>
+<li>有效载荷长度：占 $16bit$，有效载荷是指扩展首部与数据部分的长度，指明了 IPv6 数据除基本首部外的字节数，最大值为 $64KB$</li>
+<li>下一首部：占 $8bit$，相当于 IPv4 的协议字段或可选字段，表示上层协议或第一个扩展首部的类型</li>
+<li>跳数限制：占 $8bit$，源站在数据报发出时即设定跳数限制，路由器在转发数据报时将跳数限制字段中的值减 $1$，当跳数限制的值为 $0$ 时，就要将此数据报丢弃</li>
+<li>源地址：占 $128bit$，是数据报的发送站的 IP 地址</li>
+<li>目的地址：占 $128bit$，是数据报的接收站的 IP 地址</li>
+</ul>
+<p>对于目的地址来说，IPv6 可以是以下三种基本类型地址之一：</p>
+<ul>
+<li><strong>单播</strong>：即传统点对点通信</li>
+<li><strong>多播</strong>：也称<strong>组播</strong>，一点对多点的通信，分组被交付到一组计算机的每台计算机</li>
+<li><strong>任播</strong>：目的站是一组计算机，但数据报在交付时只交付其中的一台计算机，通常是距离最近的一台计算机</li>
+</ul>
+<h1 id="【地址形式】"><a href="#【地址形式】" class="headerlink" title="【地址形式】"></a>【地址形式】</h1><p>IPv6 采用<strong>冒号十六进制</strong>来表示 IP 地址，即每 $4$ 位二进制数用一个十六进制表示，$128bit$ 的 IP 地址写成 $32$ 个十六进制数，同时，每 $4$ 个十六进制数用冒号隔开</p>
+<p>进一步，在上述的记法采用<strong>压缩形式</strong>，每组中，若有连续的四个 $0$，可用一个 $0$ 来表示四个 $0$，若前面存在连续的 $0$，后面存在一个非零，可将连续的 $0$ 省略</p>
+<p>例如，对于 <code>4BF5:0000:000A:...</code> ，可以压缩为 <code>4BF5:0:A:...</code></p>
+<p>此外，在压缩形式的基础上，可采用<strong>双冒号记法</strong>，即一串连续的 $0$ 可采用 $::$ 来取代，但这种记法在一个 IP 地址中只能出现一次，以便从总位数中推算省略 $0$ 的个数</p>
+<p>例如，对于 <code>FF05:0:0:0:0:0:0:B3</code>，可记为 <code>FF05::B3</code></p>
+<h1 id="【特殊地址】"><a href="#【特殊地址】" class="headerlink" title="【特殊地址】"></a>【特殊地址】</h1><p>在 IPv6 中，同样有一些具有特殊用途的地址</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:center">地址类型</th>
+<th style="text-align:center">二进制前缀</th>
+<th style="text-align:center">IPv6 表示</th>
+<th style="text-align:center">作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">未指定</td>
+<td style="text-align:center">全 $0$</td>
+<td style="text-align:center"><code>::/128</code></td>
+<td style="text-align:center">系统启动之初，尚未分配 IP 地址，对外请求 IP 地址时，作为源地址使用</td>
+</tr>
+<tr>
+<td style="text-align:center">环回地址</td>
+<td style="text-align:center">除最后一位为 $1$ 外，其余全 $0$</td>
+<td style="text-align:center"><code>::1/128</code></td>
+<td style="text-align:center">用于环回测试</td>
+</tr>
+<tr>
+<td style="text-align:center">多播地址</td>
+<td style="text-align:center">前八位为 $1$，其余全 $0$</td>
+<td style="text-align:center"><code>FF00::/8</code></td>
+<td style="text-align:center">用于多播通信</td>
+</tr>
+<tr>
+<td style="text-align:center">本地链路单播地址</td>
+<td style="text-align:center">前十位为 <code>1111 1110 10</code>，其余全 $0$</td>
+<td style="text-align:center"><code>FE80::/10</code></td>
+<td style="text-align:center">用于本地链路单播通信</td>
+</tr>
+<tr>
+<td style="text-align:center">全球单播地址</td>
+<td style="text-align:center">剩余所有</td>
+<td style="text-align:center"></td>
+<td style="text-align:center">用于全球链路单播通信</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h1 id="【从-IPv4-到-IPv6-的过渡】"><a href="#【从-IPv4-到-IPv6-的过渡】" class="headerlink" title="【从 IPv4 到 IPv6 的过渡】"></a>【从 IPv4 到 IPv6 的过渡】</h1><p>从 IPv4 到 IPv6 的过渡只能采取逐步演进的方法，同时必须令新安装的 IPv6 系统能够向后兼容，即 IPv6 系统能够接受和转发 IPv4 分组，且能为 IPv4 分组选择路由</p>
+<p>目前，采取的过渡方法主要有两种策略：<strong>双协议栈技术</strong>、<strong>隧道技术</strong></p>
+<p><strong>双协议栈技术</strong>，是指在一台设备上同时安装 IPv4 和 IPv6 协议栈</p>
+<p>当设备是<strong>主机</strong>时，会<strong>同时拥有</strong> IPv4 和 IPv6 地址，且具备同时处理两个协议地址的功能；当设备是<strong>路由器</strong>时，路由器的不同接口上<strong>分别配置</strong> IPv4 和 IPv6 地址，且可能分别连接 IPv4 和 IPv6 网络</p>
+<p><img width="500" src="/images/notes/computer-networks/35-3.png"></p>
+<p><strong>隧道技术</strong>，是将整个 IPv6 分组封装到 IPv4 数据报的数据部分，使 IPv6 数据报可以在 IPv4 网络的隧道中传输</p>
+<p><img width="500" src="/images/notes/computer-networks/35-4.png"></p>
+
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>感谢您对我的支持，让我继续努力分享有用的技术与知识点！</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/wechatpay.jpg" alt="Alex_McAvoy 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/alipay.jpg" alt="Alex_McAvoy 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Alex_McAvoy
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://alex-mcavoy.github.io/notes/computer-networks/1d3badf2.html" title="IPv6">https://alex-mcavoy.github.io/notes/computer-networks/1d3badf2.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/notes/" rel="tag"># 学习笔记</a>
+              <a href="/tags/network/" rel="tag"># 网络相关</a>
+              <a href="/tags/computer-networks/" rel="tag"># 计算机网络</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/notes/computer-networks/1a97c2c0.html" rel="prev" title="ICMP 协议">
+      <i class="fa fa-chevron-left"></i> ICMP 协议
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/notes/computer-networks/46b1c324.html" rel="next" title="IP 组播">
+      IP 组播 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【概述】"><span class="nav-number">1.</span> <span class="nav-text">【概述】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【与-IPv4-的对比】"><span class="nav-number">2.</span> <span class="nav-text">【与 IPv4 的对比】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【IPv6-数据报格式】"><span class="nav-number">3.</span> <span class="nav-text">【IPv6 数据报格式】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【地址形式】"><span class="nav-number">4.</span> <span class="nav-text">【地址形式】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【特殊地址】"><span class="nav-number">5.</span> <span class="nav-text">【特殊地址】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【从-IPv4-到-IPv6-的过渡】"><span class="nav-number">6.</span> <span class="nav-text">【从 IPv4 到 IPv6 的过渡】</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">  
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Alex_McAvoy"
+      src="/assets/img/head.jpg">
+  <p class="site-author-name" itemprop="name">Alex_McAvoy</p>
+  <div class="site-description" itemprop="description">想要成为渔夫的猎手</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">535</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">57</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">62</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Alex-McAvoy" title="GitHub → https://github.com/Alex-McAvoy" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/u011815404" title="CSDN → https://blog.csdn.net/u011815404" rel="noopener" target="_blank"><i class="fas fa-copyright fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+<!-- 访客地图 -->
+<script type="text/javascript" src="//rf.revolvermaps.com/0/0/5.js?i=50n58yo58ow&amp;m=0&amp;c=ff0000&amp;cr1=ffffff&amp;s=140" async="async"></script>
+
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdz20172133" title="https://blog.csdn.net/sdz20172133" rel="noopener" target="_blank">神仙队友</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://pxlsdz.gitee.io/" title="https://pxlsdz.gitee.io/" rel="noopener" target="_blank">神仙队友的另一个博客</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://bycore.net" title="https://bycore.net" rel="noopener" target="_blank">凉了的某饼同学</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://kris-cn.github.io/" title="http://kris-cn.github.io/" rel="noopener" target="_blank">翟孙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://deng.fun/" title="http://deng.fun/" rel="noopener" target="_blank">芙蓉姐姐</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdau_fangshifeng" title="https://blog.csdn.net/sdau_fangshifeng" rel="noopener" target="_blank">一个头很酷的家伙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/wentong_Xu" title="https://blog.csdn.net/wentong_Xu" rel="noopener" target="_blank">小黑贱胖子</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.yuheng.tech/" title="https://www.yuheng.tech/" rel="noopener" target="_blank">咸于</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/lanshan1111" title="https://blog.csdn.net/lanshan1111" rel="noopener" target="_blank">肥硕硕</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdauguanweihong" title="https://blog.csdn.net/sdauguanweihong" rel="noopener" target="_blank">管少</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_41661919" title="https://blog.csdn.net/qq_41661919" rel="noopener" target="_blank">俊杰</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_40859951" title="https://blog.csdn.net/qq_40859951" rel="noopener" target="_blank">峰哥</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/LSD20164388" title="https://blog.csdn.net/LSD20164388" rel="noopener" target="_blank">狗冬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37748451" title="https://blog.csdn.net/qq_37748451" rel="noopener" target="_blank">胖亚亚</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37868325" title="https://blog.csdn.net/qq_37868325" rel="noopener" target="_blank">妍大佬</a>
+        </li>
+    </ul>
+  </div>
+
+		
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+  
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Alex_McAvoy</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+</br>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script><script src="/js/bookmark.js"></script>
+
+
+
+  
+
+
+
+
+  <script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '48fd73a538d3fa927f65',
+      clientSecret: '56618aefeee90bac3c20de8d51bb0b985d67252d',
+      repo        : 'Gitalk-Comment',
+      owner       : 'Alex-McAvoy',
+      admin       : ['Alex-McAvoy'],
+      id          : '81ace3a6fd9c7ebb320c7a7143bc937d',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+  
+  <!-- 鼠标单击粒子特效 -->
+  <script type="text/javascript" src="/js/cursor-effects.js"></script>
+  <!-- 多级目录 -->
+  <script type="text/javascript" src="/js/category.js"></script>
+  
+</body>
+</html>

@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.9.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/img/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/assets/img/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/pace-js@1/themes/blue/pace-theme-minimal.css">
+  <script src="//cdn.jsdelivr.net/npm/pace-js@1/pace.min.js"></script>
+
+
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"alex-mcavoy.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":16,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":true,"color":"#ff0000","save":"manual"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":true},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.json"};
+  </script>
+
+  <meta name="description" content="【邻接矩阵】结构图的邻接矩阵存储也称数组表示法，其方法是用一个一维数组存储图中的顶点，用一个二维数组存储图中的所有的边，存储顶点之间邻接关系的二维数组称为邻接矩阵">
+<meta name="keywords" content="C++,OI&amp;ACM,算法基础,基础理论,图论">
+<meta property="og:type" content="article">
+<meta property="og:title" content="图的存储结构">
+<meta property="og:url" content="https://alex-mcavoy.github.io/oi-acm/basic/theory/d96fe4f4.html">
+<meta property="og:site_name" content="Alex_McAvoy">
+<meta property="og:description" content="【邻接矩阵】结构图的邻接矩阵存储也称数组表示法，其方法是用一个一维数组存储图中的顶点，用一个二维数组存储图中的所有的边，存储顶点之间邻接关系的二维数组称为邻接矩阵">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/oi-acm/basic/01.theory/06-1.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/oi-acm/basic/01.theory/06-2.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/oi-acm/basic/01.theory/06-3.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/oi-acm/basic/01.theory/06-4.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/oi-acm/basic/01.theory/06-5.png">
+<meta property="og:updated_time" content="2021-09-25T08:40:00.223Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="图的存储结构">
+<meta name="twitter:description" content="【邻接矩阵】结构图的邻接矩阵存储也称数组表示法，其方法是用一个一维数组存储图中的顶点，用一个二维数组存储图中的所有的边，存储顶点之间邻接关系的二维数组称为邻接矩阵">
+<meta name="twitter:image" content="https://alex-mcavoy.github.io/images/oi-acm/basic/01.theory/06-1.png">
+
+<link rel="canonical" href="https://alex-mcavoy.github.io/oi-acm/basic/theory/d96fe4f4.html">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>图的存储结构 | Alex_McAvoy</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Alex_McAvoy</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">想要成为渔夫的猎手</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+
+	
+	
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/oi-acm/basic/theory/d96fe4f4.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/assets/img/head.jpg">
+      <meta itemprop="name" content="Alex_McAvoy">
+      <meta itemprop="description" content="想要成为渔夫的猎手">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Alex_McAvoy">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          图的存储结构
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2018-11-11 16:53:00" itemprop="dateCreated datePublished" datetime="2018-11-11T16:53:00+08:00">2018-11-11</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/oi-acm/" itemprop="url" rel="index"><span itemprop="name">OI&ACM</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/oi-acm/basic/" itemprop="url" rel="index"><span itemprop="name">算法基础</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/oi-acm/basic/theory/" itemprop="url" rel="index"><span itemprop="name">基础理论</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>4.8k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>4 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="【邻接矩阵】"><a href="#【邻接矩阵】" class="headerlink" title="【邻接矩阵】"></a>【邻接矩阵】</h1><h2 id="结构"><a href="#结构" class="headerlink" title="结构"></a>结构</h2><p>图的邻接矩阵存储也称数组表示法，其方法是用一个一维数组存储图中的顶点，用一个二维数组存储图中的所有的边，存储顶点之间邻接关系的二维数组称为<strong>邻接矩阵</strong></p>
+<p>设图 $G=(V,E)$ 具有 $n$ 个顶点，则其邻接矩阵是一个 $n*n$ 的方阵，定义为：</p>
+<script type="math/tex; mode=display">
+G[i][j]=\left\{\begin{matrix}1,(v_i,v_j)\in E\:\:or\:\:\in E \\ 0, (v_i,v_j)\notin E\:\:and\:\:\notin E \end{matrix}\right.</script><p>若 $G$ 是网图，则有：</p>
+<script type="math/tex; mode=display">
+G[i][j]=\left\{\begin{matrix}w_{ij},(v_i,v_j)\in E\:\:or\:\:\in E \\ INF , (v_i,v_j)\notin E\:\:and\:\:\notin E \end{matrix}\right.</script><p>其中 $w_{ij}$ 是边 $(v_i,v_j)$ 或弧 $&lt; v_i,v_j &gt;$ 上的权值，$INF$ 代表一极大的数，其大于所有边的权值</p>
+<p><img width="500" src="/images/oi-acm/basic/01.theory/06-1.png"></p>
+<h2 id="特点"><a href="#特点" class="headerlink" title="特点"></a>特点</h2><p>邻接矩阵存储图，其表示方式<strong>唯一</strong>，具有如下特点：</p>
+<ul>
+<li>对于<strong>无向图</strong>的邻接矩阵，其<strong>第 $i$ 行</strong>或<strong>第 $i$ 列</strong>非零元素的个数为第 $i$ 个顶点的<strong>度</strong></li>
+<li>对于<strong>有向图</strong>的邻接矩阵，其<strong>第 $i$ 行</strong>非零元素的个数为第 $i$ 个顶点的<strong>出度</strong>，<strong>第 $i$ 列</strong>非零元素的个数为第 $i$ 个顶点的<strong>入度</strong></li>
+<li>对于图 $G(V,E)$ 的邻接矩阵 $A$，<strong>$A^n$ 的元素 $A^n[i][j]$ 为由点 $i$ 到点 $j$ 的长度为 $n$ 的路径的数目</strong></li>
+<li>无向图的邻接矩阵是对称矩阵，对于规模大的可以使用压缩存储的方式仅存储上三角或下三角矩阵</li>
+<li>邻接矩阵对边的操作效率高，但对于稀疏图来说造成了极大的浪费，因此其只适用于存储<strong>点较少的图</strong>或<strong>稠密图</strong></li>
+</ul>
+<h2 id="实现"><a href="#实现" class="headerlink" title="实现"></a>实现</h2><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> G[N][N];</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">init</span><span class="params">(<span class="keyword">int</span> n)</span> </span>&#123;</span><br><span class="line">    <span class="built_in">memset</span>(G, <span class="number">0</span>, <span class="keyword">sizeof</span>(G)); <span class="comment">//图的初始化</span></span><br><span class="line">    <span class="keyword">while</span> (n--) &#123;</span><br><span class="line">        <span class="keyword">int</span> x, y, w;</span><br><span class="line">        <span class="built_in">scanf</span>(<span class="string">"%d%d%d"</span>, &amp;x, &amp;y, &amp;w); <span class="comment">//读入两个顶点序号及权值</span></span><br><span class="line">        G[x][y] = w;                 <span class="comment">//对于不带权的图，可令g[x][y]=1</span></span><br><span class="line">        G[y][x] = w;                 <span class="comment">//无向图的对称性</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h1 id="【邻接表】"><a href="#【邻接表】" class="headerlink" title="【邻接表】"></a>【邻接表】</h1><h2 id="结构-1"><a href="#结构-1" class="headerlink" title="结构"></a>结构</h2><p>邻接表是一种顺序存储与链接存储相结合的存储方法，类似于树的孩子链表表示法</p>
+<p>对于图 $G$ 的每个顶点 $v_i$，将所有邻接于 $v_i$ 的顶点链成一个单链表，称为 $v_i$ 的<strong>边表</strong>，第 $i$ 个单链表中的结点表示依附于顶点 $v_i$ 的边，若图 $G$ 是一有向图，则称为 $v_i$ 的<strong>出边表</strong></p>
+<p>为方便对所有边表的头指针进行存储操作，使用顺序存储，这样，存储边表头指针的数组和存储顶点信息的数组构成了邻接表的表头数组，称为<strong>顶点表</strong></p>
+<p>顶点表结点由<strong>顶点域 <code>pos</code></strong> 和<strong>指针域 <code>firstEdge</code></strong> 构成，顶点域存放结点信息（一般为结点编号），指针域指向第一条邻接边的指针</p>
+<p>边表结点由<strong>位置域 <code>pos</code></strong>、<strong>数据域 <code>dis</code></strong> 和<strong>指针域 <code>next</code></strong> 构成，<code>pos</code> 指示邻接点（该边附着的另一个结点编号），数据域存放网图的边权，指针域指向下一条邻接边</p>
+<p><img width="700" src="/images/oi-acm/basic/01.theory/06-2.png"></p>
+<h2 id="特点-1"><a href="#特点-1" class="headerlink" title="特点"></a>特点</h2><p>对于邻接表的存储，其表示方式<strong>不唯一</strong>，具有如下特点：</p>
+<ul>
+<li>若 $G(V,E)$ 为<strong>无向图</strong>，则存储空间为 $O(|V|+2|E|)$</li>
+<li>若 $G(V,E)$ 为<strong>有向图</strong>，则存储空间为 $O(|V|+|E|)$</li>
+<li>对于无向图的邻接表，顶点表结点 $i$ 的边表中结点个数为结点 $i$ 的度</li>
+<li>对于有向图的邻接表，顶点表结点 $i$ 的边表结点个数为结点 $i$ 的<strong>出度</strong>，邻接表中所有编号为 $i$ 的边表结点个数为结点 $i$ 的<strong>入度</strong></li>
+<li>邻接矩阵对点的操作效率高，对于给定的结点，可以轻易的找出其所有邻接边，对不确定的边操作较为方便，可以很好的处理<strong>稀疏图</strong></li>
+</ul>
+<h2 id="实现-1"><a href="#实现-1" class="headerlink" title="实现"></a>实现</h2><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Edge</span> &#123;</span>   <span class="comment">//边表</span></span><br><span class="line">    <span class="keyword">int</span> pos;    <span class="comment">//位置域，存放该顶点的邻接点在顶点表中的下标</span></span><br><span class="line">    <span class="keyword">int</span> dis;    <span class="comment">//数据域，对于网图，增设一存取边上信息的域</span></span><br><span class="line">    Edge *next; <span class="comment">//指针域，指向边表中下一结点</span></span><br><span class="line">&#125;;</span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Node</span> &#123;</span>        <span class="comment">//顶点表</span></span><br><span class="line">    <span class="keyword">int</span> pos;         <span class="comment">//顶点域，存放顶点信息</span></span><br><span class="line">    Edge *firstEdge; <span class="comment">//指针域，指向边表中的第一个结点</span></span><br><span class="line">&#125; node[N];</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">init</span><span class="params">(<span class="keyword">int</span> n, <span class="keyword">int</span> m)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; n; i++) &#123; <span class="comment">//n个点</span></span><br><span class="line">        <span class="built_in">scanf</span>(<span class="string">"%d"</span>, &amp;node[i].pos);</span><br><span class="line">        node[i].firstEdge = <span class="literal">NULL</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; m; i++) &#123; <span class="comment">//m条边</span></span><br><span class="line">        <span class="keyword">int</span> x, y;</span><br><span class="line">        <span class="built_in">scanf</span>(<span class="string">"%d%d"</span>, &amp;x, &amp;y);    <span class="comment">//边所依附的两点编号</span></span><br><span class="line">        Edge *p;                  <span class="comment">//边表结点</span></span><br><span class="line">        <span class="comment">//添边x-&gt;y</span></span><br><span class="line">        p-&gt;pos = y;</span><br><span class="line">        p-&gt;next = node[x].firstEdge;</span><br><span class="line">        node[x].firstEdge = p;</span><br><span class="line">        <span class="comment">//添边y-&gt;x</span></span><br><span class="line">        p-&gt;pos = x;</span><br><span class="line">        p-&gt;next = node[y].firstEdge;</span><br><span class="line">        node[y].firstEdge = p;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="邻接表与邻接矩阵的转换"><a href="#邻接表与邻接矩阵的转换" class="headerlink" title="邻接表与邻接矩阵的转换"></a>邻接表与邻接矩阵的转换</h2><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Edge</span>&#123;</span></span><br><span class="line">    <span class="keyword">int</span> pos;</span><br><span class="line">    <span class="keyword">int</span> dis;</span><br><span class="line">    Edge *next;</span><br><span class="line">&#125;;</span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Node</span> &#123;</span></span><br><span class="line">    <span class="keyword">int</span> pos;</span><br><span class="line">    Edge *firstEdge;</span><br><span class="line">&#125; node[N];   <span class="comment">//邻接表</span></span><br><span class="line"><span class="keyword">int</span> G[N][N]; <span class="comment">//邻接矩阵</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">adListToAdMatrix</span><span class="params">(<span class="keyword">int</span> n)</span> </span>&#123; <span class="comment">//邻接表转邻接矩阵</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; n; i++) &#123; <span class="comment">//枚举邻接表中每个点</span></span><br><span class="line">        Edge *p = node[i].firstEdge;</span><br><span class="line">        <span class="keyword">while</span> (p != <span class="literal">NULL</span>) &#123; <span class="comment">//枚举每个点的每条边</span></span><br><span class="line">            G[i][p-&gt;pos] = p-&gt;dis;</span><br><span class="line">            p = p-&gt;next;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">adMatrixToAdList</span><span class="params">(<span class="keyword">int</span> n)</span> </span>&#123; <span class="comment">//邻接矩阵转邻接表</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; n; i++) <span class="comment">//邻接表初始化</span></span><br><span class="line">        node[i].firstEdge = <span class="literal">NULL</span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; n; i++) &#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> j = n - <span class="number">1</span>; j &gt;= <span class="number">0</span>; j--) &#123;</span><br><span class="line">            <span class="keyword">if</span> (G[i][j] != <span class="number">0</span>) &#123; <span class="comment">//边存在，头插法建边</span></span><br><span class="line">                Edge *p = (Edge *)<span class="built_in">malloc</span>(<span class="keyword">sizeof</span>(Edge));</span><br><span class="line">                p-&gt;pos = j;</span><br><span class="line">                p-&gt;next = node[i].firstEdge;</span><br><span class="line">                node[i].firstEdge = p;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h1 id="【前向星与链式前向星】"><a href="#【前向星与链式前向星】" class="headerlink" title="【前向星与链式前向星】"></a>【前向星与链式前向星】</h1><h2 id="前向星"><a href="#前向星" class="headerlink" title="前向星"></a>前向星</h2><p>对于邻接矩阵来说，其方便但效率低，对于邻接表来说，其虽效率较高但实现较为困难</p>
+<p>前向星是一种介于两者之间的较为中庸的结构，虽然好写，但效率较邻接表来说较低，且其不能直接用顶点进行定位，对重边不好处理，只能与邻接表一样遍历判重</p>
+<p>前向星借助 STL 中的 <code>vector</code> 容器来储存边的方式来存储图，其通过读入每条边的信息，将边存放在数组中，把数组中的边按照起点顺序排序进行构造</p>
+<p>常用于具有多个点或两点间具有多条弧的情况，其缺点是不能直接用顶点进行定位</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> n, m;</span><br><span class="line"><span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; edge[N];</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">init</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="built_in">cin</span> &gt;&gt; n &gt;&gt; m;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; m; i++) &#123;</span><br><span class="line">        <span class="keyword">int</span> x, y;</span><br><span class="line">        <span class="built_in">cin</span> &gt;&gt; x &gt;&gt; y; <span class="comment">//边所依附的两点编号</span></span><br><span class="line">        edge[x].push_back(y);<span class="comment">//添边x-&gt;y</span></span><br><span class="line">        edge[y].push_back(x);<span class="comment">//添边y-&gt;x</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="链式前向星"><a href="#链式前向星" class="headerlink" title="链式前向星"></a>链式前向星</h2><p>由于借助 <code>vector</code> 实现的前向星的效率并不高，为此借助结构体来模拟链式结构，从而将其进行优化</p>
+<p>在优化后，内存利用率高，效率也得到了极大的提升，在常见的图论问题中，链式前向星几乎可适用于所有的图，但其缺点也很明显，如操作复杂化、不好处理重边等</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Edge</span> &#123;</span></span><br><span class="line">    <span class="keyword">int</span> next; <span class="comment">//下一条边的数组下标</span></span><br><span class="line">    <span class="keyword">int</span> to;   <span class="comment">//该边的另一个顶点</span></span><br><span class="line">    <span class="keyword">int</span> dis;  <span class="comment">//该边的权值</span></span><br><span class="line">&#125; edge[N];</span><br><span class="line"><span class="keyword">int</span> n, m;     <span class="comment">//点数，边数</span></span><br><span class="line"><span class="keyword">int</span> head[N];  <span class="comment">//head[i]表示顶点i的第一条边的数组下标，-1表示顶点i没有边</span></span><br><span class="line"><span class="keyword">int</span> tot;      <span class="comment">//边的条数即边序号</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">addEdge</span> <span class="params">(<span class="keyword">int</span> from, <span class="keyword">int</span> to, <span class="keyword">int</span> dis)</span> </span>&#123;</span><br><span class="line">    edge[tot].dis = dis; <span class="comment">//权值</span></span><br><span class="line">    edge[tot].to = to;   <span class="comment">//另一顶点</span></span><br><span class="line">    edge[tot].next = head[from];<span class="comment">//同结点下该边的下一条边</span></span><br><span class="line">    head[from] = tot++;  <span class="comment">//结点from的第一条边</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">mian</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="built_in">memset</span>(head, <span class="number">-1</span>, <span class="keyword">sizeof</span>(head));</span><br><span class="line">    tot = <span class="number">0</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; m; i++) &#123;</span><br><span class="line">        <span class="keyword">int</span> x, y, w;</span><br><span class="line">        <span class="built_in">scanf</span>(<span class="string">"%d%d%d"</span>, &amp;x, &amp;y, &amp;w);</span><br><span class="line">        addEdge(x, y, w); <span class="comment">//添边x-&gt;y</span></span><br><span class="line">        addEdge(y, x, w); <span class="comment">//添边y-&gt;x</span></span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">//遍历从x出发的所有边</span></span><br><span class="line">    <span class="keyword">int</span> x = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = head[x]; i != <span class="number">-1</span>; i = edge[i].next) &#123;</span><br><span class="line">        <span class="keyword">int</span> y = edge[i].to;</span><br><span class="line">        ...</span><br><span class="line">    &#125;</span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h1 id="【十字链表与邻接多重表】"><a href="#【十字链表与邻接多重表】" class="headerlink" title="【十字链表与邻接多重表】"></a>【十字链表与邻接多重表】</h1><p>十字链表与邻接多重表也是图的一种存储方法，但由于操作复杂、内存利用率不高等因素常不被使用</p>
+<h2 id="十字链表"><a href="#十字链表" class="headerlink" title="十字链表"></a>十字链表</h2><p>十字链表是<strong>有向图</strong>的一种存储方法，其实质上是邻接表与逆邻接表的结合</p>
+<p>顶点表结点由<strong>数据域 <code>data</code></strong> ，<strong>入边表头指针<code>firstIn</code></strong> ，<strong>出边表头指针 <code>firstOut</code></strong> 构成， 其中， 数据域存放顶点信息（一般为点编号），入边表头指针指向<strong>以该顶点为终点</strong>的弧构成的链表中的第一个结点；出边表头指针指向<strong>以该顶点为始点</strong>的弧构成的链表中的第一个结点</p>
+<p>边表结点由<strong>数据域 <code>data</code></strong>、<strong>尾域<code>tailPos</code></strong> 、<strong>头域 <code>headPost</code></strong>、<strong>入边表指针域<code>headLink</code></strong>、<strong>出边表指针域<code>tailLink</code></strong>，其中数据域存放网图的边权，尾域为弧的<strong>起点</strong>在顶点表中的下标，头域为弧的<strong>终点</strong>在顶点表中的下标，入边表指针域指向终点相同的下一条边，出边表指针域指向起点相同的下一条边</p>
+<p><code>headLink</code> 为入边表指针域，指向终点相同的下一条边；<code>tailLink</code> 为出边表指针域，指向起点相同的下一条边</p>
+<p> <img width="500" src="/images/oi-acm/basic/01.theory/06-3.png"></p>
+<h2 id="邻接多重表"><a href="#邻接多重表" class="headerlink" title="邻接多重表"></a>邻接多重表</h2><p>邻接多重表是<strong>无向图</strong>的一种存储方法，在用邻接表存储无向图时，每条边的两个顶点分别在以该边所依附的两个顶点的边表中，这种重复存储给图的某些操作带来不便，在其基础上有了邻接多重表，<strong>两者的差别仅在于同一条边在邻接表用两个结点表示，在邻接多重表用一个结点表示</strong></p>
+<p><img width="500" src="/images/oi-acm/basic/01.theory/06-4.png"></p>
+<p>顶点表结点由<strong>数据域 <code>data</code></strong>、<strong>边表头指针 <code>firstEdge</code></strong> 构成，其中数据域存放顶点信息（一般为结点编号），边表头指针指向第一条依附于该点的边</p>
+<p>边表结点由<strong>数据域 <code>data</code></strong>、<strong>标志域 <code>mark</code></strong> 、<strong>位置域 <code>iPos</code> 与 <code>jPos</code></strong>、<strong>位置指针域 <code>iLink</code>与 <code>jLink</code></strong> 构成，其中数据域存放网图的边权，标志域用于标记该边是否被搜索过，位置域分别为某边依附的两结点在顶点表中的下标，位置指针域分别指向依附于结点 <code>iPos</code> 与 <code>jPos</code> 的下一条边</p>
+<p><img width="500" src="/images/oi-acm/basic/01.theory/06-5.png"></p>
+
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>感谢您对我的支持，让我继续努力分享有用的技术与知识点！</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/wechatpay.jpg" alt="Alex_McAvoy 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/alipay.jpg" alt="Alex_McAvoy 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Alex_McAvoy
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://alex-mcavoy.github.io/oi-acm/basic/theory/d96fe4f4.html" title="图的存储结构">https://alex-mcavoy.github.io/oi-acm/basic/theory/d96fe4f4.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/cpp/" rel="tag"># C++</a>
+              <a href="/tags/oi-acm/" rel="tag"># OI&ACM</a>
+              <a href="/tags/basic/" rel="tag"># 算法基础</a>
+              <a href="/tags/theory/" rel="tag"># 基础理论</a>
+              <a href="/tags/graph/" rel="tag"># 图论</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/oi-acm/data-structure/bst-avl/avl/4263f441.html" rel="prev" title="平衡二叉树 AVL">
+      <i class="fa fa-chevron-left"></i> 平衡二叉树 AVL
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/oi-acm/data-structure/bst-avl/bst/317052a9.html" rel="next" title="二叉排序树 BST">
+      二叉排序树 BST <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【邻接矩阵】"><span class="nav-number">1.</span> <span class="nav-text">【邻接矩阵】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#结构"><span class="nav-number">1.1.</span> <span class="nav-text">结构</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#特点"><span class="nav-number">1.2.</span> <span class="nav-text">特点</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#实现"><span class="nav-number">1.3.</span> <span class="nav-text">实现</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【邻接表】"><span class="nav-number">2.</span> <span class="nav-text">【邻接表】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#结构-1"><span class="nav-number">2.1.</span> <span class="nav-text">结构</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#特点-1"><span class="nav-number">2.2.</span> <span class="nav-text">特点</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#实现-1"><span class="nav-number">2.3.</span> <span class="nav-text">实现</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#邻接表与邻接矩阵的转换"><span class="nav-number">2.4.</span> <span class="nav-text">邻接表与邻接矩阵的转换</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【前向星与链式前向星】"><span class="nav-number">3.</span> <span class="nav-text">【前向星与链式前向星】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#前向星"><span class="nav-number">3.1.</span> <span class="nav-text">前向星</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#链式前向星"><span class="nav-number">3.2.</span> <span class="nav-text">链式前向星</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【十字链表与邻接多重表】"><span class="nav-number">4.</span> <span class="nav-text">【十字链表与邻接多重表】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#十字链表"><span class="nav-number">4.1.</span> <span class="nav-text">十字链表</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#邻接多重表"><span class="nav-number">4.2.</span> <span class="nav-text">邻接多重表</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">  
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Alex_McAvoy"
+      src="/assets/img/head.jpg">
+  <p class="site-author-name" itemprop="name">Alex_McAvoy</p>
+  <div class="site-description" itemprop="description">想要成为渔夫的猎手</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">535</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">57</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">62</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Alex-McAvoy" title="GitHub → https://github.com/Alex-McAvoy" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/u011815404" title="CSDN → https://blog.csdn.net/u011815404" rel="noopener" target="_blank"><i class="fas fa-copyright fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+<!-- 访客地图 -->
+<script type="text/javascript" src="//rf.revolvermaps.com/0/0/5.js?i=50n58yo58ow&amp;m=0&amp;c=ff0000&amp;cr1=ffffff&amp;s=140" async="async"></script>
+
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdz20172133" title="https://blog.csdn.net/sdz20172133" rel="noopener" target="_blank">神仙队友</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://pxlsdz.gitee.io/" title="https://pxlsdz.gitee.io/" rel="noopener" target="_blank">神仙队友的另一个博客</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://bycore.net" title="https://bycore.net" rel="noopener" target="_blank">凉了的某饼同学</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://kris-cn.github.io/" title="http://kris-cn.github.io/" rel="noopener" target="_blank">翟孙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://deng.fun/" title="http://deng.fun/" rel="noopener" target="_blank">芙蓉姐姐</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdau_fangshifeng" title="https://blog.csdn.net/sdau_fangshifeng" rel="noopener" target="_blank">一个头很酷的家伙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/wentong_Xu" title="https://blog.csdn.net/wentong_Xu" rel="noopener" target="_blank">小黑贱胖子</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.yuheng.tech/" title="https://www.yuheng.tech/" rel="noopener" target="_blank">咸于</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/lanshan1111" title="https://blog.csdn.net/lanshan1111" rel="noopener" target="_blank">肥硕硕</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdauguanweihong" title="https://blog.csdn.net/sdauguanweihong" rel="noopener" target="_blank">管少</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_41661919" title="https://blog.csdn.net/qq_41661919" rel="noopener" target="_blank">俊杰</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_40859951" title="https://blog.csdn.net/qq_40859951" rel="noopener" target="_blank">峰哥</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/LSD20164388" title="https://blog.csdn.net/LSD20164388" rel="noopener" target="_blank">狗冬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37748451" title="https://blog.csdn.net/qq_37748451" rel="noopener" target="_blank">胖亚亚</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37868325" title="https://blog.csdn.net/qq_37868325" rel="noopener" target="_blank">妍大佬</a>
+        </li>
+    </ul>
+  </div>
+
+		
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+  
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Alex_McAvoy</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+</br>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script><script src="/js/bookmark.js"></script>
+
+
+
+  
+
+
+
+
+  <script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '48fd73a538d3fa927f65',
+      clientSecret: '56618aefeee90bac3c20de8d51bb0b985d67252d',
+      repo        : 'Gitalk-Comment',
+      owner       : 'Alex-McAvoy',
+      admin       : ['Alex-McAvoy'],
+      id          : '27285df24f63c20dd231baac32a68010',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+  
+  <!-- 鼠标单击粒子特效 -->
+  <script type="text/javascript" src="/js/cursor-effects.js"></script>
+  <!-- 多级目录 -->
+  <script type="text/javascript" src="/js/category.js"></script>
+  
+</body>
+</html>

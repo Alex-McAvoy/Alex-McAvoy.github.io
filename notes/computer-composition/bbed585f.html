@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.9.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/img/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/assets/img/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/pace-js@1/themes/blue/pace-theme-minimal.css">
+  <script src="//cdn.jsdelivr.net/npm/pace-js@1/pace.min.js"></script>
+
+
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"alex-mcavoy.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":16,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":true,"color":"#ff0000","save":"manual"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":true},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.json"};
+  </script>
+
+  <meta name="description" content="【半导体存储芯片】基本结构半导体存储芯片内集成有存储矩阵、译码驱动电路、读写电路等，其基本结构如下图">
+<meta name="keywords" content="学习笔记,计算机组成">
+<meta property="og:type" content="article">
+<meta property="og:title" content="半导体随机存储器">
+<meta property="og:url" content="https://alex-mcavoy.github.io/notes/computer-composition/bbed585f.html">
+<meta property="og:site_name" content="Alex_McAvoy">
+<meta property="og:description" content="【半导体存储芯片】基本结构半导体存储芯片内集成有存储矩阵、译码驱动电路、读写电路等，其基本结构如下图">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/computer-composition/08-1.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/computer-composition/08-2.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/computer-composition/08-3.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/computer-composition/08-4.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/computer-composition/08-5.png">
+<meta property="og:updated_time" content="2022-05-07T12:34:31.389Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="半导体随机存储器">
+<meta name="twitter:description" content="【半导体存储芯片】基本结构半导体存储芯片内集成有存储矩阵、译码驱动电路、读写电路等，其基本结构如下图">
+<meta name="twitter:image" content="https://alex-mcavoy.github.io/images/notes/computer-composition/08-1.png">
+
+<link rel="canonical" href="https://alex-mcavoy.github.io/notes/computer-composition/bbed585f.html">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>半导体随机存储器 | Alex_McAvoy</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Alex_McAvoy</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">想要成为渔夫的猎手</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+
+	
+	
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/notes/computer-composition/bbed585f.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/assets/img/head.jpg">
+      <meta itemprop="name" content="Alex_McAvoy">
+      <meta itemprop="description" content="想要成为渔夫的猎手">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Alex_McAvoy">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          半导体随机存储器
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-03-15 15:49:00" itemprop="dateCreated datePublished" datetime="2019-03-15T15:49:00+08:00">2019-03-15</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/notes/" itemprop="url" rel="index"><span itemprop="name">学习笔记</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/notes/computer-composition/" itemprop="url" rel="index"><span itemprop="name">计算机组成</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>3.1k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>3 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="【半导体存储芯片】"><a href="#【半导体存储芯片】" class="headerlink" title="【半导体存储芯片】"></a>【半导体存储芯片】</h1><h2 id="基本结构"><a href="#基本结构" class="headerlink" title="基本结构"></a>基本结构</h2><p>半导体存储芯片内集成有存储矩阵、译码驱动电路、读写电路等，其基本结构如下图</p>
+<p><img width="500" src="/images/notes/computer-composition/08-1.png"></p>
+<ul>
+<li>存储矩阵：由大量相同的位存储单元阵列构成</li>
+<li>译码驱动：将来自地址总线的地址信号翻译成对应存储单元的选通信号，该信号在读写电路的配合下完成对被选中单元的读写操作</li>
+<li>读写电路：包括读出放大器和写入电路，用来完成读写操作</li>
+<li>读写控制线：决定芯片进行读写操作</li>
+<li>片选线：确定哪个存储芯片被选中</li>
+<li>地址线：是单向输入的，其位数与存储字的个数有关</li>
+<li>数据线：是双向的，其位数与读出或写入的数据位数有关，数据线数和地址线数共同反映存储芯片容量的大小，如地址线 $10$ 根，数据线 $8$ 根，则芯片容量为 $210\times 8=8K$ 位</li>
+</ul>
+<p>半导体随机存取存储器按其存储信息的原理不同，可分为静态 RAM 和动态 RAM 两种，静态 RAM 大多用于高速缓冲存储器中，动态 RAM 大多用于主存中</p>
+<h2 id="74138-译码器"><a href="#74138-译码器" class="headerlink" title="74138 译码器"></a>74138 译码器</h2><p>译码是编码的逆过程， 实现译码功能的电路被称为译码器</p>
+<p>常见的译码器为 74138 译码器，输入是 $3$ 位二进制码，输出端的 $8$ 个端口对应 $8$ 种输入状态，因此又被称为 3/8 译码器</p>
+<p><img width="300" src="/images/notes/computer-composition/08-2.png"></p>
+<p>其中，$A$、$B$、$C$ 为译码地址输入端，$G_1$、$\overline{G_{2A}}$、$\overline{G_{2B}}$ 为选通端，$\overline{Y_0}\sim \overline{Y_7}$ 为译码输出端（低电平有效）</p>
+<p>当选通端 $G_1$ 为高电平，另两个选通端 $\overline{G_{2A}}$、$\overline{G_{2B}}$ 为低电平时，才可将地址端 $A$、$B$、$C$ 的二进制码在一个对应的输出端以低电平译出</p>
+<h1 id="【RAM-存储器】"><a href="#【RAM-存储器】" class="headerlink" title="【RAM 存储器】"></a>【RAM 存储器】</h1><h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>通常把存放一个二进制位的物理器件称为<strong>存储元</strong>，其是存储器的最基本构件，地址码相同的多个存储元构成一个<strong>存储单元</strong>，若干存储单元的集合构成<strong>存储体</strong></p>
+<p>对于 RAM 存储器来说，其分为静态随机存储器（SRAM）和动态随机存储器（DRAM）两种，两者对比如下表</p>
+<p><img width="700" src="/images/notes/computer-composition/08-3.png"></p>
+<h2 id="SRAM-存储器存储原理"><a href="#SRAM-存储器存储原理" class="headerlink" title="SRAM 存储器存储原理"></a>SRAM 存储器存储原理</h2><p>静态随机存储器（SRAM）的存储元是用双稳态触发器（六管 MOS）来记忆信息的，因此即使信息被读出后，它仍保持其原状态而不需要再生（非破坏性读出），但是，只要电源被切断，原来的保存信息便会丢失，故它属易失性半导体存储器</p>
+<p>SRAM 的存取速度快，但集成度低，功耗较大，所以一般用来组成高速缓冲存储器</p>
+<h2 id="DRAM-存储器存储原理"><a href="#DRAM-存储器存储原理" class="headerlink" title="DRAM 存储器存储原理"></a>DRAM 存储器存储原理</h2><p>动态随机存储器（DRAM）是利用存储元电路中栅极电容上的电荷来存储信息的，常见的 DRAM 的基本存储电路通常分为三管式和单管式，同时 DRAM 采用地址复用技术，即地址线是原来的一半，且地址信号分行、列两次传送</p>
+<p>相对于 SRAM 来说，DRAM 具有容易集成、位价低、容量大和功耗低等优点，但是 DRAM 的存取速度比 SRAM 慢，一般用来组成大容量主存系统</p>
+<p>DRAM 电容上的电荷一般只能维持一到两毫秒，因此即使电源不掉电，信息也会自动消失，为此，每隔一定时间必须刷新，通常取 $2ms$，这个时间称为<strong>刷新周期</strong></p>
+<p>常用的刷新方式有以下三种：</p>
+<ol>
+<li><strong>集中刷新</strong>：在一个刷新周期内，利用一段固定的时间，依次对存储器的所有行进行逐一再生，在此期间停止对存储器的读写操作，称为<strong>死时间</strong>，又称为<strong>访存死区</strong>，该方法读写操作时不受刷新工作的影响，因此系统的存取速度比较高，但在集中刷新期间（死区）不能访问存储器</li>
+<li><strong>分散刷新</strong>：把对每一行的刷新分散到各个工作周期中去，这样，一个存储器的系统工作周期分为两部分：前半部分用于正常读、写或保持；后半部分用于刷新某一行，这种刷新方式没有死区，但加长了系统的存取周期，降低了整机速度</li>
+<li><strong>异步刷新</strong>：异步刷新是前两种方法的结合，既可缩短死时间，又充分利用最大刷新间隔为 $2ms$ 的特点，具体做法是将刷新周期除以行数，得到两次刷新操作之间的时间间隔 $t$，然后利用逻辑电路每隔时间 $t$ 产生一次刷新请求，这样可以避免使 CPU 连续等待过长的时间，而且减少了刷新次数，从根本上提高了整机的工作效率</li>
+</ol>
+<p>如果将刷新安排在不需要访问存储器的译码阶段，则既不会加长存取周期，也不会产生死时间，这是分散刷新方式的发展，也称作<strong>透明刷新</strong></p>
+<p>对于 DRAM，其刷新需注意以下问题：</p>
+<ul>
+<li>刷新对 CPU 是透明的，即刷新不依赖于外部的访问</li>
+<li>动态 RAM 的刷新单位是行，故刷新操作时仅需要行地址</li>
+<li>刷新操作类似于读操作，但又有所不同</li>
+<li>刷新操作仅是给栅极电容补充电荷，不需要信息输出</li>
+<li>刷新时不需要选片，即整个存储器中的所有芯片同时被刷新</li>
+</ul>
+<h2 id="RAM-的读写周期"><a href="#RAM-的读写周期" class="headerlink" title="RAM 的读写周期"></a>RAM 的读写周期</h2><h3 id="RAM-的读周期"><a href="#RAM-的读周期" class="headerlink" title="RAM 的读周期"></a>RAM 的读周期</h3><p>从给出有效地址后，到读出所选中单元的内容并在外部数据总线上稳定地出现所需的时间称为读出时间 $t_A$，地址片选信号 $\overline{CS}$ 必须保持到数据稳定输出，$t_{CO}$ 为片选的保持时间，在读周期中 $\overline{WE}$ 为高电平</p>
+<p>RAM 芯片的读周期时序图如下所示</p>
+<p><img width="500" src="/images/notes/computer-composition/08-4.png"></p>
+<p>需要注意的是，读周期和读出时间是两个不同的概念，读周期时间 $t_{RC}$ 表示存储芯片进行两次连续读操作时所必须间隔的时间，其总是大于或等于读出时间</p>
+<h3 id="ROM-的写周期"><a href="#ROM-的写周期" class="headerlink" title="ROM 的写周期"></a>ROM 的写周期</h3><p>要实现写操作，必须要求片选信号 $\overline{CS}$ 和写命令信号 $\overline{WE}$ 都为低电平，同时为使数据总线上的信息能够可靠地写入存储器，要求 $\overline{CS}$ 信号与 $\overline{WE}$ 信号的与操作的宽度至少为 $t_w$</p>
+<p>若要去在地址变化期间不会发生错误写入而破坏存储器的内容，$\overline{WE}$ 信号在地址变化期间必须为高电平</p>
+<p>此外，为保证有效数据的可靠写入，地址有效的时间至少应为：</p>
+<script type="math/tex; mode=display">
+t_{wc}＝t_{AW}＋t_W＋t_{WR}</script><p>若要求在 $\overline{WE}$ 和 $\overline{CS}$ 变为无效前能把数据可靠地写入，要求写入的数据必须在 $t_{DW}$ 以前在数据总线上已经稳定</p>
+<p>RAM 芯片的写周期时序图如下所示</p>
+<p><img width="500" src="/images/notes/computer-composition/08-5.png"></p>
+<h1 id="【ROM-存储器】"><a href="#【ROM-存储器】" class="headerlink" title="【ROM 存储器】"></a>【ROM 存储器】</h1><h2 id="ROM-特点"><a href="#ROM-特点" class="headerlink" title="ROM 特点"></a>ROM 特点</h2><p>ROM 和 RAM 都是支持随机存取的存储器，其中 SRAM 和 DRAM 均为易失性存储器，而 ROM 中一旦有了信息，就不能轻易改变，即使掉电也不会丢失，它在计算机系统中是只供读出的存储器</p>
+<p>ROM 器件有两个显著的优点：</p>
+<ul>
+<li>结构简单，位密度比可读写存储器高</li>
+<li>具有非易失性，可靠性高</li>
+</ul>
+<h2 id="ROM-类型"><a href="#ROM-类型" class="headerlink" title="ROM 类型"></a>ROM 类型</h2><p>根据制造工艺的不同，ROM 可分为以下几种：</p>
+<ul>
+<li><strong>掩膜式只读存储器 MROM</strong>：内容由半导体制造厂按用户提出的要求在芯片的生产过程中直接写入，写入以后任何人都无法改变其内容，可靠性高，集成度高，价格便宜，但灵活性差</li>
+<li><strong>一次可编程只读存储器 PROM</strong>：可以实现一次性编程的只读存储器，允许用户利用专门的设备（编程器）写入自己的程序，一旦写入后，内容就无法改变</li>
+<li><strong>可擦除可编程只读存储器 EPROM</strong>：不仅可以由用户利用编程器写入信息，而且可以对其内容进行多次改写，当需要修改EPROM的内容时，先将其全部内容擦除，然后再编程，虽然 EPROM 可读又可写，但由于 EPROM 的编程次数有限，且写入时间过长，所以其不能取代 RAM，同时，根据擦除方式，ERPOM 可分为紫外线擦除 UVEPROM 和电擦除 EPROM 两种</li>
+<li><strong>闪速存储器 Flash Memory</strong>：又称闪存，其是在 EPROM 与 EPROM 基础上发展起来的，既可在不加电的情况下长期保存信息，又能在线进行快速擦除与重写，价格便宜、集成度高，同时可擦除重写，且擦除重写的速度快</li>
+<li><strong>固态硬盘 SSD</strong>：基于闪存的固态硬盘是用固态电子存储芯片阵列而制成的硬盘，由控制单元和存储单元（FLASH 芯片）组成，保留了闪存长期保存信息、快速擦除与重写的特性，对比传统硬盘也具有读写速度快，低功耗的特性，但价格较高</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>感谢您对我的支持，让我继续努力分享有用的技术与知识点！</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/wechatpay.jpg" alt="Alex_McAvoy 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/alipay.jpg" alt="Alex_McAvoy 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Alex_McAvoy
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://alex-mcavoy.github.io/notes/computer-composition/bbed585f.html" title="半导体随机存储器">https://alex-mcavoy.github.io/notes/computer-composition/bbed585f.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/notes/" rel="tag"># 学习笔记</a>
+              <a href="/tags/computer-composition/" rel="tag"># 计算机组成</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/notes/computer-composition/d7e92617.html" rel="prev" title="存储器分类与指标">
+      <i class="fa fa-chevron-left"></i> 存储器分类与指标
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/oi-acm/graph/spanning-tree/minimum-spanning-tree/9acb5cb3.html" rel="next" title="最小生成树">
+      最小生成树 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【半导体存储芯片】"><span class="nav-number">1.</span> <span class="nav-text">【半导体存储芯片】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#基本结构"><span class="nav-number">1.1.</span> <span class="nav-text">基本结构</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#74138-译码器"><span class="nav-number">1.2.</span> <span class="nav-text">74138 译码器</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【RAM-存储器】"><span class="nav-number">2.</span> <span class="nav-text">【RAM 存储器】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#概述"><span class="nav-number">2.1.</span> <span class="nav-text">概述</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#SRAM-存储器存储原理"><span class="nav-number">2.2.</span> <span class="nav-text">SRAM 存储器存储原理</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#DRAM-存储器存储原理"><span class="nav-number">2.3.</span> <span class="nav-text">DRAM 存储器存储原理</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#RAM-的读写周期"><span class="nav-number">2.4.</span> <span class="nav-text">RAM 的读写周期</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#RAM-的读周期"><span class="nav-number">2.4.1.</span> <span class="nav-text">RAM 的读周期</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ROM-的写周期"><span class="nav-number">2.4.2.</span> <span class="nav-text">ROM 的写周期</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【ROM-存储器】"><span class="nav-number">3.</span> <span class="nav-text">【ROM 存储器】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#ROM-特点"><span class="nav-number">3.1.</span> <span class="nav-text">ROM 特点</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ROM-类型"><span class="nav-number">3.2.</span> <span class="nav-text">ROM 类型</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">  
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Alex_McAvoy"
+      src="/assets/img/head.jpg">
+  <p class="site-author-name" itemprop="name">Alex_McAvoy</p>
+  <div class="site-description" itemprop="description">想要成为渔夫的猎手</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">535</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">57</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">62</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Alex-McAvoy" title="GitHub → https://github.com/Alex-McAvoy" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/u011815404" title="CSDN → https://blog.csdn.net/u011815404" rel="noopener" target="_blank"><i class="fas fa-copyright fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+<!-- 访客地图 -->
+<script type="text/javascript" src="//rf.revolvermaps.com/0/0/5.js?i=50n58yo58ow&amp;m=0&amp;c=ff0000&amp;cr1=ffffff&amp;s=140" async="async"></script>
+
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdz20172133" title="https://blog.csdn.net/sdz20172133" rel="noopener" target="_blank">神仙队友</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://pxlsdz.gitee.io/" title="https://pxlsdz.gitee.io/" rel="noopener" target="_blank">神仙队友的另一个博客</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://bycore.net" title="https://bycore.net" rel="noopener" target="_blank">凉了的某饼同学</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://kris-cn.github.io/" title="http://kris-cn.github.io/" rel="noopener" target="_blank">翟孙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://deng.fun/" title="http://deng.fun/" rel="noopener" target="_blank">芙蓉姐姐</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdau_fangshifeng" title="https://blog.csdn.net/sdau_fangshifeng" rel="noopener" target="_blank">一个头很酷的家伙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/wentong_Xu" title="https://blog.csdn.net/wentong_Xu" rel="noopener" target="_blank">小黑贱胖子</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.yuheng.tech/" title="https://www.yuheng.tech/" rel="noopener" target="_blank">咸于</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/lanshan1111" title="https://blog.csdn.net/lanshan1111" rel="noopener" target="_blank">肥硕硕</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdauguanweihong" title="https://blog.csdn.net/sdauguanweihong" rel="noopener" target="_blank">管少</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_41661919" title="https://blog.csdn.net/qq_41661919" rel="noopener" target="_blank">俊杰</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_40859951" title="https://blog.csdn.net/qq_40859951" rel="noopener" target="_blank">峰哥</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/LSD20164388" title="https://blog.csdn.net/LSD20164388" rel="noopener" target="_blank">狗冬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37748451" title="https://blog.csdn.net/qq_37748451" rel="noopener" target="_blank">胖亚亚</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37868325" title="https://blog.csdn.net/qq_37868325" rel="noopener" target="_blank">妍大佬</a>
+        </li>
+    </ul>
+  </div>
+
+		
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+  
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Alex_McAvoy</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+</br>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script><script src="/js/bookmark.js"></script>
+
+
+
+  
+
+
+
+
+  <script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '48fd73a538d3fa927f65',
+      clientSecret: '56618aefeee90bac3c20de8d51bb0b985d67252d',
+      repo        : 'Gitalk-Comment',
+      owner       : 'Alex-McAvoy',
+      admin       : ['Alex-McAvoy'],
+      id          : '5e4dc916efb18a5ad34dae550ee85333',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+  
+  <!-- 鼠标单击粒子特效 -->
+  <script type="text/javascript" src="/js/cursor-effects.js"></script>
+  <!-- 多级目录 -->
+  <script type="text/javascript" src="/js/category.js"></script>
+  
+</body>
+</html>

@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.9.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/img/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/assets/img/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/pace-js@1/themes/blue/pace-theme-minimal.css">
+  <script src="//cdn.jsdelivr.net/npm/pace-js@1/pace.min.js"></script>
+
+
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"alex-mcavoy.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":16,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":true,"color":"#ff0000","save":"manual"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":true},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.json"};
+  </script>
+
+  <meta name="description" content="【概述】对于数据库系统的体系结构，其分为内部体系结构、外部体系结构两个角度 从数据库管理系统角度来看，通常采用外模式、模式、内模式三级模式结构，这是数据库系统的内体系结构，又被称为数据库系统的模式结构">
+<meta name="keywords" content="学习笔记,数据库系统">
+<meta property="og:type" content="article">
+<meta property="og:title" content="数据库系统的内体系结构">
+<meta property="og:url" content="https://alex-mcavoy.github.io/notes/database/9115cc91.html">
+<meta property="og:site_name" content="Alex_McAvoy">
+<meta property="og:description" content="【概述】对于数据库系统的体系结构，其分为内部体系结构、外部体系结构两个角度 从数据库管理系统角度来看，通常采用外模式、模式、内模式三级模式结构，这是数据库系统的内体系结构，又被称为数据库系统的模式结构">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/database/04-1.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/database/04-2.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/database/04-3.png">
+<meta property="og:updated_time" content="2021-08-23T13:36:53.516Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="数据库系统的内体系结构">
+<meta name="twitter:description" content="【概述】对于数据库系统的体系结构，其分为内部体系结构、外部体系结构两个角度 从数据库管理系统角度来看，通常采用外模式、模式、内模式三级模式结构，这是数据库系统的内体系结构，又被称为数据库系统的模式结构">
+<meta name="twitter:image" content="https://alex-mcavoy.github.io/images/notes/database/04-1.png">
+
+<link rel="canonical" href="https://alex-mcavoy.github.io/notes/database/9115cc91.html">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>数据库系统的内体系结构 | Alex_McAvoy</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Alex_McAvoy</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">想要成为渔夫的猎手</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+
+	
+	
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/notes/database/9115cc91.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/assets/img/head.jpg">
+      <meta itemprop="name" content="Alex_McAvoy">
+      <meta itemprop="description" content="想要成为渔夫的猎手">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Alex_McAvoy">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          数据库系统的内体系结构
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2018-09-23 15:53:00" itemprop="dateCreated datePublished" datetime="2018-09-23T15:53:00+08:00">2018-09-23</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/notes/" itemprop="url" rel="index"><span itemprop="name">学习笔记</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/notes/database/" itemprop="url" rel="index"><span itemprop="name">数据库系统</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>2.3k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>2 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="【概述】"><a href="#【概述】" class="headerlink" title="【概述】"></a>【概述】</h1><p>对于数据库系统的体系结构，其分为内部体系结构、外部体系结构两个角度</p>
+<p>从数据库<strong>管理系统角度</strong>来看，通常采用外模式、模式、内模式<strong>三级模式结构</strong>，这是<strong>数据库系统的内体系结构</strong>，又被称为<strong>数据库系统的模式结构</strong></p>
+<p>从数据库<strong>最终用户角度</strong>来看，数据库系统结构分为单用户结构、主从式结构、分布式结构、客户-服务器结构、浏览器-应用服务器-数据库服务器多层结构等，这是<strong>数据库系统的外体系结构</strong></p>
+<p>本篇仅介绍数据库系统的内体系结构，关于数据库系统的外体系结构：<a href="https://alex-mcavoy.github.io/notes/database/71d8e303.html">点击这里</a></p>
+<h1 id="【模式的概念】"><a href="#【模式的概念】" class="headerlink" title="【模式的概念】"></a>【模式的概念】</h1><p>在数据模型中，有型和值的概念：</p>
+<ul>
+<li><strong>型（Type）</strong>：对某一类数据的结构和属性的说明</li>
+<li><strong>值（Value）</strong>：型的一个具体赋值</li>
+</ul>
+<p>例如：在学生数据库中，学生记录定义为 <code>(学号,姓名,性别,系别,年龄)</code> ，这就是一个<strong>记录型</strong>，而对应的 <code>(97001,张三,男,计算机,19)</code> 是该记录型的一个<strong>记录值</strong></p>
+<p>对于模式，有如下概念：</p>
+<ul>
+<li><strong>模式（Schema）</strong>：数据库中全体数据的<strong>逻辑结构和特征的描述</strong>，是型的描述，反映的是数据的结构及其联系，相对稳定</li>
+<li><strong>实例（Instance）</strong>：模式的一个具体值，反映数据库某一时刻的状态，随数据库中的数据的更新而变动，同一个模式可以有很多实例</li>
+</ul>
+<p>例如：在学生数据库模式中，包含学生记录、课程记录、学生选课记录，这是一个<strong>模式</strong>，而在 2018 年度学生数据库<strong>实例</strong>中，包含了 2018 年学校中所有学生的记录、学校开设的所有课程的记录、所有学生选课的记录，同时 2017 年度学生数据库模式对应的实例与 2018 年度学生数据库模式对应的实例是不同的 </p>
+<h1 id="【三级模式结构】"><a href="#【三级模式结构】" class="headerlink" title="【三级模式结构】"></a>【三级模式结构】</h1><h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>数据库系统的三级模式结构是指数据库系统由<strong>外模式</strong>、<strong>模式</strong>、<strong>内模式</strong>三级构成</p>
+<p><img width="400" src="/images/notes/database/04-1.png"></p>
+<p>简单来说，外模式是用户世界，模式是程序员世界，内模式是机器世界，对于某个学生课程数据库，三者的视角如下图</p>
+<p><img src="/images/notes/database/04-2.png"></p>
+<h2 id="模式"><a href="#模式" class="headerlink" title="模式"></a>模式</h2><p><strong>模式（Schema）</strong>也称逻辑模式，是数据库中<strong>全体数据</strong>的逻辑结构与特征的描述，是<strong>所有用户</strong>的公共数据视图，综合了所有用户的需求</p>
+<p>模式是数据库系统模式结构的<strong>中间层</strong>，与数据的物理存储细节和硬件环境无关，也与具体的应用程序、开发工具、高级程序设计语言无关</p>
+<p>模式实际上是数据库数据在<strong>逻辑上的视图</strong>，一个数据库<strong>只有一个模式</strong>，DBMS 提供<strong>模式数据定义语言（模式 DDL）</strong>来定义模式，在定义时，要考虑数据的<strong>逻辑结构（数据项名字、类型、取值范围等）</strong>、数据之间的<strong>联系</strong>、数据有关的<strong>安全性、完整性要求</strong></p>
+<h2 id="外模式"><a href="#外模式" class="headerlink" title="外模式"></a>外模式</h2><p><strong>外模式（External Schema）</strong>也称子模式、用户模式，其是数据库用户能够看见、使用的<strong>局部数据</strong>的逻辑结构与特征的描述，是<strong>数据库用户</strong>的数据视图，是与某一应用有关的数据的逻辑表示</p>
+<p>外模式介于模式与应用之间，对于模式与外模式来说，一个模式可以对应<strong>多个外模式（一对多关系）</strong>，是模式的子集，不同的外模式反映了不同用户的需求；对于外模式与应用来说，一个外模式可以对应<strong>多个应用（一对多关系）</strong>，但一个应用只能使用一个外模式</p>
+<p>外模式是保证数据库安全性的一个强有力的措施，每个用户只能访问对应外模式的数据，数据库中其他数据是不可见的，DBMS 提供<strong>外模式数据定义语言（外模式 DDL）</strong>来定义外模式</p>
+<h2 id="内模式"><a href="#内模式" class="headerlink" title="内模式"></a>内模式</h2><p><strong>内模式（Internal Schema）</strong>也称存储模式，其是数据库中的数据<strong>物理结构和存储方式的描述</strong></p>
+<p>内模式是数据在数据库内部的表示方式，例如记录的存储方式、索引的组织方式、数据是否加密、数据是否压缩存储等，都是数据库的内模式</p>
+<p>一个数据库只有<strong>一个内模式</strong>，对应着唯一一个模式</p>
+<h1 id="【二级映像】"><a href="#【二级映像】" class="headerlink" title="【二级映像】"></a>【二级映像】</h1><h2 id="概述-1"><a href="#概述-1" class="headerlink" title="概述"></a>概述</h2><p>数据库系统的三级模式是对数据的三个抽象级别，其将数据的具体组织交由 DBMS 管理，是用户能够有逻辑地抽象地处理数据，不必关心计算机中数据的具体表示方式与存储方式，为能够在系统内部实现这三个抽象层次的联系和转换，DBMS 在这三级模式之间提供了<strong>两层映像（外模式/模式映像、模式/内模式映像）</strong>，来保证数据库系统的<strong>数据独立性（逻辑独立性、物理独立性）</strong></p>
+<p><img width="400" src="/images/notes/database/04-3.png"></p>
+<h2 id="外模式-模式映像"><a href="#外模式-模式映像" class="headerlink" title="外模式/模式映像"></a>外模式/模式映像</h2><p><strong>模式</strong>描述的是数据的<strong>全局逻辑结构</strong>，<strong>外模式</strong>描述的是数据的<strong>局部逻辑结构</strong></p>
+<p>一个模式可以有任意个外模式，对于<strong>每一个外模式</strong>，都有一个外模式/模式映像，定义了<strong>该外模式与模式间的对应关系</strong>，这些映像通常包含在<strong>各自外模式的描述</strong>中</p>
+<p>当模式改变时，数据库管理员修改有关的外模式/模式映像，使<strong>外模式不变</strong>，而应用程序是依据外模式编写的，这就使得应用程序不必修改，从而保证<strong>数据与程序的逻辑独立性</strong></p>
+<h2 id="模式-内模式映像"><a href="#模式-内模式映像" class="headerlink" title="模式/内模式映像"></a>模式/内模式映像</h2><p><strong>模式</strong>描述的是数据的<strong>全局逻辑结构</strong>，<strong>内模式</strong>描述的是数据的<strong>物理结构</strong></p>
+<p>一个模式对应一个内模式，因此模式/内模式映像是<strong>唯一的</strong>，其定义了<strong>数据全局逻辑结构与存储结构间的对应关系</strong>，该映像包含在<strong>模式的描述</strong>中</p>
+<p>当数据库的存储结构改变时，数据库管理员修改模式/内模式映像，使<strong>模式不变</strong>，加之外模式/模式映像，这就使得应用程序不必修改，从而保证<strong>数据与程序的物理独立性</strong></p>
+<h1 id="【数据独立性】"><a href="#【数据独立性】" class="headerlink" title="【数据独立性】"></a>【数据独立性】</h1><p>数据库模式是数据库的中心与关键，它独立于数据库的其他层次，因此在设计数据库模式结构时，应该首先确定数据库的<strong>逻辑模式（模式）</strong></p>
+<p><strong>内模式</strong>依赖于全局逻辑结构，独立于数据库的用户视图（外模式），也独立于具体的存储设备，其是将全局逻辑结构中定义的数据结构及其联系，依照一定的物理存储策略进行组织，以达到较好的时间与空间效率</p>
+<p><strong>外模式</strong>面向具体的应用程序，定义于逻辑模式之上，独立于存储模式（内模式）与存储设备，当应用需求发生较大变化，相应外模式不能满足其视图需求时，该外模式要做相应该多，因此在设计外模式时，要充分考虑应用的扩展性</p>
+<p><strong>二级映像</strong>保证了数据库外模式的稳定性，从而从底层保证了应用程序的稳定性，除非应用需求发生变化，否则应用程序一般不需要修改</p>
+<p>数据与程序间的独立性使数据的定义与描述可以从应用程序中分离出去，此外，由于数据的存取由 DBMS 管理，简化了应用程序的编制，这大大减少了应用程序的维护与修改</p>
+
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>感谢您对我的支持，让我继续努力分享有用的技术与知识点！</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/wechatpay.jpg" alt="Alex_McAvoy 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/alipay.jpg" alt="Alex_McAvoy 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Alex_McAvoy
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://alex-mcavoy.github.io/notes/database/9115cc91.html" title="数据库系统的内体系结构">https://alex-mcavoy.github.io/notes/database/9115cc91.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/notes/" rel="tag"># 学习笔记</a>
+              <a href="/tags/database/" rel="tag"># 数据库系统</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/notes/database/71d8e303.html" rel="prev" title="数据库系统的外体系结构">
+      <i class="fa fa-chevron-left"></i> 数据库系统的外体系结构
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/oi-acm/basic/theory/ff587363.html" rel="next" title="查找的基本概念">
+      查找的基本概念 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【概述】"><span class="nav-number">1.</span> <span class="nav-text">【概述】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【模式的概念】"><span class="nav-number">2.</span> <span class="nav-text">【模式的概念】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【三级模式结构】"><span class="nav-number">3.</span> <span class="nav-text">【三级模式结构】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#概述"><span class="nav-number">3.1.</span> <span class="nav-text">概述</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#模式"><span class="nav-number">3.2.</span> <span class="nav-text">模式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#外模式"><span class="nav-number">3.3.</span> <span class="nav-text">外模式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#内模式"><span class="nav-number">3.4.</span> <span class="nav-text">内模式</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【二级映像】"><span class="nav-number">4.</span> <span class="nav-text">【二级映像】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#概述-1"><span class="nav-number">4.1.</span> <span class="nav-text">概述</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#外模式-模式映像"><span class="nav-number">4.2.</span> <span class="nav-text">外模式/模式映像</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#模式-内模式映像"><span class="nav-number">4.3.</span> <span class="nav-text">模式/内模式映像</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【数据独立性】"><span class="nav-number">5.</span> <span class="nav-text">【数据独立性】</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">  
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Alex_McAvoy"
+      src="/assets/img/head.jpg">
+  <p class="site-author-name" itemprop="name">Alex_McAvoy</p>
+  <div class="site-description" itemprop="description">想要成为渔夫的猎手</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">535</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">57</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">62</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Alex-McAvoy" title="GitHub → https://github.com/Alex-McAvoy" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/u011815404" title="CSDN → https://blog.csdn.net/u011815404" rel="noopener" target="_blank"><i class="fas fa-copyright fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+<!-- 访客地图 -->
+<script type="text/javascript" src="//rf.revolvermaps.com/0/0/5.js?i=50n58yo58ow&amp;m=0&amp;c=ff0000&amp;cr1=ffffff&amp;s=140" async="async"></script>
+
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdz20172133" title="https://blog.csdn.net/sdz20172133" rel="noopener" target="_blank">神仙队友</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://pxlsdz.gitee.io/" title="https://pxlsdz.gitee.io/" rel="noopener" target="_blank">神仙队友的另一个博客</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://bycore.net" title="https://bycore.net" rel="noopener" target="_blank">凉了的某饼同学</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://kris-cn.github.io/" title="http://kris-cn.github.io/" rel="noopener" target="_blank">翟孙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://deng.fun/" title="http://deng.fun/" rel="noopener" target="_blank">芙蓉姐姐</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdau_fangshifeng" title="https://blog.csdn.net/sdau_fangshifeng" rel="noopener" target="_blank">一个头很酷的家伙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/wentong_Xu" title="https://blog.csdn.net/wentong_Xu" rel="noopener" target="_blank">小黑贱胖子</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.yuheng.tech/" title="https://www.yuheng.tech/" rel="noopener" target="_blank">咸于</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/lanshan1111" title="https://blog.csdn.net/lanshan1111" rel="noopener" target="_blank">肥硕硕</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdauguanweihong" title="https://blog.csdn.net/sdauguanweihong" rel="noopener" target="_blank">管少</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_41661919" title="https://blog.csdn.net/qq_41661919" rel="noopener" target="_blank">俊杰</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_40859951" title="https://blog.csdn.net/qq_40859951" rel="noopener" target="_blank">峰哥</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/LSD20164388" title="https://blog.csdn.net/LSD20164388" rel="noopener" target="_blank">狗冬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37748451" title="https://blog.csdn.net/qq_37748451" rel="noopener" target="_blank">胖亚亚</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37868325" title="https://blog.csdn.net/qq_37868325" rel="noopener" target="_blank">妍大佬</a>
+        </li>
+    </ul>
+  </div>
+
+		
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+  
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Alex_McAvoy</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+</br>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script><script src="/js/bookmark.js"></script>
+
+
+
+  
+
+
+
+
+  <script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '48fd73a538d3fa927f65',
+      clientSecret: '56618aefeee90bac3c20de8d51bb0b985d67252d',
+      repo        : 'Gitalk-Comment',
+      owner       : 'Alex-McAvoy',
+      admin       : ['Alex-McAvoy'],
+      id          : '120e3887d97d02424e0e588378205d81',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+  
+  <!-- 鼠标单击粒子特效 -->
+  <script type="text/javascript" src="/js/cursor-effects.js"></script>
+  <!-- 多级目录 -->
+  <script type="text/javascript" src="/js/category.js"></script>
+  
+</body>
+</html>

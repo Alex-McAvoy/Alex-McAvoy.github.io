@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.9.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/img/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/assets/img/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/pace-js@1/themes/blue/pace-theme-minimal.css">
+  <script src="//cdn.jsdelivr.net/npm/pace-js@1/pace.min.js"></script>
+
+
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"alex-mcavoy.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":16,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":true,"color":"#ff0000","save":"manual"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":true},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.json"};
+  </script>
+
+  <meta name="description" content="【从 BP 算法到 MP 算法】BP 算法是最简单的模式匹配算法，其本质是暴力枚举 在 BP 算法中，当文本串 T 的某些子串与模式串 P 能部分匹配时，文本串的扫描指针 i 每次都是后移一位再从头开始比较，而当某轮已匹配相等的字符序列是模式串 P 的某个前缀时再进行比较，相当于模式串不断地自我比较">
+<meta name="keywords" content="C++,OI&amp;ACM,字符串,单模式匹配">
+<meta property="og:type" content="article">
+<meta property="og:title" content="MP 算法">
+<meta property="og:url" content="https://alex-mcavoy.github.io/oi-acm/string/single-pattern-matching/556cdfd6.html">
+<meta property="og:site_name" content="Alex_McAvoy">
+<meta property="og:description" content="【从 BP 算法到 MP 算法】BP 算法是最简单的模式匹配算法，其本质是暴力枚举 在 BP 算法中，当文本串 T 的某些子串与模式串 P 能部分匹配时，文本串的扫描指针 i 每次都是后移一位再从头开始比较，而当某轮已匹配相等的字符序列是模式串 P 的某个前缀时再进行比较，相当于模式串不断地自我比较">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/oi-acm/string/01.single-pattern-matching/03-1.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/oi-acm/string/01.single-pattern-matching/03-2.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/oi-acm/string/01.single-pattern-matching/03-3.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/oi-acm/string/01.single-pattern-matching/03-4.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/oi-acm/string/01.single-pattern-matching/03-5.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/oi-acm/string/01.single-pattern-matching/03-6.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/oi-acm/string/01.single-pattern-matching/03-7.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/oi-acm/string/01.single-pattern-matching/03-8.png">
+<meta property="og:updated_time" content="2021-12-14T14:29:23.192Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="MP 算法">
+<meta name="twitter:description" content="【从 BP 算法到 MP 算法】BP 算法是最简单的模式匹配算法，其本质是暴力枚举 在 BP 算法中，当文本串 T 的某些子串与模式串 P 能部分匹配时，文本串的扫描指针 i 每次都是后移一位再从头开始比较，而当某轮已匹配相等的字符序列是模式串 P 的某个前缀时再进行比较，相当于模式串不断地自我比较">
+<meta name="twitter:image" content="https://alex-mcavoy.github.io/images/oi-acm/string/01.single-pattern-matching/03-1.png">
+
+<link rel="canonical" href="https://alex-mcavoy.github.io/oi-acm/string/single-pattern-matching/556cdfd6.html">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>MP 算法 | Alex_McAvoy</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Alex_McAvoy</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">想要成为渔夫的猎手</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+
+	
+	
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/oi-acm/string/single-pattern-matching/556cdfd6.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/assets/img/head.jpg">
+      <meta itemprop="name" content="Alex_McAvoy">
+      <meta itemprop="description" content="想要成为渔夫的猎手">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Alex_McAvoy">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          MP 算法
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2018-10-08 15:11:00" itemprop="dateCreated datePublished" datetime="2018-10-08T15:11:00+08:00">2018-10-08</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/oi-acm/" itemprop="url" rel="index"><span itemprop="name">OI&ACM</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/oi-acm/string/" itemprop="url" rel="index"><span itemprop="name">字符串</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/oi-acm/string/single-pattern-matching/" itemprop="url" rel="index"><span itemprop="name">单模式匹配</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>2.4k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>2 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="【从-BP-算法到-MP-算法】"><a href="#【从-BP-算法到-MP-算法】" class="headerlink" title="【从 BP 算法到 MP 算法】"></a>【从 BP 算法到 MP 算法】</h1><p>BP 算法是最简单的模式匹配算法，其本质是暴力枚举</p>
+<p>在 BP 算法中，当文本串 <code>T</code> 的某些子串与模式串 <code>P</code> 能部分匹配时，文本串的扫描指针 <code>i</code> 每次都是后移一位再从头开始比较，而当某轮已匹配相等的字符序列是模式串 <code>P</code> 的某个前缀时再进行比较，相当于模式串不断地自我比较</p>
+<p>针对上述问题，对 BF 算法进行改进，即得到了 <strong>MP（Morris-Pratt）算法</strong>，其是以 James Morris 和 Vaughan Pratt 两人的姓来命名的</p>
+<p>MP 最大的特点是：<strong>只让模式串 <code>P</code> 的指针 <code>j</code> 回溯，让文本串 <code>T</code> 的指针 <code>i</code> 不变</strong></p>
+<p>如下图所示，文本串的 <code>C</code> 与模式串的 <code>B</code> 不匹配</p>
+<p><img width="500" src="/images/oi-acm/string/01.single-pattern-matching/03-1.png"></p>
+<p>可以利用已匹配的信息，将模式指针 $j$ 移动到位置 $2$ 上，文本指针 $i$ 不变</p>
+<p><img width="500" src="/images/oi-acm/string/01.single-pattern-matching/03-2.png"></p>
+<h1 id="【基本原理】"><a href="#【基本原理】" class="headerlink" title="【基本原理】"></a>【基本原理】</h1><p>通过上面两个例子可以发现，当匹配失败时，文本指针 $i$ 的位置不变，模式指针 $j$ 要移动到新的位置 $k$</p>
+<p>这个位置 $k$ 满足：<strong>模式串前面的 $k$ 个字符与模式指针 $j$ 前的 $k$ 个字符相同</strong></p>
+<p><img width="500" src="/images/oi-acm/string/01.single-pattern-matching/03-3.png"></p>
+<p>即有：</p>
+<script type="math/tex; mode=display">
+P[0,...,k-1]=P[j-k,...,j-1]</script><p>当出现文本串的第 $i$ 个字符与模式串的第 $j$ 个字符不匹配时，可以知道，文本串位置 $i$ 前的 $j-1$ 个字符与模式串位置 $j$ 前的 $j-1$ 个字符相同</p>
+<p>即当 $T[i]!=P[j]$ 时，有：</p>
+<script type="math/tex; mode=display">
+T[i-j,...,i-1]=P[0,...,j-1]</script><p><img width="500" src="/images/oi-acm/string/01.single-pattern-matching/03-4.png"></p>
+<p>根据 $P[0,…,k-1]=P[j-k,…,j-1]$，可得：</p>
+<script type="math/tex; mode=display">
+T[i-k,...,i-1]=[0,...,k-1]</script><p>因此，可直接将 $j$ 移动到 $k$，无需再比较前面的 $k$ 个字符</p>
+<h1 id="【next-数组】"><a href="#【next-数组】" class="headerlink" title="【next 数组】"></a>【next 数组】</h1><h2 id="next-数组与-PM-表"><a href="#next-数组与-PM-表" class="headerlink" title="next 数组与 PM 表"></a>next 数组与 PM 表</h2><p>通过上面的论述，可以发现，MP 算法关键是求得 $k$</p>
+<p>由于在模式 <code>P</code> 的每一个位置都可能发生不匹配，也就是说，可以采用预处理的思想，计算模式 <code>P</code> 中每一个位置 $j$ 所对应的 $k$，这样当出现不匹配时，直接令模式指针 $j$ 指向 $k$ 的位置</p>
+<p>通常，使用一个数组 <code>next[]</code> 来保存每一个位置 $j$ 所对应的 $k$，即令 <code>next[j]=k</code> 来表示当 <code>T[i]!=P[j]</code> 时，指针 $j$ 要指向的下一个位置</p>
+<p><strong>模式串的部分匹配值</strong>即可满足 <code>next</code> 数组的要求，每当匹配失败时，就去找它<strong>前一个元素的部分匹配值</strong>，从而令模式串 <code>P</code> 再文本串 <code>T</code> 的指针 $i$ 的基础上，后移 <strong><code>已匹配位数-对应部分匹配值</code></strong></p>
+<p>但由于每次都要找前一个元素的部分匹配值，使用起来并不方便，因此将 PM 表<strong>整体右移一位</strong>，其有如下考虑：</p>
+<ul>
+<li>第一个元素右移后的空缺用 $-1$ 填充，即：<code>next[0]=-1</code>，因为若第一个元素匹配失败，则需将子串整体后移一位，不需要去计算子串移动位数</li>
+<li>最后一个元素右移溢出，将其<strong>舍去</strong>即可，因为在模式串中，最后一个元素的部分匹配值是下一个元素使用的，但显然以没有下一个元素，故直接舍去</li>
+</ul>
+<p>因此，在人工求 <code>next</code> 数组时，可以先求出模式串 <code>P</code> 的 PM 表，然后令其整体右移，首位用 $-1$ 填充即可 </p>
+<p>例如，<code>ababa</code> 的 PM 表与 <code>next</code> 数组如下：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:center">编号</th>
+<th style="text-align:center">0</th>
+<th style="text-align:center">1</th>
+<th style="text-align:center">2</th>
+<th style="text-align:center">3</th>
+<th style="text-align:center">4</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">string</td>
+<td style="text-align:center">a</td>
+<td style="text-align:center">b</td>
+<td style="text-align:center">a</td>
+<td style="text-align:center">b</td>
+<td style="text-align:center">a</td>
+</tr>
+<tr>
+<td style="text-align:center">PM</td>
+<td style="text-align:center">0</td>
+<td style="text-align:center">0</td>
+<td style="text-align:center">1</td>
+<td style="text-align:center">2</td>
+<td style="text-align:center">3</td>
+</tr>
+<tr>
+<td style="text-align:center">next</td>
+<td style="text-align:center">-1</td>
+<td style="text-align:center">0</td>
+<td style="text-align:center">0</td>
+<td style="text-align:center">1</td>
+<td style="text-align:center">2</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h2 id="next-数组的实现"><a href="#next-数组的实现" class="headerlink" title="next 数组的实现"></a>next 数组的实现</h2><p>根据上面的论述，在 $P[j]$ 之前已经有 $P[0,…,k-1]=P[j-k,…,j-1]$ 成立 ，即：</p>
+<script type="math/tex; mode=display">
+next[j]=k</script><p><img width="500" src="/images/oi-acm/string/01.single-pattern-matching/03-5.png"></p>
+<p>那么，当 $P[k]=P[j]$ 时，有：</p>
+<script type="math/tex; mode=display">
+P[0,...,k-1]+P[k]=P[j-k,...,j-1]+P[j]</script><p>合并后，有：</p>
+<script type="math/tex; mode=display">
+P[0,...,k]=P[j-k,...,j]</script><p>即：</p>
+<script type="math/tex; mode=display">
+next[j+1]=k+1</script><p><img width="500" src="/images/oi-acm/string/01.single-pattern-matching/03-6.png"></p>
+<p>而当 $P[k]!=P[j]$ 时，根据 $P[0,…,k-1]=P[j-k,…,j-1]$，有：</p>
+<script type="math/tex; mode=display">
+next[j]=k</script><p><img width="500" src="/images/oi-acm/string/01.single-pattern-matching/03-7.png"></p>
+<p>合并后，有：</p>
+<script type="math/tex; mode=display">
+next[k]=k</script><p><img width="500" src="/images/oi-acm/string/01.single-pattern-matching/03-8.png"></p>
+<hr>
+<p>计算 <code>next</code> 数组的代码如下：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> next[N];</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">getNext</span><span class="params">(<span class="keyword">char</span> p[])</span> </span>&#123; <span class="comment">//获取字符数组p的next数组</span></span><br><span class="line">    next[<span class="number">0</span>] = <span class="number">-1</span>;        <span class="comment">//初始化</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">int</span> len = <span class="built_in">strlen</span>(p); <span class="comment">//模式串长度</span></span><br><span class="line">    <span class="keyword">int</span> j = <span class="number">0</span>;           <span class="comment">//模式指针j</span></span><br><span class="line">    <span class="keyword">int</span> k = <span class="number">-1</span>;          <span class="comment">//位置k</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">while</span> (j &lt; len) &#123;</span><br><span class="line">        <span class="keyword">if</span> (k == <span class="number">-1</span> || p[j] == p[k]) &#123; <span class="comment">//next[j+1]=next[j]+1</span></span><br><span class="line">            k++; <span class="comment">//此前有next[j]=k</span></span><br><span class="line">            j++; <span class="comment">//指针后移</span></span><br><span class="line">            next[j] = k;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123; <span class="comment">// k=next[k]</span></span><br><span class="line">            k = next[k];</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h1 id="【MP-算法的匹配】"><a href="#【MP-算法的匹配】" class="headerlink" title="【MP 算法的匹配】"></a>【MP 算法的匹配】</h1><p>在求得 <code>next</code> 数组后，MP 算法的匹配就十分简单了，其在形式上与 BP 算法十分相似，不同之处仅在于匹配过程失配时的处理</p>
+<p>在 MP 算法中，当出现 <code>T[i]!=P[j]</code> 时，文本指针 $i$ 不变，模式指针 $j$ 回退到 <code>next[j]</code> 的位置并重新比较</p>
+<p>可以发现，MP 算法分为求 <code>next</code> 数组时间复杂度为 $O(m)$ 的预处理部分，和利用 <code>next</code> 数组时间复杂度为 $O(n)$ 的匹配部分，因此，其总时间复杂度为 $O(n+m)$</p>
+<hr>
+<p>MP 算法的匹配过程的实现如下：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">MP</span><span class="params">(<span class="keyword">char</span> T[], <span class="keyword">char</span> P[])</span> </span>&#123; <span class="comment">// MP算法</span></span><br><span class="line">    <span class="keyword">int</span> tLen = <span class="built_in">strlen</span>(T);    <span class="comment">//文本串长度</span></span><br><span class="line">    <span class="keyword">int</span> pLen = <span class="built_in">strlen</span>(P);    <span class="comment">//模式串长度</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">int</span> i = <span class="number">0</span>;  <span class="comment">//文本串指针</span></span><br><span class="line">    <span class="keyword">int</span> j = <span class="number">0</span>;  <span class="comment">//模式串指针</span></span><br><span class="line"></span><br><span class="line">    getNext(P); <span class="comment">//获取MP版本的next数组</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">while</span> (i &lt; tLen &amp;&amp; j &lt; pLen) &#123;</span><br><span class="line">        <span class="keyword">if</span> (j == <span class="number">-1</span> || T[i] == P[j]) &#123; <span class="comment">//当j=-1时，要移动的是i，同样j也要归零</span></span><br><span class="line">            i++;</span><br><span class="line">            j++;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            j = next[j]; <span class="comment">//j回到指定位置</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (j == pLen) <span class="comment">//匹配成功</span></span><br><span class="line">        <span class="keyword">return</span> i - j;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>感谢您对我的支持，让我继续努力分享有用的技术与知识点！</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/wechatpay.jpg" alt="Alex_McAvoy 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/alipay.jpg" alt="Alex_McAvoy 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Alex_McAvoy
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://alex-mcavoy.github.io/oi-acm/string/single-pattern-matching/556cdfd6.html" title="MP 算法">https://alex-mcavoy.github.io/oi-acm/string/single-pattern-matching/556cdfd6.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/cpp/" rel="tag"># C++</a>
+              <a href="/tags/oi-acm/" rel="tag"># OI&ACM</a>
+              <a href="/tags/string/" rel="tag"># 字符串</a>
+              <a href="/tags/single-pattern-matching/" rel="tag"># 单模式匹配</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/notes/database/f11bff41.html" rel="prev" title="SQL 删除数据">
+      <i class="fa fa-chevron-left"></i> SQL 删除数据
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/oi-acm/string/single-pattern-matching/36b55f59.html" rel="next" title="KMP 算法">
+      KMP 算法 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【从-BP-算法到-MP-算法】"><span class="nav-number">1.</span> <span class="nav-text">【从 BP 算法到 MP 算法】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【基本原理】"><span class="nav-number">2.</span> <span class="nav-text">【基本原理】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【next-数组】"><span class="nav-number">3.</span> <span class="nav-text">【next 数组】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#next-数组与-PM-表"><span class="nav-number">3.1.</span> <span class="nav-text">next 数组与 PM 表</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#next-数组的实现"><span class="nav-number">3.2.</span> <span class="nav-text">next 数组的实现</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【MP-算法的匹配】"><span class="nav-number">4.</span> <span class="nav-text">【MP 算法的匹配】</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">  
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Alex_McAvoy"
+      src="/assets/img/head.jpg">
+  <p class="site-author-name" itemprop="name">Alex_McAvoy</p>
+  <div class="site-description" itemprop="description">想要成为渔夫的猎手</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">535</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">57</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">62</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Alex-McAvoy" title="GitHub → https://github.com/Alex-McAvoy" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/u011815404" title="CSDN → https://blog.csdn.net/u011815404" rel="noopener" target="_blank"><i class="fas fa-copyright fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+<!-- 访客地图 -->
+<script type="text/javascript" src="//rf.revolvermaps.com/0/0/5.js?i=50n58yo58ow&amp;m=0&amp;c=ff0000&amp;cr1=ffffff&amp;s=140" async="async"></script>
+
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdz20172133" title="https://blog.csdn.net/sdz20172133" rel="noopener" target="_blank">神仙队友</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://pxlsdz.gitee.io/" title="https://pxlsdz.gitee.io/" rel="noopener" target="_blank">神仙队友的另一个博客</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://bycore.net" title="https://bycore.net" rel="noopener" target="_blank">凉了的某饼同学</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://kris-cn.github.io/" title="http://kris-cn.github.io/" rel="noopener" target="_blank">翟孙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://deng.fun/" title="http://deng.fun/" rel="noopener" target="_blank">芙蓉姐姐</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdau_fangshifeng" title="https://blog.csdn.net/sdau_fangshifeng" rel="noopener" target="_blank">一个头很酷的家伙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/wentong_Xu" title="https://blog.csdn.net/wentong_Xu" rel="noopener" target="_blank">小黑贱胖子</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.yuheng.tech/" title="https://www.yuheng.tech/" rel="noopener" target="_blank">咸于</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/lanshan1111" title="https://blog.csdn.net/lanshan1111" rel="noopener" target="_blank">肥硕硕</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdauguanweihong" title="https://blog.csdn.net/sdauguanweihong" rel="noopener" target="_blank">管少</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_41661919" title="https://blog.csdn.net/qq_41661919" rel="noopener" target="_blank">俊杰</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_40859951" title="https://blog.csdn.net/qq_40859951" rel="noopener" target="_blank">峰哥</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/LSD20164388" title="https://blog.csdn.net/LSD20164388" rel="noopener" target="_blank">狗冬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37748451" title="https://blog.csdn.net/qq_37748451" rel="noopener" target="_blank">胖亚亚</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37868325" title="https://blog.csdn.net/qq_37868325" rel="noopener" target="_blank">妍大佬</a>
+        </li>
+    </ul>
+  </div>
+
+		
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+  
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Alex_McAvoy</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+</br>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script><script src="/js/bookmark.js"></script>
+
+
+
+  
+
+
+
+
+  <script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '48fd73a538d3fa927f65',
+      clientSecret: '56618aefeee90bac3c20de8d51bb0b985d67252d',
+      repo        : 'Gitalk-Comment',
+      owner       : 'Alex-McAvoy',
+      admin       : ['Alex-McAvoy'],
+      id          : 'd9b874e7ee56acaa05feeedaee2f270d',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+  
+  <!-- 鼠标单击粒子特效 -->
+  <script type="text/javascript" src="/js/cursor-effects.js"></script>
+  <!-- 多级目录 -->
+  <script type="text/javascript" src="/js/category.js"></script>
+  
+</body>
+</html>

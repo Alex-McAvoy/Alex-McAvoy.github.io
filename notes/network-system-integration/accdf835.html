@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.9.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/img/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/assets/img/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/pace-js@1/themes/blue/pace-theme-minimal.css">
+  <script src="//cdn.jsdelivr.net/npm/pace-js@1/pace.min.js"></script>
+
+
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"alex-mcavoy.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":16,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":true,"color":"#ff0000","save":"manual"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":true},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.json"};
+  </script>
+
+  <meta name="description" content="【概述】路由器是一种特殊的计算设备，负责网络间流量的路由，简单来说，就是当数据在不同网络传输时，负责选择路径。">
+<meta name="keywords" content="学习笔记,网络系统集成,网络相关">
+<meta property="og:type" content="article">
+<meta property="og:title" content="路由器配置基础">
+<meta property="og:url" content="https://alex-mcavoy.github.io/notes/network-system-integration/accdf835.html">
+<meta property="og:site_name" content="Alex_McAvoy">
+<meta property="og:description" content="【概述】路由器是一种特殊的计算设备，负责网络间流量的路由，简单来说，就是当数据在不同网络传输时，负责选择路径。">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/network-system-integration/02-1.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/network-system-integration/02-2.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/network-system-integration/02-3.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/network-system-integration/02-4.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/network-system-integration/02-5.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/network-system-integration/02-6.gif">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/network-system-integration/02-7.png">
+<meta property="og:updated_time" content="2021-08-24T13:37:45.353Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="路由器配置基础">
+<meta name="twitter:description" content="【概述】路由器是一种特殊的计算设备，负责网络间流量的路由，简单来说，就是当数据在不同网络传输时，负责选择路径。">
+<meta name="twitter:image" content="https://alex-mcavoy.github.io/images/notes/network-system-integration/02-1.png">
+
+<link rel="canonical" href="https://alex-mcavoy.github.io/notes/network-system-integration/accdf835.html">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>路由器配置基础 | Alex_McAvoy</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Alex_McAvoy</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">想要成为渔夫的猎手</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+
+	
+	
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/notes/network-system-integration/accdf835.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/assets/img/head.jpg">
+      <meta itemprop="name" content="Alex_McAvoy">
+      <meta itemprop="description" content="想要成为渔夫的猎手">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Alex_McAvoy">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          路由器配置基础
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-03-06 17:33:00" itemprop="dateCreated datePublished" datetime="2020-03-06T17:33:00+08:00">2020-03-06</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/notes/" itemprop="url" rel="index"><span itemprop="name">学习笔记</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/notes/network-system-integration/" itemprop="url" rel="index"><span itemprop="name">网络系统集成</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>2.5k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>2 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="【概述】"><a href="#【概述】" class="headerlink" title="【概述】"></a>【概述】</h1><p>路由器是一种特殊的计算设备，负责<strong>网络间流量的路由</strong>，简单来说，就是当数据在不同网络传输时，负责选择路径。</p>
+<p><img width="400" src="/images/notes/network-system-integration/02-1.png"></p>
+<p>路由器实质是一种特殊的计算机，具有 CPU、OS、内存和存储（RAM、ROM、NVRAM、闪存等），其要求 CPU 和内存临时或永久存储数据，以便执行操作系统的 IOS(Internetwork Operating System) 指令，例如：系统初始化、路由功能和交换功能等。</p>
+<h1 id="【路由器的组成】"><a href="#【路由器的组成】" class="headerlink" title="【路由器的组成】"></a>【路由器的组成】</h1><h2 id="基本部件"><a href="#基本部件" class="headerlink" title="基本部件"></a>基本部件</h2><p>路由器的基本部件有以下 5 个：</p>
+<ul>
+<li>CPU：执行操作系统 IOS 指令，例如：系统初始化、路由功能和交换功能等</li>
+<li>RAM：提供各种应用程序和进程的临时存储，包括 IOS、运行配置文件、各种表格(IP 路由表、以太网 ARP 表等)以及数据包缓冲区</li>
+<li>ROM：启动说明、基本诊断软件和有限的 IOS，以防止路由器无法加载功能完整的IOS</li>
+<li>NVRAM：启动配置文件（startup-config）</li>
+<li>Flash：提供 IOS 和其它系统文件，当路由器启动时，会把 IOS 从闪存复制到 RAM，相当于硬盘</li>
+</ul>
+<h2 id="常见端口与接口"><a href="#常见端口与接口" class="headerlink" title="常见端口与接口"></a>常见端口与接口</h2><p>管理、配置路由器的方法有两种：</p>
+<ul>
+<li>带外管理：通过路由器专用配置线缆使 PC 机与路由器的 Console 端口直接相连</li>
+<li>带内管理：PC 机通过网络与路由器远程互联，常见的方法有：Telnet/SSH 远程登录、Web 远程管理、TFTP 服务器配置、SNMP 网管工作站进行管理、AUX 和 MODEM 端口远程管理路由器</li>
+</ul>
+<p>由此，根据两种管理方式，路由器的端口分为<strong>带外路由端口</strong>和<strong>带内路由接口</strong>两类。</p>
+<p>路由器的端口称为<strong>带外路由器端口</strong>，又称为<strong>管理端口</strong>，分为两类：</p>
+<ul>
+<li>控制台端口：Console 端口，使用低速串行或 USB 连接提供直接连接，这是一种带外管理访问思科设备的方法</li>
+<li>辅助端口：AUX 端口，用于通过拨号电话线和调制解调器远程访问路由器</li>
+</ul>
+<p>其接口称为<strong>带内路由器接口</strong>，同样分为两类：</p>
+<ul>
+<li>LAN 接口：以太网接口，用于连接 LAN 设备上的电缆（例如：计算机和交换机），还可用于路由器之间的相互连接</li>
+<li>WAN 接口：串行接口，用于将路由器连接到外部网络，一般在地理位置较远时使用</li>
+</ul>
+<p><img width="500" src="/images/notes/network-system-integration/02-2.png"></p>
+<h2 id="路由器上的-LED"><a href="#路由器上的-LED" class="headerlink" title="路由器上的 LED"></a>路由器上的 LED</h2><p>在路由器上，LED 不同的颜色与显示方式有着不同的含义。</p>
+<p>下图以 <code>思科 1941</code> 为例进行说明：</p>
+<p><img width="500" src="/images/notes/network-system-integration/02-3.png"></p>
+<h1 id="【路由器功能】"><a href="#【路由器功能】" class="headerlink" title="【路由器功能】"></a>【路由器功能】</h1><h2 id="实现网络互联"><a href="#实现网络互联" class="headerlink" title="实现网络互联"></a>实现网络互联</h2><p>利用路由器，可以将不同网络进行互联。</p>
+<p>在进行连接时，设备必须配置以下 IP 地址信息，才能具备网络访问能力：</p>
+<ul>
+<li>IP 地址：标识本地网络中的唯一一台主机</li>
+<li>子网掩码：标识该主机的网络子网</li>
+<li>默认网关：当目的地址不在同一本地网络子网时，确定数据包需发送到的路由器</li>
+</ul>
+<p><img width="500" src="/images/notes/network-system-integration/02-4.png"></p>
+<p>同时，需要网络文档来记录网络寻址，网络文档在拓扑图和寻址表中至少应包含：设备名称、接口、IP 地址与子网掩码、默认网关这些信息。</p>
+<p><img width="500" src="/images/notes/network-system-integration/02-5.png"></p>
+<p>此外，需要在主机上启用 IP，分配方式有两种形式：</p>
+<ul>
+<li>静态分配：为主机手动分配 IP 地址、子网掩码和默认网关，以识别特定网络资源（例如：网络服务器和打印机），常用于主机数量很少的超小型网络</li>
+<li>动态分配：服务器使用动态主机配置协议(DHCP)动态分配 IP 信息，大部分主机都通过 DHCP 获取其 IP 地址信息</li>
+</ul>
+<h2 id="数据包转发"><a href="#数据包转发" class="headerlink" title="数据包转发"></a>数据包转发</h2><p>随着路由器的发展，数据包转发机制也在不断变化：</p>
+<ul>
+<li>进程交换：老式数据包转发机制，当通过路由器交换报文的时候，IOS 进程会将报文复制到 CPU 缓存，并在 IP 路由表中进行查找，查到后进行一些管理性处理，包括修改 TTL，重新计算 CRC等，整个过程由 CPU 进行监控，没有其他的硬件帮助</li>
+<li>快速交换：常用的数据包转发机制，其会创建一张按需转发表，对于去往每个目的地的一个报文实行进程交换，通过 CPU 来完成，然后创建一个 IP 快速交换路由缓存，这个缓存不是永久的，它有一些计时器管理，只要有报文转发，这些条目就会存在，如果经过一段时间没有报文转发，条目将被删除以释放空间</li>
+</ul>
+<h2 id="选择最佳路径"><a href="#选择最佳路径" class="headerlink" title="选择最佳路径"></a>选择最佳路径</h2><p>路由器使用静态路由和动态路由协议获知远程网络，并建立内部路由表。</p>
+<p>之后，通过路由表来确定发送数据包的最佳路径。</p>
+<p>最后，路由器对数据包进行封装，并将其转发至路由表中显示的接口。</p>
+<p><img width="500" src="/images/notes/network-system-integration/02-6.gif"></p>
+<h1 id="【启动过程】"><a href="#【启动过程】" class="headerlink" title="【启动过程】"></a>【启动过程】</h1><p>路由器在启动过程包含以下四个主要阶段： </p>
+<ol>
+<li>执行 ROM 中的加电自检(POST)程序：对硬件进行诊断，包括 CPU、RAM、NVRAM</li>
+<li>加载并执行 bootstrap 程序：查找 IOS 并将其加载到 RAM 中</li>
+<li>bootstrap 程序定位并加载执行 IOS 映像：如果在 Flash 中未找到 IOS 映像，则路由器可使用 TFTP 服务器进行查找，如果仍未找到完整的 IOS 映像，则会从 ROM 中将精简版的 IOS 复制到 RAM，这种精简版的 IOS 也可用于将完整的 IOS 加载到 RAM</li>
+<li>bootstrap 依次加载并执行保存于 NVRAM 或 TFTP 服务器中的启动配置文件：如果找不到该启动配置文件，则路由器进入设置模式</li>
+</ol>
+<h1 id="【路由器配置模式】"><a href="#【路由器配置模式】" class="headerlink" title="【路由器配置模式】"></a>【路由器配置模式】</h1><p>路由器具有多种配置模式，不同模式下权限不同，详细说明如下：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:center">模式名称</th>
+<th style="text-align:center">提示符</th>
+<th style="text-align:center">进入命令</th>
+<th style="text-align:center">退出命令</th>
+<th style="text-align:center">说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">用户模式</td>
+<td style="text-align:center">&gt;</td>
+<td style="text-align:center"></td>
+<td style="text-align:center"></td>
+<td style="text-align:center">只能查看路由器的一些基本状态，不能进行设置</td>
+</tr>
+<tr>
+<td style="text-align:center">特权模式</td>
+<td style="text-align:center">#</td>
+<td style="text-align:center">enable</td>
+<td style="text-align:center">disable</td>
+<td style="text-align:center">用户可以用 show 与 debug 进行配置检查，不能修改配置</td>
+</tr>
+<tr>
+<td style="text-align:center">配置模式</td>
+<td style="text-align:center">(config)#</td>
+<td style="text-align:center">configure terminal</td>
+<td style="text-align:center">exit 或 end</td>
+<td style="text-align:center">处于全局设置状态，可以修改路由器全局配置参数</td>
+</tr>
+<tr>
+<td style="text-align:center">接口模式</td>
+<td style="text-align:center">(config-if)#</td>
+<td style="text-align:center">Interface 接口名</td>
+<td style="text-align:center">exit 或 end</td>
+<td style="text-align:center">处于局部设置状态，可以对具体端口进行配置</td>
+</tr>
+<tr>
+<td style="text-align:center">子接口模式</td>
+<td style="text-align:center">(config-subif)#</td>
+<td style="text-align:center">Interface 子接口名</td>
+<td style="text-align:center">exit 或 end</td>
+<td style="text-align:center">处于局部设置状态，可以对具体子端口进行配置</td>
+</tr>
+<tr>
+<td style="text-align:center">线路模式</td>
+<td style="text-align:center">(config-line)#</td>
+<td style="text-align:center">Line 线路名</td>
+<td style="text-align:center">exit 或 end</td>
+<td style="text-align:center">处于局部设置状态，可以对线路进行配置</td>
+</tr>
+<tr>
+<td style="text-align:center">路由器模式</td>
+<td style="text-align:center">(config-router)#</td>
+<td style="text-align:center">Router 协议名</td>
+<td style="text-align:center">exit 或 end</td>
+<td style="text-align:center">处于局部设置状态，可以对路由器模式进行设置</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h1 id="【路由器基本配置命令】"><a href="#【路由器基本配置命令】" class="headerlink" title="【路由器基本配置命令】"></a>【路由器基本配置命令】</h1><h2 id="编辑技巧"><a href="#编辑技巧" class="headerlink" title="编辑技巧"></a>编辑技巧</h2><p>在路由器配置时，可以使用以下技巧来进行编辑：</p>
+<ul>
+<li>支持命令简写：例如 <code>exit</code> 简写为 <code>ex</code></li>
+<li>按 <code>TAB</code> 键：补全命令</li>
+<li>输入<code>?</code>：显示该模式下所有的命令</li>
+<li>输入<code>命令+空格+?</code>：显示命令参数并对其解释说明</li>
+<li>输入<code>字符+?</code> 显示以该字符开头的所有命令</li>
+<li>输入 <code>no+原配置命令</code>：关闭功能或撤销动作</li>
+<li>输入 <code>show history</code>：显示最近执行的 20 条命令</li>
+<li>按 <code>↑</code> 或 <code>↓</code> 键：显示上一条命令、下一条命令</li>
+</ul>
+<h2 id="基本配置命令"><a href="#基本配置命令" class="headerlink" title="基本配置命令"></a>基本配置命令</h2><p>基本配置命令如下：</p>
+<p><img width="500" src="/images/notes/network-system-integration/02-7.png"></p>
+
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>感谢您对我的支持，让我继续努力分享有用的技术与知识点！</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/wechatpay.jpg" alt="Alex_McAvoy 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/alipay.jpg" alt="Alex_McAvoy 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Alex_McAvoy
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://alex-mcavoy.github.io/notes/network-system-integration/accdf835.html" title="路由器配置基础">https://alex-mcavoy.github.io/notes/network-system-integration/accdf835.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/notes/" rel="tag"># 学习笔记</a>
+              <a href="/tags/network-system-integration/" rel="tag"># 网络系统集成</a>
+              <a href="/tags/network/" rel="tag"># 网络相关</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/notes/wireless-network/963c2c46.html" rel="prev" title="无线传输技术基础">
+      <i class="fa fa-chevron-left"></i> 无线传输技术基础
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/notes/software-engineering/ba1fa7c2.html" rel="next" title="软件结构化分析">
+      软件结构化分析 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【概述】"><span class="nav-number">1.</span> <span class="nav-text">【概述】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【路由器的组成】"><span class="nav-number">2.</span> <span class="nav-text">【路由器的组成】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#基本部件"><span class="nav-number">2.1.</span> <span class="nav-text">基本部件</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#常见端口与接口"><span class="nav-number">2.2.</span> <span class="nav-text">常见端口与接口</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#路由器上的-LED"><span class="nav-number">2.3.</span> <span class="nav-text">路由器上的 LED</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【路由器功能】"><span class="nav-number">3.</span> <span class="nav-text">【路由器功能】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#实现网络互联"><span class="nav-number">3.1.</span> <span class="nav-text">实现网络互联</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#数据包转发"><span class="nav-number">3.2.</span> <span class="nav-text">数据包转发</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#选择最佳路径"><span class="nav-number">3.3.</span> <span class="nav-text">选择最佳路径</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【启动过程】"><span class="nav-number">4.</span> <span class="nav-text">【启动过程】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【路由器配置模式】"><span class="nav-number">5.</span> <span class="nav-text">【路由器配置模式】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【路由器基本配置命令】"><span class="nav-number">6.</span> <span class="nav-text">【路由器基本配置命令】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#编辑技巧"><span class="nav-number">6.1.</span> <span class="nav-text">编辑技巧</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#基本配置命令"><span class="nav-number">6.2.</span> <span class="nav-text">基本配置命令</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">  
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Alex_McAvoy"
+      src="/assets/img/head.jpg">
+  <p class="site-author-name" itemprop="name">Alex_McAvoy</p>
+  <div class="site-description" itemprop="description">想要成为渔夫的猎手</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">535</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">57</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">62</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Alex-McAvoy" title="GitHub → https://github.com/Alex-McAvoy" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/u011815404" title="CSDN → https://blog.csdn.net/u011815404" rel="noopener" target="_blank"><i class="fas fa-copyright fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+<!-- 访客地图 -->
+<script type="text/javascript" src="//rf.revolvermaps.com/0/0/5.js?i=50n58yo58ow&amp;m=0&amp;c=ff0000&amp;cr1=ffffff&amp;s=140" async="async"></script>
+
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdz20172133" title="https://blog.csdn.net/sdz20172133" rel="noopener" target="_blank">神仙队友</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://pxlsdz.gitee.io/" title="https://pxlsdz.gitee.io/" rel="noopener" target="_blank">神仙队友的另一个博客</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://bycore.net" title="https://bycore.net" rel="noopener" target="_blank">凉了的某饼同学</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://kris-cn.github.io/" title="http://kris-cn.github.io/" rel="noopener" target="_blank">翟孙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://deng.fun/" title="http://deng.fun/" rel="noopener" target="_blank">芙蓉姐姐</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdau_fangshifeng" title="https://blog.csdn.net/sdau_fangshifeng" rel="noopener" target="_blank">一个头很酷的家伙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/wentong_Xu" title="https://blog.csdn.net/wentong_Xu" rel="noopener" target="_blank">小黑贱胖子</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.yuheng.tech/" title="https://www.yuheng.tech/" rel="noopener" target="_blank">咸于</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/lanshan1111" title="https://blog.csdn.net/lanshan1111" rel="noopener" target="_blank">肥硕硕</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdauguanweihong" title="https://blog.csdn.net/sdauguanweihong" rel="noopener" target="_blank">管少</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_41661919" title="https://blog.csdn.net/qq_41661919" rel="noopener" target="_blank">俊杰</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_40859951" title="https://blog.csdn.net/qq_40859951" rel="noopener" target="_blank">峰哥</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/LSD20164388" title="https://blog.csdn.net/LSD20164388" rel="noopener" target="_blank">狗冬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37748451" title="https://blog.csdn.net/qq_37748451" rel="noopener" target="_blank">胖亚亚</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37868325" title="https://blog.csdn.net/qq_37868325" rel="noopener" target="_blank">妍大佬</a>
+        </li>
+    </ul>
+  </div>
+
+		
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+  
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Alex_McAvoy</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+</br>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script><script src="/js/bookmark.js"></script>
+
+
+
+  
+
+
+
+
+  <script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '48fd73a538d3fa927f65',
+      clientSecret: '56618aefeee90bac3c20de8d51bb0b985d67252d',
+      repo        : 'Gitalk-Comment',
+      owner       : 'Alex-McAvoy',
+      admin       : ['Alex-McAvoy'],
+      id          : '9aa670083dc140d89e972cfba4c3c4d8',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+  
+  <!-- 鼠标单击粒子特效 -->
+  <script type="text/javascript" src="/js/cursor-effects.js"></script>
+  <!-- 多级目录 -->
+  <script type="text/javascript" src="/js/category.js"></script>
+  
+</body>
+</html>

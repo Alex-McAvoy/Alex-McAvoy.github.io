@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.9.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/img/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/assets/img/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/pace-js@1/themes/blue/pace-theme-minimal.css">
+  <script src="//cdn.jsdelivr.net/npm/pace-js@1/pace.min.js"></script>
+
+
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"alex-mcavoy.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":16,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":true,"color":"#ff0000","save":"manual"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":true},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.json"};
+  </script>
+
+  <meta name="description" content="【视图】视图是从一个或几个基本表导出的表，其是一个虚表 数据库中仅存放视图定义，不存放其具体数据，这些具体数据仍在原来的基本表中，因此基本表中的数据一旦发生变化，从视图中查询出的数据也就随之改变了">
+<meta name="keywords" content="学习笔记,数据库系统,SQL">
+<meta property="og:type" content="article">
+<meta property="og:title" content="SQL 视图的数据定义">
+<meta property="og:url" content="https://alex-mcavoy.github.io/notes/database/da97f9a1.html">
+<meta property="og:site_name" content="Alex_McAvoy">
+<meta property="og:description" content="【视图】视图是从一个或几个基本表导出的表，其是一个虚表 数据库中仅存放视图定义，不存放其具体数据，这些具体数据仍在原来的基本表中，因此基本表中的数据一旦发生变化，从视图中查询出的数据也就随之改变了">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2021-08-23T13:55:47.627Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="SQL 视图的数据定义">
+<meta name="twitter:description" content="【视图】视图是从一个或几个基本表导出的表，其是一个虚表 数据库中仅存放视图定义，不存放其具体数据，这些具体数据仍在原来的基本表中，因此基本表中的数据一旦发生变化，从视图中查询出的数据也就随之改变了">
+
+<link rel="canonical" href="https://alex-mcavoy.github.io/notes/database/da97f9a1.html">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>SQL 视图的数据定义 | Alex_McAvoy</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Alex_McAvoy</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">想要成为渔夫的猎手</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+
+	
+	
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/notes/database/da97f9a1.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/assets/img/head.jpg">
+      <meta itemprop="name" content="Alex_McAvoy">
+      <meta itemprop="description" content="想要成为渔夫的猎手">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Alex_McAvoy">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          SQL 视图的数据定义
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2018-10-05 16:23:00" itemprop="dateCreated datePublished" datetime="2018-10-05T16:23:00+08:00">2018-10-05</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/notes/" itemprop="url" rel="index"><span itemprop="name">学习笔记</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/notes/database/" itemprop="url" rel="index"><span itemprop="name">数据库系统</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>2.9k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>3 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="【视图】"><a href="#【视图】" class="headerlink" title="【视图】"></a>【视图】</h1><p>视图是从一个或几个基本表导出的表，其是一个<strong>虚表</strong></p>
+<p>数据库中仅存放视图定义，不存放其具体数据，这些具体数据仍在原来的基本表中，因此基本表中的数据一旦发生变化，从视图中查询出的数据也就随之改变了</p>
+<p>视图一经定义，就可以与基本表一样被查询、删除，但对其更新有一定的限制，此外，还可以定义基于视图的视图</p>
+<p>视图机制使用户可以将注意力集中在他所关心的数据上，如果这些数据不是直接来自基本表，则可以通过定义视图，使用户眼中的数据库结构简单、清晰，以<strong>简化用户的数据查询操作</strong></p>
+<p>同时，视图使<strong>用户以多种角度看待同一数据</strong>，当许多不同种类的用户使用同一个数据库时，这种灵活性是非常重要的</p>
+<p>而在设计数据库应用系统时，对不同用户定义不同的视图，使机密数据不出现在不应看到这些数据的用户视图上，这样就由视图的机制自动提供了<strong>对机密数据的安全保护功能</strong></p>
+<p>此外，视图对<strong>重构数据库</strong>提供了一定程度的<strong>逻辑独立性</strong></p>
+<h1 id="【视图定义】"><a href="#【视图定义】" class="headerlink" title="【视图定义】"></a>【视图定义】</h1><h2 id="基本语法"><a href="#基本语法" class="headerlink" title="基本语法"></a>基本语法</h2><p>在 SQL 中，建立视图的语法如下</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">VIEW</span> &lt;视图名&gt; [(&lt;列名<span class="number">1</span>&gt; [,&lt;列名<span class="number">2</span>&gt;]...[,&lt;列名n&gt;])]</span><br><span class="line"><span class="keyword">AS</span> &lt;子查询&gt;</span><br><span class="line">[<span class="keyword">WITH</span> <span class="keyword">CHECK</span> <span class="keyword">OPTION</span>];</span><br></pre></td></tr></table></figure>
+<p><code>&lt;子查询&gt;</code> 可以是任意的 <code>SELECT</code> 查询语句，RDBMS 执行建立视图的语句时，只是将<strong>视图定义</strong>存入<strong>数据字典</strong>，没有执行其中的 <code>SELECT</code> 语句，仅当对数据查询时，才按视图的定义从基本表中将数据查出</p>
+<h2 id="列名"><a href="#列名" class="headerlink" title="列名"></a>列名</h2><p><code>&lt;列名&gt;</code> 是要组成视图的列的<strong>新名</strong>，如果全部省略，则该视图的列名将默认使用 <code>SELECT</code> 子句目标列的列名</p>
+<p>如下例，通过基本表 student 建立 CS 系学生的视图 is_student，要求视图中包含学号 Sno、姓名 Sname、年龄 Sage</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">VIEW</span> is_student</span><br><span class="line"><span class="keyword">AS</span></span><br><span class="line">  <span class="keyword">SELECT</span> Sno, Sname, Sage</span><br><span class="line">  <span class="keyword">FROM</span> student</span><br><span class="line">  <span class="keyword">WHERE</span> Sdept=<span class="string">'CS'</span>;</span><br></pre></td></tr></table></figure>
+<p>该例中省略了组成视图的列，此时视图由子查询中 <code>SELECT</code> 子句中的三个列名组成</p>
+<p>如果不省略，则 <code>&lt;列名&gt;</code> 的与 <code>SELECT</code> 子句目标列的一一对应，要求 <code>&lt;列名&gt;</code> 个数与 <code>SELECT</code> 子句目标列的个数相同</p>
+<p>如下例，通过基本表 student 建立 CS 系学生的视图 is_student，要求视图中包含基本表中的学号 Sno、姓名 Sname、年龄 Sage，同时要求视图中的列名依次为 number、name、age</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">VIEW</span> is_student(<span class="built_in">number</span>, <span class="keyword">name</span>, age)</span><br><span class="line"><span class="keyword">AS</span></span><br><span class="line">  <span class="keyword">SELECT</span> Sno, Sname, Sage</span><br><span class="line">  <span class="keyword">FROM</span> student</span><br><span class="line">  <span class="keyword">WHERE</span> Sdept=<span class="string">'CS'</span>;</span><br></pre></td></tr></table></figure>
+<p>此外，若视图由 <code>SELECT *</code> 建立，则必须要指定 <code>&lt;列名&gt;</code>，使用该种方法建立的视图<strong>可扩充性差</strong>，一旦基本表的结构改变，则基本表与视图的映射将被破坏，只能重新建立视图，因此应尽量避免使用该方法创建视图</p>
+<p>例如，通过基本表 student 建立包含所有男生记录的视图 f_student</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">VIEW</span> f_student(f_sno, <span class="keyword">name</span>, sex, age, dept)</span><br><span class="line"><span class="keyword">AS</span></span><br><span class="line">  <span class="keyword">SELECT</span> *</span><br><span class="line">  <span class="keyword">FROM</span> Student</span><br><span class="line">  <span class="keyword">WHERE</span> Ssex=<span class="string">'男'</span>;</span><br></pre></td></tr></table></figure>
+<h2 id="保证谓词条件"><a href="#保证谓词条件" class="headerlink" title="保证谓词条件"></a>保证谓词条件</h2><p><code>WITH CHECK OPTION</code> 代表对视图进行修改、删除、插入操作时，行要满足视图定义的<strong>谓词条件（子查询中的条件表达式）</strong></p>
+<p>如下例，通过基本表 student 建立 CS 系学生的视图 is_student，要求进行修改和插入操作时仍需保证该视图只有信息系学生</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">VIEW</span> is_student</span><br><span class="line"><span class="keyword">AS</span></span><br><span class="line">  <span class="keyword">SELECT</span> Sno, Sname, Sage</span><br><span class="line">  <span class="keyword">FROM</span> student</span><br><span class="line">  <span class="keyword">WHERE</span> Sdept=<span class="string">'CS'</span></span><br><span class="line"><span class="keyword">WITH</span> <span class="keyword">CHECK</span> <span class="keyword">OPTION</span>;</span><br></pre></td></tr></table></figure>
+<p>该例中加上了 <code>WITH CHECK OPTION</code> 子句，这样以后对该视图进行修改、删除、插入操作时，RDBMS 会自动加上 <code>Sdept=&#39;IS&#39;</code> 的条件：</p>
+<ul>
+<li>修改：自动加上 <code>Sdept=&#39;IS&#39;</code> 的条件</li>
+<li>删除：自动加上 <code>Sdept=&#39;IS&#39;</code> 的条件</li>
+<li>插入：自动检查 <code>Sdept=&#39;IS&#39;</code> 的条件，若不是，则拒绝该插入操作；若未提供 <code>Sdept</code> 属性值，则自动设为 <code>&#39;IS&#39;</code></li>
+</ul>
+<h2 id="视图类型"><a href="#视图类型" class="headerlink" title="视图类型"></a>视图类型</h2><p>若视图是从单个基本表导出的，且仅是去除了基本表的某些行列，但保留了主码，则称这类视图为<strong>行列子集视图</strong></p>
+<p>例如，通过基本表 student 建立 CS 系学生的视图 is_student，要求视图中包含学号 Sno、姓名 Sname、年龄 Sage</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">VIEW</span> is_student</span><br><span class="line"><span class="keyword">AS</span></span><br><span class="line">  <span class="keyword">SELECT</span> Sno, Sname, Sage</span><br><span class="line">  <span class="keyword">FROM</span> student</span><br><span class="line">  <span class="keyword">WHERE</span> Sdept=<span class="string">'CS'</span>;</span><br></pre></td></tr></table></figure>
+<p>若视图是从多个基本表导出的，则称这类视图为<strong>基于多个基表的视图</strong></p>
+<p>例如，通过基本表 student 和 sc 来建立 CS 系选修了 1 号课程的学生的视图 cs1，要求视图中包含学号 Sno、姓名 Sname、成绩 Grade</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">VIEW</span> cs1 (Sno, Sname, Grade)</span><br><span class="line"><span class="keyword">AS</span></span><br><span class="line">  <span class="keyword">SELECT</span> student.Sno, student.Sname, SC.Grade</span><br><span class="line">  <span class="keyword">FROM</span> student, sc</span><br><span class="line">  <span class="keyword">WHERE</span> student.Sdept=<span class="string">'CS'</span> <span class="keyword">AND</span></span><br><span class="line">        Student.Sno=SC.Sno <span class="keyword">AND</span></span><br><span class="line">        SC.Cno=<span class="string">'1'</span>;</span><br></pre></td></tr></table></figure>
+<p>视图不仅可以建立在一个或多个基本表上，也可以建立在一个或多个已定义好的视图上，这类视图称为<strong>基于视图的视图</strong></p>
+<p>例如，通过视图 cs1 来建立成绩在 90 分以上 的学生的视图 cs2</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">VIEW</span> cs2</span><br><span class="line"><span class="keyword">AS</span></span><br><span class="line">  <span class="keyword">SELECT</span> Sno, Sname, Grade</span><br><span class="line">  <span class="keyword">FROM</span> cs1</span><br><span class="line">  <span class="keyword">WHERE</span> Grade&gt;=<span class="number">90</span>;</span><br></pre></td></tr></table></figure>
+<p>由于视图中的数据并不实际存储，因此定义视图时可以根据应用的需要设置一些<strong>派生属性列</strong>，这些派生属性由于在基本表中并不实际存在，因此被称为<strong>虚拟列</strong>，这些带虚拟列的视图被称为<strong>带表达式的视图</strong></p>
+<p>例如，通过基本表 student 建立一个反映学生出生年份的视图 birth，已知该表中所有学生的入学时间都是 2017 年</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">VIEW</span> birth(Sno, Sname, Sbrith)</span><br><span class="line"><span class="keyword">AS</span></span><br><span class="line">  <span class="keyword">SELECT</span> Sno, Sname, <span class="number">2017</span>-Sage</span><br><span class="line">  <span class="keyword">FROM</span> student;</span><br></pre></td></tr></table></figure>
+<p>当使用聚集函数和 <code>GROUP BY</code> 子句的查询来定义视图时，这种视图称为<strong>分组视图</strong></p>
+<p>例如，通过基本表 sc 建立一个视图 avg_grade，包括学生学号和平均成绩</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">VIEW</span> avg_grade(Sno, Gavg)</span><br><span class="line"><span class="keyword">AS</span></span><br><span class="line"><span class="keyword">SELECT</span> Sno, <span class="keyword">AVG</span>(Grade)</span><br><span class="line"><span class="keyword">FROM</span> SC</span><br><span class="line"><span class="keyword">GROUP</span> <span class="keyword">BY</span> Sno;</span><br></pre></td></tr></table></figure>
+<h1 id="【视图删除】"><a href="#【视图删除】" class="headerlink" title="【视图删除】"></a>【视图删除】</h1><p>若基本表删除被删除，那么由该基本表导出的所有视图均无法使用，但是视图的定义还没有从数据字典中删除，此时就需要调用视图删除语句，将视图删除</p>
+<p>在 SQL 中，删除视图的语法为</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">DROP</span> <span class="keyword">VIEW</span> &lt;视图名&gt; [<span class="keyword">CASCADE</span>];</span><br></pre></td></tr></table></figure>
+<p>执行该语句后，视图的定义将从数据字典中删除，如果该视图上还导出了其他视图，那么可以使用<strong>级联短语 <code>CASCADE</code></strong> 将该视图及其导出的视图一并删除</p>
+
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>感谢您对我的支持，让我继续努力分享有用的技术与知识点！</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/wechatpay.jpg" alt="Alex_McAvoy 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/alipay.jpg" alt="Alex_McAvoy 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Alex_McAvoy
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://alex-mcavoy.github.io/notes/database/da97f9a1.html" title="SQL 视图的数据定义">https://alex-mcavoy.github.io/notes/database/da97f9a1.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/notes/" rel="tag"># 学习笔记</a>
+              <a href="/tags/database/" rel="tag"># 数据库系统</a>
+              <a href="/tags/sql/" rel="tag"># SQL</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/notes/database/807b7632.html" rel="prev" title="SQL 基本表的数据定义">
+      <i class="fa fa-chevron-left"></i> SQL 基本表的数据定义
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/notes/database/7d301194.html" rel="next" title="SQL 索引的数据定义">
+      SQL 索引的数据定义 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【视图】"><span class="nav-number">1.</span> <span class="nav-text">【视图】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【视图定义】"><span class="nav-number">2.</span> <span class="nav-text">【视图定义】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#基本语法"><span class="nav-number">2.1.</span> <span class="nav-text">基本语法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#列名"><span class="nav-number">2.2.</span> <span class="nav-text">列名</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#保证谓词条件"><span class="nav-number">2.3.</span> <span class="nav-text">保证谓词条件</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#视图类型"><span class="nav-number">2.4.</span> <span class="nav-text">视图类型</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【视图删除】"><span class="nav-number">3.</span> <span class="nav-text">【视图删除】</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">  
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Alex_McAvoy"
+      src="/assets/img/head.jpg">
+  <p class="site-author-name" itemprop="name">Alex_McAvoy</p>
+  <div class="site-description" itemprop="description">想要成为渔夫的猎手</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">535</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">57</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">62</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Alex-McAvoy" title="GitHub → https://github.com/Alex-McAvoy" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/u011815404" title="CSDN → https://blog.csdn.net/u011815404" rel="noopener" target="_blank"><i class="fas fa-copyright fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+<!-- 访客地图 -->
+<script type="text/javascript" src="//rf.revolvermaps.com/0/0/5.js?i=50n58yo58ow&amp;m=0&amp;c=ff0000&amp;cr1=ffffff&amp;s=140" async="async"></script>
+
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdz20172133" title="https://blog.csdn.net/sdz20172133" rel="noopener" target="_blank">神仙队友</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://pxlsdz.gitee.io/" title="https://pxlsdz.gitee.io/" rel="noopener" target="_blank">神仙队友的另一个博客</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://bycore.net" title="https://bycore.net" rel="noopener" target="_blank">凉了的某饼同学</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://kris-cn.github.io/" title="http://kris-cn.github.io/" rel="noopener" target="_blank">翟孙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://deng.fun/" title="http://deng.fun/" rel="noopener" target="_blank">芙蓉姐姐</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdau_fangshifeng" title="https://blog.csdn.net/sdau_fangshifeng" rel="noopener" target="_blank">一个头很酷的家伙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/wentong_Xu" title="https://blog.csdn.net/wentong_Xu" rel="noopener" target="_blank">小黑贱胖子</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.yuheng.tech/" title="https://www.yuheng.tech/" rel="noopener" target="_blank">咸于</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/lanshan1111" title="https://blog.csdn.net/lanshan1111" rel="noopener" target="_blank">肥硕硕</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdauguanweihong" title="https://blog.csdn.net/sdauguanweihong" rel="noopener" target="_blank">管少</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_41661919" title="https://blog.csdn.net/qq_41661919" rel="noopener" target="_blank">俊杰</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_40859951" title="https://blog.csdn.net/qq_40859951" rel="noopener" target="_blank">峰哥</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/LSD20164388" title="https://blog.csdn.net/LSD20164388" rel="noopener" target="_blank">狗冬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37748451" title="https://blog.csdn.net/qq_37748451" rel="noopener" target="_blank">胖亚亚</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37868325" title="https://blog.csdn.net/qq_37868325" rel="noopener" target="_blank">妍大佬</a>
+        </li>
+    </ul>
+  </div>
+
+		
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+  
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Alex_McAvoy</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+</br>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script><script src="/js/bookmark.js"></script>
+
+
+
+  
+
+
+
+
+  <script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '48fd73a538d3fa927f65',
+      clientSecret: '56618aefeee90bac3c20de8d51bb0b985d67252d',
+      repo        : 'Gitalk-Comment',
+      owner       : 'Alex-McAvoy',
+      admin       : ['Alex-McAvoy'],
+      id          : '1fed6f3ac6bbf7b1365bb51d70e287e6',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+  
+  <!-- 鼠标单击粒子特效 -->
+  <script type="text/javascript" src="/js/cursor-effects.js"></script>
+  <!-- 多级目录 -->
+  <script type="text/javascript" src="/js/category.js"></script>
+  
+</body>
+</html>

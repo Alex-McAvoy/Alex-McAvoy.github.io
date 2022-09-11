@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.9.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/img/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/assets/img/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/pace-js@1/themes/blue/pace-theme-minimal.css">
+  <script src="//cdn.jsdelivr.net/npm/pace-js@1/pace.min.js"></script>
+
+
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"alex-mcavoy.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":16,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":true,"color":"#ff0000","save":"manual"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":true},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.json"};
+  </script>
+
+  <meta name="description" content="【概述】在 关系操作 中，简单介绍了关系模型中的常用操作和关系查询语言，目前，在关系数据库领域，SQL 是最常用的关系数据语言，其是以关系代数为核心的，本篇将对关系代数进行简单介绍 关系代数是一种抽象的关系数据语言，其通过代数运算方式表示关系查询，所谓代数运算，是将一定的运算符作用于一定的运算对象上，通过形成表达式以得到预期的运算结果，所以运算对象、运算符、运算结果是代数运算的三大要素">
+<meta name="keywords" content="学习笔记,数据库系统">
+<meta property="og:type" content="article">
+<meta property="og:title" content="关系代数">
+<meta property="og:url" content="https://alex-mcavoy.github.io/notes/database/61c34bcf.html">
+<meta property="og:site_name" content="Alex_McAvoy">
+<meta property="og:description" content="【概述】在 关系操作 中，简单介绍了关系模型中的常用操作和关系查询语言，目前，在关系数据库领域，SQL 是最常用的关系数据语言，其是以关系代数为核心的，本篇将对关系代数进行简单介绍 关系代数是一种抽象的关系数据语言，其通过代数运算方式表示关系查询，所谓代数运算，是将一定的运算符作用于一定的运算对象上，通过形成表达式以得到预期的运算结果，所以运算对象、运算符、运算结果是代数运算的三大要素">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/database/11-1.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/database/11-2.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/database/11-3.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/database/11-4.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/database/11-5.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/database/11-6.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/database/11-7.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/database/11-8.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/database/11-9.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/database/11-10.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/database/11-11.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/database/11-12.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/database/11-12.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/database/11-13.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/database/11-14.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/database/11-15.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/database/11-16.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/database/11-17.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/database/11-18.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/database/11-19.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/database/11-20.png">
+<meta property="og:updated_time" content="2021-08-23T13:52:06.014Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="关系代数">
+<meta name="twitter:description" content="【概述】在 关系操作 中，简单介绍了关系模型中的常用操作和关系查询语言，目前，在关系数据库领域，SQL 是最常用的关系数据语言，其是以关系代数为核心的，本篇将对关系代数进行简单介绍 关系代数是一种抽象的关系数据语言，其通过代数运算方式表示关系查询，所谓代数运算，是将一定的运算符作用于一定的运算对象上，通过形成表达式以得到预期的运算结果，所以运算对象、运算符、运算结果是代数运算的三大要素">
+<meta name="twitter:image" content="https://alex-mcavoy.github.io/images/notes/database/11-1.png">
+
+<link rel="canonical" href="https://alex-mcavoy.github.io/notes/database/61c34bcf.html">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>关系代数 | Alex_McAvoy</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Alex_McAvoy</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">想要成为渔夫的猎手</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+
+	
+	
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/notes/database/61c34bcf.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/assets/img/head.jpg">
+      <meta itemprop="name" content="Alex_McAvoy">
+      <meta itemprop="description" content="想要成为渔夫的猎手">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Alex_McAvoy">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          关系代数
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2018-10-03 14:12:00" itemprop="dateCreated datePublished" datetime="2018-10-03T14:12:00+08:00">2018-10-03</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/notes/" itemprop="url" rel="index"><span itemprop="name">学习笔记</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/notes/database/" itemprop="url" rel="index"><span itemprop="name">数据库系统</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>4.9k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>4 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="【概述】"><a href="#【概述】" class="headerlink" title="【概述】"></a>【概述】</h1><p>在 <a href="https://alex-mcavoy.github.io/notes/database/f156402b.html">关系操作</a> 中，简单介绍了关系模型中的常用操作和关系查询语言，目前，在关系数据库领域，SQL 是最常用的关系数据语言，其是以关系代数为核心的，本篇将对关系代数进行简单介绍</p>
+<p>关系代数是一种抽象的关系数据语言，其通过<strong>代数运算</strong>方式表示关系查询，所谓代数运算，是将一定的运算符作用于一定的运算对象上，通过形成表达式以得到预期的运算结果，所以<strong>运算对象</strong>、<strong>运算符</strong>、<strong>运算结果</strong>是代数运算的三大要素</p>
+<p>关系代数的运算对象、运算结果都是<strong>关系</strong>，运算符分为<strong>集合运算符</strong>、<strong>专门的关系运算符</strong>两类，关系代数运算符如下表所示</p>
+<p><img width="500" src="/images/notes/database/11-1.png"></p>
+<p>依据运算符的不同，关系代数的运算分为<strong>传统的集合运算</strong>、<strong>专门的关系运算</strong></p>
+<p>传统的集合运算将关系看成元组的集合，其运算是从关系的水平方向（以行的角度）进行；专门的关系运算不仅涉及到行，还涉及到列，在进行运算时，常涉及到比较运算符、逻辑运算符来辅助运算</p>
+<h1 id="【传统的集合运算】"><a href="#【传统的集合运算】" class="headerlink" title="【传统的集合运算】"></a>【传统的集合运算】</h1><p>传统的集合运算是二目运算，包括：并（Union）、差（Except）、交（Intersection）、笛卡尔积（Cartesian Product）四种运算</p>
+<p>设关系 $R$ 和关系 $S$  具有相同的目 $n$（两个关系都有 $n$ 个属性），且相应属性取自同一域，$t$ 是元组变量，$t \in R$ 表示 $t$ 是 $R$ 的一个元组，据此可以定义并、差、交三种运算</p>
+<p>关系 $R$ 与 $S$ 的<strong>并</strong>仍是 $n$ 目关系，由<strong>属于 $R$ 或属于 $S$ 的元组</strong>组成，记作：</p>
+<script type="math/tex; mode=display">
+R \cup S=\{t|t \in R \vee t \in S\}</script><p><img width="500" src="/images/notes/database/11-2.png"></p>
+<p>关系 $R$ 与 $S$ 的<strong>差</strong>仍是 $n$ 目关系，由<strong>属于 $R$ 但不属于 $S$ 的元组</strong>组成，记作：</p>
+<script type="math/tex; mode=display">
+R - S=\{t|t \in R \wedge t \notin S\}</script><p><img width="500" src="/images/notes/database/11-3.png"></p>
+<p>关系 $R$ 与 $S$ 的<strong>交</strong>仍是 $n$ 目关系，由<strong>既属于 $R$ 又不属于 $S$ 的元组</strong>组成，记作：</p>
+<script type="math/tex; mode=display">
+R \cap S=\{t|t \in R \wedge t \in S\}</script><p><img width="500" src="/images/notes/database/11-4.png"></p>
+<p>此外，关系的交可以用关系的差来表示，即：$R \cap S=R-(R-S)$</p>
+<p>而关系的<strong>笛卡尔积</strong>的元素是元组，因此严格来讲其实是<strong>广义的笛卡尔积（Extended Cartesian Product）</strong>，关于笛卡尔积详见：<a href="http://127.0.0.1:4000/notes/database/549e5907.html" target="_blank" rel="noopener">点击这里</a></p>
+<p>设 $R$ 为 $n$ 目关系，$S$ 为 $m$ 目关系，有 $t_r \in R，t_s \in S$，关系 $R$ 与关系 $S$ 的<strong>笛卡尔积</strong>是一个 $n+m$ 列的<strong>元组的集合</strong>，记作：</p>
+<script type="math/tex; mode=display">
+R \times S=\{\overset{\frown }{t_r t_s} | t_r \in R \wedge t_s \in S\}</script><p>其中，$\overset{\frown }{t_r t_s}$ 被称为<strong>元组的连接（concatenatoin）</strong>，是一个 $n+m$ 列的<strong>元组</strong>，该元组的前 $n$ 列是关系 $R$ 的一个 $n$ 元组，后 $m$ 列是关系 $S$ 的一个 $m$ 元组</p>
+<p><img width="500" src="/images/notes/database/11-5.png"></p>
+<p>同时，在上例中可以看出，若 $R$ 有 $k_1$ 个元组，$S$ 有 $k_2$ 个元组，则关系 $R$ 和 $S$ 的笛卡尔积有 $k_1*k_2$ 个元组</p>
+<h1 id="【专门的关系运算】"><a href="#【专门的关系运算】" class="headerlink" title="【专门的关系运算】"></a>【专门的关系运算】</h1><h2 id="引入"><a href="#引入" class="headerlink" title="引入"></a>引入</h2><p>专门的关系运算包括选择、投影、连接、除运算等，为了叙述上的方便，引入以下记号：</p>
+<p>设<strong>关系模式</strong>为 $R(A_1,A_2,…,A_n)$，其中的某个<strong>关系</strong>为 $R$，用 $t \in R$ 表示 $t$ 是 $R$ 的一个<strong>元组</strong>，$t[A_i]$ 表示元组 $t$ 中相应<strong>属性</strong> $A_i$ 的一个<strong>分量</strong></p>
+<p>若 $A=\{A_{i1},A_{i2},…,A_{ik}\}$ 其中的 $A_{i1},A_{i2},…,A_{ik}$ 是 $A_1,A_2,…,A_n$ 中的一部分，则称 $A$ 为<strong>属性列</strong>或<strong>属性组</strong>，用 $\overline{A}$ 表示 $\{A_1,A_2,…,A_n\}$ 中去掉属性组 $A$ 后<strong>剩余的属性组</strong>，用 $t[A]=(t[A_{i1}],t[A_{i2}],…,t[A_{ik}])$  表示元组 $t$ 在<strong>属性组 $A$ 上诸分量的集合</strong></p>
+<p>同时，以下图的学生-课程数据库为例，包括学生关系 Student、课程关系 Course、选修关系 SC，以便对专门的关系运算进行举例</p>
+<p><img width="500" src="/images/notes/database/11-6.png"></p>
+<h2 id="选择"><a href="#选择" class="headerlink" title="选择"></a>选择</h2><p><strong>选择（Selection）</strong>又称限制，其是在关系 $R$ 中<strong>选择满足给定条件的元组</strong>组成<strong>新的关系</strong>，记作：</p>
+<script type="math/tex; mode=display">
+\sigma_F(R)=\{t| t \in R \wedge F(t)=true\}</script><p>其中，$F$ 表示<strong>选择条件</strong>，是一个逻辑表达式，取逻辑值 <code>true</code> 或 <code>false</code>，同时，在基本的选择条件上可以进一步的进行<strong>逻辑运算（与 $\wedge$、或 $\vee$、非 $\neg$）</strong></p>
+<p>逻辑表达式 $F$ 的基本形式为 $X_1 \theta Y_1$，其中 $\theta$ 代表<strong>比较运算符（$&gt;,&lt;, \geq ,\leq ,\neq ,=$）</strong>，$X_1$ 和 $Y_1$ 可代表属性名（也可用其序号代替）、常量、简单函数</p>
+<p>综上所述，选择运算实际上是从关系 $R$ 中选取使逻辑表达式 $F$ 为 <code>true</code> 的元组，是从行角度进行的运算</p>
+<p>例如，查询信息系（IS 系）全体学生：$\sigma_{Sdept=’IS\:’}(Student)$，结果如下</p>
+<p><img width="500" src="/images/notes/database/11-7.png"></p>
+<p>再例如，查询年龄大于等于 20 岁的男学生：$\sigma_{Sage\geq 20 \wedge Ssex=’男\:’}(Student)$，结果如下</p>
+<p><img width="500" src="/images/notes/database/11-8.png"></p>
+<h2 id="投影"><a href="#投影" class="headerlink" title="投影"></a>投影</h2><p><strong>投影（Projection）</strong>是在关系 $R$ 上<strong>选择若干属性列</strong>组成<strong>新的关系</strong>，记作：</p>
+<script type="math/tex; mode=display">
+\Pi_A(R)=\{t[A] | t \in R\}</script><p>其中，$A$ 为 $R$ 中的属性列</p>
+<p>投影操作是对列进行运算的，但值得注意的是，投影后不仅取消了原关系中的某些列，而且可能取消某些元组，因为取消了某些列后，可能会出现重复的行，此时应该<strong>对完全相同行去重</strong></p>
+<p>例如，查询所有学生的姓名和年龄：$\Pi_{Sname,Sage}(Student)$，结果如下</p>
+<p><img width="500" src="/images/notes/database/11-9.png"></p>
+<p>再例如，查询学号为 95001 号学生所选修的课程号：$\Pi_{Cno}(\sigma_{Sno=95001(SC)})$，结果如下</p>
+<p><img width="500" src="/images/notes/database/11-10.png"></p>
+<h2 id="连接"><a href="#连接" class="headerlink" title="连接"></a>连接</h2><h3 id="定义"><a href="#定义" class="headerlink" title="定义"></a>定义</h3><p><strong>连接（Join）</strong>也称 $\theta$ 连接，是从两个关系 $R$ 与 $S$ 的<strong>笛卡尔积中选取属性间满足一定条件的元组</strong>组成<strong>新的关系</strong>，记作：</p>
+<script type="math/tex; mode=display">
+R  \underset{A\theta B}{\bowtie} S=\{\overset{\frown }{t_r t_s} | t_r \in R \wedge t_s \in S \wedge t_r[A] \: \theta \: t_s[B]\}</script><p>其中，$A$ 和 $B$ 分别为关系 $R$ 和 $S$ 上<strong>目（列数）相等且可比</strong>的属性组，$\theta$ 为比较运算符</p>
+<p>该运算式实质为：在 $R$ 和 $S$ 的笛卡尔积 $R \times S$ 中选取 $R$ 关系在 $A$ 属性组上的值与 $S$ 关系在 $B$ 属性组上的值满足比较关系 $\theta$ 的元组</p>
+<h3 id="等值连接与自然连接"><a href="#等值连接与自然连接" class="headerlink" title="等值连接与自然连接"></a>等值连接与自然连接</h3><p>连接运算中最常用的连接有两种，一种是<strong>等值连接（Equijion）</strong>，另一种是<strong>自然连接（Natural join）</strong>，除这两种连接外的所有连接，都称为<strong>非等值连接</strong></p>
+<p><strong>等值连接</strong>是指当比较运算符 $\theta$ 为 $=$ 时的连接运算，其是从关系 $R$ 和 $S$ 的笛卡尔积中选取 $A$、$B$ <strong>属性组的属性值相等的元组</strong>组成新的关系，即：</p>
+<script type="math/tex; mode=display">
+R  \underset{A=B}{\bowtie} S=\{\overset{\frown }{t_r t_s} | t_r \in R \wedge t_s \in S \wedge t_r[A] = t_s[B]\}</script><p>例如，学生关系 Student 和选修关系 SC 的学号属性 Sno 的等值连接 $Student \underset{Student.Sno=Sc.Sno}{\bowtie} SC$，结果如下</p>
+<p><img width="500" src="/images/notes/database/11-11.png"></p>
+<p><strong>自然连接</strong>是一种特殊的等值连接，其要求两个关系中进行比较的分量必须是<strong>同名的属性组</strong>，并且在结果中将重复的属性列去掉，即：</p>
+<script type="math/tex; mode=display">
+R \bowtie S=\{\overset{\frown }{t_r t_s} [U-A] | t_r \in R \wedge t_s \in S \wedge t_r[A] = t_s[A]\}</script><p>其中，$U$ 为关系 $R$ 和 $S$ 的全体属性的集合</p>
+<p>可以发现，一般的连接操作是从行的角度进行运算，而自然连接由于要取消重复列，其是同时从行和列的角度进行运算</p>
+<p>此外，值得注意的是，当 $R$ 与 $S$ 无相同属性时，$R\bowtie S=R\times S$</p>
+<p>例如，学生关系 Student 和选修关系 SC  作自然连接 $Student \bowtie SC$，结果如下</p>
+<p><img width="500" src="/images/notes/database/11-12.png"></p>
+<h3 id="悬浮元组与外连接"><a href="#悬浮元组与外连接" class="headerlink" title="悬浮元组与外连接"></a>悬浮元组与外连接</h3><p>当两个关系 $R$ 与 $S$ 作自然连接时，选择两个关系在公共属性上值相等的元组构成新的关系，此时，关系 $R$ 中某些元组可能在 $S$ 中不存在公共属性值相等的元组，使得 $R$ 中这些元组在操作时被舍弃了，同样，$S$ 中的某些元组也可能被舍弃，这些被舍弃的元组称为<strong>悬浮元组（Dangling tuple）</strong></p>
+<p>例如，对学生关系 Student 和选修关系 SC  的自然连接 $Student \bowtie SC$ 中，学生关系 Student 的第 3 个、第 4 个元组，选修关系的第 5 个元组，就是悬浮元组</p>
+<p><img width="500" src="/images/notes/database/11-12.png"></p>
+<p>如果把悬浮元组也保存在结果关系中，在其他属性上填上<strong>空值（NULL）</strong>，那么这种连接就叫<strong>外连接（Outer join）</strong>，记作：$R \Join S$</p>
+<p>例如，学生关系 Student 和选修关系 SC  的外连接 $Student \bowtie SC$，结果如下</p>
+<p><img width="500" src="/images/notes/database/11-13.png"></p>
+<p>如果只保留左边关系 $R$ 中的悬浮元组，那么这种连接就叫<strong>左外连接（Left join）</strong>，记作：$R \rtimes S$</p>
+<p>例如，学生关系 Student 和选修关系 SC  的左外连接 $Student \bowtie SC$，结果如下</p>
+<p><img width="500" src="/images/notes/database/11-14.png"></p>
+<p>如果只保留左边关系 $R$ 中的悬浮元组，那么这种连接就叫<strong>右外连接（Right join）</strong>，记作：$R \ltimes S$</p>
+<p>例如，学生关系 Student 和选修关系 SC  的右外连接 $Student \bowtie SC$，结果如下</p>
+<p><img width="500" src="/images/notes/database/11-15.png"></p>
+<h2 id="除运算"><a href="#除运算" class="headerlink" title="除运算"></a>除运算</h2><h3 id="象集"><a href="#象集" class="headerlink" title="象集"></a>象集</h3><p>对于给定一个关系 $R(X,Z)$，其中 $X$ 和 $Z$ 为属性组，当 $t[X]=x$ 时，定义 $x$ 在 $R$ 中的<strong>象集（Images set）</strong>为：</p>
+<script type="math/tex; mode=display">
+Z_x=\{t[Z] | t\in R,t[X]=x\}</script><p>其表示在关系 $R$ 中，选出属性组 $X$ 上所有取值为 $x$ 的元组，去掉这些元组的属性组 $X$ 上的分量，只保留这些元组的属性组 $Z$ 上的分量</p>
+<p>例如，对于如下的姓名课程关系，取 <code>x=张军</code>，象集 $Z_x$ 代表张军所选修的所有课程</p>
+<p><img width="500" src="/images/notes/database/11-16.png"></p>
+<h3 id="除运算-1"><a href="#除运算-1" class="headerlink" title="除运算"></a>除运算</h3><p>在有了象集的定义后，我们用象集来定义<strong>除运算（Division）</strong></p>
+<p>对于给定关系 $R(X,Y)$ 和 $S(Y,Z)$，其中 $X$、$Y$、$Z$ 为属性组，$R$ 中的 $Y$ 和 $S$ 中的 $Y$ 可以有不同属性名，但必须出自<strong>相同的域</strong></p>
+<p>关系 $R$ 与关系 $S$ 进行除运算，得到一个新的关系 $P(X)$，$P$ 是 $R$ 中满足下列条件的元组在 $X$ 属性列上的<strong>投影</strong>：元组在 $X$ 的分量值 $x$ 的象集 $Y_x$ 包含关系 $S$ 在 $Y$ 上的投影的集合</p>
+<p>记作：</p>
+<script type="math/tex; mode=display">
+R \div S=\{t_r[X]|t_r \in R \wedge \Pi_Y(S) \subseteq Y_x\}</script><p>其中，$x=t_r[X]$，$Y_x$ 为 $x$ 在关系 $R$ 中的象集</p>
+<p>简单来说，设关系 $R$ 除以关系 $S$ 的结果为关系 $T$，则 <strong>$T$ 包含所有在 $R$ 但不在 $S$ 中的属性及其值，且 $T$ 的元组与 $S$ 的元组的所有组合都在 $R$ 中</strong></p>
+<p>举例来说，假设关系 $R$ 和关系 $S$ 如下</p>
+<p><img width="500" src="/images/notes/database/11-17.png"></p>
+<p>在关系 $R$ 中，属性 $A$ 可取的值为 $\{a_1,a_2,a_3,a_4\}$，则这 4 个可取值的象集如下</p>
+<p><img width="400" src="/images/notes/database/11-18.png"></p>
+<p>关系 $S$ 在属性组 $(B,C)$ 上的投影为</p>
+<p><img width="200" src="/images/notes/database/11-19.png"></p>
+<p>显然，只有 $a_1$ 的象集 $(B,C)_{a_1}$ 包含了 $S$ 在属性组 $(B,C)$ 上的投影，故 $R \div S$ 的结果如下</p>
+<p><img width="100" src="/images/notes/database/11-20.png"></p>
+<h1 id="【关系代数表达式】"><a href="#【关系代数表达式】" class="headerlink" title="【关系代数表达式】"></a>【关系代数表达式】</h1><p>关系代数中，将关系代数运算经过有限次复合后形成的表达式，称为<strong>关系代数表达式</strong></p>
+<p>在表达式中，关系代数运算的结果没有可供引用的名字，这使得复杂的查询显得非常冗长</p>
+<p>为解决这个问题，引入了<strong>命名运算</strong>，将一个名字赋给关系代数表达式，记作：</p>
+<script type="math/tex; mode=display">
+\rho_x(E)</script><p>其中，$E$ 为给定的关系代数表达式，$x$ 表示名字</p>
+<p>命名运算除了赋名外，还可以设置关系代数表达式各属性的名字</p>
+<p>假设关系代数表达式 $E$ 是 $n$ 元的，则表达式：$\rho_{x(A_1,A_2,…,A_n)}(E)$ 返回表达式 $E$ 的结果，并赋名为 $x$，同时将 $E$ 的各属性更名为 $A_1,A_2,…,A_n$</p>
+
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>感谢您对我的支持，让我继续努力分享有用的技术与知识点！</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/wechatpay.jpg" alt="Alex_McAvoy 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/alipay.jpg" alt="Alex_McAvoy 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Alex_McAvoy
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://alex-mcavoy.github.io/notes/database/61c34bcf.html" title="关系代数">https://alex-mcavoy.github.io/notes/database/61c34bcf.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/notes/" rel="tag"># 学习笔记</a>
+              <a href="/tags/database/" rel="tag"># 数据库系统</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/notes/database/f156402b.html" rel="prev" title="关系操作">
+      <i class="fa fa-chevron-left"></i> 关系操作
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/notes/database/d5e329c3.html" rel="next" title="关系的完整性约束">
+      关系的完整性约束 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【概述】"><span class="nav-number">1.</span> <span class="nav-text">【概述】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【传统的集合运算】"><span class="nav-number">2.</span> <span class="nav-text">【传统的集合运算】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【专门的关系运算】"><span class="nav-number">3.</span> <span class="nav-text">【专门的关系运算】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#引入"><span class="nav-number">3.1.</span> <span class="nav-text">引入</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#选择"><span class="nav-number">3.2.</span> <span class="nav-text">选择</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#投影"><span class="nav-number">3.3.</span> <span class="nav-text">投影</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#连接"><span class="nav-number">3.4.</span> <span class="nav-text">连接</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#定义"><span class="nav-number">3.4.1.</span> <span class="nav-text">定义</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#等值连接与自然连接"><span class="nav-number">3.4.2.</span> <span class="nav-text">等值连接与自然连接</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#悬浮元组与外连接"><span class="nav-number">3.4.3.</span> <span class="nav-text">悬浮元组与外连接</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#除运算"><span class="nav-number">3.5.</span> <span class="nav-text">除运算</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#象集"><span class="nav-number">3.5.1.</span> <span class="nav-text">象集</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#除运算-1"><span class="nav-number">3.5.2.</span> <span class="nav-text">除运算</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【关系代数表达式】"><span class="nav-number">4.</span> <span class="nav-text">【关系代数表达式】</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">  
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Alex_McAvoy"
+      src="/assets/img/head.jpg">
+  <p class="site-author-name" itemprop="name">Alex_McAvoy</p>
+  <div class="site-description" itemprop="description">想要成为渔夫的猎手</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">535</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">57</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">62</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Alex-McAvoy" title="GitHub → https://github.com/Alex-McAvoy" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/u011815404" title="CSDN → https://blog.csdn.net/u011815404" rel="noopener" target="_blank"><i class="fas fa-copyright fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+<!-- 访客地图 -->
+<script type="text/javascript" src="//rf.revolvermaps.com/0/0/5.js?i=50n58yo58ow&amp;m=0&amp;c=ff0000&amp;cr1=ffffff&amp;s=140" async="async"></script>
+
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdz20172133" title="https://blog.csdn.net/sdz20172133" rel="noopener" target="_blank">神仙队友</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://pxlsdz.gitee.io/" title="https://pxlsdz.gitee.io/" rel="noopener" target="_blank">神仙队友的另一个博客</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://bycore.net" title="https://bycore.net" rel="noopener" target="_blank">凉了的某饼同学</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://kris-cn.github.io/" title="http://kris-cn.github.io/" rel="noopener" target="_blank">翟孙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://deng.fun/" title="http://deng.fun/" rel="noopener" target="_blank">芙蓉姐姐</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdau_fangshifeng" title="https://blog.csdn.net/sdau_fangshifeng" rel="noopener" target="_blank">一个头很酷的家伙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/wentong_Xu" title="https://blog.csdn.net/wentong_Xu" rel="noopener" target="_blank">小黑贱胖子</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.yuheng.tech/" title="https://www.yuheng.tech/" rel="noopener" target="_blank">咸于</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/lanshan1111" title="https://blog.csdn.net/lanshan1111" rel="noopener" target="_blank">肥硕硕</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdauguanweihong" title="https://blog.csdn.net/sdauguanweihong" rel="noopener" target="_blank">管少</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_41661919" title="https://blog.csdn.net/qq_41661919" rel="noopener" target="_blank">俊杰</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_40859951" title="https://blog.csdn.net/qq_40859951" rel="noopener" target="_blank">峰哥</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/LSD20164388" title="https://blog.csdn.net/LSD20164388" rel="noopener" target="_blank">狗冬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37748451" title="https://blog.csdn.net/qq_37748451" rel="noopener" target="_blank">胖亚亚</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37868325" title="https://blog.csdn.net/qq_37868325" rel="noopener" target="_blank">妍大佬</a>
+        </li>
+    </ul>
+  </div>
+
+		
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+  
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Alex_McAvoy</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+</br>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script><script src="/js/bookmark.js"></script>
+
+
+
+  
+
+
+
+
+  <script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '48fd73a538d3fa927f65',
+      clientSecret: '56618aefeee90bac3c20de8d51bb0b985d67252d',
+      repo        : 'Gitalk-Comment',
+      owner       : 'Alex-McAvoy',
+      admin       : ['Alex-McAvoy'],
+      id          : '6ed01e3cdf8b07c2dcc7ac2b3733db6e',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+  
+  <!-- 鼠标单击粒子特效 -->
+  <script type="text/javascript" src="/js/cursor-effects.js"></script>
+  <!-- 多级目录 -->
+  <script type="text/javascript" src="/js/category.js"></script>
+  
+</body>
+</html>

@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.9.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/img/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/assets/img/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/pace-js@1/themes/blue/pace-theme-minimal.css">
+  <script src="//cdn.jsdelivr.net/npm/pace-js@1/pace.min.js"></script>
+
+
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"alex-mcavoy.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":16,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":true,"color":"#ff0000","save":"manual"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":true},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.json"};
+  </script>
+
+  <meta name="description" content="【连接原理】主存储器通过数据总线、地址总线、控制总线与 CPU 连接 其中，数据总线的位数与工作频率的乘积正比于数据传输率，地址总线的位数决定了可寻址的最大内存空间，控制总线指出了总线周期的类型与本次输入/输出操作完成的时刻">
+<meta name="keywords" content="学习笔记,计算机组成">
+<meta property="og:type" content="article">
+<meta property="og:title" content="主存与 CPU 连接">
+<meta property="og:url" content="https://alex-mcavoy.github.io/notes/computer-composition/31f16c29.html">
+<meta property="og:site_name" content="Alex_McAvoy">
+<meta property="og:description" content="【连接原理】主存储器通过数据总线、地址总线、控制总线与 CPU 连接 其中，数据总线的位数与工作频率的乘积正比于数据传输率，地址总线的位数决定了可寻址的最大内存空间，控制总线指出了总线周期的类型与本次输入/输出操作完成的时刻">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/computer-composition/09-1.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/computer-composition/09-2.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/computer-composition/09-3.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/computer-composition/09-4.png">
+<meta property="og:updated_time" content="2022-05-07T15:04:43.027Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="主存与 CPU 连接">
+<meta name="twitter:description" content="【连接原理】主存储器通过数据总线、地址总线、控制总线与 CPU 连接 其中，数据总线的位数与工作频率的乘积正比于数据传输率，地址总线的位数决定了可寻址的最大内存空间，控制总线指出了总线周期的类型与本次输入/输出操作完成的时刻">
+<meta name="twitter:image" content="https://alex-mcavoy.github.io/images/notes/computer-composition/09-1.png">
+
+<link rel="canonical" href="https://alex-mcavoy.github.io/notes/computer-composition/31f16c29.html">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>主存与 CPU 连接 | Alex_McAvoy</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Alex_McAvoy</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">想要成为渔夫的猎手</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+
+	
+	
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/notes/computer-composition/31f16c29.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/assets/img/head.jpg">
+      <meta itemprop="name" content="Alex_McAvoy">
+      <meta itemprop="description" content="想要成为渔夫的猎手">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Alex_McAvoy">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          主存与 CPU 连接
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-03-21 13:42:00" itemprop="dateCreated datePublished" datetime="2019-03-21T13:42:00+08:00">2019-03-21</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/notes/" itemprop="url" rel="index"><span itemprop="name">学习笔记</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/notes/computer-composition/" itemprop="url" rel="index"><span itemprop="name">计算机组成</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>3k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>3 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="【连接原理】"><a href="#【连接原理】" class="headerlink" title="【连接原理】"></a>【连接原理】</h1><p>主存储器通过数据总线、地址总线、控制总线与 CPU 连接</p>
+<p>其中，数据总线的位数与工作频率的乘积正比于数据传输率，地址总线的位数决定了可寻址的最大内存空间，控制总线指出了总线周期的类型与本次输入/输出操作完成的时刻</p>
+<p><img width="400" src="/images/notes/computer-composition/09-1.png"></p>
+<h1 id="【主存容量扩展】"><a href="#【主存容量扩展】" class="headerlink" title="【主存容量扩展】"></a>【主存容量扩展】</h1><p>由于单个存储芯片的容量是有限的，它在字数或字长方面与实际存储器的要求都有差距，因此，需要在字和位两方面进行扩充才能满足实际存储器的容量要求</p>
+<h2 id="位扩展法"><a href="#位扩展法" class="headerlink" title="位扩展法"></a>位扩展法</h2><p>CPU 的数据线数与存储芯片的数据位数不一定相等，此时必须对存储芯片扩位，即进行位扩展，用多个存储器件对字长进行扩充，增加存储字长，使其数据位数与 CPU 的数据线数相等。</p>
+<p>位扩展的连接方式是将多个存储芯片的地址端、片选端和读写控制端相应并联，数据端分别引出</p>
+<p>如下图所示，用 $8$ 片 $8K\times 1$ 位的 RAM 芯片组成 $8K\times 8$ 位的存储器，$8$ 片 RAM 芯片的地址线 $A_{12}\sim A_o$、$\overline{CS}$、$\overline{WE}$ 都分别连在一起，每片的数据线依次作为 CPU 数据线的一位</p>
+<p><img width="500" src="/images/notes/computer-composition/09-2.png"></p>
+<p>在采用位扩展时，各芯片连接地址线的方式相同，但连接数据线的方式不同，在某一时刻选中所有芯片，因此片选信号 $\overline{CS}$ 要连接到所有芯片</p>
+<h2 id="字扩展法"><a href="#字扩展法" class="headerlink" title="字扩展法"></a>字扩展法</h2><p>字扩展指的是增加存储器中字的数量，而位数不变</p>
+<p>字扩展将芯片的地址线、数据线、读写控制线相应并联，而由片选信号来区分各芯片的地址范围</p>
+<p>如图下图所示，用 $4$ 片 $16K\times 8$ 位的 RAM 芯片组成 $64K\times 8$ 位的存储器，$4$ 片 RAM 芯片的数据线 $D_0\sim D_7$ 和 $\overline{WE}$ 都分别连在一起</p>
+<p>将 $A_{15}A_{14}$ 用做片选信号，当 $A_{15}A_{14}=00$ 时，译码器输出端 $0$ 有效，选中最左边的 $1$ 号芯片，当 $A_{15}A_{14}=01$ 时，译码器输出端 $1$ 有效，选中 $2$ 号芯片，依次类推，使得在同一时间内只能有一个芯片被选中</p>
+<p><img width="500" src="/images/notes/computer-composition/09-3.png"></p>
+<p>各芯片的地址分配如下：</p>
+<ul>
+<li>第一片：最低地址 $00,00000000000000$，最高地址 $00,11111111111111$（$16$ 位）</li>
+<li>第二片：最低地址 $01,00000000000000$，最高地址 $01,11111111111111$（$16$ 位）</li>
+<li>第三片：最低地址 $10,00000000000000$，最高地址 $10,11111111111111$（$16$ 位）</li>
+<li>第四片：最低地址 $11,00000000000000$，最高地址 $11,11111111111111$（$16$ 位）</li>
+</ul>
+<p>在采用字扩展时，各芯片连接地址线的方式相同，连接数据线的方式也相同，但在同一时刻只需选中部分芯片，因此通过片选信号 $\overline{CS}$ 或采用译码器设计连接到相应芯片即可</p>
+<h2 id="字位同时扩展法"><a href="#字位同时扩展法" class="headerlink" title="字位同时扩展法"></a>字位同时扩展法</h2><p>实际上，存储器往往需要字和位同时扩充，也就是既增加存储字的数量，又增加存储字长</p>
+<p>如图下图所示，用 $8$ 片 $16K\times 4$ 位的 RAM 芯片组成 $64K\times 8$ 位的存储器，每两片构成一组 $16K\times 8$ 位的存储器（位扩展），$4$ 组便构成 $64K\times 8$ 位的存储器（字扩展）</p>
+<p>地址线 $A_{15}A_{14}$ 经译码器得到 $4$ 个片选信号，当 $A_{15}A_{14}=00$ 时，输出端 $0$ 有效，选中第一组的芯片（①和②），当 $A_{15}A_{14}=01$ 时，输出端 $1$ 有效，选中第二组的芯片（③和④），依次类推</p>
+<p><img width="500" src="/images/notes/computer-composition/09-4.png"></p>
+<p>采用字位同时扩展时，各芯片连接地址线的方式相同，但连接数据线的方式不同，而且需要通过片选信号 $\overline{CS}$ 或采用译码器设计连接到相应的芯片</p>
+<h1 id="【存储芯片的地址分配与片选】"><a href="#【存储芯片的地址分配与片选】" class="headerlink" title="【存储芯片的地址分配与片选】"></a>【存储芯片的地址分配与片选】</h1><p>CPU 要实现对存储单元的访问，首先要选择存储芯片，即进行<strong>片选</strong>，然后再为选中的芯片依地址码选择相应的存储单元，以进行数据的存取，即进行<strong>字选</strong></p>
+<p>片内的字选通常是由 CPU 送出的 $N$ 条低位地址线完成的，地址线直接接到所有存储芯片的地址输入端，而片选信号是通过线选法或译码片选法产生的</p>
+<h2 id="线选法"><a href="#线选法" class="headerlink" title="线选法"></a>线选法</h2><p>线选法用除片内寻址外的高位地址线直接（或经反相器）分别接至各个存储芯片的片选端，当某地址线信息为 $0$ 时，就选中与之对应的存储芯片</p>
+<p>这些片选地址线每次寻址时只能有一位有效，不允许同时有多位有效，这样才能保证每次只选中一个芯片（或芯片组）</p>
+<p>线选法不需要地址译码器，线路简单，但地址空间不连续，同时，要求选片的地址线必须分时为低电平，否则不能工作，这不能充分利用系统的存储器空间，造成地址资源的浪费</p>
+<hr>
+<p>假设 $4$ 片 $2K\times 8$ 位存储芯片用线选法构成 $8K\times 8$ 位存储器，那么各芯片的片选信号通过线选法进行地址分配，各地址如下表所示</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:center">芯片</th>
+<th style="text-align:center">$A_{14}\sim A_{11}$</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">$0$</td>
+<td style="text-align:center">$1110$</td>
+</tr>
+<tr>
+<td style="text-align:center">$1$</td>
+<td style="text-align:center">$1101$</td>
+</tr>
+<tr>
+<td style="text-align:center">$2$</td>
+<td style="text-align:center">$1011$</td>
+</tr>
+<tr>
+<td style="text-align:center">$3$</td>
+<td style="text-align:center">$0111$</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h2 id="译码片选法"><a href="#译码片选法" class="headerlink" title="译码片选法"></a>译码片选法</h2><p>译码片选法用除片内寻址外的高位地址线通过地址译码器芯片产生片选信号</p>
+<p>如用 $8$ 片 $8K\times 8$ 位的存储芯片组成 $64K\times 8$ 位存储器（地址线为 $16$ 位，数据线为 $8$ 位），需要 $8$ 个片选信号</p>
+<p>若采用线选法，除去片内寻址的 $13$ 位地址线，仅余高 $3$ 位，不足以产生 $8$ 个片选信号</p>
+<h1 id="【存储器与-CPU-的连接】"><a href="#【存储器与-CPU-的连接】" class="headerlink" title="【存储器与 CPU 的连接】"></a>【存储器与 CPU 的连接】</h1><p><strong><font size="5">1.合理选择存储芯片</font></strong></p>
+<p>要组成一个主存系统，选择存储芯片是第一步，主要指存储芯片的类型（RAM 或 ROM）和数量的选择</p>
+<p>通常选用 ROM 存放系统程序、标准子程序和各类常数，RAM 则是为用户编程而设置的</p>
+<p>此外，在考虑芯片数量时，要尽量使连线简单、方便</p>
+<p><strong><font size="5">2.地址线的连接</font></strong></p>
+<p>存储芯片的容量不同，其地址线数也不同，而 CPU 的地址线数往往比存储芯片的地址线数要多</p>
+<p>通常将 CPU 地址线的低位与存储芯片的地址线相连，以选择芯片中的某一单元（字选），这部分的译码是由芯片片内逻辑完成的</p>
+<p>而 CPU 地址线的高位则在扩充存储芯片时用，以用来选择存储芯片（片选），这部分译码由外接译码器逻辑完成</p>
+<p>例如，设 CPU 地址线为 $16$ 位，即 $A_{15}\sim A_0$，$1K\times 4$ 位的存储芯片仅有 $10$ 根地址线，此时，可将 CPU 的低位地址 $A_9\sim A_0$ 与存储芯片的地址线 $A_9\sim A_0$ 相连</p>
+<p><strong><font size="5">3.数据线的连接</font></strong></p>
+<p>CPU 的数据线与存储芯片的数据线数不一定相等，在相等时可直接相连，在不等时必须对存储芯片扩位，使其数据位数与CPU的数据线数相等</p>
+<p><strong><font size="5">4.读写命令线的连接</font></strong></p>
+<p>CPU 读写命令线一般可直接与存储芯片的读写控制端相连，通常高电平为读，低电平为写</p>
+<p>有些 CPU 的读写命令线是分开的（读为 $\overline{RD}$，写为 $\overline{WE}$，均为低电平有效），此时 CPU 的读命令线应与存储芯片的允许读控制端相连，而 CPU 的写命令线则应与存储芯片的允许写控制端相连</p>
+<p><strong><font size="5">5.片选线的连接</font></strong></p>
+<p>片选线的连接是 CPU 与存储芯片连接的关键</p>
+<p>存储器由许多存储芯片叠加而成，哪一片被选中完全取决于该存储芯片的片选控制端 $\overline{CS}$ 是否能接收到来自CPU的片选有效信号</p>
+<p>片选有效信号与 CPU 的访存控制信号 $\overline{MREQ}$（低电平有效）有关，因为只有当 CPU 要求访存时，才要求选中存储芯片</p>
+<p>若 CPU 访问 I/O，则 $\overline{MREQ}$ 为高，表示不要求存储器工作</p>
+
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>感谢您对我的支持，让我继续努力分享有用的技术与知识点！</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/wechatpay.jpg" alt="Alex_McAvoy 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/alipay.jpg" alt="Alex_McAvoy 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Alex_McAvoy
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://alex-mcavoy.github.io/notes/computer-composition/31f16c29.html" title="主存与 CPU 连接">https://alex-mcavoy.github.io/notes/computer-composition/31f16c29.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/notes/" rel="tag"># 学习笔记</a>
+              <a href="/tags/computer-composition/" rel="tag"># 计算机组成</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/oi-acm/graph/spanning-tree/minimum-spanning-tree/f27ebd78.html" rel="prev" title="Kruskal 算法">
+      <i class="fa fa-chevron-left"></i> Kruskal 算法
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/notes/computer-composition/23b63911.html" rel="next" title="双端口 RAM 与多模块存储器">
+      双端口 RAM 与多模块存储器 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【连接原理】"><span class="nav-number">1.</span> <span class="nav-text">【连接原理】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【主存容量扩展】"><span class="nav-number">2.</span> <span class="nav-text">【主存容量扩展】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#位扩展法"><span class="nav-number">2.1.</span> <span class="nav-text">位扩展法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#字扩展法"><span class="nav-number">2.2.</span> <span class="nav-text">字扩展法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#字位同时扩展法"><span class="nav-number">2.3.</span> <span class="nav-text">字位同时扩展法</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【存储芯片的地址分配与片选】"><span class="nav-number">3.</span> <span class="nav-text">【存储芯片的地址分配与片选】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#线选法"><span class="nav-number">3.1.</span> <span class="nav-text">线选法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#译码片选法"><span class="nav-number">3.2.</span> <span class="nav-text">译码片选法</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【存储器与-CPU-的连接】"><span class="nav-number">4.</span> <span class="nav-text">【存储器与 CPU 的连接】</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">  
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Alex_McAvoy"
+      src="/assets/img/head.jpg">
+  <p class="site-author-name" itemprop="name">Alex_McAvoy</p>
+  <div class="site-description" itemprop="description">想要成为渔夫的猎手</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">535</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">57</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">62</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Alex-McAvoy" title="GitHub → https://github.com/Alex-McAvoy" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/u011815404" title="CSDN → https://blog.csdn.net/u011815404" rel="noopener" target="_blank"><i class="fas fa-copyright fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+<!-- 访客地图 -->
+<script type="text/javascript" src="//rf.revolvermaps.com/0/0/5.js?i=50n58yo58ow&amp;m=0&amp;c=ff0000&amp;cr1=ffffff&amp;s=140" async="async"></script>
+
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdz20172133" title="https://blog.csdn.net/sdz20172133" rel="noopener" target="_blank">神仙队友</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://pxlsdz.gitee.io/" title="https://pxlsdz.gitee.io/" rel="noopener" target="_blank">神仙队友的另一个博客</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://bycore.net" title="https://bycore.net" rel="noopener" target="_blank">凉了的某饼同学</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://kris-cn.github.io/" title="http://kris-cn.github.io/" rel="noopener" target="_blank">翟孙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://deng.fun/" title="http://deng.fun/" rel="noopener" target="_blank">芙蓉姐姐</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdau_fangshifeng" title="https://blog.csdn.net/sdau_fangshifeng" rel="noopener" target="_blank">一个头很酷的家伙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/wentong_Xu" title="https://blog.csdn.net/wentong_Xu" rel="noopener" target="_blank">小黑贱胖子</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.yuheng.tech/" title="https://www.yuheng.tech/" rel="noopener" target="_blank">咸于</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/lanshan1111" title="https://blog.csdn.net/lanshan1111" rel="noopener" target="_blank">肥硕硕</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdauguanweihong" title="https://blog.csdn.net/sdauguanweihong" rel="noopener" target="_blank">管少</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_41661919" title="https://blog.csdn.net/qq_41661919" rel="noopener" target="_blank">俊杰</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_40859951" title="https://blog.csdn.net/qq_40859951" rel="noopener" target="_blank">峰哥</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/LSD20164388" title="https://blog.csdn.net/LSD20164388" rel="noopener" target="_blank">狗冬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37748451" title="https://blog.csdn.net/qq_37748451" rel="noopener" target="_blank">胖亚亚</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37868325" title="https://blog.csdn.net/qq_37868325" rel="noopener" target="_blank">妍大佬</a>
+        </li>
+    </ul>
+  </div>
+
+		
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+  
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Alex_McAvoy</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+</br>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script><script src="/js/bookmark.js"></script>
+
+
+
+  
+
+
+
+
+  <script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '48fd73a538d3fa927f65',
+      clientSecret: '56618aefeee90bac3c20de8d51bb0b985d67252d',
+      repo        : 'Gitalk-Comment',
+      owner       : 'Alex-McAvoy',
+      admin       : ['Alex-McAvoy'],
+      id          : 'a11785c47bc257774c550d3c2af6b6ae',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+  
+  <!-- 鼠标单击粒子特效 -->
+  <script type="text/javascript" src="/js/cursor-effects.js"></script>
+  <!-- 多级目录 -->
+  <script type="text/javascript" src="/js/category.js"></script>
+  
+</body>
+</html>

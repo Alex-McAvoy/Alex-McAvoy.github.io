@@ -1,0 +1,920 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.9.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/img/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/assets/img/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/pace-js@1/themes/blue/pace-theme-minimal.css">
+  <script src="//cdn.jsdelivr.net/npm/pace-js@1/pace.min.js"></script>
+
+
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"alex-mcavoy.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":16,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":true,"color":"#ff0000","save":"manual"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":true},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.json"};
+  </script>
+
+  <meta name="description" content="Reference  Broyden–Fletcher–Goldfarb–Shanno algorithm Sherman–Morrison formula Woodbury matrix identitty 牛顿法与拟牛顿法学习笔记（四）BFGS 算法 Broyden类算法：BFGS算法的迭代公式推导（应用两次Sherman-Morrison公式） Sherman-Morrison公式在BFG">
+<meta name="keywords" content="机器学习">
+<meta property="og:type" content="article">
+<meta property="og:title" content="BFGS 算法">
+<meta property="og:url" content="https://alex-mcavoy.github.io/ml/dec32020.html">
+<meta property="og:site_name" content="Alex_McAvoy">
+<meta property="og:description" content="Reference  Broyden–Fletcher–Goldfarb–Shanno algorithm Sherman–Morrison formula Woodbury matrix identitty 牛顿法与拟牛顿法学习笔记（四）BFGS 算法 Broyden类算法：BFGS算法的迭代公式推导（应用两次Sherman-Morrison公式） Sherman-Morrison公式在BFG">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2022-09-10T01:29:01.515Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="BFGS 算法">
+<meta name="twitter:description" content="Reference  Broyden–Fletcher–Goldfarb–Shanno algorithm Sherman–Morrison formula Woodbury matrix identitty 牛顿法与拟牛顿法学习笔记（四）BFGS 算法 Broyden类算法：BFGS算法的迭代公式推导（应用两次Sherman-Morrison公式） Sherman-Morrison公式在BFG">
+
+<link rel="canonical" href="https://alex-mcavoy.github.io/ml/dec32020.html">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>BFGS 算法 | Alex_McAvoy</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Alex_McAvoy</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">想要成为渔夫的猎手</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+
+	
+	
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/ml/dec32020.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/assets/img/head.jpg">
+      <meta itemprop="name" content="Alex_McAvoy">
+      <meta itemprop="description" content="想要成为渔夫的猎手">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Alex_McAvoy">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          BFGS 算法
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-06-21 13:11:00" itemprop="dateCreated datePublished" datetime="2019-06-21T13:11:00+08:00">2019-06-21</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/ml/" itemprop="url" rel="index"><span itemprop="name">机器学习</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>19k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>18 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <blockquote>
+<p>Reference</p>
+<ul>
+<li><a href="https://en.wikipedia.org/wiki/Broyden%E2%80%93Fletcher%E2%80%93Goldfarb%E2%80%93Shanno_algorithm" target="_blank" rel="noopener">Broyden–Fletcher–Goldfarb–Shanno algorithm</a></li>
+<li><a href="https://en.wikipedia.org/wiki/Sherman%E2%80%93Morrison_formula" target="_blank" rel="noopener">Sherman–Morrison formula</a></li>
+<li><a href="https://en.wikipedia.org/wiki/Woodbury_matrix_identity" target="_blank" rel="noopener">Woodbury matrix identitty</a></li>
+<li><a href="https://blog.csdn.net/itplus/article/details/21897443" target="_blank" rel="noopener">牛顿法与拟牛顿法学习笔记（四）BFGS 算法</a></li>
+<li><a href="https://zhuanlan.zhihu.com/p/91230555" target="_blank" rel="noopener">Broyden类算法：BFGS算法的迭代公式推导（应用两次Sherman-Morrison公式）</a></li>
+<li><a href="https://www.jianshu.com/p/0c591869792e" target="_blank" rel="noopener">Sherman-Morrison公式在BFGS算法的应用</a></li>
+<li><a href="https://zhuanlan.zhihu.com/p/375249572" target="_blank" rel="noopener">BFGS算法中Sherman-Morrison-Woodbury公式的使用</a></li>
+</ul>
+</blockquote>
+<h1 id="【概述】"><a href="#【概述】" class="headerlink" title="【概述】"></a>【概述】</h1><p>BFCS 算法是建立在<strong>阻尼牛顿法</strong>之上的，其以发明者 Broyden、Fletcher、Goldfarb、Shanno 四人姓名的首字母命名的，与 DFP 算法相比，其性能更佳，目前已成为求解无约束非线性优化问题的常用方法</p>
+<p>对于阻尼牛顿法的搜索方向 $\mathbf{d_k}=-H_k^{-1}\cdot \mathbf{g_k}$，根据拟牛顿条件，BFCS 选用近似矩阵 $B_k$ 作为海森矩阵 $H_k$ 的近似，其迭代格式为：</p>
+<script type="math/tex; mode=display">
+B_{k+1}=B_k+\triangle B_k,\quad k=0,1,2,...</script><p>其中，$B_0$ 取单位矩阵 $I$，因此，算法的关键就是每一次迭代的校正矩阵 $\triangle B_k$ 如何构造</p>
+<p>关于拟牛顿条件详见：<a href="https://alex-mcavoy.github.io/ml/374099fe.html">拟牛顿迭代法</a></p>
+<h1 id="【BFCS-算法】"><a href="#【BFCS-算法】" class="headerlink" title="【BFCS 算法】"></a>【BFCS 算法】</h1><h2 id="算法原理"><a href="#算法原理" class="headerlink" title="算法原理"></a>算法原理</h2><p>假设校正矩阵 $\triangle B_k$ 与拟牛顿条件 $\mathbf{y_k} = B_{k+1}\boldsymbol{\delta_k}$、近似矩阵 $B_k$ 有关</p>
+<p>采用待定系数法，设 $\alpha$、$\beta$ 为待定系数，向量 $\boldsymbol{\mu},\boldsymbol{\nu} \in \mathbb{R}^n$ 为待定列向量，则校正矩阵 $\triangle B_k$ 可待定为：</p>
+<script type="math/tex; mode=display">
+\triangle B_k=\alpha\boldsymbol{\mu}\boldsymbol{\mu}^T+\beta\boldsymbol{\nu}\boldsymbol{\nu}^T</script><p>从形式上看，这种待定公式保证了校正矩阵 $\triangle B_k$ 的对称性</p>
+<p>结合拟牛顿条件 $\mathbf{y_k} = B_{k+1}\boldsymbol{\delta_k}$，将 $\triangle B_k$ 的待定式带入迭代式，有：</p>
+<script type="math/tex; mode=display">
+\begin{align}
+\mathbf{y_k} 
+&= (B_k+\triangle B_k)\boldsymbol{\delta_k}\\
+&= B_k\boldsymbol{\delta_k}+\alpha\boldsymbol{\mu}\boldsymbol{\mu}^T\boldsymbol{\delta_k}+\beta\boldsymbol{\nu}\boldsymbol{\nu}^T\boldsymbol{\delta_k} \notag \\
+&= B_k\boldsymbol{\delta_k}+\boldsymbol{\mu}(\alpha\boldsymbol{\mu}^T\boldsymbol{\delta_k})+\boldsymbol{\nu}(\beta\boldsymbol{\nu}^T\boldsymbol{\delta_k}) \notag \\
+&= B_k\boldsymbol{\delta_k}+(\alpha\boldsymbol{\mu}^T\boldsymbol{\delta_k})\boldsymbol{\mu}+(\beta\boldsymbol{\nu}^T\boldsymbol{\delta_k})\boldsymbol{\nu} \notag
+\end{align}</script><p>可以发现，括号中的 $\alpha\boldsymbol{\mu}^T\boldsymbol{\delta_k}$ 与 $\beta\boldsymbol{\nu}^T\boldsymbol{\delta_k}$ 是两个数，取最简单的情况，进行如下赋值：</p>
+<script type="math/tex; mode=display">
+\left\{\begin{array}{rl}
+\alpha\boldsymbol{\mu}^T\boldsymbol{\delta_k} &=& 1 \\ \beta\boldsymbol{\nu}^T\boldsymbol{\delta_k} &=& -1
+\end{array} \right.</script><p>并将其带回 $\mathbf{y_k}$ 中，有：</p>
+<script type="math/tex; mode=display">
+\mathbf{y_k}-B_k\boldsymbol{\delta_k}=\boldsymbol{\mu}-\boldsymbol{\nu}</script><p>为使上式成立，直接取最简单情况 $\boldsymbol{\mu}=\boldsymbol{\delta_k}$，$\boldsymbol{\nu}=B_k\boldsymbol{\delta_k}$，此时，对于待定系数 $\alpha$、$\beta$ 有：</p>
+<script type="math/tex; mode=display">
+\left\{\begin{array}{rl}
+\alpha &=& \frac{1}{\mathbf{y_k}^T\boldsymbol{\delta_k}} 
+\\ \beta &=& -\frac{1}{\boldsymbol{\delta_k}^TB_k\boldsymbol{\delta_k}}
+\end{array} \right.</script><p>这时，校正矩阵 $\triangle B_k$ 已构造出来，即：</p>
+<script type="math/tex; mode=display">
+\triangle B_k=\frac{\mathbf{y_k}\mathbf{y_k}^T}{\mathbf{y_k}^T\mathbf{\delta_k}}-\frac{B_k\boldsymbol{\delta_k}\boldsymbol{\delta_k}^TB_k^T}{\boldsymbol{\delta_k}^TB_k\boldsymbol{\delta_k}}</script><p>由于近似矩阵 $D_k$ 为近似成<strong>海森矩阵</strong> $H_k$ 的正定矩阵，故有：</p>
+<script type="math/tex; mode=display">
+B_k^T=B_k</script><p>因此，BFCS 最终的迭代式为：</p>
+<script type="math/tex; mode=display">
+B_{k+1}=B_k+\frac{\mathbf{y_k}\mathbf{y_k}^T}{\mathbf{y_k}^T\boldsymbol{\delta_k}}-\frac{B_k\boldsymbol{\delta_k}\boldsymbol{\delta_k}^TB_k}{\boldsymbol{\delta_k}^TB_k\boldsymbol{\delta_k}},\quad k=0,1,2,...</script><p>可以发现，对于 BFGS 与 DFP 相比，除了将近似矩阵 $D$ 换为 $B$ 外，其他地方只是将 $\boldsymbol{\delta_k}$ 替换为 $\mathbf{y_k}$，将 $\mathbf{y_k}$ 替换为 $\boldsymbol{\delta_k}$</p>
+<h2 id="算法流程"><a href="#算法流程" class="headerlink" title="算法流程"></a>算法流程</h2><p>BFGS 算法的算法流程如下：</p>
+<ol>
+<li>给定初值 $\mathbf{x_0}$ 和精度阈值 $\varepsilon$，并令 $B_0=I$，$k=0$</li>
+<li>计算梯度向量 $\mathbf{g_k}$，与搜索方向 $\mathbf{d_k}=-B_k^{-1}\cdot \mathbf{g_k}$</li>
+<li>利用 $\lambda_k=\arg \min\limits_{\lambda\in \mathbb{R}} f(\mathbf{x_k}+\lambda \mathbf{d_k})$ 得到步长 $\lambda_k$，并令 $\boldsymbol{\delta_k}=\lambda\mathbf{d_k}$，$\mathbf{x_{k+1}}=\mathbf{x_k} + \mathbf{\delta_k}$</li>
+<li>若 $\mathbf{x_{k+1}}$ 的梯度向量 $\mathbf{g_{k+1}}$ 的 L1 范数 $||\mathbf{g_{k+1}}||$ 满足  $||\mathbf{g_{k+1}}||&lt;\varepsilon$，则停止迭代，得近似解 $\mathbb{x}^*=\mathbf{x_{k+1}}$，否则转至步骤 5</li>
+<li>计算两次迭代的梯度差 $\mathbf{y_k}=\mathbf{g_{k+1}}-\mathbf{g_k}$</li>
+<li>计算第 $k+1$ 次的近似矩阵 $B_{k+1}=B_k+\frac{\mathbf{y_k}\mathbf{y_k}^T}{\mathbf{y_k}^T\boldsymbol{\delta_k}}-\frac{B_k\boldsymbol{\delta_k}\boldsymbol{\delta_k}^TB_k}{\boldsymbol{\delta_k}^TB_k\boldsymbol{\delta_k}}$</li>
+<li>令 $k=k+1$，转至步骤 2</li>
+</ol>
+<h1 id="【谢尔曼-莫里森公式下的-BFGS-算法】"><a href="#【谢尔曼-莫里森公式下的-BFGS-算法】" class="headerlink" title="【谢尔曼-莫里森公式下的 BFGS 算法】"></a>【谢尔曼-莫里森公式下的 BFGS 算法】</h1><h2 id="算法原理-1"><a href="#算法原理-1" class="headerlink" title="算法原理"></a>算法原理</h2><p>对于阻尼牛顿法来说，其搜索方向为：</p>
+<script type="math/tex; mode=display">
+\mathbf{d_k}=-H_k^{-1}\cdot \mathbf{g_k}</script><p>BFGS 算法选择使用近似矩阵 $B_k$ 来作为海森矩阵 $H_k$ 的近似，因此，这不可避免的需要在计算出 $B_k$ 后再求 $B_k^{-1}$，通常情况下，对于 $B_k^{-1}$ 的计算，都是通过解线性方程组 $B_k\mathbf{d_k}=-\mathbf{g_k}$ 进行的，这无疑影响了算法的运行速度</p>
+<p>为此，在 BFGS 算法的基础上，使用<strong>谢尔曼-莫里森公式（Sherman-Morrison Formula）</strong>，将 BFGS 的迭代式进行改进，直接给出 $B_{k+1}^{-1}$ 与 $B_k^{-1}$ 的关系式，即：</p>
+<script type="math/tex; mode=display">
+B_{k+1}^{-1} = (I-\frac{\boldsymbol{\delta_k}\mathbf{y_k}^T}{\mathbf{y_k}^T\boldsymbol{\delta_k}})B_k^{-1}(I-\frac{\mathbf{y_k}\boldsymbol{\delta_k}^T}{\mathbf{y_k}^T\boldsymbol{\delta_k}})+\frac{\boldsymbol{\delta_k}\boldsymbol{\delta_k}^T}{\mathbf{y_k}^T\boldsymbol{\delta_k}}</script><p>从而对 BFGS 算法进一步优化，使得整个算法不再需要解线性方程组，仅使用矩阵-向量运算即可完成</p>
+<p>为算法流程的清晰性，不再出现矩阵求逆符号，统一将 $B_k^{-1}$ 换为 $G_k$，并称 $G_k$ 为<strong>特殊 BFGS 矩阵</strong>，即：</p>
+<script type="math/tex; mode=display">
+G_{k+1} =(I-\frac{\boldsymbol{\delta_k}\mathbf{y_k}^T}{\mathbf{y_k}^T\boldsymbol{\delta_k}})G_k(I-\frac{\mathbf{y_k}\boldsymbol{\delta_k}^T}{\mathbf{y_k}^T\boldsymbol{\delta_k}})+\frac{\boldsymbol{\delta_k}\boldsymbol{\delta_k}^T}{\mathbf{y_k}^T\boldsymbol{\delta_k}}</script><h2 id="算法流程-1"><a href="#算法流程-1" class="headerlink" title="算法流程"></a>算法流程</h2><p>此时 BFGS 算法流程如下：</p>
+<ol>
+<li>给定初值 $\mathbf{x_0}$ 和精度阈值 $\varepsilon$，并令 $G_0=I$，$k=0$</li>
+<li>计算梯度向量 $\mathbf{g_k}$，与搜索方向 $\mathbf{d_k}=-G_k\cdot \mathbf{g_k}$</li>
+<li>利用 $\lambda_k=\arg \min\limits_{\lambda\in \mathbb{R}} f(\mathbf{x_k}+\lambda \mathbf{d_k})$ 得到步长 $\lambda_k$，并令 $\boldsymbol{\delta_k}=\lambda\mathbf{d_k}$，$\mathbf{x_{k+1}}:=\mathbf{x_k} + \boldsymbol{\delta_k}$</li>
+<li>若 $\mathbf{x_{k+1}}$ 的梯度向量 $\mathbf{g_{k+1}}$ 的 L1 范数 $||\mathbf{g_{k+1}}||$ 满足  $||\mathbf{g_{k+1}}||&lt;\varepsilon$，则停止迭代，否则转至步骤 5</li>
+<li>计算两次迭代的梯度差 $\mathbf{y_k}=\mathbf{g_{k+1}}-\mathbf{g_k}$</li>
+<li>计算第 $k+1$ 次的近似矩阵 $G_{k+1} = (I-\frac{\mathbf{\delta_k}\mathbf{y_k}^T}{\mathbf{y_k}^T\mathbf{\delta_k}})G_k(I-\frac{\mathbf{y_k}\mathbf{\delta_k}^T}{\mathbf{y_k}^T\mathbf{\delta_k}})+\frac{\mathbf{\delta_k}\mathbf{\delta_k}^T}{\mathbf{y_k}^T\mathbf{\delta_k}}$</li>
+<li>令 $k=k+1$，转至步骤 2</li>
+</ol>
+<h2 id="算法推导"><a href="#算法推导" class="headerlink" title="算法推导"></a>算法推导</h2><h3 id="谢尔曼-莫里森公式"><a href="#谢尔曼-莫里森公式" class="headerlink" title="谢尔曼-莫里森公式"></a>谢尔曼-莫里森公式</h3><p><strong>谢尔曼-莫里森公式（Sherman-Morrison Formula）</strong>是以 Sherman 和 Morrison 命名，在线性代数中，是求解逆矩阵的一种方法，其内容如下：</p>
+<blockquote>
+<p>设 $A\in \mathbb{R}^{n\times n}$ 是非奇异方阵，$\boldsymbol{\mu},\boldsymbol{\nu} \in \mathbb{R}^{n}$，则 $(A+\boldsymbol{\mu}\boldsymbol{\nu}^T)$ 可逆，当且仅当 $1+\boldsymbol{\nu}^TA\boldsymbol{\mu}\neq0$，其逆矩阵为：</p>
+<script type="math/tex; mode=display">
+(A+\boldsymbol{\mu}\boldsymbol{\nu}^T)^{-1}=A^{-1}-\frac{A^{-1}\boldsymbol{\mu}\boldsymbol{\nu}^TA^{-1}}{1+\boldsymbol{\nu}^TA^{-1}\boldsymbol{\mu}}</script></blockquote>
+<hr>
+<p>通过使用两次 Sherman-Morrison 公式，可以在 BFGS 算法迭代式的基础上得到蕴含 $B_{k+1}^{-1}$ 与 $B_k^{-1}$ 的关系式的 BFCS 算法的迭代式，证明如下：</p>
+<p>已知 BFGS 算法迭代式为：</p>
+<script type="math/tex; mode=display">
+B_{k+1}=B_k+\frac{\mathbf{y_k}\mathbf{y_k}^T}{\mathbf{y_k}^T\boldsymbol{\delta_k}}-\frac{B_k\boldsymbol{\delta_k}\boldsymbol{\delta_k}^TB_k}{\boldsymbol{\delta_k}^TB_k\boldsymbol{\delta_k}},\quad k=0,1,2,...</script><p>其中，近似矩阵 $B_k\in \mathbb{R}^{n\times n}$ 是可逆的实对称矩阵，梯度差 $\mathbf{y_k}=\mathbf{g_{k+1}}-\mathbf{g_k}\in \mathbb{R}^n$，$\mathbf{x}$ 的增量 $\boldsymbol{\delta_k}=\mathbf{x_{k+1}}-\mathbf{x_k} \in \mathbb{R}^n$</p>
+<p>对于 $-\frac{B_k\boldsymbol{\delta_k}\boldsymbol{\delta_k}^TB_k}{\boldsymbol{\delta_k}^TB_k\boldsymbol{\delta_k}}$，有：</p>
+<script type="math/tex; mode=display">
+-\frac{B_k\boldsymbol{\delta_k}\boldsymbol{\delta_k}^TB_k}{\boldsymbol{\delta_k}^TB_k\boldsymbol{\delta_k}}
+=\frac{1}{\boldsymbol{\delta_k}^TB_k\boldsymbol{\delta_k}}(B_k\boldsymbol{\delta_k})(B_k\boldsymbol{\delta_k})^T</script><p>其中，$\boldsymbol{\delta_k}^TB_k\boldsymbol{\delta_k}$ 为二次型形式的标量，$B_k\boldsymbol{\delta_k}\in \mathbb{R}^n$</p>
+<p>记 $A=B_{k}+\frac{\mathbf{y_k}\mathbf{y_k}^T}{\mathbf{y_k}^T\boldsymbol{\delta_k}}$，那么有：</p>
+<script type="math/tex; mode=display">
+B_{k+1}^{-1}=A+\frac{1}{\boldsymbol{\delta_k}^TB_k\boldsymbol{\delta_k}}(B_k\boldsymbol{\delta_k})(B_k\boldsymbol{\delta_k})^T</script><p>根据 Sherman-Morrison 公式，有：</p>
+<script type="math/tex; mode=display">
+\begin{align}
+B_{k+1}^{-1} 
+&= \Big(A+\frac{1}{\boldsymbol{\delta_k}^TB_k\boldsymbol{\delta_k}}(B_k\boldsymbol{\delta_k})(B_k\boldsymbol{\delta_k})^T \Big)^{-1} \notag \\
+&= A^{-1} - \frac{A^{-1} \Big( -\frac{1}{\boldsymbol{\delta_k}^TB_k\boldsymbol{\delta_k}} (B_k\boldsymbol{\delta_k}) (B_k\boldsymbol{\delta_k})^T \Big) A^{-1}}{1+ \Big(-\frac{1}{\boldsymbol{\delta_k}^TB_k\boldsymbol{\delta_k}} (B_k\boldsymbol{\delta_k})^T A^{-1} (B_k\boldsymbol{\delta_k})\Big)} \notag \\
+&= A^{-1}+A^{-1}\frac{B_k\boldsymbol{\delta_k}\boldsymbol{\delta_k}^TB_k}{\boldsymbol{\delta_k}^TB_k\boldsymbol{\delta_k} - \boldsymbol{\delta_k}^TB_kA^{-1}B_k\boldsymbol{\delta_k}}A^{-1} \notag
+\end{align}</script><p>对于 $A=B_{k}+\frac{\mathbf{y_k}\mathbf{y_k}^T}{\mathbf{y_k}^T\boldsymbol{\delta_k}}$，分母 $\mathbf{y_k}^T\boldsymbol{\delta_k}$ 为标量，再次利用 Sherman-Morrison 公式，有：</p>
+<script type="math/tex; mode=display">
+\begin{align}
+A^{-1} 
+&= \Big( B_k+\frac{\mathbf{y_k}\mathbf{y_k}^T}{\mathbf{y_k}^T\boldsymbol{\delta_k}} \Big)^{-1} \notag \\
+&= B_k^{-1}-\frac{B_k^{-1} \frac{\mathbf{y_k}\mathbf{y_k}^T}{\mathbf{y_k}^T\boldsymbol{\delta_k}} B_k^{-1}}{1+ \frac{1}{\mathbf{y_k}^T\boldsymbol{\delta_k}}\mathbf{y_k}^TB_k^{-1}\mathbf{y_k}} \notag \\
+&= B_k^{-1}-\frac{B_k^{-1}\mathbf{y_k}\mathbf{y_k}^TB_k^{-1}}{\mathbf{y_k}^T\boldsymbol{\delta_k}+\mathbf{y_k}^TB_k^{-1}\mathbf{y_k}} \notag
+\end{align}</script><p>其中，分母 $\mathbf{y_k}^T\boldsymbol{\delta_k}$ 是内积形式的标量，$\mathbf{y_k}^TB_k^{-1}\mathbf{y_k}$ 是二次型形式的标量，记：</p>
+<script type="math/tex; mode=display">
+Q=\mathbf{y_k}^T\boldsymbol{\delta_k}+\mathbf{y_k}^TB_k^{-1}\mathbf{y_k}</script><p>则有：</p>
+<script type="math/tex; mode=display">
+A^{-1}=B_k^{-1}-\frac{B_k^{-1}\mathbf{y_k}\mathbf{y_k}^TB_k^{-1}}{Q}</script><p>对于 $B_{k+1}^{-1}= A^{-1}+A^{-1}\frac{B_k\boldsymbol{\delta_k}\boldsymbol{\delta_k}^TB_k}{\boldsymbol{\delta_k}^TB_k\boldsymbol{\delta_k} - \boldsymbol{\delta_k}^TB_kA^{-1}B_k\boldsymbol{\delta_k}}A^{-1} $，先对后半部分进行化简，有：</p>
+<script type="math/tex; mode=display">
+\begin{align}
+原式 
+&= A^{-1}\frac{B_k\boldsymbol{\delta_k}\boldsymbol{\delta_k}^TB_k}{\boldsymbol{\delta_k}^TB_k\boldsymbol{\delta_k} - \boldsymbol{\delta_k}^TB_k \Big(B_k^{-1} -\frac{B_k^{-1}\mathbf{y_k}\mathbf{y_k}^TB_k^{-1}}{Q}\Big) B_k\boldsymbol{\delta_k}}A^{-1} \notag \\
+&= A^{-1} \frac{B_k\boldsymbol{\delta_k}\boldsymbol{\delta_k}^TB_k}{\boldsymbol{\delta_k}^TB_k\boldsymbol{\delta_k} - \boldsymbol{\delta_k}^TB_k\boldsymbol{\delta_k}+ \frac{\boldsymbol{\delta_k}^T\mathbf{y_k}\mathbf{y_k}^T\boldsymbol{\delta_k}}{Q}} A^{-1} \notag \\
+&= \frac{Q}{\boldsymbol{\delta_k}^T\mathbf{y_k}\mathbf{y_k}^T\boldsymbol{\delta_k}} \Big( B_k^{-1}-\frac{B_k^{-1}\mathbf{y_k}\mathbf{y_k}^TB_k^{-1}}{Q} \Big) B_k \boldsymbol{\delta_k}\boldsymbol{\delta_k}^T B_k A^{-1} \notag \\
+&= \frac{Q}{\boldsymbol{\delta_k}^T\mathbf{y_k}\mathbf{y_k}^T\boldsymbol{\delta_k}} \Big( \boldsymbol{\delta_k}\boldsymbol{\delta_k}^TB -\frac{B_k^{-1}\mathbf{y_k}\mathbf{y_k}^T \boldsymbol{\delta_k}\boldsymbol{\delta_k}^TB_k}{Q} \Big) A^{-1} \notag \\
+&\xlongequal[m=\mathbf{y_k}^T\boldsymbol{\delta_k}]{m=\boldsymbol{\delta_k}^T\mathbf{y_k}}
+\frac{Q}{m^2} \Big( \boldsymbol{\delta_k}\boldsymbol{\delta_k}^T - \frac{m\boldsymbol{\delta_k}\mathbf{y_k}^TB_k^{-1}}{Q} - \frac{B_k^{-1}m\mathbf{y_k}\boldsymbol{\delta_k}^T}{Q} + \frac{B_k^{-1}m^2\mathbf{y_k}\mathbf{y_k}^TB_k^{-1}}{Q^2} \Big) \notag \\
+&= \frac{Q\boldsymbol{\delta_k}\boldsymbol{\delta_k}^T}{m^2} - \frac{B_k^{-1}\boldsymbol{\delta_k}\mathbf{y_k}^T}{m} - \frac{B_k^{-1}\mathbf{y_k}\boldsymbol{\delta_k}^T}{m} + \frac{B_k^{-1}\mathbf{y_k}\mathbf{y_k}^TB_k^{-1}}{Q} \notag
+\end{align}</script><p>此时，有：</p>
+<script type="math/tex; mode=display">
+B_{k+1}^{-1} 
+= A^{-1} + \frac{Q\boldsymbol{\delta_k}\boldsymbol{\delta_k}^T}{m^2} - \frac{B_k^{-1}\boldsymbol{\delta_k}\mathbf{y_k}^T}{m} - \frac{B_k^{-1}\mathbf{y_k}\boldsymbol{\delta_k}^T}{m} + \frac{B_k^{-1}\mathbf{y_k}\mathbf{y_k}^TB_k^{-1}}{Q}</script><p>再次将 $A^{-1}=B_k^{-1}-\frac{B_k^{-1}\mathbf{y_k}\mathbf{y_k}^TB_k^{-1}}{Q}$ 代入，化简可得：</p>
+<script type="math/tex; mode=display">
+\begin{align}
+B_{k+1}^{-1}
+&= B_{k}^{-1} + \frac{Q\boldsymbol{\delta_k}\boldsymbol{\delta_k}^T}{m^2} - \frac{\boldsymbol{\delta_k}\mathbf{y_k}^TB_k^{-1}}{m} - \frac{B_k^{-1}\mathbf{y_k}\boldsymbol{\delta_k}^T}{m} \notag \\
+&= \Big( I-\frac{\boldsymbol{\delta_k}\mathbf{y_k}^T}{m}\Big)B_k^{-1}  - \frac{B_k^{-1}\mathbf{y_k}\boldsymbol{\delta_k}^T}{m} + \frac{(\mathbf{y_k}^T\boldsymbol{\delta_k}+\mathbf{y_k}^TB_k^{-1}\mathbf{y_k})\boldsymbol{\delta_k}\boldsymbol{\delta_k}^T}{m^2} \notag \\
+&= \Big( I-\frac{\boldsymbol{\delta_k}\mathbf{y_k}^T}{m}\Big)B_k^{-1}  - \frac{B_k^{-1}\mathbf{y_k}\boldsymbol{\delta_k}^T}{m} + \frac{\boldsymbol{\delta_k}\boldsymbol{\delta_k}^T}{m} + \frac{\mathbf{y_k}^TB_k^{-1}\mathbf{y_k}\boldsymbol{\delta_k}\boldsymbol{\delta_k}^T}{m^2} \notag 
+\end{align}</script><p>对于最后一项的分子 $\mathbf{y_k}^TB_k^{-1}\mathbf{y_k}\boldsymbol{\delta_k}\boldsymbol{\delta_k}^T$，由于 $\mathbf{y_k}^TB_k^{-1}\mathbf{y_k}$ 是二次型形式的标量，因此有：</p>
+<script type="math/tex; mode=display">
+\mathbf{y_k}^TB_k^{-1}\mathbf{y_k}\boldsymbol{\delta_k}\boldsymbol{\delta_k}^T
+= \boldsymbol{\delta_k}\mathbf{y_k}^TB_k^{-1}\mathbf{y_k}\boldsymbol{\delta_k}^T</script><p>故有：</p>
+<script type="math/tex; mode=display">
+\begin{align}
+B_{k+1}^{-1}
+&= \Big( I-\frac{\boldsymbol{\delta_k}\mathbf{y_k}^T}{m}\Big)B_k^{-1}  - \frac{B_k^{-1}\mathbf{y_k}\boldsymbol{\delta_k}^T}{m} + \frac{\boldsymbol{\delta_k}\boldsymbol{\delta_k}^T}{m} + \frac{\boldsymbol{\delta_k}\mathbf{y_k}^T}{m} \frac{B_k^{-1}\mathbf{y_k}\boldsymbol{\delta_k}^T}{m} \notag \\
+&= \Big( I-\frac{\boldsymbol{\delta_k}\mathbf{y_k}^T}{m}\Big)B_k^{-1} - \Big( I- \frac{\boldsymbol{\delta_k}\mathbf{y_k}^T}{m} \Big) B_k^{-1}\frac{\mathbf{y_k}\boldsymbol{\delta_k}^T}{m} + \frac{\boldsymbol{\delta_k}\boldsymbol{\delta_k}^T}{m} \notag \\
+&= \Big( I-\frac{\boldsymbol{\delta_k}\mathbf{y_k}^T}{m}\Big)B_k^{-1}\Big( I- \frac{\mathbf{y_k}\boldsymbol{\delta_k}^T}{m} \Big) +\frac{\boldsymbol{\delta_k}\boldsymbol{\delta_k}^T}{m} \notag
+\end{align}</script><p>将 $m=\mathbf{y_k}^T\boldsymbol{\delta_k}$ 带回，有：</p>
+<script type="math/tex; mode=display">
+B_{k+1}^{-1}=\Big( I-\frac{\boldsymbol{\delta_k}\mathbf{y_k}^T}{\mathbf{y_k}^T\boldsymbol{\delta_k}}\Big) 
+B_k^{-1} 
+\Big( I- \frac{\mathbf{y_k}\boldsymbol{\delta_k}^T}{\mathbf{y_k}^T\boldsymbol{\delta_k}} \Big) +\frac{\boldsymbol{\delta_k}\boldsymbol{\delta_k}^T}{\mathbf{y_k}^T\boldsymbol{\delta_k}}</script><p>再记 $G_k=B_k^{-1}$，则有：</p>
+<script type="math/tex; mode=display">
+G_{k+1}=\Big( I-\frac{\boldsymbol{\delta_k}\mathbf{y_k}^T}{\mathbf{y_k}^T\boldsymbol{\delta_k}}\Big) 
+B_k^{-1} 
+\Big( I- \frac{\mathbf{y_k}\boldsymbol{\delta_k}^T}{\mathbf{y_k}^T\boldsymbol{\delta_k}} \Big) +\frac{\boldsymbol{\delta_k}\boldsymbol{\delta_k}^T}{\mathbf{y_k}^T\boldsymbol{\delta_k}}</script><p>证明完毕</p>
+<h3 id="伍德伯里矩阵恒等式"><a href="#伍德伯里矩阵恒等式" class="headerlink" title="伍德伯里矩阵恒等式"></a>伍德伯里矩阵恒等式</h3><p><strong>伍德伯里矩阵恒等式（Woodbury Matrix Identity）</strong>是 Woodbury 在 Sherman-Morrison 公式的基础上进行的一般化推广，推广后的 Sherman-Morrison 公式一般称为 Sherman-Morrison-Woodbury 公式，其内容如下：</p>
+<blockquote>
+<p>设 $A\in \mathbb{R}^{n\times n}$ 是非奇异方阵，$U,V \in \mathbb{R}^{n\times p}$，其中 $1\leq p \leq n$，则矩阵 $A+UV^T$ 可逆，当且仅当矩阵 $I+V^TA^{-1}U$ 可逆，且有：</p>
+<script type="math/tex; mode=display">
+(A+UV^T)^{-1}=A^{-1}-A^{-1}U(I+V^TA^{-1}U)^{-1}V^TA^{-1}</script></blockquote>
+<hr>
+<p>对于 BFCS 算法，通过使用两次 Sherman-Morrison 公式，可以在 BFGS 算法迭代式的基础上得到蕴含 $B_{k+1}^{-1}$ 与 $B_k^{-1}$ 的关系式的 BFCS 算法的迭代式</p>
+<p>当使用 Sherman-Morrison-Woodbury 公式时，则仅需使用一次即可得到蕴含 $B_{k+1}^{-1}$ 与 $B_k^{-1}$ 的关系式的 BFCS 算法的迭代式，证明如下：</p>
+<p>已知 BFGS 算法迭代式为：</p>
+<script type="math/tex; mode=display">
+B_{k+1} = B_k + \frac{\mathbf{y_k}\mathbf{y_k}^T}{\mathbf{y_k}^T\boldsymbol{\delta_k}}-\frac{B_k\boldsymbol{\delta_k}\boldsymbol{\delta_k}^TB_k}{\boldsymbol{\delta_k}^TB_k\boldsymbol{\delta_k}},\quad k=0,1,2,...</script><p>其中，近似矩阵 $B_k\in \mathbb{R}^{n\times n}$ 是可逆的实对称矩阵，梯度差 $\mathbf{y_k}=\mathbf{g_{k+1}}-\mathbf{g_k}\in \mathbb{R}^n$，$\mathbf{x}$ 的增量 $\boldsymbol{\delta_k}=\mathbf{x_{k+1}}-\mathbf{x_k} \in \mathbb{R}^n$</p>
+<p>将后两项写成矩阵相乘的形式，有：</p>
+<script type="math/tex; mode=display">
+B_{k+1} = B_k + \begin{bmatrix}
+-\frac{B_k\boldsymbol{\delta_k}}{\boldsymbol{\delta_k}^T B_k \boldsymbol{\delta_k}} & \frac{\mathbf{y_k}}{\mathbf{y_k}^T \boldsymbol{\delta_k}}
+\end{bmatrix} \begin{bmatrix}
+\boldsymbol{\delta_k}^T B_k \\
+\mathbf{y_k}^T
+\end{bmatrix}</script><p>记 $U=\begin{bmatrix}-\frac{B_k\boldsymbol{\delta_k}}{\boldsymbol{\delta_k}^T B_k \boldsymbol{\delta_k}} &amp; \frac{\mathbf{y_k}}{\mathbf{y_k}^T \boldsymbol{\delta_k}}\end{bmatrix}$，$V=\begin{bmatrix}B_k\boldsymbol{\delta_k}  &amp;\mathbf{y_k}^T\end{bmatrix}$，则有：</p>
+<script type="math/tex; mode=display">
+B_{k+1}=B_k+UV^T</script><p>根据 Sherman-Morrison-Woodbury 公式，可得：</p>
+<script type="math/tex; mode=display">
+B_{k+1}^{-1} = B_k^{-1} - B_k^{-1}U (I+V^TB_k^{-1}U)^{-1} V^TB_k^{-1}</script><p>对于 $I+V^TB_k^{-1}U$，有：</p>
+<script type="math/tex; mode=display">
+\begin{align}
+I+V^TB_k^{-1}U 
+&= I + \begin{bmatrix}
+\boldsymbol{\delta_k}^T B_k \\
+\mathbf{y_k}^T
+\end{bmatrix} B_k^{-1} \begin{bmatrix}
+-\frac{B_k\boldsymbol{\delta_k}}{\boldsymbol{\delta_k}^T B_k \boldsymbol{\delta_k}} & \frac{\mathbf{y_k}}{\mathbf{y_k}^T \boldsymbol{\delta_k}}
+\end{bmatrix} \notag \\
+&= I + \begin{bmatrix}
+\boldsymbol{\delta_k}^T \\
+\mathbf{y_k}^T B_k^{-1}
+\end{bmatrix} \begin{bmatrix}
+-\frac{B_k\boldsymbol{\delta_k}}{\boldsymbol{\delta_k}^T B_k \boldsymbol{\delta_k}} & \frac{\mathbf{y_k}}{\mathbf{y_k}^T \boldsymbol{\delta_k}}
+\end{bmatrix} \notag \\
+&= I + \begin{bmatrix} 
+-1 & 1 \\
+-\frac{\mathbf{y_k}^T\boldsymbol{\delta_k}}{\boldsymbol{\delta_k}^T B_k \boldsymbol{\delta_k}} & \frac{\mathbf{y_k}^TB_k^{-1}\mathbf{y_k}}{\mathbf{y_k}^T \boldsymbol{\delta_k}}
+\end{bmatrix}\notag \\
+&= \begin{bmatrix}
+0 & 1 \\
+-\frac{\mathbf{y_k}^T\boldsymbol{\delta_k}}{\boldsymbol{\delta_k}^T B_k \boldsymbol{\delta_k}} & \frac{\mathbf{y_k}^TB_k^{-1}\mathbf{y_k}}{\mathbf{y_k}^T \boldsymbol{\delta_k}}+1
+\end{bmatrix} \notag
+\end{align}</script><p>对于二阶矩阵来说，若 $\begin{bmatrix}a&amp;b\\c&amp;d\end{bmatrix}$ 可逆，那么有：</p>
+<script type="math/tex; mode=display">
+\begin{bmatrix}a&b\\c&d\end{bmatrix} =
+\frac{1}{ad-bc} 
+\begin{bmatrix}d&-b\\-c&a\end{bmatrix}</script><p>于是，对于 $I+V^TB_k^{-1}U$ 来说，就有：</p>
+<script type="math/tex; mode=display">
+\begin{align}
+(I+V^TB_k^{-1}U)^{-1} 
+&=\frac{\boldsymbol{\delta_k}^T B_k \boldsymbol{\delta_k}}{\mathbf{y_k}^T\boldsymbol{\delta_k}}
+\begin{bmatrix}
+\Big(\frac{\mathbf{y_k}^TB_k^{-1}\mathbf{y_k}}{\mathbf{y_k}^T \boldsymbol{\delta_k}}+1\Big) &  -1\\
+\frac{\mathbf{y_k}^T\boldsymbol{\delta_k}}{\boldsymbol{\delta_k}^T B_k \boldsymbol{\delta_k}} & 0
+\end{bmatrix} \notag \\
+&= \begin{bmatrix}
+\frac{\boldsymbol{\delta_k}^T B_k \boldsymbol{\delta_k}}{\mathbf{y_k}^T\boldsymbol{\delta_k}}\Big(\frac{\mathbf{y_k}^TB_k^{-1}\mathbf{y_k}}{\mathbf{y_k}^T \boldsymbol{\delta_k}}+1\Big) &  -\frac{\boldsymbol{\delta_k}^T B_k \boldsymbol{\delta_k}}{\mathbf{y_k}^T\boldsymbol{\delta_k}}\\
+1 & 0
+\end{bmatrix} \notag
+\end{align}</script><p>那么，对于 $B_k^{-1}U (I+V^TB_k^{-1}U)^{-1} V^TB_k^{-1}$，有：</p>
+<script type="math/tex; mode=display">
+\begin{align}
+原式 
+&= B_k^{-1} \begin{bmatrix}-\frac{B_k\boldsymbol{\delta_k}}{\boldsymbol{\delta_k}^T B_k \boldsymbol{\delta_k}} & \frac{\mathbf{y_k}}{\mathbf{y_k}^T \boldsymbol{\delta_k}}\end{bmatrix} \begin{bmatrix}
+\frac{\boldsymbol{\delta_k}^T B_k \boldsymbol{\delta_k}}{\mathbf{y_k}^T\boldsymbol{\delta_k}}\Big(\frac{\mathbf{y_k}^TB_k^{-1}\mathbf{y_k}}{\mathbf{y_k}^T \boldsymbol{\delta_k}}+1\Big) &  -\frac{\boldsymbol{\delta_k}^T B_k \boldsymbol{\delta_k}}{\mathbf{y_k}^T\boldsymbol{\delta_k}}\\
+1 & 0
+\end{bmatrix} \begin{bmatrix}
+\boldsymbol{\delta_k}^T B_k \\
+\mathbf{y_k}^T
+\end{bmatrix} B_k^{-1} \notag \\
+&= \begin{bmatrix}-\frac{\boldsymbol{\delta_k}}{\boldsymbol{\delta_k}^T B_k \boldsymbol{\delta_k}} & \frac{B_k^{-1}\mathbf{y_k}}{\mathbf{y_k}^T \boldsymbol{\delta_k}} \end{bmatrix} \begin{bmatrix}
+\frac{\boldsymbol{\delta_k}^T B_k \boldsymbol{\delta_k}}{\mathbf{y_k}^T\boldsymbol{\delta_k}}\Big(\frac{\mathbf{y_k}^TB_k^{-1}\mathbf{y_k}}{\mathbf{y_k}^T \boldsymbol{\delta_k}}+1\Big) &  -\frac{\boldsymbol{\delta_k}^T B_k \boldsymbol{\delta_k}}{\mathbf{y_k}^T\boldsymbol{\delta_k}}\\
+1 & 0
+\end{bmatrix} \begin{bmatrix}
+\boldsymbol{\delta_k}^T  \\
+\mathbf{y_k}^TB_k^{-1}
+\end{bmatrix}  \notag \\
+&= \begin{bmatrix}
+-\frac{\boldsymbol{\delta_k}\Big(\frac{\mathbf{y_k}^TB_k^{-1}\mathbf{y_k}}{\mathbf{y_k}^T \boldsymbol{\delta_k}}+1\Big)}{\mathbf{y_k}^T\boldsymbol{\delta_k}}+\frac{B_k^{-1}\mathbf{y_k}}{\mathbf{y_k}^T \boldsymbol{\delta_k}} &  \frac{\boldsymbol{\delta_k}}{\mathbf{y_k}^T\boldsymbol{\delta_k}}
+\end{bmatrix} \begin{bmatrix}
+\boldsymbol{\delta_k}^T  \\
+\mathbf{y_k}^TB_k^{-1}
+\end{bmatrix}  \notag \\
+&= \frac{\Big(\frac{\mathbf{y_k}^TB_k^{-1}\mathbf{y_k}}{\mathbf{y_k}^T \boldsymbol{\delta_k}}+1\Big)\boldsymbol{\delta_k}\boldsymbol{\delta_k}^T} {\mathbf{y_k}^T\boldsymbol{\delta_k}} + \frac{B_k^{-1}\mathbf{y_k}\boldsymbol{\delta_k}^T}{\mathbf{y_k}^T\boldsymbol{\delta_k}} + \frac{\boldsymbol{\delta_k}\mathbf{y_k}^TB_k^{-1}}{\mathbf{y_k}^T\boldsymbol{\delta_k}} \notag
+\end{align}</script><p>综上，对于原式 $B_{k+1}^{-1} = B_k^{-1} - B_k^{-1}U (I+V^TB_k^{-1}U)^{-1} V^TB_k^{-1}$，有：</p>
+<script type="math/tex; mode=display">
+\begin{align}
+B_{k+1}^{-1} 
+&= B_k^{-1}-\Big(\frac{\mathbf{y_k}^TB_k^{-1}\mathbf{y_k}}{\mathbf{y_k}^T \boldsymbol{\delta_k}}+1\Big)\frac{\boldsymbol{\delta_k}\boldsymbol{\delta_k}^T} {\mathbf{y_k}^T\boldsymbol{\delta_k}} - \frac{B_k^{-1}\mathbf{y_k}\boldsymbol{\delta_k}^T}{\mathbf{y_k}^T\boldsymbol{\delta_k}} - \frac{\boldsymbol{\delta_k}\mathbf{y_k}^TB_k^{-1}}{\mathbf{y_k}^T\boldsymbol{\delta_k}} \notag \\
+&= \Big( I - \frac{\boldsymbol{\delta_k}\mathbf{y_k}^T}{\mathbf{y_k}^T\boldsymbol{\delta_k}} \Big) B_k^{-1} \Big( I - \frac{\mathbf{y_k}\boldsymbol{\delta_k}^T}{\mathbf{y_k}^T\boldsymbol{\delta_k}} \Big) + \frac{\boldsymbol{\delta_k}\boldsymbol{\delta_k}^T}{\mathbf{y_k}^T\boldsymbol{\delta_k}} \notag
+\end{align}</script><p>再记 $G_k=B_k^{-1}$，则有：</p>
+<script type="math/tex; mode=display">
+G_{k+1}=\Big( I-\frac{\boldsymbol{\delta_k}\mathbf{y_k}^T}{\mathbf{y_k}^T\boldsymbol{\delta_k}}\Big) 
+B_k^{-1} 
+\Big( I- \frac{\mathbf{y_k}\boldsymbol{\delta_k}^T}{\mathbf{y_k}^T\boldsymbol{\delta_k}} \Big) +\frac{\boldsymbol{\delta_k}\boldsymbol{\delta_k}^T}{\mathbf{y_k}^T\boldsymbol{\delta_k}}</script><p>证明完毕</p>
+
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>感谢您对我的支持，让我继续努力分享有用的技术与知识点！</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/wechatpay.jpg" alt="Alex_McAvoy 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/alipay.jpg" alt="Alex_McAvoy 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Alex_McAvoy
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://alex-mcavoy.github.io/ml/dec32020.html" title="BFGS 算法">https://alex-mcavoy.github.io/ml/dec32020.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/ml/" rel="tag"># 机器学习</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/ml/45eb9a09.html" rel="prev" title="DFP 算法">
+      <i class="fa fa-chevron-left"></i> DFP 算法
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/ml/19c28982.html" rel="next" title="Broyden 族">
+      Broyden 族 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【概述】"><span class="nav-number">1.</span> <span class="nav-text">【概述】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【BFCS-算法】"><span class="nav-number">2.</span> <span class="nav-text">【BFCS 算法】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#算法原理"><span class="nav-number">2.1.</span> <span class="nav-text">算法原理</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#算法流程"><span class="nav-number">2.2.</span> <span class="nav-text">算法流程</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【谢尔曼-莫里森公式下的-BFGS-算法】"><span class="nav-number">3.</span> <span class="nav-text">【谢尔曼-莫里森公式下的 BFGS 算法】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#算法原理-1"><span class="nav-number">3.1.</span> <span class="nav-text">算法原理</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#算法流程-1"><span class="nav-number">3.2.</span> <span class="nav-text">算法流程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#算法推导"><span class="nav-number">3.3.</span> <span class="nav-text">算法推导</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#谢尔曼-莫里森公式"><span class="nav-number">3.3.1.</span> <span class="nav-text">谢尔曼-莫里森公式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#伍德伯里矩阵恒等式"><span class="nav-number">3.3.2.</span> <span class="nav-text">伍德伯里矩阵恒等式</span></a></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">  
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Alex_McAvoy"
+      src="/assets/img/head.jpg">
+  <p class="site-author-name" itemprop="name">Alex_McAvoy</p>
+  <div class="site-description" itemprop="description">想要成为渔夫的猎手</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">535</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">57</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">62</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Alex-McAvoy" title="GitHub → https://github.com/Alex-McAvoy" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/u011815404" title="CSDN → https://blog.csdn.net/u011815404" rel="noopener" target="_blank"><i class="fas fa-copyright fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+<!-- 访客地图 -->
+<script type="text/javascript" src="//rf.revolvermaps.com/0/0/5.js?i=50n58yo58ow&amp;m=0&amp;c=ff0000&amp;cr1=ffffff&amp;s=140" async="async"></script>
+
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdz20172133" title="https://blog.csdn.net/sdz20172133" rel="noopener" target="_blank">神仙队友</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://pxlsdz.gitee.io/" title="https://pxlsdz.gitee.io/" rel="noopener" target="_blank">神仙队友的另一个博客</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://bycore.net" title="https://bycore.net" rel="noopener" target="_blank">凉了的某饼同学</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://kris-cn.github.io/" title="http://kris-cn.github.io/" rel="noopener" target="_blank">翟孙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://deng.fun/" title="http://deng.fun/" rel="noopener" target="_blank">芙蓉姐姐</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdau_fangshifeng" title="https://blog.csdn.net/sdau_fangshifeng" rel="noopener" target="_blank">一个头很酷的家伙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/wentong_Xu" title="https://blog.csdn.net/wentong_Xu" rel="noopener" target="_blank">小黑贱胖子</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.yuheng.tech/" title="https://www.yuheng.tech/" rel="noopener" target="_blank">咸于</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/lanshan1111" title="https://blog.csdn.net/lanshan1111" rel="noopener" target="_blank">肥硕硕</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdauguanweihong" title="https://blog.csdn.net/sdauguanweihong" rel="noopener" target="_blank">管少</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_41661919" title="https://blog.csdn.net/qq_41661919" rel="noopener" target="_blank">俊杰</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_40859951" title="https://blog.csdn.net/qq_40859951" rel="noopener" target="_blank">峰哥</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/LSD20164388" title="https://blog.csdn.net/LSD20164388" rel="noopener" target="_blank">狗冬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37748451" title="https://blog.csdn.net/qq_37748451" rel="noopener" target="_blank">胖亚亚</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37868325" title="https://blog.csdn.net/qq_37868325" rel="noopener" target="_blank">妍大佬</a>
+        </li>
+    </ul>
+  </div>
+
+		
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+  
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Alex_McAvoy</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+</br>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script><script src="/js/bookmark.js"></script>
+
+
+
+  
+
+
+
+
+  <script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '48fd73a538d3fa927f65',
+      clientSecret: '56618aefeee90bac3c20de8d51bb0b985d67252d',
+      repo        : 'Gitalk-Comment',
+      owner       : 'Alex-McAvoy',
+      admin       : ['Alex-McAvoy'],
+      id          : 'a14a7e491a27c97a1c59dea7844a9434',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+  
+  <!-- 鼠标单击粒子特效 -->
+  <script type="text/javascript" src="/js/cursor-effects.js"></script>
+  <!-- 多级目录 -->
+  <script type="text/javascript" src="/js/category.js"></script>
+  
+</body>
+</html>

@@ -1,0 +1,883 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.9.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/img/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/assets/img/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/pace-js@1/themes/blue/pace-theme-minimal.css">
+  <script src="//cdn.jsdelivr.net/npm/pace-js@1/pace.min.js"></script>
+
+
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"alex-mcavoy.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":16,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":true,"color":"#ff0000","save":"manual"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":true},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.json"};
+  </script>
+
+  <meta name="description" content="Reference  【辨析】先验概率、后验概率、似然概率 带你理解朴素贝叶斯分类算法 算法杂货铺——分类算法之朴素贝叶斯分类(Naive Bayesian classification) 贝叶斯估计 平滑处理—拉普拉斯（Laplace Smoothing） Naive Bayes classifier Additive smoothing   【概述】贝叶斯分类模型是基于贝叶斯定理与特征条件独">
+<meta name="keywords" content="机器学习">
+<meta property="og:type" content="article">
+<meta property="og:title" content="朴素贝叶斯">
+<meta property="og:url" content="https://alex-mcavoy.github.io/ml/f77f0066.html">
+<meta property="og:site_name" content="Alex_McAvoy">
+<meta property="og:description" content="Reference  【辨析】先验概率、后验概率、似然概率 带你理解朴素贝叶斯分类算法 算法杂货铺——分类算法之朴素贝叶斯分类(Naive Bayesian classification) 贝叶斯估计 平滑处理—拉普拉斯（Laplace Smoothing） Naive Bayes classifier Additive smoothing   【概述】贝叶斯分类模型是基于贝叶斯定理与特征条件独">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/36-1.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/36-2.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/36-3.png">
+<meta property="og:updated_time" content="2022-09-11T07:20:08.872Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="朴素贝叶斯">
+<meta name="twitter:description" content="Reference  【辨析】先验概率、后验概率、似然概率 带你理解朴素贝叶斯分类算法 算法杂货铺——分类算法之朴素贝叶斯分类(Naive Bayesian classification) 贝叶斯估计 平滑处理—拉普拉斯（Laplace Smoothing） Naive Bayes classifier Additive smoothing   【概述】贝叶斯分类模型是基于贝叶斯定理与特征条件独">
+<meta name="twitter:image" content="https://alex-mcavoy.github.io/images/ml/36-1.png">
+
+<link rel="canonical" href="https://alex-mcavoy.github.io/ml/f77f0066.html">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>朴素贝叶斯 | Alex_McAvoy</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Alex_McAvoy</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">想要成为渔夫的猎手</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+
+	
+	
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/ml/f77f0066.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/assets/img/head.jpg">
+      <meta itemprop="name" content="Alex_McAvoy">
+      <meta itemprop="description" content="想要成为渔夫的猎手">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Alex_McAvoy">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          朴素贝叶斯
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-07-13 14:36:00" itemprop="dateCreated datePublished" datetime="2019-07-13T14:36:00+08:00">2019-07-13</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/ml/" itemprop="url" rel="index"><span itemprop="name">机器学习</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>11k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>10 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <blockquote>
+<p>Reference</p>
+<ul>
+<li><a href="https://zhuanlan.zhihu.com/p/397960221?ivk_sa=1024320u" target="_blank" rel="noopener">【辨析】先验概率、后验概率、似然概率</a></li>
+<li><a href="https://zhuanlan.zhihu.com/p/26262151" target="_blank" rel="noopener">带你理解朴素贝叶斯分类算法</a></li>
+<li><a href="https://www.cnblogs.com/leoo2sk/archive/2010/09/17/naive-bayesian-classifier.html" target="_blank" rel="noopener">算法杂货铺——分类算法之朴素贝叶斯分类(Naive Bayesian classification)</a></li>
+<li><a href="https://zhuanlan.zhihu.com/p/72506771" target="_blank" rel="noopener">贝叶斯估计</a></li>
+<li><a href="https://blog.csdn.net/qq_25073545/article/details/78621019" target="_blank" rel="noopener">平滑处理—拉普拉斯（Laplace Smoothing）</a></li>
+<li><a href="https://en.wikipedia.org/wiki/Naive_Bayes_classifier" target="_blank" rel="noopener">Naive Bayes classifier</a></li>
+<li><a href="https://en.wikipedia.org/wiki/Additive_smoothing" target="_blank" rel="noopener">Additive smoothing</a></li>
+</ul>
+</blockquote>
+<h1 id="【概述】"><a href="#【概述】" class="headerlink" title="【概述】"></a>【概述】</h1><p>贝叶斯分类模型是基于贝叶斯定理与特征条件独立假设的分类模型，<strong>朴素贝叶斯（Naive Bayes）</strong>是贝叶斯分类模型中最简单、最常见的一种分类方法，该方法从概率论的角度来进行分类预测，实现简单，预测效率高</p>
+<p>贝叶斯定理、贝叶斯分类模型、朴素贝叶斯三者关系如下：</p>
+<p><img width="500" src="/images/ml/36-1.png"></p>
+<p>之所以叫做朴素贝叶斯，一方面是其基于贝叶斯定理，另一方面，朴素是指其基于特征独立性假设，各特征不会相互影响，大大减少了计算概率的难度</p>
+<p>该方法的基本思想是：对于给定的训练集，当要根据多个特征对数据进行分类时，通常假设这些特征相互独立，然后利用条件概率乘法法则得到每一个分类的概率，对于给定的输入样本 $\mathbf{x}$，利用模型求出后验概率最大的作为预测输出 $y$</p>
+<h1 id="【贝叶斯公式】"><a href="#【贝叶斯公式】" class="headerlink" title="【贝叶斯公式】"></a>【贝叶斯公式】</h1><p>假设事件 $A$ 发生的概率为 $P(A)$，事件 $B$ 发生的概率为 $P(B)$，在事件 $B$ 发生的情况下，事件 $A$ 发生的概率为 $P(A|B)$，则事件 $A$ 发生的情况下事件 $B$ 发生的概率为：</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+P(B|A)
+&= \frac{P(AB)}{P(A)} \\
+&= \frac{P(A|B)P(B)}{P(A)}
+\end{align*}</script><p>其中，$P(B|A)$ 称为<strong>后验概率（Posterior Probability）</strong>，$P(A)$、$P(B)$ 称为<strong>先验概率（Prior Probability）</strong>，$P(A|B)$ 称为<strong>似然概率（Likelihood）</strong></p>
+<p>对于分类算法来说，令数据特征为事件 $A$，令类别为事件 $B$，则此时贝叶斯公式可表达为如下形式：</p>
+<script type="math/tex; mode=display">
+P(类别|特征)=\frac{P(特征|类别)P(类别)}{P(特征)}</script><p>为便于表述，记数据特征为 $\mathbb{x}$，记类别为 $c$，那么有：</p>
+<script type="math/tex; mode=display">
+P(c|\mathbb{x}) = \frac{P(\mathbb{x}|c) P(c)}{P(\mathbb{x})}</script><p>进一步，对于先验概率 $P(c)$ 和 $P(\mathbb{x})$，表示类别的先验概率 $P(类别)$ 称为<strong>类先验概率（Class Prior Probability）</strong>，表示做出预测的先验概率 $P(特征)$ 称为<strong>预测先验概率（Predictor Prior Probability）</strong></p>
+<p><img width="500" src="/images/ml/36-2.png"></p>
+<h1 id="【朴素贝叶斯分类器】"><a href="#【朴素贝叶斯分类器】" class="headerlink" title="【朴素贝叶斯分类器】"></a>【朴素贝叶斯分类器】</h1><h2 id="朴素贝叶斯模型"><a href="#朴素贝叶斯模型" class="headerlink" title="朴素贝叶斯模型"></a>朴素贝叶斯模型</h2><p>设输入空间 $\mathcal{X}\subseteq \mathbb{R}^m $ 为 $m$ 维向量的集合，输出空间为类标记集合 $\mathcal{Y}=\{c_1,c_2,…,c_K\}$，输入为特征向量 $\mathbf{x}\in \mathcal{X}$，输出为类标记 $y\in \mathcal{Y}$，$X$ 是定义在输入空间 $\mathcal{X}$ 上的随机向量，$Y$ 是定义在输出空间 $\mathcal{Y}$ 上的随机变量，$P(X,Y)$ 是 $X$ 和 $Y$ 的联合概率分布</p>
+<p>已知给定的训练集 $T=\{(\mathbf{x_1},y_1),(\mathbf{x_2},y_2),…,(\mathbf{x_n},y_n)\}$ 由 $P(X,Y)$ 独立同分布产生，对于第 $i$ 组样本对，输入 $\mathbf{x_i}$ 具有 $m$ 个特征值，即：$\mathbf{x_i} =(x_i^{(1)},x_i^{(2)},…,x_i^{(m)})\in \mathbb{X} \subseteq  \mathbb{R}^m$，输出 $y_i\in\mathcal{Y}= \{c_1,c_2,…,c_K\}$ 为实例的类别</p>
+<p>根据训练集 $T$ 可知，类标记的先验概率分布为：</p>
+<script type="math/tex; mode=display">
+P(Y=c_k),\quad k=1,2,...,K</script><p>亦可知在训练集 $T$ 上输入 $\mathbf{x}_i$ 的条件概率分布为：</p>
+<script type="math/tex; mode=display">
+P(X=\mathbf{x}_i|Y=c_k) = P(X^{(1)}=x_i^{(1)},...,X^{(m)}=x_i^{(m)}|Y=c_k),\quad k=1,2,...,K</script><p>对于 $P(X=\mathbf{x}_i|Y=c_k)$，假设 $\mathbf{x}$ 的各分量 $x_i^{(j)}$ 可取值的个数为 $S_j,j=1,2,…,m$，又由于 $Y$ 可取值个数为 $K$，那么参数的个数为：</p>
+<script type="math/tex; mode=display">
+K\prod _{j=1}^nS_j</script><p>可以发现，条件概率分布 $P(X=\mathbf{x_i}|Y=c_k)$ 有着指数级的参数，对其进行参数估计是不可行的，为此，作<strong>条件独立性假设</strong></p>
+<p>也就是说，假设用于分类的特征在类确定的条件下都是独立的，此时，在训练集 $T$ 上输入 $\mathbf{x}_i$ 的条件概率分布为：</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+P(X=\mathbf{x}_i|Y=c_k) =&  P(X^{(1)}=x^{(1)}_i,...,X^{(m)}=x^{(m)}_i|Y=c_k) \\
+=&\prod_{j=1}^m P(X^{(j)}=x^{(j)}|Y=c_k)
+\end{align*}</script><p>另一方面，根据全概率公式：</p>
+<script type="math/tex; mode=display">
+P(A)=\sum_{i=1}^nP(A|B_i)P(B_i)</script><p>在训练集 $T$ 上输入 $\mathbf{x}_i$ 的概率分布为：</p>
+<script type="math/tex; mode=display">
+P(X=\mathbb{x_i}) = \sum_{k=1}^K P(X=\mathbb{x}_i|Y=c_k)P(Y=c_k)</script><p>这样，根据朴素贝叶斯公式，当给定一个新的输入 $\mathbb{x}\in\mathbb{R}^m$ 时，即可计算出该输入所属类别 $c_k$ 的后验概率分布，即：</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+P(Y=c_k|X=\mathbb{x}) 
+&= \frac{P(X=\mathbb{x}|Y=c_k) P(Y=c_k)}{P(X=\mathbb{x})} \\
+&= \frac{P(Y=c_k) \prod\limits_{j=1}^m P(X^{(j)}=x^{(j)}|Y=c_k)}{\sum\limits_{k'=1}^K \Big[ P(X=\mathbb{x}|Y=c_{k'}) P(Y=c_{k'})\Big]} \\
+&= \frac{P(Y=c_k) \prod\limits_{j=1}^m P(X^{(j)}=x^{(j)}|Y=c_k)}{\sum\limits_{k'=1}^K \Bigg[ P(Y=c_{k'}) \prod\limits_{j=1}^m P(X^{(j)}=x^{(j)}|Y=c_{k'})  \Bigg] } 
+\end{align*}</script><p>由此，对于给定新的输入 $\mathbb{x}\in\mathbb{R}^m$，朴素贝叶斯分类器即可表示为：</p>
+<script type="math/tex; mode=display">
+y=\arg\max_{c_k} \frac{P(Y=c_k) \prod\limits_{j=1}^m P(X^{(j)}=x^{(j)}|Y=c_k)}{\sum\limits_{k'=1}^K \Bigg[ P(Y=c_{k'}) \prod\limits_{j=1}^m P(X^{(j)}=x^{(j)}|Y=c_{k'})  \Bigg] }</script><p>可以注意到，上式中，分母对所有的 $c_k$ 都是相同的，将分母忽略，即有：</p>
+<script type="math/tex; mode=display">
+\hat{y}=\arg\max_{c_k} P(Y=c_k) \prod\limits_{j=1}^m P(X^{(j)}=x^{(j)}|Y=c_k)</script><p>此时，模型学习意味着估计类先验概率 $P(Y=c_k)$ 与似然概率 $P(X^{(j)}=x^{(j)}|Y=c_k)$</p>
+<h2 id="后验概率最大化与期望风险最小化"><a href="#后验概率最大化与期望风险最小化" class="headerlink" title="后验概率最大化与期望风险最小化"></a>后验概率最大化与期望风险最小化</h2><p>对于分类决策函数 $\hat{y}=f(\mathbf{x})$，假设使用 0-1 损失函数：</p>
+<script type="math/tex; mode=display">
+L(y,f(x))=
+\left\{\begin{array}{rl}
+1, & y \neq f(x)\\
+0, & y = f(x) \end{array}\right.</script><p>对于联合分布 $P(X,Y)$，取条件期望，此时期望风险函数为：</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+R_{exp}(f) &= E[L(Y,f(X))] \\
+&= E_X\sum_{k=1}^KL(c_k,f(X))P(c_k|X)
+\end{align*}</script><p>为使期望风险最小化，只需对 $X=\mathbb{x}$ 逐个极小化，有：</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+\hat{y} &= \arg \min_{y\in\mathcal{Y}}\sum_{k=1}^K L(c_k,y)P(c_k|X=\mathbb{x}) \\
+&= \arg \min_{y\in\mathcal{Y}}\sum_{k=1}^K P(y\neq c_k|X=\mathbb{x}) \\
+&= \arg \min_{y\in\mathcal{Y}}[1-P(y=c_k|X=\mathbb{x})] \\
+&= \arg \max_{y\in\mathcal{Y}}P(y=c_k|X=\mathbb{x})
+\end{align*}</script><p>可以发现，在朴素贝叶斯中，期望风险最小化与后验概率最大化是等价的</p>
+<h1 id="【朴素贝叶斯参数估计】"><a href="#【朴素贝叶斯参数估计】" class="headerlink" title="【朴素贝叶斯参数估计】"></a>【朴素贝叶斯参数估计】</h1><h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>对于朴素贝叶斯分类器：</p>
+<script type="math/tex; mode=display">
+\hat{y}=\arg\max_{c_k} P(Y=c_k) \prod\limits_{j=1}^m P(X^{(j)}=x^{(j)}|Y=c_k)</script><p>模型学习意味着对类先验概率 $P(Y=c_k)$ 与似然概率 $P(X^{(j)}=x^{(j)}|Y=c_k)$ 进行参数估计，此时，可以使用<strong>极大似然估计</strong>来进行参数估计</p>
+<p>由于离散型随机变量是直接将频率当做概率，因此若一个属性未出现时，计算得出的概率为  $0$</p>
+<p>为避免这种错误，可以使用<strong>贝叶斯估计</strong>，通过引入 $\lambda=1$ 进行拉普拉斯平滑修正，即假设特征值和类别的均匀分布，但当样本数目足够大时，该影响会被消除</p>
+<h2 id="极大似然估计"><a href="#极大似然估计" class="headerlink" title="极大似然估计"></a>极大似然估计</h2><p>朴素贝叶斯的学习就意味着对类先验概率 $P(Y=c_k)$ 与似然概率 $P(X^{(j)}=x^{(j)}|Y=c_k)$ 进行参数估计</p>
+<p>对于类先验概率 $P(Y=c_k)$，可以通过对训练集进行经验统计而得出，对于样本容量为 $n$ 的训练集，有：</p>
+<script type="math/tex; mode=display">
+P(Y=c_k)=\frac{1}{n}\sum_{i=1}^n I(y_i=c_k)</script><p>对于似然概率 $P(X^{(j)}=x^{(j)}|Y=c_k)$，根据贝叶斯公式，可写为：</p>
+<script type="math/tex; mode=display">
+P(X^{(j)}=x^{(j)}|Y=c_k)=\frac{P(Y=c_k|X^{(j)}=x^{(j)})P(X^{(j)}=x^{(j)})}{P(Y=c_k)}</script><p>对于分子，根据条件概率公式，有：</p>
+<script type="math/tex; mode=display">
+P(Y=c_k|X^{(j)}=x^{(j)})P(X^{(j)}=x^{(j)})=P(X^{(j)}=x^{(j)},Y=c_k)</script><p>假设第 $j$ 个特征 $x^{(j)}$ 可能取值的集合为 $\{a^{(j)}_1,a^{(j)}_2,…,a^{(j)}_{S_j}\}$，其中，$a^{(j)}_l$ 代表第 $j$ 个特征可能取的第 $l$ 个值，$S_j$ 代表第 $j$ 个特征可取值的数量，那么有：</p>
+<script type="math/tex; mode=display">
+P(X^{(j)}=x^{(j)},Y=c_k)=\frac{1}{n}\sum\limits_{i=1}^n I(x_i^{(j)}=a^{(j)}_l,y_i=c_k)</script><p>其中，$j=1,2,…,n$，$l=1,2,…,S_j$，$k=1,2,…,K$</p>
+<p>于是，似然概率为：</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+P(X^{(j)}=a^{(j)}_l|Y=c_k)&= \frac{P(Y=c_k|X^{(j)}=x^{(j)})P(X^{(j)}=x^{(j)})}{P(Y=c_k)} \\
+&= \frac{P(X^{(j)}=x^{(j)},Y=c_k)}{P(Y=c_k)} \\
+&= \frac{\frac{1}{n}\sum\limits_{i=1}^n I(x_i^{(j)}=a^{(j)}_l,y_i=c_k)}{\frac{1}{n}\sum\limits_{i=1}^n I(y_i=c_k)} \\
+&= \frac{\sum\limits_{i=1}^n I(x_i^{(j)}=a^{(j)}_l,y_i=c_k)}{\sum\limits_{i=1}^N I(y_i=c_k)}
+\end{align*}</script><p>即：</p>
+<script type="math/tex; mode=display">
+P(X^{(j)}=a^{(j)}_l|Y=c_k) = \frac{\sum\limits_{i=1}^N I(x_i^{(j)}=a^{(j)}_l,y_i=c_k)}{\sum\limits_{i=1}^N I(y_i=c_k)}</script><p>其中，$j=1,2,…,n$，$l=1,2,…,S_j$，$k=1,2,…,K$</p>
+<h2 id="贝叶斯估计"><a href="#贝叶斯估计" class="headerlink" title="贝叶斯估计"></a>贝叶斯估计</h2><p>与极大似然估计相似，对于贝叶斯估计，设 $\lambda\geq0$，则对于类先验概率 $P(Y=c_k)$，有：</p>
+<script type="math/tex; mode=display">
+P_{\lambda}(Y=c_k)=\frac{1}{n+\lambda K}\bigl[\sum\limits_{i=1}^n I(y_i=c_k) + \lambda \bigr]</script><p>进一步，假设第 $j$ 个特征 $x^{(j)}$ 可能取值的集合为 $\{a^{(j)}_1,a^{(j)}_2,…,a^{(j)}_{S_j}\}$，其中，$a^{(j)}_l$ 代表第 $j$ 个特征可能取的第 $l$ 个值，$S_j$ 代表第 $j$ 个特征可取值的数量，那么有：</p>
+<script type="math/tex; mode=display">
+P_{\lambda}(X^{(j)}=a^{(j)}_l|Y=c_k)=\frac{\sum\limits_{i=1}^n I(x_i^{(j)}=a^{(j)}_l,y_i=c_k)+\lambda }{\sum\limits_{i=1}^n I(y_i=c_k)+\lambda S_j}</script><p>其中，$j=1,2,…,n$，$l=1,2,…,S_j$，$k=1,2,…,K$</p>
+<hr>
+<p>可以发现，贝叶斯估计等价于在随机变量各个取值的频数上赋予一个正数 $\lambda\geq0$，而当 $\lambda=0$ 时，即为极大似然估计</p>
+<p>一般来说，常取 $\lambda=1$，此时称为<strong>拉普拉斯平滑（Laplace smoothing）</strong></p>
+<p>那么，对于任意的 $l$ 和 $k$，有：</p>
+<script type="math/tex; mode=display">
+\begin{matrix}
+P_{\lambda}(X^{(j)}=a^{(j)}_l|Y=c_k)>0 \\
+\sum\limits_{l=1}^{L}P(X^{(j)}=a^{(j)}_l|Y=c_k)=1
+\end{matrix}</script><h1 id="【实例】"><a href="#【实例】" class="headerlink" title="【实例】"></a>【实例】</h1><h2 id="问题描述"><a href="#问题描述" class="headerlink" title="问题描述"></a>问题描述</h2><p>现给出一个身高为 <code>高</code>，体重为 <code>中</code>，鞋码为 <code>中</code> 的数据，根据下图中的数据，判断这个数据是男是女</p>
+<p><img width="600" src="/images/ml/36-3.png"></p>
+<h2 id="问题分析"><a href="#问题分析" class="headerlink" title="问题分析"></a>问题分析</h2><p>设特征：身高为 <code>高</code> 为 $A_1$，体重为 <code>中</code> 为 $A_2$，鞋码为 <code>中</code> 为 $A_3$，类别：男 $C_1$，女 $C_2$</p>
+<p>首先要求在 $A_1,A_2,A_3$ 下 $C_k$ 的概率，即：</p>
+<script type="math/tex; mode=display">
+P(C_k|A_1A_2A_3)=\frac{P(A_1A_2A_3|C_k)P(C_k)}{P(A_1A_2A_3)}</script><p>由于类别仅有两种，因此仅需计算 $P(C_1|A_1A_2A_3)$ 和 $P(C_2|A_1A_2A_3)$，然后输出较大的概率所对应的分类</p>
+<p>根据朴素贝叶斯模型：</p>
+<script type="math/tex; mode=display">
+y=\arg \max_{c_k}P(Y=c_k)\prod_{j}P(X^{(j)}=x^{(j)}|Y=c_k)</script><p>这就等价于求 $P(A_1A_2A_3|C_k)P(C_k)$ 的最大值</p>
+<h2 id="极大似然估计-1"><a href="#极大似然估计-1" class="headerlink" title="极大似然估计"></a>极大似然估计</h2><p>假设 $A_i$ 之间是相互独立的，那么有：</p>
+<script type="math/tex; mode=display">
+P(A_1A_2A_3|C_j)=P(A_1|C_j)P(A_2|C_j)P(A_3|C_j)</script><p>对于先验概率 $P(Y=c_k)$，其极大似然估计为：</p>
+<script type="math/tex; mode=display">
+P(Y=c_k)=\frac{1}{n}\sum_{i=1}^n I(y_i=c_k)</script><p>根据数据集，可得：</p>
+<script type="math/tex; mode=display">
+\begin{matrix}
+P(Y=C_1)=\frac{4}{8}=\frac{1}{2} & P(Y=C_2)=\frac{4}{8}=\frac{1}{2}
+\end{matrix}</script><p>对于似然概率 $P(X^{(j)}=a_{jl}|Y=c_k)$ ，其极大似然估计为：</p>
+<script type="math/tex; mode=display">
+P(X^{(j)}=a^{(j)}_l|Y=c_k) = \frac{\sum\limits_{i=1}^n I(x_i^{(j)}=a^{(j)}_l,y_i=c_k)}{\sum\limits_{i=1}^n I(y_i=c_k)}</script><p>根据数据集，可得：</p>
+<script type="math/tex; mode=display">
+\begin{matrix}
+P(X^{(1)}=A_1|Y=C_1)=\frac{2}{4}=\frac{1}{2} & P(X^{(1)}=A_1|Y=C_2)=\frac{0}{4}=0\\
+P(X^{(2)}=A_2|Y=C_1)=\frac{2}{4}=\frac{1}{2} & P(X^{(2)}=A_2|Y=C_2)=\frac{2}{4}=\frac{1}{2}\\
+P(X^{(3)}=A_3|Y=C_1)=\frac{1}{4}\:\:\:\:\:\:\:\:\: & P(X^{(3)}=A_3|Y=C_2)=\frac{2}{4}=\frac{1}{2}
+\end{matrix}</script><p>因此，由朴素贝叶斯模型：</p>
+<script type="math/tex; mode=display">
+y=\arg \max_{c_k}P(Y=c_k)\prod_{j}P(X^{(j)}=x^{(j)}|Y=c_k)：</script><p>可得：</p>
+<script type="math/tex; mode=display">
+P(A_1A_2A_3|C_1)P(C_1)=\frac{1}{16}>P(A_1A_2A_3|C_2)P(C_2)=0</script><p>综上，对于给定身高为 <code>高</code>，体重为 <code>中</code>，鞋码为 <code>中</code> 的数据，应是 $C_1$ 类别，为男性</p>
+<h2 id="贝叶斯估计-1"><a href="#贝叶斯估计-1" class="headerlink" title="贝叶斯估计"></a>贝叶斯估计</h2><p>假设 $A_i$ 之间是相互独立的，那么有：</p>
+<script type="math/tex; mode=display">
+P(A_1A_2A_3|C_j)=P(A_1|C_j)P(A_2|C_j)P(A_3|C_j)</script><p>对于先验概率 $P(Y=c_k)$，其贝叶斯估计为：</p>
+<script type="math/tex; mode=display">
+P_{\lambda}(Y=c_k)=\frac{\sum\limits_{i=1}^n I(y_i=c_k) + \lambda}{N+\lambda K}</script><p>根据数据集，可得：</p>
+<script type="math/tex; mode=display">
+\begin{matrix}
+P(Y=C_1)=\frac{4+1}{8+2}=\frac{1}{2} & P(Y=C_2)=\frac{4+1}{8+2}=\frac{1}{2}
+\end{matrix}</script><p>对于似然概率 $P(X^{(j)}=a^{(j)}_l|Y=c_k)$ ，其贝叶斯估计为：</p>
+<script type="math/tex; mode=display">
+P_{\lambda}(X^{(j)}=a^{(j)}_l|Y=c_k)=\frac{\sum\limits_{i=1}^n I(x_i^{(j)}=a^{(j)}_l,y_i=c_k)+\lambda }{\sum\limits_{i=1}^n I(y_i=c_k)+\lambda S_j}</script><p>根据数据集，可得：</p>
+<script type="math/tex; mode=display">
+\begin{matrix}
+P(X^{(1)}=A_1|Y=C_1)=\frac{2+1}{4+3}=\frac{3}{7} & P(X^{(1)}=A_1|Y=C_2)=\frac{0+1}{4+3}=\frac{1}{7}\\
+P(X^{(2)}=A_2|Y=C_1)=\frac{2+1}{4+3}=\frac{3}{7} & P(X^{(2)}=A_2|Y=C_2)=\frac{2+1}{4+3}=\frac{3}{7}\\
+P(X^{(3)}=A_3|Y=C_1)=\frac{1+1}{4+3}=\frac{2}{7} & P(X^{(3)}=A_3|Y=C_2)=\frac{2+1}{4+3}=\frac{3}{7}
+\end{matrix}</script><p>因此，由朴素贝叶斯模型：</p>
+<script type="math/tex; mode=display">
+y=\arg \max_{c_k}P(Y=c_k)\prod_{j}P(X^{(j)}=x^{(j)}|Y=c_k)：</script><p>可得：</p>
+<script type="math/tex; mode=display">
+P(A_1A_2A_3|C_1)P(C_1)=\frac{18}{343}>P(A_1A_2A_3|C_2)P(C_2)=\frac{9}{343}</script><p>综上，对于给定身高为 <code>高</code>，体重为 <code>中</code>，鞋码为 <code>中</code> 的数据，应是 $C_1$ 类别，为男性</p>
+<h1 id="【实现】"><a href="#【实现】" class="headerlink" title="【实现】"></a>【实现】</h1><h2 id="概述-1"><a href="#概述-1" class="headerlink" title="概述"></a>概述</h2><p>sklearn 中提供了若干朴素贝叶斯的实现算法，对于不同的朴素贝叶斯实现，主要是对 $P(X^{(j)}=x^{(j)}|Y=c_k)$ 的分布假设不同，以采用不同的参数估计方式</p>
+<p>对于朴素贝叶斯来说，其主要就是计算似然概率 $P(X^{(j)}=x^{(j)}|Y=c_k)$，一旦似然概率确定，最终所属每个类别的概率自然也就轻易得出</p>
+<p>常用的三种朴素贝叶斯为：</p>
+<ul>
+<li>高斯朴素贝叶斯：<code>GaussianNB()</code></li>
+<li>伯努利朴素贝叶斯：<code>BernoulliNB()</code></li>
+<li>多项式朴素贝叶斯：<code>MultinomialNB()</code></li>
+</ul>
+<h2 id="高斯朴素贝叶斯"><a href="#高斯朴素贝叶斯" class="headerlink" title="高斯朴素贝叶斯"></a>高斯朴素贝叶斯</h2><p>高斯朴素贝叶斯适用于<strong>连续型随机变量</strong>，其假设各特征 $x^{(j)}$ 在各类别 $c_k$ 下服从<strong>正态分布</strong>，因此算法内部使用<strong>正态分布的概率密度函数</strong>来计算概率，即：</p>
+<script type="math/tex; mode=display">
+P(X^{(j)}=x^{(j)}|Y=c_k)=\frac{1}{\sqrt{2\pi\sigma_{c_k}^2}}exp\bigl(-\frac{(x^{(j)-\mu_{c_k}})^2}{2\sigma_{c_k}^2}\bigr)</script><p>其中，参数含义如下：</p>
+<ul>
+<li>$\mu_{c_k}$：在类别 $c_k$ 的样本中，特征 $x^{(j)}$ 的均值</li>
+<li>$\sigma_{c_k}$：在类别 $c_k$ 的样本中，特征 $x^{(j)}$ 的标准差</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"><span class="keyword">import</span> pandas <span class="keyword">as</span> pd</span><br><span class="line"><span class="keyword">from</span> sklearn.naive_bayes <span class="keyword">import</span> GaussianNB</span><br><span class="line"></span><br><span class="line"><span class="comment"># 生成随机训练数据</span></span><br><span class="line">np.random.seed(<span class="number">0</span>)</span><br><span class="line">x = np.random.randint(<span class="number">0</span>,<span class="number">10</span>,size=(<span class="number">6</span>,<span class="number">2</span>))</span><br><span class="line">y = np.array([<span class="number">0</span>,<span class="number">0</span>,<span class="number">0</span>,<span class="number">1</span>,<span class="number">1</span>,<span class="number">1</span>])</span><br><span class="line">data = pd.DataFrame(np.concatenate([x, y.reshape(<span class="number">-1</span>,<span class="number">1</span>)], axis=<span class="number">1</span>), columns=[<span class="string">'x1'</span>,<span class="string">'x2'</span>,<span class="string">'y'</span>])</span><br><span class="line"></span><br><span class="line"><span class="comment"># 展示数据</span></span><br><span class="line">display(data)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 高斯朴素贝叶斯</span></span><br><span class="line">model = GaussianNB()</span><br><span class="line">model.fit(x,y)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 每个类别的先验概率</span></span><br><span class="line">print(<span class="string">"先验概率："</span>, model.class_prior_)</span><br><span class="line"><span class="comment"># 每个类别样本的数量</span></span><br><span class="line">print(<span class="string">"样本数量："</span>, model.class_count_)</span><br><span class="line"><span class="comment"># 每个类别的标签</span></span><br><span class="line">print(<span class="string">"标签："</span>, model.classes_)</span><br><span class="line"><span class="comment"># 每个特征在每个类别下的均值</span></span><br><span class="line">print(<span class="string">"均值："</span>,model.theta_)</span><br><span class="line"><span class="comment"># 每个特征在每个类别下的方差</span></span><br><span class="line">print(<span class="string">"方差："</span>,model.sigma_)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 测试集</span></span><br><span class="line">x_test = np.array([[<span class="number">6</span>,<span class="number">3</span>]])</span><br><span class="line">print(<span class="string">"预测结果："</span>, model.predict(x_test))</span><br><span class="line">print(<span class="string">"预测结果概率："</span>, model.predict_proba(x_test))</span><br></pre></td></tr></table></figure>
+<h2 id="伯努利朴素贝叶斯"><a href="#伯努利朴素贝叶斯" class="headerlink" title="伯努利朴素贝叶斯"></a>伯努利朴素贝叶斯</h2><p>伯努利朴素贝叶斯适用于<strong>离散型随机变量</strong>，其假设各特征 $x^{(j)}$ 在各类别 $c_k$ 下服从 <strong>n 重伯努利分布</strong>，因此算法内部会首先对特征值 $x^{(j)}$ 进行<strong>二值化处理</strong>，之后依照如下公式进行概率计算：</p>
+<script type="math/tex; mode=display">
+P(X^{(j)}=x^{(j)}|Y=c_k)=P(X^{(j)}=1|Y=c_k)+(1-x^{(j)})(1-P(X^{(j)}=1|Y=c_k))</script><p>在训练集中，会进行如下估计：</p>
+<script type="math/tex; mode=display">
+\begin{matrix}
+P(X^{(j)}=1|Y=c_k)=\frac{N_{c_k}^{(j)}+\alpha}{N_{c_k}+2\alpha} \\
+P(X^{(j)}=0|Y=c_k)=1-P(X^{(j)}=1|Y=c_k)
+\end{matrix}</script><p>其中，参数含义如下：</p>
+<ul>
+<li>$N_{c_k}^{(j)}$：第 $j$ 个特征中属于类别 $c_k$，且特征值为 $1$ 的样本个数</li>
+<li>$N_{c_k}$：属于类别 $c_k$ 的样本个数</li>
+<li>$\alpha$：平滑系数</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"><span class="keyword">import</span> pandas <span class="keyword">as</span> pd</span><br><span class="line"><span class="keyword">from</span> sklearn.naive_bayes <span class="keyword">import</span> BernoulliNB</span><br><span class="line"></span><br><span class="line"><span class="comment"># 生成随机训练数据</span></span><br><span class="line">np.random.seed(<span class="number">0</span>)</span><br><span class="line">x = np.random.randint(<span class="number">-5</span>,<span class="number">5</span>,size=(<span class="number">6</span>,<span class="number">2</span>))</span><br><span class="line">y = np.array([<span class="number">0</span>,<span class="number">0</span>,<span class="number">0</span>,<span class="number">1</span>,<span class="number">1</span>,<span class="number">1</span>])</span><br><span class="line">data = pd.DataFrame(np.concatenate([x,y.reshape(<span class="number">-1</span>,<span class="number">1</span>)], axis=<span class="number">1</span>), columns=[<span class="string">'x1'</span>,<span class="string">'x2'</span>,<span class="string">'y'</span>])</span><br><span class="line"></span><br><span class="line"><span class="comment"># 展示数据</span></span><br><span class="line">display(data)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 伯努利朴素贝叶斯</span></span><br><span class="line">model = BernoulliNB()</span><br><span class="line">model.fit(x,y)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 每个特征在每个类别下发生的次数</span></span><br><span class="line">print(<span class="string">'数值1出现次数：'</span>, model.feature_count_)</span><br><span class="line"><span class="comment"># 每个类别样本所占的比重P(ck)，该值为概率取对数后的结果</span></span><br><span class="line"><span class="comment"># 若需要查看原有的概率，需进行指数还原</span></span><br><span class="line">print(<span class="string">'类别占比p(y)：'</span>,np.exp(model.class_log_prior_))</span><br><span class="line"><span class="comment"># 每个类别下，每个特征值为1的条件概率p(xj=1|ck)，该值为概率取对数后的结果</span></span><br><span class="line"><span class="comment"># 若需要查看原有的概率，需进行指数还原</span></span><br><span class="line">print(<span class="string">'特征概率：'</span>,np.exp(model.feature_log_prob_))</span><br><span class="line"></span><br><span class="line"><span class="comment"># 测试集</span></span><br><span class="line">x_test = np.array([[<span class="number">6</span>,<span class="number">3</span>]])</span><br><span class="line">print(<span class="string">"预测结果："</span>, model.predict(x_test))</span><br><span class="line">print(<span class="string">"预测结果概率："</span>, model.predict_proba(x_test))</span><br></pre></td></tr></table></figure>
+<h2 id="多项式朴素贝叶斯"><a href="#多项式朴素贝叶斯" class="headerlink" title="多项式朴素贝叶斯"></a>多项式朴素贝叶斯</h2><p>多项式朴素贝叶斯适用于<strong>离散型随机变量</strong>，其假设各特征 $x^{(j)}$ 在各类别 $c_k$ 下服从 <strong>多项式分布</strong>，因此要求<strong>每个特征值不能为负数</strong>，其依照如下公式进行概率计算：</p>
+<script type="math/tex; mode=display">
+P(X^{(j)}=x^{(j)}|Y=c_k)=\frac{N_{c_k}^{(j)}+\alpha}{N_{c_k}+n\alpha}</script><p>其中，参数含义如下：</p>
+<ul>
+<li>$N_{c_k}^{(j)}$：第 $j$ 个特征中属于类别 $c_k$ 的样本个数</li>
+<li>$N_{c_k}$：属于类别 $c_k$ 的样本个数</li>
+<li>$n$ ：特征数量</li>
+<li>$\alpha$ ：平滑系数</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"><span class="keyword">import</span> pandas <span class="keyword">as</span> pd</span><br><span class="line"><span class="keyword">from</span> sklearn.naive_bayes <span class="keyword">import</span> MultinomialNB</span><br><span class="line"></span><br><span class="line"><span class="comment"># 生成随机训练数据</span></span><br><span class="line">np.random.seed(<span class="number">0</span>)</span><br><span class="line">x = np.random.randint(<span class="number">0</span>,<span class="number">4</span>,size=(<span class="number">6</span>,<span class="number">2</span>))</span><br><span class="line">y = np.array([<span class="number">0</span>,<span class="number">0</span>,<span class="number">0</span>,<span class="number">1</span>,<span class="number">1</span>,<span class="number">1</span>])</span><br><span class="line">data = pd.DataFrame(np.concatenate([x,y.reshape(<span class="number">-1</span>,<span class="number">1</span>)], axis=<span class="number">1</span>), columns=[<span class="string">'x1'</span>,<span class="string">'x2'</span>,<span class="string">'y'</span>])</span><br><span class="line"></span><br><span class="line"><span class="comment"># 展示数据</span></span><br><span class="line">display(data)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 多项式朴素贝叶斯</span></span><br><span class="line">model = MultinomialNB()</span><br><span class="line">model.fit(x,y)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 每个类别的样本数量</span></span><br><span class="line">print(model.class_count_)</span><br><span class="line"><span class="comment"># 每个特征在每个类别下发生的次数</span></span><br><span class="line">print(model.feature_count_)</span><br><span class="line"><span class="comment"># 每个类别下的每个特征的条件概率P(x|y)，该值为概率取对数后的结果</span></span><br><span class="line"><span class="comment"># 若需要查看原有的概率，需进行指数还原</span></span><br><span class="line">print(np.exp(model.feature_log_prob_))</span><br><span class="line"></span><br><span class="line"><span class="comment"># 测试集</span></span><br><span class="line">x_test = np.array([[<span class="number">6</span>,<span class="number">3</span>]])</span><br><span class="line">print(<span class="string">"预测结果："</span>, model.predict(x_test))</span><br><span class="line">print(<span class="string">"预测结果概率："</span>, model.predict_proba(x_test))</span><br></pre></td></tr></table></figure>
+
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>感谢您对我的支持，让我继续努力分享有用的技术与知识点！</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/wechatpay.jpg" alt="Alex_McAvoy 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/alipay.jpg" alt="Alex_McAvoy 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Alex_McAvoy
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://alex-mcavoy.github.io/ml/f77f0066.html" title="朴素贝叶斯">https://alex-mcavoy.github.io/ml/f77f0066.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/ml/" rel="tag"># 机器学习</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/ml/9b1193a0.html" rel="prev" title="KD 树">
+      <i class="fa fa-chevron-left"></i> KD 树
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/notes/computer-networks/7c4ca347.html" rel="next" title="计算机网络概述">
+      计算机网络概述 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【概述】"><span class="nav-number">1.</span> <span class="nav-text">【概述】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【贝叶斯公式】"><span class="nav-number">2.</span> <span class="nav-text">【贝叶斯公式】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【朴素贝叶斯分类器】"><span class="nav-number">3.</span> <span class="nav-text">【朴素贝叶斯分类器】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#朴素贝叶斯模型"><span class="nav-number">3.1.</span> <span class="nav-text">朴素贝叶斯模型</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#后验概率最大化与期望风险最小化"><span class="nav-number">3.2.</span> <span class="nav-text">后验概率最大化与期望风险最小化</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【朴素贝叶斯参数估计】"><span class="nav-number">4.</span> <span class="nav-text">【朴素贝叶斯参数估计】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#概述"><span class="nav-number">4.1.</span> <span class="nav-text">概述</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#极大似然估计"><span class="nav-number">4.2.</span> <span class="nav-text">极大似然估计</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#贝叶斯估计"><span class="nav-number">4.3.</span> <span class="nav-text">贝叶斯估计</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【实例】"><span class="nav-number">5.</span> <span class="nav-text">【实例】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#问题描述"><span class="nav-number">5.1.</span> <span class="nav-text">问题描述</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#问题分析"><span class="nav-number">5.2.</span> <span class="nav-text">问题分析</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#极大似然估计-1"><span class="nav-number">5.3.</span> <span class="nav-text">极大似然估计</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#贝叶斯估计-1"><span class="nav-number">5.4.</span> <span class="nav-text">贝叶斯估计</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【实现】"><span class="nav-number">6.</span> <span class="nav-text">【实现】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#概述-1"><span class="nav-number">6.1.</span> <span class="nav-text">概述</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#高斯朴素贝叶斯"><span class="nav-number">6.2.</span> <span class="nav-text">高斯朴素贝叶斯</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#伯努利朴素贝叶斯"><span class="nav-number">6.3.</span> <span class="nav-text">伯努利朴素贝叶斯</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#多项式朴素贝叶斯"><span class="nav-number">6.4.</span> <span class="nav-text">多项式朴素贝叶斯</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">  
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Alex_McAvoy"
+      src="/assets/img/head.jpg">
+  <p class="site-author-name" itemprop="name">Alex_McAvoy</p>
+  <div class="site-description" itemprop="description">想要成为渔夫的猎手</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">535</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">57</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">62</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Alex-McAvoy" title="GitHub → https://github.com/Alex-McAvoy" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/u011815404" title="CSDN → https://blog.csdn.net/u011815404" rel="noopener" target="_blank"><i class="fas fa-copyright fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+<!-- 访客地图 -->
+<script type="text/javascript" src="//rf.revolvermaps.com/0/0/5.js?i=50n58yo58ow&amp;m=0&amp;c=ff0000&amp;cr1=ffffff&amp;s=140" async="async"></script>
+
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdz20172133" title="https://blog.csdn.net/sdz20172133" rel="noopener" target="_blank">神仙队友</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://pxlsdz.gitee.io/" title="https://pxlsdz.gitee.io/" rel="noopener" target="_blank">神仙队友的另一个博客</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://bycore.net" title="https://bycore.net" rel="noopener" target="_blank">凉了的某饼同学</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://kris-cn.github.io/" title="http://kris-cn.github.io/" rel="noopener" target="_blank">翟孙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://deng.fun/" title="http://deng.fun/" rel="noopener" target="_blank">芙蓉姐姐</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdau_fangshifeng" title="https://blog.csdn.net/sdau_fangshifeng" rel="noopener" target="_blank">一个头很酷的家伙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/wentong_Xu" title="https://blog.csdn.net/wentong_Xu" rel="noopener" target="_blank">小黑贱胖子</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.yuheng.tech/" title="https://www.yuheng.tech/" rel="noopener" target="_blank">咸于</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/lanshan1111" title="https://blog.csdn.net/lanshan1111" rel="noopener" target="_blank">肥硕硕</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdauguanweihong" title="https://blog.csdn.net/sdauguanweihong" rel="noopener" target="_blank">管少</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_41661919" title="https://blog.csdn.net/qq_41661919" rel="noopener" target="_blank">俊杰</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_40859951" title="https://blog.csdn.net/qq_40859951" rel="noopener" target="_blank">峰哥</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/LSD20164388" title="https://blog.csdn.net/LSD20164388" rel="noopener" target="_blank">狗冬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37748451" title="https://blog.csdn.net/qq_37748451" rel="noopener" target="_blank">胖亚亚</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37868325" title="https://blog.csdn.net/qq_37868325" rel="noopener" target="_blank">妍大佬</a>
+        </li>
+    </ul>
+  </div>
+
+		
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+  
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Alex_McAvoy</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+</br>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script><script src="/js/bookmark.js"></script>
+
+
+
+  
+
+
+
+
+  <script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '48fd73a538d3fa927f65',
+      clientSecret: '56618aefeee90bac3c20de8d51bb0b985d67252d',
+      repo        : 'Gitalk-Comment',
+      owner       : 'Alex-McAvoy',
+      admin       : ['Alex-McAvoy'],
+      id          : '07056a281c7e35a7a9f6a37c65ffa952',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+  
+  <!-- 鼠标单击粒子特效 -->
+  <script type="text/javascript" src="/js/cursor-effects.js"></script>
+  <!-- 多级目录 -->
+  <script type="text/javascript" src="/js/category.js"></script>
+  
+</body>
+</html>

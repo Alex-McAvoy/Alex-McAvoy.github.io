@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.9.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/img/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/assets/img/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/pace-js@1/themes/blue/pace-theme-minimal.css">
+  <script src="//cdn.jsdelivr.net/npm/pace-js@1/pace.min.js"></script>
+
+
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"alex-mcavoy.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":16,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":true,"color":"#ff0000","save":"manual"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":true},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.json"};
+  </script>
+
+  <meta name="description" content="Reference  ROC曲线和AUC值 机器学习之分类性能度量指标 : ROC曲线、AUC值、正确率、召回率 模型评估与选择（中篇）-ROC曲线与AUC曲线 西瓜书《机器学习》阅读笔记3——Chapter2_ROC曲线   【概述】评价指标可以说明模型的性能，辨别模型的结果，在建立一个模型后，计算指标，从指标获取反馈，再继续改进模型，直到达到理想的效果，因此，在预测之前检查模型的评估指标至关">
+<meta name="keywords" content="机器学习">
+<meta property="og:type" content="article">
+<meta property="og:title" content="分类问题的评价指标（二）">
+<meta property="og:url" content="https://alex-mcavoy.github.io/ml/ba8ab239.html">
+<meta property="og:site_name" content="Alex_McAvoy">
+<meta property="og:description" content="Reference  ROC曲线和AUC值 机器学习之分类性能度量指标 : ROC曲线、AUC值、正确率、召回率 模型评估与选择（中篇）-ROC曲线与AUC曲线 西瓜书《机器学习》阅读笔记3——Chapter2_ROC曲线   【概述】评价指标可以说明模型的性能，辨别模型的结果，在建立一个模型后，计算指标，从指标获取反馈，再继续改进模型，直到达到理想的效果，因此，在预测之前检查模型的评估指标至关">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/10-1.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/10-2.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/10-3.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/10-4.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/10-1.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/10-2.png">
+<meta property="og:updated_time" content="2022-08-09T01:45:53.680Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="分类问题的评价指标（二）">
+<meta name="twitter:description" content="Reference  ROC曲线和AUC值 机器学习之分类性能度量指标 : ROC曲线、AUC值、正确率、召回率 模型评估与选择（中篇）-ROC曲线与AUC曲线 西瓜书《机器学习》阅读笔记3——Chapter2_ROC曲线   【概述】评价指标可以说明模型的性能，辨别模型的结果，在建立一个模型后，计算指标，从指标获取反馈，再继续改进模型，直到达到理想的效果，因此，在预测之前检查模型的评估指标至关">
+<meta name="twitter:image" content="https://alex-mcavoy.github.io/images/ml/10-1.png">
+
+<link rel="canonical" href="https://alex-mcavoy.github.io/ml/ba8ab239.html">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>分类问题的评价指标（二） | Alex_McAvoy</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Alex_McAvoy</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">想要成为渔夫的猎手</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+
+	
+	
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/ml/ba8ab239.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/assets/img/head.jpg">
+      <meta itemprop="name" content="Alex_McAvoy">
+      <meta itemprop="description" content="想要成为渔夫的猎手">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Alex_McAvoy">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          分类问题的评价指标（二）
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-06-12 16:53:00" itemprop="dateCreated datePublished" datetime="2019-06-12T16:53:00+08:00">2019-06-12</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/ml/" itemprop="url" rel="index"><span itemprop="name">机器学习</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>2.5k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>2 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <blockquote>
+<p>Reference</p>
+<ul>
+<li><a href="https://zhuanlan.zhihu.com/p/58587448" target="_blank" rel="noopener">ROC曲线和AUC值</a></li>
+<li><a href="https://zhwhong.cn/2017/04/14/ROC-AUC-Precision-Recall-analysis/" target="_blank" rel="noopener">机器学习之分类性能度量指标 : ROC曲线、AUC值、正确率、召回率</a></li>
+<li><a href="https://blog.csdn.net/qq_37059483/article/details/78595695" target="_blank" rel="noopener">模型评估与选择（中篇）-ROC曲线与AUC曲线</a></li>
+<li><a href="https://blog.csdn.net/VictoriaW/article/details/77863395" target="_blank" rel="noopener">西瓜书《机器学习》阅读笔记3——Chapter2_ROC曲线</a></li>
+</ul>
+</blockquote>
+<h1 id="【概述】"><a href="#【概述】" class="headerlink" title="【概述】"></a>【概述】</h1><p>评价指标可以说明模型的性能，辨别模型的结果，在建立一个模型后，计算指标，从指标获取反馈，再继续改进模型，直到达到理想的效果，因此，在预测之前检查模型的评估指标至关重要，不应在建立一个模型后，就直接将模型应用到看不见的数据上</p>
+<p>对于分类问题来说，其根据所分类别的个数，可分为<strong>二分类问题</strong>、<strong>多分类问题</strong></p>
+<p>在二分类问题中，使用的评价指标有：误差率（Error Rate）、准确率（Accuracy）、精确率（Precision）、召回率（Recall）、F1 分数（F1 score）、$F_\beta$ 分数（$F_\beta$ score）、PR 曲线、ROC 曲线、AUC、代价敏感错误率（Cost-sensitive Error Rate）、代价曲线（Cost Curve）等</p>
+<p>在多分类问题中，使用的评价指标有： 宏精确率（macro-P）、宏召回率（macro-R）、宏 F1（macro-F1） 、微精确率（micro-P）、微召回率（micro-R）、微F1（micro-F1）等</p>
+<p>本文将详细介绍 ROC 曲线、AUC</p>
+<h1 id="【ROC-曲线】"><a href="#【ROC-曲线】" class="headerlink" title="【ROC 曲线】"></a>【ROC 曲线】</h1><p>在根据预测结果对样例进行排序时，排序本身的质量好坏，体现了综合考虑模型在不同任务下的泛化性能的好坏，ROC 正是从这个角度出发来研究模型的泛化性能</p>
+<p>ROC 全称是<strong>受试者工作特征（Receiver Operating Characteristic）</strong>，与 P-R 曲线相似，根据模型的预测结果对样例进行排序，按顺序逐个将样本作为正类进行预测，每次计算<strong>真正类率（True Positive Rate，TPR）</strong>、<strong>假正类率（False Positive Rate，FPR）</strong>，并将他们作为纵轴、横轴来绘制曲线</p>
+<p>关于 TPR 与 FPR，详见：<a href="https://alex-mcavoy.github.io/ml/82ea5b3f">分类问题的评价指标（一）</a></p>
+<p>如下图，将 TPR 作为纵轴，FPR 作为横轴，即可绘制出 ROC 曲线</p>
+<p><img width="400" src="/images/ml/10-1.png"></p>
+<p>对于样本数据，使用分类器对其进行分类，分类器会给出每个数据为正例的概率，由此可以来设定一个阈值，当某个样本数据被判断为正例的概率大于这个阈值时，即认为该样本为正例，小于则为负例，然后通过计算就可以得到一个 (TPR , FPR) 坐标对，即图像上的一个点，之后通过不断调整这个阈值，就得到若干个点，从而画出一条近似 ROC 曲线，再用线性插值补全间断处</p>
+<p><img width="400" src="/images/ml/10-2.png"></p>
+<p>当阈值越大时，就会使越多的样本被分为负例，会使得正例样本被分为负例，从而导致  TPR 下降，同时，负例样本更不会被分为正例，FPR 也会下降，但是影响要比 TPR 小，因此随着阈值的增大，$\frac{FPR}{TPR}$ 呈上升趋势</p>
+<p>当阈值越小时，就会使越多的样本被分为正例，会使得负例样本被分为正例，从而导致 TPR 上升，同时，正例样本会被分为正例，FPR 也会上升，但影响要比 TPR 大，因此，随着阈值的减小，$\frac{FPR}{TPR}$ 呈下降趋势</p>
+<p>举例来说，在医疗诊断中，判断有病的样本，那么将有病的样本找出是主要任务，也就是要求真正类率越高 TPR 越好，而将没病的样本误诊为有病的，也就是要求假正类率 FPR 越低越好，不难发现，TPR 与 FPR 这两个指标是相互制约的</p>
+<hr>
+<p>一般来说，分类器会对一批数据的每个样本给出一个是正例的概率，如下图所示，共 $20$ 个样本，<code>class</code> 为实际标签，<code>score</code> 为分类器判断样本为正例的概率</p>
+<p><img width="500" src="/images/ml/10-3.png"></p>
+<p>对给出的 <code>score</code> 进行排序，然后依次使用 <code>score</code> 作为阈值，这样就得到了 $20$ 组 (TPR , FPR) 坐标对，绘制出的 ROC 曲线如下</p>
+<p><img width="500" src="/images/ml/10-4.png"></p>
+<h1 id="【AUC】"><a href="#【AUC】" class="headerlink" title="【AUC】"></a>【AUC】</h1><p>与 P-R 曲线类似，在进行模型比较时，如果一个模型的 ROC 曲线被另一个模型的 ROC 曲线完全包住，则可断言后者的性能优于前者，若两模型的 ROC 曲线发生交叉，则难以断言两者的优劣</p>
+<p>如果一定要对两交叉的 ROC 曲线对应的模型进行比较，则对两 ROC 曲线下的面积进行比较</p>
+<p><strong>AUC（Area Under ROC Curve）</strong>被定义为 ROC 曲线下的面积，显然这个面积小于 $1$，又因为 ROC 曲线一般都处于 <code>TPR = FPR</code> 这条直线的上方，因此 AUC 一般都在 $0.5$ 到 $1$ 之间</p>
+<p><img width="400" src="/images/ml/10-1.png"></p>
+<p>假设分类器的输出是样本属于正类的置信度 <code>score</code>，那么 AUC 的物理意义就是：任取一对正例、负例样本，正样本的 <code>score</code> 大于负样本的 <code>score</code> 的概率</p>
+<p>从图像来看，横轴是假正类率 FPR，即所有实际为负类但被判为正类的概率；纵轴是真正类率 TPR，即所有实际为正类也被判正类的概率 </p>
+<p>当 <code>TPR = FPR</code> 时，即上图中的虚线，此时无论真实类别为正类还是为负类的样本，分类器将其预测为正类的概率相等，即分类器对于样本毫无区分能力，与掷骰子没有任何区别</p>
+<p>而分类器希望达到的效果是：对于真实类别为正类，分类器预测为正类的概率，要大于真实类别为负类，分类器预测为正类的概率，即：<code>TPR &gt; FPR</code>，也就是上图中的实线曲线</p>
+<p>在最理想的情况下，没有真实类别为正类，但被错分为负类的样本，即 <code>TPR = 1</code>；也没有真实类别为负类，但被错分为正类的样本，即 <code>FPR = 0</code>，此时，<code>AUC = 1</code></p>
+<p>由此，可以总结出从 AUC 判断分类器优劣的标准：</p>
+<ul>
+<li><code>AUC = 1</code>：完美分类器，最理想的情况，实际不存在</li>
+<li><code>0.5 &lt; AUC &lt; 1</code>：优于随机猜测，妥善设定阈值的情况下，模型具备预测价值</li>
+<li><code>AUC = 0.5</code>：与随机猜测一样，模型不具备预测价值</li>
+<li><code>AUC &lt; 0.5</code>：不如随机猜测，但只要总是反预测的话，就优于随机猜测</li>
+</ul>
+<hr>
+<p>形式化来看，AUC 考虑的是<strong>样本预测的排序质量</strong>，因此其与排序误差有着紧密的联系</p>
+<p>对于样本容量为 $n$ 的测试集 $T$ 来说，假设有 $n^+$ 个正例和 $n^-$ 个负例，令 $T^+$ 为正类集合，$T^-$ 为负类集合，那么 ROC 曲线上方的面积即<strong>排序损失</strong>  $\ell_{rank}$，其被定义为：</p>
+<script type="math/tex; mode=display">
+\ell_{rank} = \frac{1}{n^+n^-}\sum_{x^+\in T^+} \sum_{x^-\in T^-} \bigl[ I\bigl(f(x^+)<f(x^-)\bigr)+\frac{1}{2}I\bigl(f(x^+)=f(x^-)\bigr) \bigr]</script><p>即考虑总共 $n^+n^-$ 个正例、负例对，若正例预测值要小于负例，那么就记录 $1$ 个罚分，对于正例预测值与负例相等的情况，由于数量的原因，需要乘以 $\frac{1}{2}$，即记录 $0.5$ 个罚分，最后再使用 $ \frac{1}{n^+n^-}$ 进行归一化</p>
+<p>若一个正例在 ROC 曲线上对应标记点的坐标为 $(x,y)$，那么 $x$ 代表 <code>score</code> 比其高的负例数，也就是说，在 ROC 曲线中，从 $(0,0)$ 开始，每遇到一个正例，向上走一步，每遇到一个负例，向右走一步</p>
+<p>在实际应用中，无法产生类似光滑 ROC 曲线，只能绘制出如下图的近似 ROC 曲线</p>
+<p><img width="400" src="/images/ml/10-2.png"></p>
+<p>根据 AUC 的定义，AUC 可通过对 ROC 曲线下各部分的面积求和取得，假设 ROC 的曲线是由坐标 $\{(x_1,y_1),(x_2,y_2),…,(x_n,y_n)\}$ 的点按序连接而形成的，则 AUC 可估算为：</p>
+<script type="math/tex; mode=display">
+AUC=\frac{1}{2}\sum_{i=1}^{n-1}(x_{i+1}-x_i)\cdot(y_i+y_{i+1})</script><h1 id="【Iso-performance-直线】"><a href="#【Iso-performance-直线】" class="headerlink" title="【Iso-performance 直线】"></a>【Iso-performance 直线】</h1><p>ROC 曲线一个优点是，其与测试样本的类别分布的误分类代价无关，即无论测试样本的正类负类的比例如何变化，都不会影响到分类器的 ROC 曲线</p>
+<p>假设测试样本中正类所占比例为 $p(+)$，负类所占比例为 $p(-)$，记误分类代价 $C(-|+)$ 为实际为正类但被预测为负类的代价，$C(+|-)$ 为实际为负类但被预测为正类的代价</p>
+<p>那么可以得到一个指定的 <code>(类别分布,误分类代价)</code>，这被称为一个<strong>运行条件（Operating Condition）</strong>，即：</p>
+<script type="math/tex; mode=display">
+S=\frac{p(-)\cdot C(+|-)}{p(+)\cdot C(-|+)}</script><p>以 $S$ 为斜率，在 ROC 空间中通过平移，可以得到许多条直线，这些直线被称为 Iso-performance 直线，每条直线上的所有点对应的分类器都具有相同的期望代价，且越靠近左上角的 Iso-performance 直线，对应的分类器的性能越好</p>
+
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>感谢您对我的支持，让我继续努力分享有用的技术与知识点！</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/wechatpay.jpg" alt="Alex_McAvoy 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/alipay.jpg" alt="Alex_McAvoy 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Alex_McAvoy
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://alex-mcavoy.github.io/ml/ba8ab239.html" title="分类问题的评价指标（二）">https://alex-mcavoy.github.io/ml/ba8ab239.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/ml/" rel="tag"># 机器学习</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/ml/82ea5b3f.html" rel="prev" title="分类问题的评价指标（一）">
+      <i class="fa fa-chevron-left"></i> 分类问题的评价指标（一）
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/ml/f794116b.html" rel="next" title="分类问题的评价指标（三）">
+      分类问题的评价指标（三） <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【概述】"><span class="nav-number">1.</span> <span class="nav-text">【概述】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【ROC-曲线】"><span class="nav-number">2.</span> <span class="nav-text">【ROC 曲线】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【AUC】"><span class="nav-number">3.</span> <span class="nav-text">【AUC】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【Iso-performance-直线】"><span class="nav-number">4.</span> <span class="nav-text">【Iso-performance 直线】</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">  
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Alex_McAvoy"
+      src="/assets/img/head.jpg">
+  <p class="site-author-name" itemprop="name">Alex_McAvoy</p>
+  <div class="site-description" itemprop="description">想要成为渔夫的猎手</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">535</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">57</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">62</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Alex-McAvoy" title="GitHub → https://github.com/Alex-McAvoy" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/u011815404" title="CSDN → https://blog.csdn.net/u011815404" rel="noopener" target="_blank"><i class="fas fa-copyright fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+<!-- 访客地图 -->
+<script type="text/javascript" src="//rf.revolvermaps.com/0/0/5.js?i=50n58yo58ow&amp;m=0&amp;c=ff0000&amp;cr1=ffffff&amp;s=140" async="async"></script>
+
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdz20172133" title="https://blog.csdn.net/sdz20172133" rel="noopener" target="_blank">神仙队友</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://pxlsdz.gitee.io/" title="https://pxlsdz.gitee.io/" rel="noopener" target="_blank">神仙队友的另一个博客</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://bycore.net" title="https://bycore.net" rel="noopener" target="_blank">凉了的某饼同学</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://kris-cn.github.io/" title="http://kris-cn.github.io/" rel="noopener" target="_blank">翟孙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://deng.fun/" title="http://deng.fun/" rel="noopener" target="_blank">芙蓉姐姐</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdau_fangshifeng" title="https://blog.csdn.net/sdau_fangshifeng" rel="noopener" target="_blank">一个头很酷的家伙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/wentong_Xu" title="https://blog.csdn.net/wentong_Xu" rel="noopener" target="_blank">小黑贱胖子</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.yuheng.tech/" title="https://www.yuheng.tech/" rel="noopener" target="_blank">咸于</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/lanshan1111" title="https://blog.csdn.net/lanshan1111" rel="noopener" target="_blank">肥硕硕</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdauguanweihong" title="https://blog.csdn.net/sdauguanweihong" rel="noopener" target="_blank">管少</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_41661919" title="https://blog.csdn.net/qq_41661919" rel="noopener" target="_blank">俊杰</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_40859951" title="https://blog.csdn.net/qq_40859951" rel="noopener" target="_blank">峰哥</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/LSD20164388" title="https://blog.csdn.net/LSD20164388" rel="noopener" target="_blank">狗冬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37748451" title="https://blog.csdn.net/qq_37748451" rel="noopener" target="_blank">胖亚亚</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37868325" title="https://blog.csdn.net/qq_37868325" rel="noopener" target="_blank">妍大佬</a>
+        </li>
+    </ul>
+  </div>
+
+		
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+  
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Alex_McAvoy</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+</br>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script><script src="/js/bookmark.js"></script>
+
+
+
+  
+
+
+
+
+  <script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '48fd73a538d3fa927f65',
+      clientSecret: '56618aefeee90bac3c20de8d51bb0b985d67252d',
+      repo        : 'Gitalk-Comment',
+      owner       : 'Alex-McAvoy',
+      admin       : ['Alex-McAvoy'],
+      id          : 'ed42b4fdf1acf0bfd28a7768c21237bf',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+  
+  <!-- 鼠标单击粒子特效 -->
+  <script type="text/javascript" src="/js/cursor-effects.js"></script>
+  <!-- 多级目录 -->
+  <script type="text/javascript" src="/js/category.js"></script>
+  
+</body>
+</html>

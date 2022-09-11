@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.9.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/img/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/assets/img/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/pace-js@1/themes/blue/pace-theme-minimal.css">
+  <script src="//cdn.jsdelivr.net/npm/pace-js@1/pace.min.js"></script>
+
+
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"alex-mcavoy.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":16,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":true,"color":"#ff0000","save":"manual"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":true},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.json"};
+  </script>
+
+  <meta name="description" content="【概述】设计阶段的任务，是及时把分析阶段得到的需求转变成符合各项要求的系统实现方案 面向对象的方法不强调需求分析和软件设计的严格区分，实际上，面向对象的需求分析和面向对象的设计活动是一个反复迭代的过程，从分析到设计的过渡，是一个逐渐扩充、细化和完善分析阶段所得到的各种模型的过程">
+<meta name="keywords" content="学习笔记,软件工程">
+<meta property="og:type" content="article">
+<meta property="og:title" content="面向对象设计">
+<meta property="og:url" content="https://alex-mcavoy.github.io/notes/software-engineering/90bd4e06.html">
+<meta property="og:site_name" content="Alex_McAvoy">
+<meta property="og:description" content="【概述】设计阶段的任务，是及时把分析阶段得到的需求转变成符合各项要求的系统实现方案 面向对象的方法不强调需求分析和软件设计的严格区分，实际上，面向对象的需求分析和面向对象的设计活动是一个反复迭代的过程，从分析到设计的过渡，是一个逐渐扩充、细化和完善分析阶段所得到的各种模型的过程">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/software-engineering/10-1.png">
+<meta property="og:updated_time" content="2022-05-13T04:44:40.063Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="面向对象设计">
+<meta name="twitter:description" content="【概述】设计阶段的任务，是及时把分析阶段得到的需求转变成符合各项要求的系统实现方案 面向对象的方法不强调需求分析和软件设计的严格区分，实际上，面向对象的需求分析和面向对象的设计活动是一个反复迭代的过程，从分析到设计的过渡，是一个逐渐扩充、细化和完善分析阶段所得到的各种模型的过程">
+<meta name="twitter:image" content="https://alex-mcavoy.github.io/images/notes/software-engineering/10-1.png">
+
+<link rel="canonical" href="https://alex-mcavoy.github.io/notes/software-engineering/90bd4e06.html">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>面向对象设计 | Alex_McAvoy</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Alex_McAvoy</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">想要成为渔夫的猎手</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+
+	
+	
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/notes/software-engineering/90bd4e06.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/assets/img/head.jpg">
+      <meta itemprop="name" content="Alex_McAvoy">
+      <meta itemprop="description" content="想要成为渔夫的猎手">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Alex_McAvoy">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          面向对象设计
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-04-13 10:13:00" itemprop="dateCreated datePublished" datetime="2020-04-13T10:13:00+08:00">2020-04-13</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/notes/" itemprop="url" rel="index"><span itemprop="name">学习笔记</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/notes/software-engineering/" itemprop="url" rel="index"><span itemprop="name">软件工程</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>3.6k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>3 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="【概述】"><a href="#【概述】" class="headerlink" title="【概述】"></a>【概述】</h1><p>设计阶段的任务，是及时把分析阶段得到的需求转变成符合各项要求的系统实现方案</p>
+<p>面向对象的方法不强调需求分析和软件设计的严格区分，实际上，面向对象的需求分析和面向对象的设计活动是一个反复迭代的过程，从分析到设计的过渡，是一个逐渐扩充、细化和完善分析阶段所得到的各种模型的过程</p>
+<p>严格的意义上来讲，从面向对象分析到面向对象设计不存在转换问题，而是同一种表示方法在不同范围的运用</p>
+<p>面向对象设计也不仅仅是对面向对象分析模型进行细化。面向对象分析建立系统的问题域对象模型，而面向对象设计是建立求解域的对象模型</p>
+<h1 id="【面向对象设计的过程】"><a href="#【面向对象设计的过程】" class="headerlink" title="【面向对象设计的过程】"></a>【面向对象设计的过程】</h1><p>面向对象的设计过程一般进行以下几个步骤：</p>
+<ol>
+<li>建立软件体系结构环境图</li>
+<li>软件体系结构设计</li>
+<li>对各个子系统进行设计</li>
+<li>对象设计及优化 </li>
+</ol>
+<h2 id="建立软件体系结构环境图"><a href="#建立软件体系结构环境图" class="headerlink" title="建立软件体系结构环境图"></a>建立软件体系结构环境图</h2><p>在软件体系结构设计开始的时候，设计应该定义与软件进行交互的外部实体以及交互的特性</p>
+<p>一般在分析建模阶段可以获得这些信息，并使用软件体系结构环境图对环境进行建模，描述系统的出人信息流、用户界面和相关的支持处理</p>
+<p>一旦建立了软件体系结构的环境图，描述出所有的外部软件接口，软件架构师就可以通过定义和求精实现软件体系结构的构件来描述系统的结构</p>
+<p>这个过程可一直迭代，直到获得一个完善的软件体系结构。而在设计的初始阶段，系统设计师用系统环境图对软件与外部实体交互的方式进行建模</p>
+<h2 id="软件体系结构设计"><a href="#软件体系结构设计" class="headerlink" title="软件体系结构设计"></a>软件体系结构设计</h2><p>软件构环境图建立之后，对所有的外部软件接口进行了描述，就可以进行软件体系结构设计</p>
+<p>软件体系结构设计可以<strong>自底向上</strong>进行，先为系统中最底层细节编程，然后逐步在更高层累计细节直至最终满足系统需求，如将关系紧密的对象组织成子系统或层</p>
+<p>也可以<strong>自顶向下</strong>进行，通过分解功能来解决问题，尤其是使用设计模式或遗留系统时，会从子系统的划分入手</p>
+<p>还可以<strong>自中向上下</strong>进行，先开始做系统中看来容易做的，再向相应的高层或底层扩展</p>
+<h2 id="对各个子系统进行设计"><a href="#对各个子系统进行设计" class="headerlink" title="对各个子系统进行设计"></a>对各个子系统进行设计</h2><p>大多数系统的面向对象设计模型，在逻辑上都由 4 大部分组成，这 4 大部分对应于组成目标系统的 4 个子系统：</p>
+<ul>
+<li>问题域子系统</li>
+<li>人—机交互子系统</li>
+<li>任务管理子系统</li>
+<li>数据管理子系统</li>
+</ul>
+<p>在不同的软件系统中，这 4 个子系统的重要程度和规模可能相差很大，规模过大的在设计过程中应该进一步划分成更小的子系统，规模过小的可合并在其他子系统中</p>
+<h2 id="对象设计及优化"><a href="#对象设计及优化" class="headerlink" title="对象设计及优化"></a>对象设计及优化</h2><p>对象设计是细化原有的分析对象，确定一些新的对象、对每一个子 系统接口和类进行<strong>准确详细</strong>的说明。</p>
+<h1 id="【面向对象设计的原则】"><a href="#【面向对象设计的原则】" class="headerlink" title="【面向对象设计的原则】"></a>【面向对象设计的原则】</h1><p>面向对象的设计原则基本遵循传统软件设计应该遵循的基本原理，同时还要考虑面向对象的特点</p>
+<p>设计原则具体有：</p>
+<ul>
+<li>模块化</li>
+<li>抽象化</li>
+<li>信息隐藏</li>
+<li>低耦合</li>
+<li>高内聚</li>
+<li>复用性</li>
+</ul>
+<p>在长期的基于面向对象思想的软件开发实践中，遵循面向对象设计原则，人们总结出来一些经验，有利于提高开发人员进行软件设计的质量</p>
+<p>启发规则具体如下：</p>
+<ul>
+<li>设计结果应该清晰易懂：用词一致、使用已有的协议、避免模糊的定义</li>
+<li>类等级深度应该适当：继承层次不要太深</li>
+<li>尽量设计简单的类：避免包含过多属性、简化对象间的合作关系、不提供太多的方法</li>
+<li>使用简单的协议</li>
+<li>使用简单的操作</li>
+<li>把设计的变动减至最小</li>
+</ul>
+<h1 id="【系统设计】"><a href="#【系统设计】" class="headerlink" title="【系统设计】"></a>【系统设计】</h1><p>一般来说，常用的系统设计步骤如下：</p>
+<ol>
+<li>将系统分解为子系统</li>
+<li>设计问题域子系统</li>
+<li>设计人机交互子系统</li>
+<li>设计任务管理子系统</li>
+<li>设计数据管理子系统</li>
+</ol>
+<h2 id="系统分解"><a href="#系统分解" class="headerlink" title="系统分解"></a>系统分解</h2><p>把系统分解成若干个比较小的部分，然后再分别设计每个部分，这 样做不仅能降低设计的难度，还有利于软件开发人员的分工协作、维护人员对系统理解和维护。</p>
+<p>系统的主要组成部分称为<strong>子系统</strong>，通常根据所提供的功能来划分，各个子系统之间接口应尽可能简单、明确，同时减少子系统彼此间的依赖性</p>
+<h2 id="问题域子系统"><a href="#问题域子系统" class="headerlink" title="问题域子系统"></a>问题域子系统</h2><p>问题域子系统的设计基础是在分析阶段精确问题域模型，通过从实现角度补充、修改问题域模型来完成该阶段的设计任务</p>
+<p>可能做出的补充或修改如下：</p>
+<ul>
+<li>调整需求：用户需求或外部环境变化、分析模型不完整或不准确</li>
+<li>复用已有的类：将从类库或其他来源的既存类增加到问题解决方案中</li>
+<li>把问题域类组合在一起：设计时，在类库中引进一个根类，作为包容类，将所有与问题域有关的类关联到一起，建立类的层次</li>
+<li>增添一般化类：所有的类组织在一起提供全系统通用的协议，比如创建、复制、删除等操作</li>
+<li>调整继承层：在建立的对象模型中可能包含多继承关系，但实现时使用程序设计语言可能只有单继承，需对分析结果进行修改</li>
+</ul>
+<h2 id="人机交互子系统"><a href="#人机交互子系统" class="headerlink" title="人机交互子系统"></a>人机交互子系统</h2><p>人机交互子系统强调人如何命令系统，以及系统如何向用户提交信息， 人们在使用计算机过程中的感受直接影响其对系统的接受程度、评价</p>
+<p>在现在的大型软件系统中，人机交互对象通常是窗口或报告，软件设计者至少要考虑以下 3 种窗口：</p>
+<ul>
+<li>安全/登录窗口，其是用户访问系统的必经之路</li>
+<li>设置窗口，其具有以下功能：<ul>
+<li>创建或初始化系统运行必需的对象</li>
+<li>系统管理功能</li>
+<li>启动或关闭设备</li>
+</ul>
+</li>
+<li>业务功能窗口，这种窗口用来帮助完成那些由信息系统和其用户所进行的业务交互所必要的功能</li>
+</ul>
+<h2 id="任务管理子系统"><a href="#任务管理子系统" class="headerlink" title="任务管理子系统"></a>任务管理子系统</h2><p>在实际系统中，许多对象之间往往存在相互依赖关系，设计工作的一项重要内容就是，确定哪些是必须同时动作的对象，哪些是相互排斥的对象，进一步设计任务管理子系统</p>
+<p>设计任务管理子系统，包括确定各类任务并把任务分配给适当的硬件或软件去执行，其前置工作是<strong>分析并发性</strong></p>
+<p>并发对象有两种，一种是无交互行为的对象，另一种是同时接受事件的对象</p>
+<p>在找出并发对象后，检查各个对象的状态图，找出未并发对象的路径<strong>（控制线）</strong>，之后，通过分离出控制线设计任务</p>
+<p>任务有多种类型：</p>
+<ul>
+<li>事件驱动型任务：这类任务可能主要完成通信工作，如与设备、屏幕窗口、其他任务、子系统、另一个处理器或其他系统通信</li>
+<li>时钟驱动型任务：某些任务每隔一定时间间隔就被触发以执行某些处理，如某些设备需要周期性地获得数据或通信</li>
+<li>优先任务：优先任务可以满足高优先级或低优先级的处理需求</li>
+<li>关键任务：关键任务是有关系统成功或失败的关键处理，这类处理都有严格的可靠性要求</li>
+<li>协调任务：当系统中存在 3 个以上任务时，就应该增加一个任务，用它作为协调任务</li>
+</ul>
+<p>在确定任务类型后，需要进行以下工作：</p>
+<ol>
+<li>审查每个任务：对任务的性质进行仔细审查，去掉人为的、不必要的任务，使系统中包含的任务数保持到最少</li>
+<li>确定资源需求：设计者在决定到底采用软件还是硬件的时候，必须综合权衡一致性、成本、性能等多种因素，还要考虑未来的可扩充性和可修改性</li>
+<li>定义任务：说明任务的名称，描述任务的功能、优先级，包含此任务的服务、任务与其他任务的协同方式以及任务的通信方式</li>
+</ol>
+<p>最后综合考虑，确定哪些任务硬件实现，哪些任务软件实现</p>
+<h2 id="数据管理子系统"><a href="#数据管理子系统" class="headerlink" title="数据管理子系统"></a>数据管理子系统</h2><p>数据管理子系统是系统存储或检索对象的基本设施，它建立在某种数据存储管理系统之上，并且隔离了数据存储管理模式的影响，但实现细节集中在数据管理子系统中</p>
+<p>这样既有利于软件的扩充、移植和维护，又简化了软件设计、编码和测试的过程。</p>
+<p><img width="400" src="/images/notes/software-engineering/10-1.png"></p>
+<p>设计数据管理子系统的核心在于<strong>设计数据格式</strong>，数据格式与数据存储管理模式密切相关：</p>
+<ul>
+<li>文件系统：达到第一范式，减少文件数，编码减少文件中的属性值</li>
+<li>关系型数据库：达到第三范式，满足性能和存储需求</li>
+<li>面向对象数据库：达到第三范式，满足性能和存储需求</li>
+</ul>
+<h1 id="【对象设计】"><a href="#【对象设计】" class="headerlink" title="【对象设计】"></a>【对象设计】</h1><h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>对象设计以问题域的对象设计为核心，其结果是一个详细的对象模型</p>
+<p>经过多次反复的分析和系统设计之后，设计者通常会发现有些内容没有考虑到，这些没有考虑到的内容，会在对象设计的过程中被发现</p>
+<p>这个设计过程包括标识新的解决方案对象、调整购买到的商业化构件、对每个子系统接口的精确说明和类的详细说明等</p>
+<p>面向对象分析得出的<strong>对象模型</strong>，通常并不详细描述类中的服务；面向对象设计则是<strong>扩充、完善和细化面向对象分析模型</strong>的过程，设计类中的服务、实现服务的算法是面向对象设计的重要任务，还要设计类的关联、接口形式以及设计的优化</p>
+<p>对象设计的内容包括：</p>
+<ul>
+<li>对象中对属性和操作的详细描述</li>
+<li>对象之间发送消息的协议</li>
+<li>类之间的各种关系的定义</li>
+<li>对象之间的动态交互行为</li>
+</ul>
+<h2 id="设计类的服务"><a href="#设计类的服务" class="headerlink" title="设计类的服务"></a>设计类的服务</h2><p>在功能模型的数据处理中，当一个处理涉及多个对象时，可参考如 下规则帮助确定服务的归属类</p>
+<p>对于<strong>被修改的类</strong>，如果处理影响或修改了一个对象，则最好把该处理与处理目标联系在一起</p>
+<p>对于<strong>关联中心的类</strong>，考查处理涉及的对象类以及这些类之间的关联，找到处于中心地位的类</p>
+<h2 id="设计类的关联"><a href="#设计类的关联" class="headerlink" title="设计类的关联"></a>设计类的关联</h2><p>使用关联有两种可能的方式：单向遍历和双向遍历，单向遍历相对简单，仅需考虑一方到另一方；双向遍历较为复杂，要考虑双方的关系</p>
+<p>对于关联对象来说，有以下三种情况：</p>
+<ul>
+<li>一对一：与任一个对象合并，如学生证和准考证</li>
+<li>一对多：与多端合并，如学生和班级</li>
+<li>多对多：使用独立的关联类，如学生和选修课</li>
+</ul>
+<h2 id="对象设计优化"><a href="#对象设计优化" class="headerlink" title="对象设计优化"></a>对象设计优化</h2><p>系统的各项质量指标并不是同等重要的，设计人员必须确定各项质量指标的相对重要性，此外，优化目标之间还可能存在冲突，因此要<strong>确定质量指标优先级</strong></p>
+<p>可以采用增加冗余关联、调整查询次序、保留派生属性等方法来提高效率</p>
+<p>此外，建立良好的继承关系是优化设计的一项重要内容，为保证继承关系的清晰性，经常需要调整以下三个方面：</p>
+<ul>
+<li>抽象与具体：归纳和具体化是一个持续不断的演化过程</li>
+<li>提高继承程度：确保现有类的协议不变的情况下，不违背领域知识和常识</li>
+<li>利用委托实现行为共享：把一类对象作为另一类对象的属性，从而在两类对象之间 建立组合关系的一种方法</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>感谢您对我的支持，让我继续努力分享有用的技术与知识点！</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/wechatpay.jpg" alt="Alex_McAvoy 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/alipay.jpg" alt="Alex_McAvoy 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Alex_McAvoy
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://alex-mcavoy.github.io/notes/software-engineering/90bd4e06.html" title="面向对象设计">https://alex-mcavoy.github.io/notes/software-engineering/90bd4e06.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/notes/" rel="tag"># 学习笔记</a>
+              <a href="/tags/software-engineering/" rel="tag"># 软件工程</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/matlab/5f7532dd.html" rel="prev" title="Matlab——循环结构">
+      <i class="fa fa-chevron-left"></i> Matlab——循环结构
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/notes/wireless-network/644e78aa.html" rel="next" title="无线局域网概述">
+      无线局域网概述 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【概述】"><span class="nav-number">1.</span> <span class="nav-text">【概述】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【面向对象设计的过程】"><span class="nav-number">2.</span> <span class="nav-text">【面向对象设计的过程】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#建立软件体系结构环境图"><span class="nav-number">2.1.</span> <span class="nav-text">建立软件体系结构环境图</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#软件体系结构设计"><span class="nav-number">2.2.</span> <span class="nav-text">软件体系结构设计</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#对各个子系统进行设计"><span class="nav-number">2.3.</span> <span class="nav-text">对各个子系统进行设计</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#对象设计及优化"><span class="nav-number">2.4.</span> <span class="nav-text">对象设计及优化</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【面向对象设计的原则】"><span class="nav-number">3.</span> <span class="nav-text">【面向对象设计的原则】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【系统设计】"><span class="nav-number">4.</span> <span class="nav-text">【系统设计】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#系统分解"><span class="nav-number">4.1.</span> <span class="nav-text">系统分解</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#问题域子系统"><span class="nav-number">4.2.</span> <span class="nav-text">问题域子系统</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#人机交互子系统"><span class="nav-number">4.3.</span> <span class="nav-text">人机交互子系统</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#任务管理子系统"><span class="nav-number">4.4.</span> <span class="nav-text">任务管理子系统</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#数据管理子系统"><span class="nav-number">4.5.</span> <span class="nav-text">数据管理子系统</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【对象设计】"><span class="nav-number">5.</span> <span class="nav-text">【对象设计】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#概述"><span class="nav-number">5.1.</span> <span class="nav-text">概述</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#设计类的服务"><span class="nav-number">5.2.</span> <span class="nav-text">设计类的服务</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#设计类的关联"><span class="nav-number">5.3.</span> <span class="nav-text">设计类的关联</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#对象设计优化"><span class="nav-number">5.4.</span> <span class="nav-text">对象设计优化</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">  
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Alex_McAvoy"
+      src="/assets/img/head.jpg">
+  <p class="site-author-name" itemprop="name">Alex_McAvoy</p>
+  <div class="site-description" itemprop="description">想要成为渔夫的猎手</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">535</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">57</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">62</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Alex-McAvoy" title="GitHub → https://github.com/Alex-McAvoy" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/u011815404" title="CSDN → https://blog.csdn.net/u011815404" rel="noopener" target="_blank"><i class="fas fa-copyright fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+<!-- 访客地图 -->
+<script type="text/javascript" src="//rf.revolvermaps.com/0/0/5.js?i=50n58yo58ow&amp;m=0&amp;c=ff0000&amp;cr1=ffffff&amp;s=140" async="async"></script>
+
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdz20172133" title="https://blog.csdn.net/sdz20172133" rel="noopener" target="_blank">神仙队友</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://pxlsdz.gitee.io/" title="https://pxlsdz.gitee.io/" rel="noopener" target="_blank">神仙队友的另一个博客</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://bycore.net" title="https://bycore.net" rel="noopener" target="_blank">凉了的某饼同学</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://kris-cn.github.io/" title="http://kris-cn.github.io/" rel="noopener" target="_blank">翟孙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://deng.fun/" title="http://deng.fun/" rel="noopener" target="_blank">芙蓉姐姐</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdau_fangshifeng" title="https://blog.csdn.net/sdau_fangshifeng" rel="noopener" target="_blank">一个头很酷的家伙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/wentong_Xu" title="https://blog.csdn.net/wentong_Xu" rel="noopener" target="_blank">小黑贱胖子</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.yuheng.tech/" title="https://www.yuheng.tech/" rel="noopener" target="_blank">咸于</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/lanshan1111" title="https://blog.csdn.net/lanshan1111" rel="noopener" target="_blank">肥硕硕</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdauguanweihong" title="https://blog.csdn.net/sdauguanweihong" rel="noopener" target="_blank">管少</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_41661919" title="https://blog.csdn.net/qq_41661919" rel="noopener" target="_blank">俊杰</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_40859951" title="https://blog.csdn.net/qq_40859951" rel="noopener" target="_blank">峰哥</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/LSD20164388" title="https://blog.csdn.net/LSD20164388" rel="noopener" target="_blank">狗冬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37748451" title="https://blog.csdn.net/qq_37748451" rel="noopener" target="_blank">胖亚亚</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37868325" title="https://blog.csdn.net/qq_37868325" rel="noopener" target="_blank">妍大佬</a>
+        </li>
+    </ul>
+  </div>
+
+		
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+  
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Alex_McAvoy</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+</br>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script><script src="/js/bookmark.js"></script>
+
+
+
+  
+
+
+
+
+  <script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '48fd73a538d3fa927f65',
+      clientSecret: '56618aefeee90bac3c20de8d51bb0b985d67252d',
+      repo        : 'Gitalk-Comment',
+      owner       : 'Alex-McAvoy',
+      admin       : ['Alex-McAvoy'],
+      id          : 'ca68899f4ac2a7c7d10cd40b2a347a1f',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+  
+  <!-- 鼠标单击粒子特效 -->
+  <script type="text/javascript" src="/js/cursor-effects.js"></script>
+  <!-- 多级目录 -->
+  <script type="text/javascript" src="/js/category.js"></script>
+  
+</body>
+</html>

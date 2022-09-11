@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.9.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/img/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/assets/img/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/pace-js@1/themes/blue/pace-theme-minimal.css">
+  <script src="//cdn.jsdelivr.net/npm/pace-js@1/pace.min.js"></script>
+
+
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"alex-mcavoy.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":16,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":true,"color":"#ff0000","save":"manual"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":true},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.json"};
+  </script>
+
+  <meta name="description" content="【概述】在随机访问介质访问控制中，不采用集中控制方式解决发送信息的次序问题，所有问题都可以根据自己的意愿随机地发送信息，占用信道全部速率 在总线型局域网中，当有两个或更多用户同时发送信息时，就会产生帧的冲突，从而导致所有冲突用户均发送失败">
+<meta name="keywords" content="学习笔记,网络相关,计算机网络">
+<meta property="og:type" content="article">
+<meta property="og:title" content="随机访问介质访问控制">
+<meta property="og:url" content="https://alex-mcavoy.github.io/notes/computer-networks/2875e8bd.html">
+<meta property="og:site_name" content="Alex_McAvoy">
+<meta property="og:description" content="【概述】在随机访问介质访问控制中，不采用集中控制方式解决发送信息的次序问题，所有问题都可以根据自己的意愿随机地发送信息，占用信道全部速率 在总线型局域网中，当有两个或更多用户同时发送信息时，就会产生帧的冲突，从而导致所有冲突用户均发送失败">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/computer-networks/19-1.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/computer-networks/19-2.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/computer-networks/19-3.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/computer-networks/19-4.png">
+<meta property="og:updated_time" content="2021-08-23T12:46:35.702Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="随机访问介质访问控制">
+<meta name="twitter:description" content="【概述】在随机访问介质访问控制中，不采用集中控制方式解决发送信息的次序问题，所有问题都可以根据自己的意愿随机地发送信息，占用信道全部速率 在总线型局域网中，当有两个或更多用户同时发送信息时，就会产生帧的冲突，从而导致所有冲突用户均发送失败">
+<meta name="twitter:image" content="https://alex-mcavoy.github.io/images/notes/computer-networks/19-1.png">
+
+<link rel="canonical" href="https://alex-mcavoy.github.io/notes/computer-networks/2875e8bd.html">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>随机访问介质访问控制 | Alex_McAvoy</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Alex_McAvoy</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">想要成为渔夫的猎手</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+
+	
+	
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/notes/computer-networks/2875e8bd.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/assets/img/head.jpg">
+      <meta itemprop="name" content="Alex_McAvoy">
+      <meta itemprop="description" content="想要成为渔夫的猎手">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Alex_McAvoy">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          随机访问介质访问控制
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-10-01 18:01:00" itemprop="dateCreated datePublished" datetime="2019-10-01T18:01:00+08:00">2019-10-01</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/notes/" itemprop="url" rel="index"><span itemprop="name">学习笔记</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/notes/computer-networks/" itemprop="url" rel="index"><span itemprop="name">计算机网络</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>4.7k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>4 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="【概述】"><a href="#【概述】" class="headerlink" title="【概述】"></a>【概述】</h1><p>在随机访问介质访问控制中，不采用集中控制方式解决发送信息的次序问题，所有问题都可以根据自己的意愿随机地发送信息，占用信道全部速率</p>
+<p>在总线型局域网中，当有两个或更多用户同时发送信息时，就会产生帧的冲突，从而导致所有冲突用户均发送失败</p>
+<p>为解决随机接入产生的碰撞，每个用户按照一定规则反复重传它的帧，直到该帧无碰撞地通过，常见的协议有：ALOHA 协议、CSMA 协议、CSMA/CD 协议、CSMA/CA 协议</p>
+<p>这些协议的核心思想都是<strong>争用</strong>信道，争用成功者获得信道的使用权，独享信道所有资源</p>
+<p>由于争用过程中可能出现失败，会使得所有结点进行重发，这就会造成<strong>冲突开销</strong>，降低信道利用率</p>
+<h1 id="【ALOHA-协议】"><a href="#【ALOHA-协议】" class="headerlink" title="【ALOHA 协议】"></a>【ALOHA 协议】</h1><h2 id="纯-ALOHA-协议"><a href="#纯-ALOHA-协议" class="headerlink" title="纯 ALOHA 协议"></a>纯 ALOHA 协议</h2><p><strong>纯 ALOHA</strong> 的基本思想是：当网络中的任何一个站点需要发送数据时，<strong>不进行任何检测就发送数据</strong>，如果一段时间内没有收到确认，发送的站点就认为传输过程中<strong>发生冲突</strong>，之后依照概率 $p$，<strong>等待一随机时间后再次发送</strong>，直到发送成功</p>
+<p>此外，在接收方收到数据后，会进行检错，若发现数据帧有错，则不予确认</p>
+<p>综上，纯 ALOHA 协议的特点可概括为：<strong>不监听信道，随机发送</strong></p>
+<p><img width="500" src="/images/notes/computer-networks/19-1.png"></p>
+<h2 id="时隙-ALOHA-协议"><a href="#时隙-ALOHA-协议" class="headerlink" title="时隙 ALOHA 协议"></a>时隙 ALOHA 协议</h2><p>采用纯 ALOHA 协议的网络的吞吐量很低，为克服这个缺点，在纯 ALOHA 协议的基础上有了<strong>时隙 ALOHA 协议</strong></p>
+<p>对于站点发送数据的随意性，时隙 ALOHA 协议将网络上<strong>各个站点的时间进行同步</strong>，将时间划分为一段段等长的时隙，规定只能<strong>在每个时隙开始时才可发送帧</strong></p>
+<p>可以发现时隙 ALOHA 协议避免了发送数据的随意性，减少了数据产生冲突的可能性，提高了信道的利用率</p>
+<p>综上，时隙 ALOHA 协议的特点可概括为：<strong>不监听信道，按时隙发送</strong></p>
+<p><img width="500" src="/images/notes/computer-networks/19-2.png"></p>
+<h1 id="【CSMA-协议】"><a href="#【CSMA-协议】" class="headerlink" title="【CSMA 协议】"></a>【CSMA 协议】</h1><h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>时隙 ALOHA 协议虽然比纯 ALOHA 协议效率有了提高，但每个站点都是不监听信道就发送数据，因此出现碰撞的概率很大</p>
+<p><strong>载波侦听多路访问（Carrier Sense Multiple Access，CSMA）协议</strong>对上述情况作出了改进，设置了一个<strong>载波侦听装置</strong>，其在每个站点都在<strong>发送前侦听信道</strong>，若<strong>信道空闲则发送</strong>，若<strong>信道忙碌则等待</strong>，这大大减小了冲突的概率，提高了信道利用率</p>
+<p>所谓<strong>载波侦听（Carrier Sense，CS）</strong>，是指每个站发送数据前检测总线上是否有其他站在发送数据，在多个站发送数据时，总线信号电压会因信号叠加而增大，当某站检测到电压摆动值超过一定幅度后，就认为至少两个站在同时发送数据，产生了冲突</p>
+<p>而<strong>多路访问（Multiple Access，MA）</strong>，是指多个计算机以多点接入的方式连接在一根总线上</p>
+<p>CSMA 协议有三种不同类型，其特点如下：</p>
+<p><img width="500" src="/images/notes/computer-networks/19-3.png"></p>
+<p>归结来说，CSMA 的特点可以概括为：<strong>先听再发，空闲就发，忙则等待</strong></p>
+<h2 id="1-坚持-CSMA"><a href="#1-坚持-CSMA" class="headerlink" title="1-坚持 CSMA"></a>1-坚持 CSMA</h2><p><strong>1-坚持 CSMA（1-persistent CSMA）</strong>的基本思想是：当一个结点要发送数据时，先侦听信道，若<strong>信道空闲</strong>，就立即发送数据；若<strong>信道忙</strong>，则等待，并继续侦听直到信道空闲，若发生冲突，则随机等待一段时间后，再重新开始侦听信道</p>
+<p><strong>1-坚持</strong>的含义是：当侦听到信道忙后，继续侦听信道，当侦听到信道空闲后，立即发送数据，即<strong>发送帧的概率为 $1$</strong></p>
+<p>传播时延对 1-坚持 CSMA 影响很大，举例来说，在某结点 $A$ 开始发送数据时，结点 $B$ 也要发送数据，但由于传播时延的问题，结点 $A$ 发出的信号距离结点 $B$ 有一定距离，此时结点 $B$ 侦听到信道空闲，于是立即发送数据，这必然导致信道冲突</p>
+<p>此外，若不考虑传播时延，1-坚持 CSMA 也有较大可能产生冲突，举例来说，结点 $A$ 正在发送数据，此时结点 $B$、$C$ 正准备发送数据，他们均侦听到信道忙，于是继续侦听，当结点 $A$ 一发送完毕，$B$、$C$ 立即发送，这同样导致了信道冲突</p>
+<h2 id="非坚持-CSMA"><a href="#非坚持-CSMA" class="headerlink" title="非坚持 CSMA"></a>非坚持 CSMA</h2><p><strong>非坚持 CSMA（Non-presistent CSMA）</strong>的基本思想是：当一个结点要发送数据时，先侦听信道，若<strong>信道空闲</strong>，就立即发送数据；若<strong>信道忙</strong>，就放弃侦听，等待一随机时间后再开始侦听</p>
+<p>非坚持 CSMA 在侦听到信道忙后就放弃侦听，这减少了多个结点同时等待信道空闲后发送数据导致冲突的概率，但这却使得数据在网络中的平均时延增加了，即信道利用率的提高是以数据在网络中的时延为代价的</p>
+<h2 id="p-坚持-CSMA"><a href="#p-坚持-CSMA" class="headerlink" title="p-坚持 CSMA"></a>p-坚持 CSMA</h2><p><strong>p-坚持 CSMA（p-persistent CSMA）</strong>用于<strong>时分信道</strong>，其基本思想是：当一个结点要发送数据时，先侦听信道，若当前时隙内<strong>信道空闲</strong>，便以 $p$ 的概率发送数据，以 $1-p$ 的概率推迟到下一时隙；若<strong>信道忙</strong>，则等待下一时隙再侦听；之后重复上述过程，直到<strong>数据发送成功</strong>或<strong>因其他结点发送数据而检测到信道忙</strong>为止，若是后者，则会等待一个随机时间后再重新开始侦听</p>
+<p><strong>p-坚持</strong>的含义是：在检测到信道空闲后，以概率 $p$ 发送数据，以概率 $1-p$ 推迟到下一时隙</p>
+<p>可以发现，p-坚持 CSMA 是 1-坚持 CSMA 与 非坚持 CSMA 的折中方案，其降低了 1-坚持 CSMA 中多个结点检测到信道空闲后同时发送数据的冲突概率，还克服了 非坚持 CSMA 中由于随机等待造成延迟较长的缺点，但其在发生冲突后仍要坚持发完数据，这无疑造成了资源浪费</p>
+<h1 id="【CSMA-CD-协议】"><a href="#【CSMA-CD-协议】" class="headerlink" title="【CSMA/CD 协议】"></a>【CSMA/CD 协议】</h1><h2 id="概述-1"><a href="#概述-1" class="headerlink" title="概述"></a>概述</h2><p><strong>载波侦听多路访问/碰撞检测（Carrier Sense Multiple Access with Collision Detection，CSMA/CD）协议</strong>，是 CSMA 的改进方案，常用于<strong>总线型局域网</strong></p>
+<p>CSMA/CD 是在 CSMA 的基础上加了<strong>碰撞检测（Collision Detection，CD）</strong>，是指边发送边侦听，即载波侦听装置<strong>边发送边检测</strong>信道上信号电压的变化情况，以便判断自己在发送数据时是否有其他站点也在发送数据</p>
+<p>CSMA/CD 的基本思想是：当一个结点要发送数据时，先侦听信道，若<strong>信道空闲</strong>，则发送数据；若<strong>信道忙</strong>，则等待，直到信道空闲再重新发送</p>
+<p>同时，在数据发送过程中，收发双方会一直侦听，若<strong>直到发送完毕没有侦听到其他信号</strong>，则该数据帧传输完毕；若<strong>发送过程中侦听到其他信号</strong>，则发生冲突，发送方会立即停止发送，并发送一个<strong>48 bit 的拥塞信号</strong>，之后，采用<strong>二进制指数退避算法</strong>，等待一段时间后继续开始侦听</p>
+<p>归结来说，CSMA/CD 的特点可以概括为：<strong>先听再发，边听边发，冲突停发，随机再发</strong></p>
+<h2 id="传播时延与争用期"><a href="#传播时延与争用期" class="headerlink" title="传播时延与争用期"></a>传播时延与争用期</h2><p>设单程端到端传播时延为 $\tau$，在 $t=0$ 时站点 $A$ 发送数据，此时由于传播时延的存在，在 $t=\tau-\delta$ 时，站点 $B$ 检测到信道是空闲的，其发送数据</p>
+<p>经过 $\frac{\delta}{2}$ 后，即在 $t=\tau-\frac{\delta}{2}$ 时，站点 $A$ 与站点 $B$ 发送的数据发送碰撞，但此时 $A$ 与 $B$ 均不知道</p>
+<p>在 $t=\tau$ 时，$B$ 收到来自 $A$ 的数据，此时 $B$ 检测到碰撞，于是停发数据，之后发送一个 48 bit 的拥塞信号；在 $t=2\tau-\delta$ 时，$A$ 检测到 碰撞，也停发数据，并发送一个 48 bit 的拥塞信号</p>
+<p><img width="500" src="/images/notes/computer-networks/19-4.png"></p>
+<p>可以发现，在站 $A$ 发送帧后<strong>最多</strong>经过 $2\tau$ 的时间，即可知道所发送的帧是否经过碰撞，因此，常将以太网端到端的往返时间 $2\tau$ 称为<strong>争用期</strong></p>
+<p>进一步，可以断定，只要在 $2\tau$ 的时间内未检测到碰撞，则可认为肯定未发生碰撞</p>
+<h2 id="最小帧长"><a href="#最小帧长" class="headerlink" title="最小帧长"></a>最小帧长</h2><p>为确保发送方在发送数据的同时能够检测可能存在的冲突，需要在发送完帧前就能收到自己发送出去的数据，即帧的传输时延至少要两倍于信号在总线中的传播时延</p>
+<p>因此，CSMA/CD 中的所有数据帧都要大于一个<strong>最小帧长</strong>，任何站点收到帧长小于该最小帧长的帧，就将其当做无效帧</p>
+<p>最小帧长被定义为：</p>
+<script type="math/tex; mode=display">
+最小帧长=总线传播时延\times 数据传输率 \times 2</script><p>若要发送的数据帧小于最小帧长，会在数据字段后加入一个<strong>填充字段</strong>，以保证发送的数据帧不小于最小帧长</p>
+<hr>
+<p>例如，以太网规定争用期为 $51.2 \mu s$，那么，对于 $10Mb/s$ 的以太网，在争用期内可发送 $512\: bit$ 即 $64B$ 的数据</p>
+<p>如果前 $64B$ 没有发生冲突，那么就表明已经成功抢占信道，后续的数据不会发生冲突</p>
+<p>因此，以太网规定最短帧长为 $64B$，凡是小于 $64B$ 的帧都是由于冲突而异常终止的无效帧</p>
+<h2 id="二进制指数退避算法"><a href="#二进制指数退避算法" class="headerlink" title="二进制指数退避算法"></a>二进制指数退避算法</h2><p>在 CSMA/CD 中，除了上述的检测冲突外，CSMA/CD 还能从冲突中恢复，一旦发生冲突，参与冲突的两个站点立刻再次发送是无意义的，只会导致无休止的冲突</p>
+<p>因此，CSMA/CD 中采用二进制指数退避算法来解决碰撞问题，算法流程如下：</p>
+<ol>
+<li>确定<strong>基本退避时间</strong>，一般取争用期 $2\tau$</li>
+<li>设置参数 $k$，其值为<strong>重传次数</strong>，但不超过 $10$，即 $k=min[重传次数,10]$</li>
+<li>在整数集合 $\{0,1,…,2^k-1\}$ 中随机取一个数 $r$，重传所需要<strong>退避时间</strong>为 $2r\tau$</li>
+<li>当<strong>重传达到 $16$ 次</strong>仍不成功，说明网络拥挤，认为该帧永远无法正确发出，抛弃该帧并向高层报告出错</li>
+</ol>
+<p>使用二进制指数退避算法，可以使重传需要推迟的平均时间随着重传次数的增大而增大，从而减小发生碰撞的概率，从而稳定整个系统</p>
+<h1 id="【CSMA-CA-协议】"><a href="#【CSMA-CA-协议】" class="headerlink" title="【CSMA/CA 协议】"></a>【CSMA/CA 协议】</h1><h2 id="概述-2"><a href="#概述-2" class="headerlink" title="概述"></a>概述</h2><p>CSMA/CD 在有线局域网中得到有效应用，但在无线局域网中无法直接使用该协议，主要是由于以下两个原因：</p>
+<ul>
+<li>接收信号强度小于发送信号强度，且在无线介质上信号强度动态变化范围很广，若要进行碰撞检测，硬件开销过大</li>
+<li>在无线通信中，存在<strong>隐蔽站点</strong>问题，即并非所有站点都能听到对方（$A$、$C$ 互相检测不到，信道空闲同时向 $B$ 发送数据，导致冲突）</li>
+</ul>
+<p>为此，在 IEEE 802.11 标准中，定义了<strong>载波侦听多路访问/碰撞避免（Carrier Sense Multiple Access with Collision Avoidance，CSMA/CA）协议</strong>，其用于<strong>无线局域网</strong></p>
+<p><strong>碰撞避免（Collision Avoidance，CA）</strong>，是指尽量降低碰撞发生的概率</p>
+<p>CSMA/CA 的基本思想是：当一个结点要发送数据时，先侦听信道，若<strong>信道空闲</strong>，则发送数据；若<strong>信道忙</strong>，则等待，直到信道空闲再重新发送</p>
+<p>同时，在发送数据时，若要发送的<strong>是第一个数据帧</strong>，则直接进行发送；若<strong>不是第一个数据帧</strong>，要采用<strong>二进制指数退避算法</strong>来计算随机退避时间，确定下一个帧要发送的时间</p>
+<p>归结来说，CSMA/CA 的特点可以概括为：<strong>先听再发，忙则等待，预约信道，随机再发</strong></p>
+<h2 id="碰撞避免"><a href="#碰撞避免" class="headerlink" title="碰撞避免"></a>碰撞避免</h2><p>CSMA/CA 采用预约信道、ACK 帧、RTS/CTS 帧三种机制来实现碰撞避免，其中，前两者是 CSMA/CA 必选的机制，后者是可选的机制</p>
+<p><strong>预约信道</strong>，是指发送方在发送数据时，向其他站点通知自己传输数据所需的时间，以便令其他站点在这段时间内不发送数据，从而避免碰撞</p>
+<p><strong>ACK 帧</strong>，是指在站点正确接收到发送给自己的数据帧后，都要向发送方发回一个 ACK 帧，若接收失败，则不采取任何行动；同时，发送方在发送完数据帧后，若在规定时间内没有收到 ACK 帧，则认为发送失败，进行该数据帧的重发，直到收到 ACK 帧或达到规定最大重发次数为止</p>
+<p><strong>RTS/CTS 帧</strong>，主要用于解决无线局域网中的<strong>隐蔽站点问题</strong>，其中，RTS 帧为请求发送帧，其包含发送地址、接收地址、下一数据发送时间等，用于通知接收站要发送信息；CTS 帧为响应发送帧，用于对 RTS 帧做出回应，通知发送站可以发送信息</p>
+<p>当采用 RTS/CTS 帧机制时，CSMA/CA 的工作流程如下：</p>
+<ol>
+<li>检测信道是否空闲，若<strong>信道空闲</strong>，发送 RTS 帧；若<strong>信道忙</strong>，则等待</li>
+<li>接收方收到 RTS 帧后，响应 CTS 帧给发送方，此时两站点建立一定关系，其他站再向接收方发送 RTS 帧会被拒绝</li>
+<li>发送方收到响应的 CTS 帧后，开始发送数据帧，同时<strong>预约信道</strong>，告知其他站点自己要使用信道的时间</li>
+<li>接收方收到数据帧后，通过<strong>差错控制机制</strong>来检测数据帧，若正确，则响应 <strong>ACK 帧</strong>，否则直接丢弃</li>
+<li>发送方收到响应的 ACK 帧后，进行下一数据帧发送；若未收到，则采用<strong>指数二进制退避算法</strong>确定随机退避时间，根据时间进行重传</li>
+</ol>
+
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>感谢您对我的支持，让我继续努力分享有用的技术与知识点！</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/wechatpay.jpg" alt="Alex_McAvoy 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/alipay.jpg" alt="Alex_McAvoy 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Alex_McAvoy
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://alex-mcavoy.github.io/notes/computer-networks/2875e8bd.html" title="随机访问介质访问控制">https://alex-mcavoy.github.io/notes/computer-networks/2875e8bd.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/notes/" rel="tag"># 学习笔记</a>
+              <a href="/tags/network/" rel="tag"># 网络相关</a>
+              <a href="/tags/computer-networks/" rel="tag"># 计算机网络</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/notes/computer-networks/b21fca73.html" rel="prev" title="信道划分介质访问控制">
+      <i class="fa fa-chevron-left"></i> 信道划分介质访问控制
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/notes/computer-networks/8b70a292.html" rel="next" title="轮询访问介质访问控制">
+      轮询访问介质访问控制 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【概述】"><span class="nav-number">1.</span> <span class="nav-text">【概述】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【ALOHA-协议】"><span class="nav-number">2.</span> <span class="nav-text">【ALOHA 协议】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#纯-ALOHA-协议"><span class="nav-number">2.1.</span> <span class="nav-text">纯 ALOHA 协议</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#时隙-ALOHA-协议"><span class="nav-number">2.2.</span> <span class="nav-text">时隙 ALOHA 协议</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【CSMA-协议】"><span class="nav-number">3.</span> <span class="nav-text">【CSMA 协议】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#概述"><span class="nav-number">3.1.</span> <span class="nav-text">概述</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-坚持-CSMA"><span class="nav-number">3.2.</span> <span class="nav-text">1-坚持 CSMA</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#非坚持-CSMA"><span class="nav-number">3.3.</span> <span class="nav-text">非坚持 CSMA</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#p-坚持-CSMA"><span class="nav-number">3.4.</span> <span class="nav-text">p-坚持 CSMA</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【CSMA-CD-协议】"><span class="nav-number">4.</span> <span class="nav-text">【CSMA/CD 协议】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#概述-1"><span class="nav-number">4.1.</span> <span class="nav-text">概述</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#传播时延与争用期"><span class="nav-number">4.2.</span> <span class="nav-text">传播时延与争用期</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#最小帧长"><span class="nav-number">4.3.</span> <span class="nav-text">最小帧长</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二进制指数退避算法"><span class="nav-number">4.4.</span> <span class="nav-text">二进制指数退避算法</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【CSMA-CA-协议】"><span class="nav-number">5.</span> <span class="nav-text">【CSMA/CA 协议】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#概述-2"><span class="nav-number">5.1.</span> <span class="nav-text">概述</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#碰撞避免"><span class="nav-number">5.2.</span> <span class="nav-text">碰撞避免</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">  
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Alex_McAvoy"
+      src="/assets/img/head.jpg">
+  <p class="site-author-name" itemprop="name">Alex_McAvoy</p>
+  <div class="site-description" itemprop="description">想要成为渔夫的猎手</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">535</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">57</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">62</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Alex-McAvoy" title="GitHub → https://github.com/Alex-McAvoy" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/u011815404" title="CSDN → https://blog.csdn.net/u011815404" rel="noopener" target="_blank"><i class="fas fa-copyright fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+<!-- 访客地图 -->
+<script type="text/javascript" src="//rf.revolvermaps.com/0/0/5.js?i=50n58yo58ow&amp;m=0&amp;c=ff0000&amp;cr1=ffffff&amp;s=140" async="async"></script>
+
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdz20172133" title="https://blog.csdn.net/sdz20172133" rel="noopener" target="_blank">神仙队友</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://pxlsdz.gitee.io/" title="https://pxlsdz.gitee.io/" rel="noopener" target="_blank">神仙队友的另一个博客</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://bycore.net" title="https://bycore.net" rel="noopener" target="_blank">凉了的某饼同学</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://kris-cn.github.io/" title="http://kris-cn.github.io/" rel="noopener" target="_blank">翟孙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://deng.fun/" title="http://deng.fun/" rel="noopener" target="_blank">芙蓉姐姐</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdau_fangshifeng" title="https://blog.csdn.net/sdau_fangshifeng" rel="noopener" target="_blank">一个头很酷的家伙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/wentong_Xu" title="https://blog.csdn.net/wentong_Xu" rel="noopener" target="_blank">小黑贱胖子</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.yuheng.tech/" title="https://www.yuheng.tech/" rel="noopener" target="_blank">咸于</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/lanshan1111" title="https://blog.csdn.net/lanshan1111" rel="noopener" target="_blank">肥硕硕</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdauguanweihong" title="https://blog.csdn.net/sdauguanweihong" rel="noopener" target="_blank">管少</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_41661919" title="https://blog.csdn.net/qq_41661919" rel="noopener" target="_blank">俊杰</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_40859951" title="https://blog.csdn.net/qq_40859951" rel="noopener" target="_blank">峰哥</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/LSD20164388" title="https://blog.csdn.net/LSD20164388" rel="noopener" target="_blank">狗冬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37748451" title="https://blog.csdn.net/qq_37748451" rel="noopener" target="_blank">胖亚亚</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37868325" title="https://blog.csdn.net/qq_37868325" rel="noopener" target="_blank">妍大佬</a>
+        </li>
+    </ul>
+  </div>
+
+		
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+  
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Alex_McAvoy</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+</br>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script><script src="/js/bookmark.js"></script>
+
+
+
+  
+
+
+
+
+  <script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '48fd73a538d3fa927f65',
+      clientSecret: '56618aefeee90bac3c20de8d51bb0b985d67252d',
+      repo        : 'Gitalk-Comment',
+      owner       : 'Alex-McAvoy',
+      admin       : ['Alex-McAvoy'],
+      id          : '4a77b0d6bdfff49006c700d1983c4d4c',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+  
+  <!-- 鼠标单击粒子特效 -->
+  <script type="text/javascript" src="/js/cursor-effects.js"></script>
+  <!-- 多级目录 -->
+  <script type="text/javascript" src="/js/category.js"></script>
+  
+</body>
+</html>

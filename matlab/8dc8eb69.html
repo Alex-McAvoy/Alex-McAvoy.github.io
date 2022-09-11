@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.9.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/img/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/assets/img/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/pace-js@1/themes/blue/pace-theme-minimal.css">
+  <script src="//cdn.jsdelivr.net/npm/pace-js@1/pace.min.js"></script>
+
+
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"alex-mcavoy.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":16,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":true,"color":"#ff0000","save":"manual"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":true},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.json"};
+  </script>
+
+  <meta name="description" content="【IO 操作】IO 操作在不同层次有不同的概念和单位，每一次 IO 就是一次请求，对于磁盘来说，一个 IO 就是读或者写磁盘的某个或者某段扇区，读写完了，这个 IO 也就结束了 在 matlab 中，IO 操作即将数据从磁盘读入 matlab 的工作区，或将数据从 matlab 的工作区写入磁盘">
+<meta name="keywords" content="Matlab">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Matlab——IO操作">
+<meta property="og:url" content="https://alex-mcavoy.github.io/matlab/8dc8eb69.html">
+<meta property="og:site_name" content="Alex_McAvoy">
+<meta property="og:description" content="【IO 操作】IO 操作在不同层次有不同的概念和单位，每一次 IO 就是一次请求，对于磁盘来说，一个 IO 就是读或者写磁盘的某个或者某段扇区，读写完了，这个 IO 也就结束了 在 matlab 中，IO 操作即将数据从磁盘读入 matlab 的工作区，或将数据从 matlab 的工作区写入磁盘">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2021-08-24T01:43:23.902Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Matlab——IO操作">
+<meta name="twitter:description" content="【IO 操作】IO 操作在不同层次有不同的概念和单位，每一次 IO 就是一次请求，对于磁盘来说，一个 IO 就是读或者写磁盘的某个或者某段扇区，读写完了，这个 IO 也就结束了 在 matlab 中，IO 操作即将数据从磁盘读入 matlab 的工作区，或将数据从 matlab 的工作区写入磁盘">
+
+<link rel="canonical" href="https://alex-mcavoy.github.io/matlab/8dc8eb69.html">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Matlab——IO操作 | Alex_McAvoy</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Alex_McAvoy</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">想要成为渔夫的猎手</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+
+	
+	
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/matlab/8dc8eb69.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/assets/img/head.jpg">
+      <meta itemprop="name" content="Alex_McAvoy">
+      <meta itemprop="description" content="想要成为渔夫的猎手">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Alex_McAvoy">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Matlab——IO操作
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-05-01 18:06:00" itemprop="dateCreated datePublished" datetime="2020-05-01T18:06:00+08:00">2020-05-01</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/matlab/" itemprop="url" rel="index"><span itemprop="name">Matlab</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>5.7k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>5 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="【IO-操作】"><a href="#【IO-操作】" class="headerlink" title="【IO 操作】"></a>【IO 操作】</h1><p>IO 操作在不同层次有不同的概念和单位，每一次 IO 就是一次请求，对于磁盘来说，一个 IO 就是读或者写磁盘的某个或者某段扇区，读写完了，这个 IO 也就结束了</p>
+<p>在 matlab 中，IO 操作即将数据从磁盘读入 matlab 的工作区，或将数据从 matlab 的工作区写入磁盘</p>
+<h1 id="【文件打开与关闭】"><a href="#【文件打开与关闭】" class="headerlink" title="【文件打开与关闭】"></a>【文件打开与关闭】</h1><ul>
+<li><code>FID=fopen(fileName,permission)</code>：根据 fileName 所指定的路径，依照 permission 所指定的模式打开文件，返回文件标识符 FID</li>
+<li><code>status=fclose(FID)</code>：关闭 FID 所映射的文件，并返回状态码 status</li>
+</ul>
+<p>说明：</p>
+<ol>
+<li>FID：文件标识符，在系统(无论何种系统均有 FID，类似 PID)中用于唯一标识文件，需要注意的是，如果 FID 不代表打开文件或其等于 0(标准输入)、1(标准输出)、2(标准错误)，关闭文件时会引发错误</li>
+<li>fileName：可以是相对路径，也可以是绝对路径</li>
+<li>permission 的模式如下表：</li>
+</ol>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:center">标识</th>
+<th style="text-align:center">模式</th>
+<th style="text-align:center">标识</th>
+<th style="text-align:center">模式</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">‘r’</td>
+<td style="text-align:center">读文件，要求文件必须存在</td>
+<td style="text-align:center">‘r+’</td>
+<td style="text-align:center">读写文件，要求文件必须存在</td>
+</tr>
+<tr>
+<td style="text-align:center">‘w’</td>
+<td style="text-align:center">写文件，若文件已存在会将内容覆盖，若文件不存在会创建文件</td>
+<td style="text-align:center">‘w+’</td>
+<td style="text-align:center">读写文件，若文件已存在会将内容覆盖，若文件不存在会创建文件</td>
+</tr>
+<tr>
+<td style="text-align:center">‘a’</td>
+<td style="text-align:center">写文件，若文件已存在会将内容追加，若文件不存在会创建文件</td>
+<td style="text-align:center">‘a+’</td>
+<td style="text-align:center">读写文件，若文件已存在会将内容追加，若文件不存在会创建文件</td>
+</tr>
+<tr>
+<td style="text-align:center">‘b’</td>
+<td style="text-align:center">表明打开文件为二进制文件，一般与上述 6 种标识混合使用，例如：’rb’、’ab+’</td>
+<td style="text-align:center"></td>
+</tr>
+</tbody>
+</table>
+</div>
+<ol>
+<li>status：关闭文件的状态码，关闭成功返回 0，关闭失败返回 1</li>
+</ol>
+<figure class="highlight matlab"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt; fid=fopen(<span class="string">'test.txt'</span>,<span class="string">'r'</span>)</span><br><span class="line">fid = <span class="number">4</span></span><br><span class="line">&gt;&gt; status=fclose(fid)</span><br><span class="line">status = <span class="number">0</span></span><br></pre></td></tr></table></figure>
+<h1 id="【fread-与-fwrite】"><a href="#【fread-与-fwrite】" class="headerlink" title="【fread 与 fwrite】"></a>【fread 与 fwrite】</h1><p><code>fread()</code> 与 <code>fwrite()</code> 函数对二进制文件进行读写 </p>
+<ul>
+<li><p><code>a = fread(FID,num,precision)</code>：根据 FID 读取文件信息，用 precision 指定的数据格式，用 num 指定读取个数</p>
+</li>
+<li><p><code>num=fwrite(FID,data,precision)</code>：根据 FID 写入数据 data，用 precision 指定的数据格式，返回写入数据个数</p>
+</li>
+</ul>
+<p>注：</p>
+<ol>
+<li>关于 precision：其数据格式为 <code>int32</code>、<code>float</code> 等，若未指定，默认为 <code>uint8</code></li>
+<li>关于 num：在 <code>fread()</code>中，若 num 未指定，默认读取所有元素</li>
+<li>无法利用 fread 和 fwrite 同时读写</li>
+<li>由于 fread 和 fwrite 涉及到二进制编码问题，因此很少使用</li>
+</ol>
+<figure class="highlight matlab"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt; fid=fopen(<span class="string">'test.bin'</span>,<span class="string">'r+'</span>);</span><br><span class="line">&gt;&gt; a=<span class="built_in">magic</span>(<span class="number">3</span>);</span><br><span class="line">&gt;&gt; num=fwrite(fid,a,<span class="string">'int32'</span>)</span><br><span class="line">num = <span class="number">9</span></span><br><span class="line">&gt;&gt; fclose(fid);</span><br><span class="line"></span><br><span class="line">&gt;&gt; fid=fopen(<span class="string">'test.bin'</span>,<span class="string">'r+'</span>);</span><br><span class="line">&gt;&gt; data=fread(fid,<span class="string">'int32'</span>);</span><br><span class="line">&gt;&gt; fclose(fid);</span><br><span class="line">&gt;&gt; data</span><br><span class="line">data =</span><br><span class="line">       <span class="number">8</span></span><br><span class="line">       <span class="number">3</span></span><br><span class="line">       <span class="number">4</span></span><br><span class="line">       <span class="number">1</span></span><br><span class="line">       <span class="number">5</span></span><br><span class="line">       <span class="number">9</span></span><br><span class="line">       <span class="number">6</span></span><br><span class="line">       <span class="number">7</span></span><br><span class="line">       <span class="number">2</span></span><br></pre></td></tr></table></figure>
+<h1 id="【fscanf-与-fprintf】"><a href="#【fscanf-与-fprintf】" class="headerlink" title="【fscanf 与 fprintf】"></a>【fscanf 与 fprintf】</h1><p><code>fscanf()</code> 与 <code>fprintf()</code> 函数对文本文件进行读写 </p>
+<ul>
+<li><code>data=fscanf(FID,formatSpec,num)</code>：根据 FID 读取文件信息，用 formatSpec 指定的数据格式，num 表示读取个数，inf 表示读取到末尾(默认)</li>
+<li><code>num=fprintf(FID,formatSpec,data)</code>：根据 FID 写入文件信息，用 formatSpec 指定的数据格式</li>
+</ul>
+<p>注：每次读写完数据后，指针句柄会指向接下来要读数据的位置</p>
+<figure class="highlight matlab"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt; fid=fopen(<span class="string">'test.txt'</span>,<span class="string">'r+'</span>);</span><br><span class="line">&gt;&gt; a=<span class="built_in">magic</span>(<span class="number">3</span>);</span><br><span class="line">&gt;&gt; num=fprintf(fid,<span class="string">'%d %d %d\n'</span>,a);</span><br><span class="line">&gt;&gt; fclose(fid);</span><br><span class="line"></span><br><span class="line">&gt;&gt; fid=fopen(<span class="string">'test.txt'</span>,<span class="string">'r+'</span>);</span><br><span class="line">&gt;&gt; data=fscanf(fid,<span class="string">'%d %d %d\n'</span>,[<span class="number">3</span>,<span class="built_in">inf</span>])</span><br><span class="line">data =</span><br><span class="line">     <span class="number">8</span>     <span class="number">1</span>     <span class="number">6</span></span><br><span class="line">     <span class="number">3</span>     <span class="number">5</span>     <span class="number">7</span></span><br><span class="line">     <span class="number">4</span>     <span class="number">9</span>     <span class="number">2</span></span><br><span class="line">&gt;&gt; fclose(fid);</span><br></pre></td></tr></table></figure>
+<h1 id="【importdata-与-load】"><a href="#【importdata-与-load】" class="headerlink" title="【importdata 与 load】"></a>【importdata 与 load】</h1><p><code>importdata()</code> 与 <code>load()</code> 用于将文件加载到工作区，一般来说，对于文本数据(.txt)，利用 <code>importdata()</code> 加载，对于 matlab 标准数据(.mat)，利用 <code>load()</code> 加载</p>
+<ul>
+<li><code>a=importdata(fileName,delimiter,num)</code>：加载 fileName 指定的文件，delimiter 为分隔符，num 为跳过的标题行数</li>
+<li><code>load(fileName)</code>：将 mat 文件中的变量加载到工作区</li>
+</ul>
+<p>注：可以利用 <code>whos -file fileName.mat</code> 来查看 mat 文件中的内容，使用该命令时不需将文件利用 load 载入，只要 mat 文件处于检测目录中即可</p>
+<figure class="highlight matlab"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt; importdata(<span class="string">'test.txt'</span>,<span class="string">' '</span>)</span><br><span class="line"><span class="built_in">ans</span> = </span><br><span class="line">          data: [<span class="number">3</span>x3 double]</span><br><span class="line">      textdata: &#123;<span class="string">'dwd'</span>  <span class="string">'qwq'</span>  <span class="string">'qaq'</span>&#125;</span><br><span class="line">    colheaders: &#123;<span class="string">'dwd'</span>  <span class="string">'qwq'</span>  <span class="string">'qaq'</span>&#125;</span><br><span class="line"></span><br><span class="line">&gt;&gt; importdata(<span class="string">'test.txt'</span>,<span class="string">' '</span>,<span class="number">2</span>)</span><br><span class="line"><span class="built_in">ans</span> = </span><br><span class="line">          data: [<span class="number">2</span>x3 double]</span><br><span class="line">      textdata: &#123;<span class="number">2</span>x3 cell&#125;</span><br><span class="line">    colheaders: &#123;<span class="string">'8'</span>  <span class="string">'3'</span>  <span class="string">'4'</span>&#125;</span><br><span class="line">    </span><br><span class="line">&gt;&gt; whos -file bird_small.mat</span><br><span class="line">  Name        Size                Bytes  Class     Attributes</span><br><span class="line">  A         <span class="number">128</span>x128x3            <span class="number">393216</span>  double</span><br></pre></td></tr></table></figure>
+<h1 id="【textscan-与-textread】"><a href="#【textscan-与-textread】" class="headerlink" title="【textscan 与 textread】"></a>【textscan 与 textread】</h1><p>matlab 中，一般利用 <code>textscan()</code> 或 <code>textread()</code> 来读取格式化文本文件</p>
+<ul>
+<li><code>a=textscan(FID,formatSpec)</code>：按照 formatSpec 格式读取 FID 所标识的文件，按列返回到元胞数组</li>
+<li><code>a=textscan(FID,formatSpec,&#39;headerlines&#39;,num)</code>：按照 formatSpec 格式读取 FID 所标识的文件，读取过程中跳过第 num 行，按列返回到元胞数组</li>
+<li><code>a=textscan(FID,formatSpec,n)</code>：按照 formatSpec 格式读取 n 次 FID 所标识的文件，按列返回到元胞数组</li>
+</ul>
+<figure class="highlight matlab"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt; fid=fopen(<span class="string">'test.txt'</span>);</span><br><span class="line">&gt;&gt; a=textscan(fid,<span class="string">'%s %s'</span>);</span><br><span class="line">&gt;&gt; fclose(fid)</span><br><span class="line"></span><br><span class="line">&gt;&gt; fid=fopen(<span class="string">'test.txt'</span>);</span><br><span class="line">&gt;&gt; b=textscan(fid,<span class="string">'%d %f'</span>,<span class="string">'headerlines'</span>,<span class="number">1</span>);</span><br><span class="line">&gt;&gt; fclose(fid)</span><br><span class="line"></span><br><span class="line">&gt;&gt; fileId=fopen(<span class="string">'test.txt'</span>);</span><br><span class="line">&gt;&gt; c=textscan(fid,<span class="string">'%d %d'</span>,<span class="number">1</span>,<span class="string">'headerlines'</span>,<span class="number">1</span>);</span><br><span class="line">&gt;&gt; fclose(fid)</span><br><span class="line"></span><br><span class="line">&gt;&gt; a&#123;<span class="number">1</span>&#125;</span><br><span class="line"><span class="built_in">ans</span> = </span><br><span class="line">    <span class="string">'asd'</span></span><br><span class="line">    <span class="string">'1'</span></span><br><span class="line">    <span class="string">'5'</span></span><br><span class="line">&gt;&gt; b&#123;<span class="number">1</span>&#125;</span><br><span class="line"><span class="built_in">ans</span> =</span><br><span class="line">     <span class="number">1</span></span><br><span class="line">     <span class="number">5</span></span><br><span class="line">&gt;&gt; b&#123;<span class="number">2</span>&#125;</span><br><span class="line"><span class="built_in">ans</span> =</span><br><span class="line">    <span class="number">3.4000</span></span><br><span class="line">    <span class="number">3.5000</span></span><br><span class="line">&gt;&gt; c&#123;<span class="number">1</span>&#125;</span><br><span class="line"><span class="built_in">ans</span> =</span><br><span class="line">     <span class="number">1</span></span><br><span class="line">&gt;&gt; c&#123;<span class="number">2</span>&#125;</span><br><span class="line"><span class="built_in">ans</span> =</span><br><span class="line">     <span class="number">3</span></span><br></pre></td></tr></table></figure>
+<ul>
+<li><code>[A,B,C...]=textread(filename,formatSpec)</code>：按照 formatSpec 格式读取 filename 所标识的文件，按列返回到向量</li>
+<li><code>[A,B,C...]=textread(filename,formatSpec,&#39;headerlines&#39;,num)</code>：按照 formatSpec 格式读取 filename 所标识的文件，读取过程中跳过第 num 行，按列返回到向量</li>
+<li><code>[A,B,C...]=textread(filename,formatSpec,n)</code>：按照 formatSpec 格式读取 n 次 filename 所标识的文件，按列返回到向量</li>
+</ul>
+<figure class="highlight matlab"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt; [a,b]=textread(<span class="string">'test.txt'</span>,<span class="string">'%s %s'</span>);</span><br><span class="line">&gt;&gt; a</span><br><span class="line">a = </span><br><span class="line">    <span class="string">'asd'</span></span><br><span class="line">    <span class="string">'1'</span></span><br><span class="line">    <span class="string">'5'</span></span><br><span class="line">&gt;&gt; b</span><br><span class="line">b = </span><br><span class="line">    <span class="string">'qwe'</span></span><br><span class="line">    <span class="string">'3.4'</span></span><br><span class="line">    <span class="string">'3.5'</span></span><br></pre></td></tr></table></figure>
+<p>注：</p>
+<ol>
+<li>对于 <code>a=textscan(FID,formatSpec,n)</code> 和 <code>[A,B,C...]=textread(filename,formatSpec,n)</code>，其一般用于每 n 行格式相同的数据</li>
+<li><code>textscan()</code> 将多组数据读到一个元胞矩阵中；<code>textread()</code>  将数据分别读取到不同的向量中</li>
+<li><code>textscan()</code> 使用前要先 <code>fopen()</code>，完成后要 <code>fclose()</code>；<code>textread()</code>  不需 <code>fopen()</code> 与 <code>fclose()</code>，适用于格式统一的 txt 的一次性大批量读取</li>
+<li><code>textscan()</code> 每次读完数据后，指针句柄会指向接下来要读数据的位置；<code>textread()</code>  每次读完数据后，指针句柄会返回文件头</li>
+<li>不推荐使用 <code>textread()</code>  </li>
+</ol>
+<h1 id="【xlsread-与-csvread】"><a href="#【xlsread-与-csvread】" class="headerlink" title="【xlsread 与 csvread】"></a>【xlsread 与 csvread】</h1><p><code>xlsread</code> 用于读取 xls 文件</p>
+<ul>
+<li><p><code>a=xlsread(fileName)</code>：读取 xls 文件中的所有单元格的数据</p>
+</li>
+<li><p><code>a=xlsread(fileName,-1)</code>：读取 xls 文件中的单元格的数据，用户可以利用鼠标来选定范围。执行后，会后台打开 xls 文件并弹窗，在 xls 文件中用鼠标选定单元格后，点击弹窗的确认即可</p>
+</li>
+<li><code>a=xlsread(fileName,sheet)</code>：读取 xls 文件中所在的 sheet，例如：’sheet1’</li>
+<li><code>a=xlsread(fileName,range)</code>：读取 xls 文件中的单元格范围，例如：’A1:B2’</li>
+<li><code>a=xlsread(fileName,sheet,range)</code>：读取 xls 文件中所在的 sheet 与 范围</li>
+</ul>
+<p><code>csvread</code> 用于读取 csv 文件</p>
+<ul>
+<li><code>a=csvread(fileName)</code>：读取 csv 文件中的所有数据</li>
+<li><code>a=csvread(fileName,R,C)</code>：从 csv 文件中的行偏移 R 和列偏移 C 开始读取数据</li>
+<li><code>a=csvread(fileName,R1,C1,R2,C2)</code>：读取从 csv 文件中的行偏移 R1、列偏移 C1 和 行偏移 R2、列偏移 C2 范围内的数据</li>
+</ul>
+<p>注：当需要写 xls 文件或写 csv 文件时，利用 <code>xlswrite()</code> 和 <code>csvwrite()</code> 即可，使用方法与上述基本相同</p>
+<h1 id="【dlmread】"><a href="#【dlmread】" class="headerlink" title="【dlmread】"></a>【dlmread】</h1><p><code>dlmread()</code> 用于将 ASCII 分隔的数值数据文件读取到矩阵中，一般用于读取 tsv 文件</p>
+<ul>
+<li><code>dlmread(fileName)</code>：将文件中重复的空白视为分隔符进行读取</li>
+<li><code>dlmread(fileName,&#39;delimiter&#39;)</code>：使用指定的分隔符 delimiter 读取数据，同时会将重复的分隔符视为单独的分隔符</li>
+<li><code>dlmread(fileName,delimiter,R,C)</code>：使用指定的分隔符 delimiter 从行偏移 R 和列偏移 C 开始读取数据读取数据</li>
+<li><code>dlmread(fileName,delimiter,R1,C1,R2,C2)</code>：使用指定的分隔符 delimiter 读取行偏移 R1、列偏移 C1 和 行偏移 R2、列偏移 C2 范围内的数据</li>
+</ul>
+<p>注：当需要写 ASCII 分隔的文件时，利用 <code>dlmwrite()</code> ，使用方法与上述基本相同</p>
+<h1 id="【文件读写句柄控制】"><a href="#【文件读写句柄控制】" class="headerlink" title="【文件读写句柄控制】"></a>【文件读写句柄控制】</h1><p>在大多数 I/O 函数中，读写完毕后，指针都会指向接下来要读文件的位置，这就造成了无法连续的读写数据，因此可以利用以下几个函数来控制句柄，从而实现自主控制文件读写</p>
+<ul>
+<li><code>st=feof(FID)</code>：如果文件设置了文件结束指示符且已到达，则返回 1；如果未设置文件标识符，则返回 0</li>
+<li><code>frewind(FID)</code>：将文件指针位置重定向至开头</li>
+<li><code>pos=ftell(FID)</code>：返回文件指针位置，以字节为单位从头开始计算，若返回 -1 表示查询失败</li>
+<li><code>status=fseek(FID,offset,origin)</code>：重新定位文件指针位置，定位成功返回 1，定位失败返回 -1<ul>
+<li>origin &gt;= 0：在 origin 后移动指针 offset 个字节</li>
+<li>origin &lt;0：在 origin 前移动指针 offset 个字节</li>
+</ul>
+</li>
+</ul>
+<p>注：</p>
+<ol>
+<li>关于文件结束符 EOF：End of File，是程序中判断 I/O 结尾的标志，其值为 1</li>
+<li>origin 常见取值解释为：<ol>
+<li>bof 或 -1：文件开头</li>
+<li>cof 或 0：文件当前位置</li>
+<li>eof 或 1：文件结尾</li>
+</ol>
+</li>
+</ol>
+<figure class="highlight matlab"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt; fid=fopen(<span class="string">'test.txt'</span>,<span class="string">'r+'</span>);</span><br><span class="line">&gt;&gt; data=fscanf(fid,<span class="string">'%d %d %d\n'</span>,[<span class="number">3</span>,<span class="built_in">inf</span>])</span><br><span class="line">data =</span><br><span class="line">     <span class="number">8</span>     <span class="number">1</span>     <span class="number">6</span></span><br><span class="line">     <span class="number">3</span>     <span class="number">5</span>     <span class="number">7</span></span><br><span class="line">     <span class="number">4</span>     <span class="number">9</span>     <span class="number">2</span></span><br><span class="line"></span><br><span class="line">&gt;&gt; data=fscanf(fid,<span class="string">'%d %d %d\n'</span>,[<span class="number">3</span>,<span class="built_in">inf</span>])</span><br><span class="line">data = []</span><br><span class="line">&gt;&gt; feof(fid)</span><br><span class="line"><span class="built_in">ans</span> = <span class="number">1</span></span><br><span class="line"></span><br><span class="line">&gt;&gt; frewind(fid)</span><br><span class="line">&gt;&gt; data=fscanf(fid,<span class="string">'%d %d %d\n'</span>,[<span class="number">3</span>,<span class="built_in">inf</span>])</span><br><span class="line">data =</span><br><span class="line">     <span class="number">8</span>     <span class="number">1</span>     <span class="number">6</span></span><br><span class="line">     <span class="number">3</span>     <span class="number">5</span>     <span class="number">7</span></span><br><span class="line">     <span class="number">4</span>     <span class="number">9</span>     <span class="number">2</span></span><br><span class="line"></span><br><span class="line">&gt;&gt; ftell(fid)</span><br><span class="line"><span class="built_in">ans</span> = <span class="number">18</span></span><br><span class="line">&gt;&gt; frewind(fid)</span><br><span class="line">&gt;&gt; ftell(fid)</span><br><span class="line"><span class="built_in">ans</span> = <span class="number">0</span></span><br><span class="line"></span><br><span class="line">&gt;&gt; data=fscanf(fid,<span class="string">'%d %d %d\n'</span>,[<span class="number">1</span>,<span class="number">3</span>])</span><br><span class="line">data =</span><br><span class="line">     <span class="number">8</span>     <span class="number">3</span>     <span class="number">4</span></span><br><span class="line">&gt;&gt; ftell(fid)</span><br><span class="line"><span class="built_in">ans</span> = <span class="number">6</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">&gt;&gt; fclose(fid);</span><br><span class="line">&gt;&gt; fseek(fid,<span class="number">6</span>,<span class="number">0</span>);</span><br><span class="line">&gt;&gt; data=fscanf(fid,<span class="string">'%d %d %d\n'</span>)</span><br><span class="line">data =</span><br><span class="line">     <span class="number">6</span></span><br><span class="line">     <span class="number">7</span></span><br><span class="line">     <span class="number">2</span></span><br></pre></td></tr></table></figure>
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>感谢您对我的支持，让我继续努力分享有用的技术与知识点！</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/wechatpay.jpg" alt="Alex_McAvoy 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/alipay.jpg" alt="Alex_McAvoy 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Alex_McAvoy
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://alex-mcavoy.github.io/matlab/8dc8eb69.html" title="Matlab——IO操作">https://alex-mcavoy.github.io/matlab/8dc8eb69.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/matlab/" rel="tag"># Matlab</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/matlab/480c817a.html" rel="prev" title="Matlab——概率统计">
+      <i class="fa fa-chevron-left"></i> Matlab——概率统计
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/notes/wireless-network/b3fc9ee3.html" rel="next" title="无线自组织网络的 MAC 层">
+      无线自组织网络的 MAC 层 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【IO-操作】"><span class="nav-number">1.</span> <span class="nav-text">【IO 操作】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【文件打开与关闭】"><span class="nav-number">2.</span> <span class="nav-text">【文件打开与关闭】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【fread-与-fwrite】"><span class="nav-number">3.</span> <span class="nav-text">【fread 与 fwrite】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【fscanf-与-fprintf】"><span class="nav-number">4.</span> <span class="nav-text">【fscanf 与 fprintf】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【importdata-与-load】"><span class="nav-number">5.</span> <span class="nav-text">【importdata 与 load】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【textscan-与-textread】"><span class="nav-number">6.</span> <span class="nav-text">【textscan 与 textread】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【xlsread-与-csvread】"><span class="nav-number">7.</span> <span class="nav-text">【xlsread 与 csvread】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【dlmread】"><span class="nav-number">8.</span> <span class="nav-text">【dlmread】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【文件读写句柄控制】"><span class="nav-number">9.</span> <span class="nav-text">【文件读写句柄控制】</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">  
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Alex_McAvoy"
+      src="/assets/img/head.jpg">
+  <p class="site-author-name" itemprop="name">Alex_McAvoy</p>
+  <div class="site-description" itemprop="description">想要成为渔夫的猎手</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">535</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">57</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">62</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Alex-McAvoy" title="GitHub → https://github.com/Alex-McAvoy" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/u011815404" title="CSDN → https://blog.csdn.net/u011815404" rel="noopener" target="_blank"><i class="fas fa-copyright fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+<!-- 访客地图 -->
+<script type="text/javascript" src="//rf.revolvermaps.com/0/0/5.js?i=50n58yo58ow&amp;m=0&amp;c=ff0000&amp;cr1=ffffff&amp;s=140" async="async"></script>
+
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdz20172133" title="https://blog.csdn.net/sdz20172133" rel="noopener" target="_blank">神仙队友</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://pxlsdz.gitee.io/" title="https://pxlsdz.gitee.io/" rel="noopener" target="_blank">神仙队友的另一个博客</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://bycore.net" title="https://bycore.net" rel="noopener" target="_blank">凉了的某饼同学</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://kris-cn.github.io/" title="http://kris-cn.github.io/" rel="noopener" target="_blank">翟孙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://deng.fun/" title="http://deng.fun/" rel="noopener" target="_blank">芙蓉姐姐</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdau_fangshifeng" title="https://blog.csdn.net/sdau_fangshifeng" rel="noopener" target="_blank">一个头很酷的家伙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/wentong_Xu" title="https://blog.csdn.net/wentong_Xu" rel="noopener" target="_blank">小黑贱胖子</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.yuheng.tech/" title="https://www.yuheng.tech/" rel="noopener" target="_blank">咸于</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/lanshan1111" title="https://blog.csdn.net/lanshan1111" rel="noopener" target="_blank">肥硕硕</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdauguanweihong" title="https://blog.csdn.net/sdauguanweihong" rel="noopener" target="_blank">管少</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_41661919" title="https://blog.csdn.net/qq_41661919" rel="noopener" target="_blank">俊杰</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_40859951" title="https://blog.csdn.net/qq_40859951" rel="noopener" target="_blank">峰哥</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/LSD20164388" title="https://blog.csdn.net/LSD20164388" rel="noopener" target="_blank">狗冬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37748451" title="https://blog.csdn.net/qq_37748451" rel="noopener" target="_blank">胖亚亚</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37868325" title="https://blog.csdn.net/qq_37868325" rel="noopener" target="_blank">妍大佬</a>
+        </li>
+    </ul>
+  </div>
+
+		
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+  
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Alex_McAvoy</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+</br>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script><script src="/js/bookmark.js"></script>
+
+
+
+  
+
+
+
+
+  <script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '48fd73a538d3fa927f65',
+      clientSecret: '56618aefeee90bac3c20de8d51bb0b985d67252d',
+      repo        : 'Gitalk-Comment',
+      owner       : 'Alex-McAvoy',
+      admin       : ['Alex-McAvoy'],
+      id          : 'df5e218af396dd3c9c18a26a797d853c',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+  
+  <!-- 鼠标单击粒子特效 -->
+  <script type="text/javascript" src="/js/cursor-effects.js"></script>
+  <!-- 多级目录 -->
+  <script type="text/javascript" src="/js/category.js"></script>
+  
+</body>
+</html>

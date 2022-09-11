@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.9.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/img/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/assets/img/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/pace-js@1/themes/blue/pace-theme-minimal.css">
+  <script src="//cdn.jsdelivr.net/npm/pace-js@1/pace.min.js"></script>
+
+
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"alex-mcavoy.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":16,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":true,"color":"#ff0000","save":"manual"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":true},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.json"};
+  </script>
+
+  <meta name="description" content="【概述】进程通信是指进程间的信息交换，由于进程是系统分配资源的单位，因此各进程内存地址空间是独立的，一个进程不能直接访问另一个进程的地址空间 而进程的互斥与同步往往需要在进程间交换信息，信号量机制虽是有效的同步工具，但作为通信工具来说效率低、通信对用户不透明，因此常常归类为低级进程通信">
+<meta name="keywords" content="学习笔记,操作系统">
+<meta property="og:type" content="article">
+<meta property="og:title" content="进程通信">
+<meta property="og:url" content="https://alex-mcavoy.github.io/notes/operating-system/53ad465c.html">
+<meta property="og:site_name" content="Alex_McAvoy">
+<meta property="og:description" content="【概述】进程通信是指进程间的信息交换，由于进程是系统分配资源的单位，因此各进程内存地址空间是独立的，一个进程不能直接访问另一个进程的地址空间 而进程的互斥与同步往往需要在进程间交换信息，信号量机制虽是有效的同步工具，但作为通信工具来说效率低、通信对用户不透明，因此常常归类为低级进程通信">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/operating-system/14-1.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/operating-system/14-2.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/operating-system/14-3.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/operating-system/14-4.png">
+<meta property="og:updated_time" content="2021-10-13T14:37:10.145Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="进程通信">
+<meta name="twitter:description" content="【概述】进程通信是指进程间的信息交换，由于进程是系统分配资源的单位，因此各进程内存地址空间是独立的，一个进程不能直接访问另一个进程的地址空间 而进程的互斥与同步往往需要在进程间交换信息，信号量机制虽是有效的同步工具，但作为通信工具来说效率低、通信对用户不透明，因此常常归类为低级进程通信">
+<meta name="twitter:image" content="https://alex-mcavoy.github.io/images/notes/operating-system/14-1.png">
+
+<link rel="canonical" href="https://alex-mcavoy.github.io/notes/operating-system/53ad465c.html">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>进程通信 | Alex_McAvoy</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Alex_McAvoy</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">想要成为渔夫的猎手</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+
+	
+	
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/notes/operating-system/53ad465c.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/assets/img/head.jpg">
+      <meta itemprop="name" content="Alex_McAvoy">
+      <meta itemprop="description" content="想要成为渔夫的猎手">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Alex_McAvoy">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          进程通信
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-11-16 19:15:29" itemprop="dateCreated datePublished" datetime="2019-11-16T19:15:29+08:00">2019-11-16</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/notes/" itemprop="url" rel="index"><span itemprop="name">学习笔记</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/notes/operating-system/" itemprop="url" rel="index"><span itemprop="name">操作系统</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>2.3k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>2 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="【概述】"><a href="#【概述】" class="headerlink" title="【概述】"></a>【概述】</h1><p>进程通信是指<strong>进程间的信息交换</strong>，由于进程是系统分配资源的单位，因此各进程内存地址空间是独立的，一个进程不能直接访问另一个进程的地址空间</p>
+<p>而进程的互斥与同步往往需要在进程间交换信息，信号量机制虽是有效的同步工具，但作为通信工具来说效率低、通信对用户不透明，因此常常归类为<strong>低级进程通信</strong></p>
+<p>为了使通信时用户使用方便、能高效地传递大量数据，OS 隐藏了实现进程通信的具体细节，向用户提供了一组用于实现<strong>高级通信命令（原语）</strong>，利用这些原语，可以高效地传送大量数据，也即<strong>高级进程通信</strong></p>
+<p>高级进程通信方法主要有共享存储器系统、消息传递系统、管道通信系统、远程过程调用等</p>
+<h1 id="【共享存储器系统】"><a href="#【共享存储器系统】" class="headerlink" title="【共享存储器系统】"></a>【共享存储器系统】</h1><p>共享存储器系统是指，在通信的进程间存在一块可以被直接访问的<strong>共享空间</strong>，通过对这片共享空间的读写操作，来实现进程间的信息交换</p>
+<p>需要注意的是，在对共享空间进行读写操作时，需要使用 $P$、$V$ 操作，来对共享空间进行互斥访问</p>
+<p><img width="500" src="/images/notes/operating-system/14-1.png"></p>
+<p>对于共享存储器系统来说，其又分为以下两种类型：</p>
+<ul>
+<li>基于<strong>共享数据结构</strong>的通信（低级通信）：OS 仅提供共享存储器，程序员负责对公用数据结构设置与对进程间同步进行处理，通信效率低下，适合于传递少量数据</li>
+<li>基于<strong>共享存储区</strong>的通信（高级通信）：在存储器中划出了一块共享存储区，诸进程可通过共享存储区中数据的读写来实现通信，适合于传输大量数据</li>
+</ul>
+<h1 id="【消息传递系统】"><a href="#【消息传递系统】" class="headerlink" title="【消息传递系统】"></a>【消息传递系统】</h1><h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>消息传递系统是进程通信方法中应用最广泛的一种，其以<strong>格式化的消息</strong>为单位，屏蔽底层复杂的操作</p>
+<p>根据实现方式的不同，可分为以下两类：</p>
+<ul>
+<li><strong>直接通信方式</strong>：发送进程利用 OS <strong>发送消息原语</strong>，直接将消息发送给目标进程，接收进程通过<strong>接收消息原语</strong>来接收信息，发送进程和接收进程都以显式方式，提供对方的<strong>标识符</strong></li>
+<li><strong>间接通信方式</strong>：发送、接收进程均通过<strong>共享中间实体（信箱）</strong>进行消息的发送与接收，因此该种方法又被称为信箱通信</li>
+</ul>
+<h2 id="直接通信方式"><a href="#直接通信方式" class="headerlink" title="直接通信方式"></a>直接通信方式</h2><h3 id="直接通信原语"><a href="#直接通信原语" class="headerlink" title="直接通信原语"></a>直接通信原语</h3><p>系统通信命令分为两类，一类是<strong>对称寻址方式</strong>，一类是<strong>非对称寻址方式</strong>。</p>
+<p>对于对称寻址方式来说，有以下两种通信命令：</p>
+<ul>
+<li><code>Send(receiver, message)</code>：将一个消息给接收进程 <code>receiver</code></li>
+<li><code>Receive(sender, message)</code>：接收 <code>sender</code> 发送的消息</li>
+</ul>
+<p>对于非对称寻址方法来说，有以下两种通信命令：</p>
+<ul>
+<li><code>send(P, message)</code>：发送一个消息给进程 $P$</li>
+<li><code>receive(id, message)</code>：接收任何来自进程的消息，<code>id</code> 为进行通信的发送方 <code>id</code></li>
+</ul>
+<h3 id="同步方式"><a href="#同步方式" class="headerlink" title="同步方式"></a>同步方式</h3><p>在进程间进行通信时，同样要有进程同步机制，从而使各进程间能协调通信</p>
+<p>无论是发送进程还是接收进程，在完成消息发送、接收后，都存在两种可能：进程继续发送/接收、进程阻塞</p>
+<p>由此，可得到三种情况：</p>
+<ul>
+<li>发送进程阻塞，接收进程阻塞：该情况主要用于<strong>进程间紧密同步</strong>，即<strong>两进程间无缓冲</strong>时</li>
+<li>发送进程不阻塞，接收进程阻塞：该情况是应用最广的进程同步方式，常用于服务器程序，接收进程平时处于阻塞状态，只有当消息发送过来才被唤醒</li>
+<li>发送进程不阻塞，接收进程不阻塞：该情况利用缓冲队列的数据结构，仅当某事件发生无法运行时，才阻塞起来进行等待</li>
+</ul>
+<h3 id="通信链路"><a href="#通信链路" class="headerlink" title="通信链路"></a>通信链路</h3><p>为在发送进程与接收进程间通信，必须在两者间建立一条通信链路，根据通信方式的不同，通信链路分为单向通信链路、双向通信链路</p>
+<p>在计算机网络中，发送进程在通信前用显式的及<strong>建立连接原语</strong>请求系统为其建立一条通信链路，在通信完成后拆除链路</p>
+<p>在单机系统中，发送进程无须明确提出建立链路的请求，只须利用系统提供的<strong>发送原语</strong>，系统会自动为其建立一条链路</p>
+<h2 id="间接通信方式"><a href="#间接通信方式" class="headerlink" title="间接通信方式"></a>间接通信方式</h2><h3 id="信箱"><a href="#信箱" class="headerlink" title="信箱"></a>信箱</h3><p><strong>间接通信方式</strong>需要通过某种中间实体来完成，该实体被称为<strong>信箱</strong>，其建立在随机存储器的公用缓冲区上，用来暂存发送进程给目标的消息，接收进程可以从该实体中取出发送进程给自己的消息</p>
+<p>每个信箱都有一个唯一的标识符，消息在信箱中可以安全的保存，只允许目标用户随时读取，因此，信箱通信方式即可以实时通信，又可以非实时通信</p>
+<p>信箱由 OS 创建，也可由用户进程创建，创建者是信箱的拥有者，据此可将信箱分为：私用信箱、公用信箱、共享信箱</p>
+<h3 id="信箱结构"><a href="#信箱结构" class="headerlink" title="信箱结构"></a>信箱结构</h3><p>信箱定义为一种数据结构，在逻辑上，其可以分为以下两部分：</p>
+<ul>
+<li><strong>信箱头</strong>：存放有关信息的描述信息，如信箱标识符、信箱拥有者、信箱口令等</li>
+<li><strong>信箱体</strong>：由若干可存放消息的信箱格组成，信箱格的数目及每格大小在创建信箱时确定</li>
+</ul>
+<p><img width="500" src="/images/notes/operating-system/14-2.png"></p>
+<h3 id="信箱通信原语"><a href="#信箱通信原语" class="headerlink" title="信箱通信原语"></a>信箱通信原语</h3><p>系统为信箱通信提供了若干条原语：</p>
+<ul>
+<li><strong>信箱创建</strong>：进程利用信箱创建原语来建立一个新信箱</li>
+<li><strong>信箱撤销</strong>：进程利用信箱撤销原语来撤销一个不再需要的信箱</li>
+<li><strong>消息发送</strong>：<code>send(mailbox, message)</code>，将一个消息发送到指定信箱</li>
+<li><strong>消息接收</strong>：<code>receive(mailbox, message)</code>，从指定信箱中接收一个消息</li>
+</ul>
+<h1 id="【管道通信系统】"><a href="#【管道通信系统】" class="headerlink" title="【管道通信系统】"></a>【管道通信系统】</h1><p>管道通信系统，是借助<strong>管道</strong>来完成的，所谓<strong>管道</strong>，即 pipe 文件，其是一种用于连接读、写进程以实现通信的一个共享文件</p>
+<p>向管道提供输入的<strong>发送进程（写进程）</strong> 以字符流形式将数据送入管道，接收管道输出的<strong>接收进程（读进程）</strong> 同样以字符流的形式接收数据</p>
+<p>管道通信系统，就是利用管道来进行通信的，为协调双方通信，管道机制必须具备<strong>互斥、同步、确认对方是否存在</strong>的能力</p>
+<p><img width="500" src="/images/notes/operating-system/14-3.png"></p>
+<h1 id="【远程过程调用】"><a href="#【远程过程调用】" class="headerlink" title="【远程过程调用】"></a>【远程过程调用】</h1><p><strong>远程过程调用（Remote Procedure Call，RPC）</strong>，是基于客户/服务器模型进行相互通信模型的一种同步通信形式，其借助<strong>网络套接字</strong>来进行进程通信，常用于通过网络的连接的系统间的进程通信</p>
+<p>该协议允许运行于<strong>一台主机系统（本机）</strong> 上的进程调用<strong>另一台主机系统（远程）</strong> 上的进程，为客户提供了远程服务的过程抽象，同时，底层消息传递操作对客户是透明的</p>
+<p>负责远程过程调用的进程有两个，一个是本地客户进程，一个是远程服务器进程，这两个进程通常被称为<strong>网络守护进程</strong>，主要负责在网络间的消息传递，一般情况下，这两个进程均处于阻塞状态，等待消息</p>
+<p><img width="500" src="/images/notes/operating-system/14-4.png"></p>
+
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>感谢您对我的支持，让我继续努力分享有用的技术与知识点！</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/wechatpay.jpg" alt="Alex_McAvoy 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/alipay.jpg" alt="Alex_McAvoy 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Alex_McAvoy
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://alex-mcavoy.github.io/notes/operating-system/53ad465c.html" title="进程通信">https://alex-mcavoy.github.io/notes/operating-system/53ad465c.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/notes/" rel="tag"># 学习笔记</a>
+              <a href="/tags/operating-system/" rel="tag"># 操作系统</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/notes/operating-system/305a7f62.html" rel="prev" title="管程">
+      <i class="fa fa-chevron-left"></i> 管程
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/notes/operating-system/f2b5873a.html" rel="next" title="线程的基本概念">
+      线程的基本概念 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【概述】"><span class="nav-number">1.</span> <span class="nav-text">【概述】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【共享存储器系统】"><span class="nav-number">2.</span> <span class="nav-text">【共享存储器系统】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【消息传递系统】"><span class="nav-number">3.</span> <span class="nav-text">【消息传递系统】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#概述"><span class="nav-number">3.1.</span> <span class="nav-text">概述</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#直接通信方式"><span class="nav-number">3.2.</span> <span class="nav-text">直接通信方式</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#直接通信原语"><span class="nav-number">3.2.1.</span> <span class="nav-text">直接通信原语</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#同步方式"><span class="nav-number">3.2.2.</span> <span class="nav-text">同步方式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#通信链路"><span class="nav-number">3.2.3.</span> <span class="nav-text">通信链路</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#间接通信方式"><span class="nav-number">3.3.</span> <span class="nav-text">间接通信方式</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#信箱"><span class="nav-number">3.3.1.</span> <span class="nav-text">信箱</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#信箱结构"><span class="nav-number">3.3.2.</span> <span class="nav-text">信箱结构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#信箱通信原语"><span class="nav-number">3.3.3.</span> <span class="nav-text">信箱通信原语</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【管道通信系统】"><span class="nav-number">4.</span> <span class="nav-text">【管道通信系统】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【远程过程调用】"><span class="nav-number">5.</span> <span class="nav-text">【远程过程调用】</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">  
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Alex_McAvoy"
+      src="/assets/img/head.jpg">
+  <p class="site-author-name" itemprop="name">Alex_McAvoy</p>
+  <div class="site-description" itemprop="description">想要成为渔夫的猎手</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">535</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">57</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">62</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Alex-McAvoy" title="GitHub → https://github.com/Alex-McAvoy" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/u011815404" title="CSDN → https://blog.csdn.net/u011815404" rel="noopener" target="_blank"><i class="fas fa-copyright fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+<!-- 访客地图 -->
+<script type="text/javascript" src="//rf.revolvermaps.com/0/0/5.js?i=50n58yo58ow&amp;m=0&amp;c=ff0000&amp;cr1=ffffff&amp;s=140" async="async"></script>
+
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdz20172133" title="https://blog.csdn.net/sdz20172133" rel="noopener" target="_blank">神仙队友</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://pxlsdz.gitee.io/" title="https://pxlsdz.gitee.io/" rel="noopener" target="_blank">神仙队友的另一个博客</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://bycore.net" title="https://bycore.net" rel="noopener" target="_blank">凉了的某饼同学</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://kris-cn.github.io/" title="http://kris-cn.github.io/" rel="noopener" target="_blank">翟孙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://deng.fun/" title="http://deng.fun/" rel="noopener" target="_blank">芙蓉姐姐</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdau_fangshifeng" title="https://blog.csdn.net/sdau_fangshifeng" rel="noopener" target="_blank">一个头很酷的家伙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/wentong_Xu" title="https://blog.csdn.net/wentong_Xu" rel="noopener" target="_blank">小黑贱胖子</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.yuheng.tech/" title="https://www.yuheng.tech/" rel="noopener" target="_blank">咸于</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/lanshan1111" title="https://blog.csdn.net/lanshan1111" rel="noopener" target="_blank">肥硕硕</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdauguanweihong" title="https://blog.csdn.net/sdauguanweihong" rel="noopener" target="_blank">管少</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_41661919" title="https://blog.csdn.net/qq_41661919" rel="noopener" target="_blank">俊杰</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_40859951" title="https://blog.csdn.net/qq_40859951" rel="noopener" target="_blank">峰哥</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/LSD20164388" title="https://blog.csdn.net/LSD20164388" rel="noopener" target="_blank">狗冬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37748451" title="https://blog.csdn.net/qq_37748451" rel="noopener" target="_blank">胖亚亚</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37868325" title="https://blog.csdn.net/qq_37868325" rel="noopener" target="_blank">妍大佬</a>
+        </li>
+    </ul>
+  </div>
+
+		
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+  
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Alex_McAvoy</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+</br>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script><script src="/js/bookmark.js"></script>
+
+
+
+  
+
+
+
+
+  <script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '48fd73a538d3fa927f65',
+      clientSecret: '56618aefeee90bac3c20de8d51bb0b985d67252d',
+      repo        : 'Gitalk-Comment',
+      owner       : 'Alex-McAvoy',
+      admin       : ['Alex-McAvoy'],
+      id          : '7307b746c12d3cba287b829431cd43ae',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+  
+  <!-- 鼠标单击粒子特效 -->
+  <script type="text/javascript" src="/js/cursor-effects.js"></script>
+  <!-- 多级目录 -->
+  <script type="text/javascript" src="/js/category.js"></script>
+  
+</body>
+</html>

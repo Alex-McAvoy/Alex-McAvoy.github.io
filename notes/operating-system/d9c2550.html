@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.9.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/img/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/assets/img/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/pace-js@1/themes/blue/pace-theme-minimal.css">
+  <script src="//cdn.jsdelivr.net/npm/pace-js@1/pace.min.js"></script>
+
+
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"alex-mcavoy.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":16,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":true,"color":"#ff0000","save":"manual"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":true},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.json"};
+  </script>
+
+  <meta name="description" content="【进程控制】进程控制的主要功能，是对系统中的所有进程实施有效的管理，其具有创建新进程、撤销已有进程、实现进程状态转换等功能 在操作系统中，通常将进程控制用的程序段称为原语，其在执行期间不允许中断，是一个不可分割的基本单位">
+<meta name="keywords" content="学习笔记,操作系统">
+<meta property="og:type" content="article">
+<meta property="og:title" content="进程控制">
+<meta property="og:url" content="https://alex-mcavoy.github.io/notes/operating-system/d9c2550.html">
+<meta property="og:site_name" content="Alex_McAvoy">
+<meta property="og:description" content="【进程控制】进程控制的主要功能，是对系统中的所有进程实施有效的管理，其具有创建新进程、撤销已有进程、实现进程状态转换等功能 在操作系统中，通常将进程控制用的程序段称为原语，其在执行期间不允许中断，是一个不可分割的基本单位">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2021-10-10T13:47:13.045Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="进程控制">
+<meta name="twitter:description" content="【进程控制】进程控制的主要功能，是对系统中的所有进程实施有效的管理，其具有创建新进程、撤销已有进程、实现进程状态转换等功能 在操作系统中，通常将进程控制用的程序段称为原语，其在执行期间不允许中断，是一个不可分割的基本单位">
+
+<link rel="canonical" href="https://alex-mcavoy.github.io/notes/operating-system/d9c2550.html">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>进程控制 | Alex_McAvoy</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Alex_McAvoy</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">想要成为渔夫的猎手</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+
+	
+	
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/notes/operating-system/d9c2550.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/assets/img/head.jpg">
+      <meta itemprop="name" content="Alex_McAvoy">
+      <meta itemprop="description" content="想要成为渔夫的猎手">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Alex_McAvoy">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          进程控制
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-11-08 21:22:03" itemprop="dateCreated datePublished" datetime="2019-11-08T21:22:03+08:00">2019-11-08</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/notes/" itemprop="url" rel="index"><span itemprop="name">学习笔记</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/notes/operating-system/" itemprop="url" rel="index"><span itemprop="name">操作系统</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>2.2k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>2 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="【进程控制】"><a href="#【进程控制】" class="headerlink" title="【进程控制】"></a>【进程控制】</h1><p>进程控制的主要功能，是对系统中的所有进程实施有效的管理，其具有创建新进程、撤销已有进程、实现进程状态转换等功能</p>
+<p>在操作系统中，通常将进程控制用的程序段称为<strong>原语</strong>，其在执行期间不允许中断，是一个不可分割的基本单位</p>
+<p>进程控制主要有以下原语：</p>
+<ul>
+<li><strong>创建原语</strong>：为操作系统创建一个新进程</li>
+<li><strong>终止原语</strong>：终止操作系统中的一个进程</li>
+<li><strong>阻塞原语</strong>：将处于运行态的进程转为阻塞态</li>
+<li><strong>唤醒原语</strong>：将等待某事件的处于等待态的进程唤醒，转为就绪态</li>
+<li><strong>挂起原语</strong>：当出现引起进程挂起的事件时，将指定进程挂起</li>
+<li><strong>激活原语</strong>：当出现引起进程激活的事件时，将指定进程激活</li>
+</ul>
+<h1 id="【进程的创建】"><a href="#【进程的创建】" class="headerlink" title="【进程的创建】"></a>【进程的创建】</h1><h2 id="引起进程创建的事件"><a href="#引起进程创建的事件" class="headerlink" title="引起进程创建的事件"></a>引起进程创建的事件</h2><p>为使程序间能并发运行，应先为它们分别创建进程，导致一个进程去创建另一个进程的典型事件有四类：</p>
+<ul>
+<li><strong>用户登录</strong>：分时系统中，用户在终端登录成功后，系统为该用户创建一个进程，并插入就绪队列中</li>
+<li><strong>作业调度</strong>：当作业调度程序按一定算法调度到某些作业时，会将它们装入内存，并创建进程，然后插入就绪队列中</li>
+<li><strong>提供服务</strong>：当运行中的用户程序提出功能请求时，系统会创建相应的服务进程</li>
+<li><strong>应用请求</strong>：用户进程自己创建新进程，以便新进程以同创建者进程并发运行的方式完成特定任务</li>
+</ul>
+<h2 id="进程的创建过程"><a href="#进程的创建过程" class="headerlink" title="进程的创建过程"></a>进程的创建过程</h2><p>在系统中，每当出现了创建新进程的请求后，OS 便调用进程<strong>创建原语（Creat）</strong>，按下述步骤创建一个新进程：</p>
+<ol>
+<li><strong>申请空白 PCB</strong>：申请唯一的数字标识符，并从 PCB 集合中获取一个空白 PCB</li>
+<li><strong>为新进程分配所需资源</strong>：从 OS 或新进程的父进程获得各种物理、逻辑资源</li>
+<li><strong>初始化 PCB</strong>：初始化标识信息、处理机状态信息、处理机控制信息</li>
+<li><strong>将新进程插入就绪队列</strong>：若就绪队列能接纳新进程，则将新进程插入就绪队列</li>
+</ol>
+<h1 id="【进程的终止】"><a href="#【进程的终止】" class="headerlink" title="【进程的终止】"></a>【进程的终止】</h1><h2 id="引起进程终止的事件"><a href="#引起进程终止的事件" class="headerlink" title="引起进程终止的事件"></a>引起进程终止的事件</h2><p>引起进程终止的事件可分为有以下三类：</p>
+<ul>
+<li><strong>正常结束</strong>：进程的任务已经完成，准备退出运行</li>
+<li><strong>异常结束</strong>：进程在运行时发生了某种异常事件，使得程序无法继续运行，常见的有：越界错误、保护错误、非法指令、运行超时、I/O 故障等</li>
+<li><strong>外界干预</strong>：进程应外界请求而终止运行，常见的干预有：父进程终止、父进程请求、OS 干预、操作员干预等</li>
+</ul>
+<h2 id="进程的终止过程"><a href="#进程的终止过程" class="headerlink" title="进程的终止过程"></a>进程的终止过程</h2><p>若系统中发生了要求终止进程的某事件，OS 将调用进程<strong>终止原语（Destroy）</strong> ，按下述步骤终止指定的进程：</p>
+<ol>
+<li><strong>读取终止进程的状态</strong>：根据被终止进程的标识符，从 PCB 集合中检索出该进程的 PCB，从而读出该进程的状态<ul>
+<li><strong>执行态</strong>：若被终止进程处于执行态，立即终止该进程，并置调度标志为真，用于指示该进程被终止后应重新进行调度</li>
+<li><strong>有子孙进程</strong>：若被终止进程有子孙进程，应将其所有子孙进程全部终止，防止成为不可控进程</li>
+</ul>
+</li>
+<li><strong>归还全部资源</strong>：将被终止进程所拥有的全部资源归还给父进程或 OS</li>
+<li><strong>移出 PCB</strong>：将终止进程 PCB 从所在队列中移出，等待其他程序搜集信息</li>
+</ol>
+<h1 id="【进程的阻塞与唤醒】"><a href="#【进程的阻塞与唤醒】" class="headerlink" title="【进程的阻塞与唤醒】"></a>【进程的阻塞与唤醒】</h1><h2 id="引起进程阻塞与唤醒的事件"><a href="#引起进程阻塞与唤醒的事件" class="headerlink" title="引起进程阻塞与唤醒的事件"></a>引起进程阻塞与唤醒的事件</h2><p>引起进程阻塞或唤醒的事件有以下四种：</p>
+<ul>
+<li><strong>向系统请求共享资源失败</strong>：进程在向系统请求共享资源时，由于系统已无足够的资源分配，此时进程将转为阻塞状态，当其他进程释放出足够的资源后，请求进程才被唤醒</li>
+<li><strong>等待某种操作的完成</strong>：当进程启动某种操作后，若该进程必须在该操作完成后才能继续执行，则应先将该进程阻塞，等待操作完成后再将其唤醒</li>
+<li><strong>新数据尚未到达</strong>：对于相互合作的进程，若一进程需要另一进程提供的数据后才能对该数据进行处理，则当数据未到达时，该进程只能处于阻塞状态，直到数据到达，才会将其唤醒</li>
+<li><strong>等待新任务的到达</strong>：在某些系统中，往往会设置一些特定的系统进程，每当这种进程完成任务后就将自己阻塞起来，等待新任务的到来后，才被唤醒</li>
+</ul>
+<h2 id="进程的阻塞过程"><a href="#进程的阻塞过程" class="headerlink" title="进程的阻塞过程"></a>进程的阻塞过程</h2><p>正在执行的进程，如果发生了上述某事件，进程便通过调用<strong>阻塞原语（block）</strong> 将自己阻塞，可见阻塞是进程自身的一种主动行为，其步骤如下：</p>
+<ol>
+<li><strong>停止执行</strong>：若该进程还处于执行状态，则应立即停止执行</li>
+<li><strong>改变 PCB 状态</strong>：将 PCB 中的现行状态由执行改为阻塞</li>
+<li><strong>插入阻塞队列</strong>：将改变现行状态后的 PCB 插入阻塞队列</li>
+<li><strong>转进程调度</strong>：将处理机分配给另一就绪进程</li>
+<li><strong>进行进程切换</strong>：保留被阻塞进程的处理机状态，按新进程的 PCB 中的处理机状态设置 CPU 环境</li>
+</ol>
+<h2 id="进程的唤醒过程"><a href="#进程的唤醒过程" class="headerlink" title="进程的唤醒过程"></a>进程的唤醒过程</h2><p>当被阻塞进程所期待的事件发生时，则有关进程调用<strong>唤醒原语（wakeup）</strong>，将等待该事件的进程唤醒，其执行过程如下：</p>
+<ol>
+<li><strong>移出阻塞队列：</strong>将被阻塞的进程从等待该事件的阻塞队列中移出</li>
+<li><strong>改变 PCB 状态</strong>：将 PCB 中的现行状态由阻塞改为就绪</li>
+<li><strong>插入就绪队列</strong>：将该 PCB 插入就绪队列中</li>
+</ol>
+<p>值得注意的是，block 原语与 wakeup 原语是一对作用相反的原语，在使用它们时，必须<strong>成对使用</strong></p>
+<p>即如果某进程中调用了阻塞原语，则必须在与之相合作、相关的进程中安排一条相应的唤醒原语，以便能唤醒被阻塞进程，否则，阻塞进程将会因不能被唤醒而永久处于阻塞状态</p>
+<h1 id="【进程的挂起与激活】"><a href="#【进程的挂起与激活】" class="headerlink" title="【进程的挂起与激活】"></a>【进程的挂起与激活】</h1><h2 id="进程的挂起过程"><a href="#进程的挂起过程" class="headerlink" title="进程的挂起过程"></a>进程的挂起过程</h2><p>当系统中出现引起进程挂起的事件时，OS 将利用<strong>挂起原语（suspend）</strong> 指定进程挂起，其步骤如下：</p>
+<ol>
+<li><strong>检查被挂起进程状态</strong>：若被挂起的进程处于活动就绪态，就改为静止就绪；若处于活动阻塞态，就改为静止阻塞</li>
+<li><strong>复制 PCB 到指定区域</strong>：为方便用户或父进程检查进程运行情况，将该进程的 PCB 复制到某指定的内存区域</li>
+<li><strong>重新调度</strong>：若被挂起的进程正在执行，则转向调度程序重新调度<br>需要注意的是，进程只能挂起自己或其子孙进程</li>
+</ol>
+<h2 id="进程的激活过程"><a href="#进程的激活过程" class="headerlink" title="进程的激活过程"></a>进程的激活过程</h2><p>当系统中出现引起进程激活的事件时，OS 将利用<strong>激活原语（active）</strong> 指定进程激活，其步骤如下：</p>
+<ol>
+<li><strong>调入内存</strong>：若挂起进程处于外存上，首先将其调入内存</li>
+<li><strong>检查被激活进程状态</strong>：若被激活的进程处于静止就绪态，就改为活动就绪；若处于静止阻塞态，就改为活动阻塞</li>
+</ol>
+
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>感谢您对我的支持，让我继续努力分享有用的技术与知识点！</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/wechatpay.jpg" alt="Alex_McAvoy 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/alipay.jpg" alt="Alex_McAvoy 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Alex_McAvoy
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://alex-mcavoy.github.io/notes/operating-system/d9c2550.html" title="进程控制">https://alex-mcavoy.github.io/notes/operating-system/d9c2550.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/notes/" rel="tag"># 学习笔记</a>
+              <a href="/tags/operating-system/" rel="tag"># 操作系统</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/notes/computer-networks/439e8653.html" rel="prev" title="FTP 协议">
+      <i class="fa fa-chevron-left"></i> FTP 协议
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/notes/computer-networks/fc548857.html" rel="next" title="域名系统 DNS">
+      域名系统 DNS <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【进程控制】"><span class="nav-number">1.</span> <span class="nav-text">【进程控制】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【进程的创建】"><span class="nav-number">2.</span> <span class="nav-text">【进程的创建】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#引起进程创建的事件"><span class="nav-number">2.1.</span> <span class="nav-text">引起进程创建的事件</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#进程的创建过程"><span class="nav-number">2.2.</span> <span class="nav-text">进程的创建过程</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【进程的终止】"><span class="nav-number">3.</span> <span class="nav-text">【进程的终止】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#引起进程终止的事件"><span class="nav-number">3.1.</span> <span class="nav-text">引起进程终止的事件</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#进程的终止过程"><span class="nav-number">3.2.</span> <span class="nav-text">进程的终止过程</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【进程的阻塞与唤醒】"><span class="nav-number">4.</span> <span class="nav-text">【进程的阻塞与唤醒】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#引起进程阻塞与唤醒的事件"><span class="nav-number">4.1.</span> <span class="nav-text">引起进程阻塞与唤醒的事件</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#进程的阻塞过程"><span class="nav-number">4.2.</span> <span class="nav-text">进程的阻塞过程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#进程的唤醒过程"><span class="nav-number">4.3.</span> <span class="nav-text">进程的唤醒过程</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【进程的挂起与激活】"><span class="nav-number">5.</span> <span class="nav-text">【进程的挂起与激活】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#进程的挂起过程"><span class="nav-number">5.1.</span> <span class="nav-text">进程的挂起过程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#进程的激活过程"><span class="nav-number">5.2.</span> <span class="nav-text">进程的激活过程</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">  
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Alex_McAvoy"
+      src="/assets/img/head.jpg">
+  <p class="site-author-name" itemprop="name">Alex_McAvoy</p>
+  <div class="site-description" itemprop="description">想要成为渔夫的猎手</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">535</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">57</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">62</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Alex-McAvoy" title="GitHub → https://github.com/Alex-McAvoy" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/u011815404" title="CSDN → https://blog.csdn.net/u011815404" rel="noopener" target="_blank"><i class="fas fa-copyright fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+<!-- 访客地图 -->
+<script type="text/javascript" src="//rf.revolvermaps.com/0/0/5.js?i=50n58yo58ow&amp;m=0&amp;c=ff0000&amp;cr1=ffffff&amp;s=140" async="async"></script>
+
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdz20172133" title="https://blog.csdn.net/sdz20172133" rel="noopener" target="_blank">神仙队友</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://pxlsdz.gitee.io/" title="https://pxlsdz.gitee.io/" rel="noopener" target="_blank">神仙队友的另一个博客</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://bycore.net" title="https://bycore.net" rel="noopener" target="_blank">凉了的某饼同学</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://kris-cn.github.io/" title="http://kris-cn.github.io/" rel="noopener" target="_blank">翟孙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://deng.fun/" title="http://deng.fun/" rel="noopener" target="_blank">芙蓉姐姐</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdau_fangshifeng" title="https://blog.csdn.net/sdau_fangshifeng" rel="noopener" target="_blank">一个头很酷的家伙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/wentong_Xu" title="https://blog.csdn.net/wentong_Xu" rel="noopener" target="_blank">小黑贱胖子</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.yuheng.tech/" title="https://www.yuheng.tech/" rel="noopener" target="_blank">咸于</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/lanshan1111" title="https://blog.csdn.net/lanshan1111" rel="noopener" target="_blank">肥硕硕</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdauguanweihong" title="https://blog.csdn.net/sdauguanweihong" rel="noopener" target="_blank">管少</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_41661919" title="https://blog.csdn.net/qq_41661919" rel="noopener" target="_blank">俊杰</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_40859951" title="https://blog.csdn.net/qq_40859951" rel="noopener" target="_blank">峰哥</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/LSD20164388" title="https://blog.csdn.net/LSD20164388" rel="noopener" target="_blank">狗冬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37748451" title="https://blog.csdn.net/qq_37748451" rel="noopener" target="_blank">胖亚亚</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37868325" title="https://blog.csdn.net/qq_37868325" rel="noopener" target="_blank">妍大佬</a>
+        </li>
+    </ul>
+  </div>
+
+		
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+  
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Alex_McAvoy</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+</br>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script><script src="/js/bookmark.js"></script>
+
+
+
+  
+
+
+
+
+  <script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '48fd73a538d3fa927f65',
+      clientSecret: '56618aefeee90bac3c20de8d51bb0b985d67252d',
+      repo        : 'Gitalk-Comment',
+      owner       : 'Alex-McAvoy',
+      admin       : ['Alex-McAvoy'],
+      id          : '999e11bb62a256fa366336ed2182c79e',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+  
+  <!-- 鼠标单击粒子特效 -->
+  <script type="text/javascript" src="/js/cursor-effects.js"></script>
+  <!-- 多级目录 -->
+  <script type="text/javascript" src="/js/category.js"></script>
+  
+</body>
+</html>
