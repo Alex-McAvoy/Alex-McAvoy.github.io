@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.9.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/img/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/assets/img/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/pace-js@1/themes/blue/pace-theme-minimal.css">
+  <script src="//cdn.jsdelivr.net/npm/pace-js@1/pace.min.js"></script>
+
+
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"alex-mcavoy.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":16,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":true,"color":"#ff0000","save":"manual"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":true},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.json"};
+  </script>
+
+  <meta name="description" content="【概述】动态源路由协议（Dynamic Source Routing protocol，DSR）是基于源路由概念的按需自适应路由协议，其允许节点动态地发现到任何目的地的源路由，中间节点不必存储转发分组所需的路由信息，而是采用 Cache 来存放路由信息，同时允许网络完全自我组织和自我配置，但存在陈旧路由 DSR 协议简单而有效，网络开销较小，是 Ad-Hoc 网络的首选路由协议">
+<meta name="keywords" content="学习笔记,网络相关,无线网络">
+<meta property="og:type" content="article">
+<meta property="og:title" content="动态源路由协议 DSR">
+<meta property="og:url" content="https://alex-mcavoy.github.io/notes/wireless-network/f5050039.html">
+<meta property="og:site_name" content="Alex_McAvoy">
+<meta property="og:description" content="【概述】动态源路由协议（Dynamic Source Routing protocol，DSR）是基于源路由概念的按需自适应路由协议，其允许节点动态地发现到任何目的地的源路由，中间节点不必存储转发分组所需的路由信息，而是采用 Cache 来存放路由信息，同时允许网络完全自我组织和自我配置，但存在陈旧路由 DSR 协议简单而有效，网络开销较小，是 Ad-Hoc 网络的首选路由协议">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/wireless-network/14-1.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/wireless-network/14-2.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/wireless-network/14-3.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/wireless-network/14-4.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/wireless-network/14-5.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/wireless-network/14-6.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/wireless-network/14-7.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/wireless-network/14-8.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/wireless-network/14-9.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/wireless-network/14-10.png">
+<meta property="og:updated_time" content="2021-11-04T12:03:52.068Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="动态源路由协议 DSR">
+<meta name="twitter:description" content="【概述】动态源路由协议（Dynamic Source Routing protocol，DSR）是基于源路由概念的按需自适应路由协议，其允许节点动态地发现到任何目的地的源路由，中间节点不必存储转发分组所需的路由信息，而是采用 Cache 来存放路由信息，同时允许网络完全自我组织和自我配置，但存在陈旧路由 DSR 协议简单而有效，网络开销较小，是 Ad-Hoc 网络的首选路由协议">
+<meta name="twitter:image" content="https://alex-mcavoy.github.io/images/notes/wireless-network/14-1.png">
+
+<link rel="canonical" href="https://alex-mcavoy.github.io/notes/wireless-network/f5050039.html">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>动态源路由协议 DSR | Alex_McAvoy</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Alex_McAvoy</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">想要成为渔夫的猎手</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+
+	
+	
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/notes/wireless-network/f5050039.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/assets/img/head.jpg">
+      <meta itemprop="name" content="Alex_McAvoy">
+      <meta itemprop="description" content="想要成为渔夫的猎手">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Alex_McAvoy">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          动态源路由协议 DSR
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-05-07 11:56:24" itemprop="dateCreated datePublished" datetime="2020-05-07T11:56:24+08:00">2020-05-07</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/notes/" itemprop="url" rel="index"><span itemprop="name">学习笔记</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/notes/wireless-network/" itemprop="url" rel="index"><span itemprop="name">无线网络</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>2.4k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>2 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="【概述】"><a href="#【概述】" class="headerlink" title="【概述】"></a>【概述】</h1><p><strong>动态源路由协议（Dynamic Source Routing protocol，DSR）</strong>是基于源路由概念的按需自适应路由协议，其允许节点动态地发现到任何目的地的源路由，中间节点不必存储转发分组所需的路由信息，而是采用 Cache 来存放路由信息，同时允许网络完全自我组织和自我配置，但存在陈旧路由</p>
+<p>DSR 协议简单而有效，网络开销较小，是 Ad-Hoc 网络的首选路由协议</p>
+<p>DSR 协议有如下假设：</p>
+<ul>
+<li>所有节点都愿意参与协议工作</li>
+<li>当节点收到损坏分组时，能检测出来并丢弃</li>
+<li>节点的移动速度相对于分组的传输延迟，以及底层网络硬件的无限传输范围来说，相对温和</li>
+<li>节点的无线网络接口硬件可以混杂模式（Promiscuous）工作，即接口将收到的每个帧都上交给驱动器软件，不会针对目的地址进行过滤</li>
+<li>任何一对节点之间的无线通信能力可不同</li>
+<li>每个节点只能宣称一个 IP 地址</li>
+</ul>
+<h1 id="【DSR-协议描述】"><a href="#【DSR-协议描述】" class="headerlink" title="【DSR 协议描述】"></a>【DSR 协议描述】</h1><p>DSR 协议由两个相互协同的机制组成：</p>
+<p><strong><font size="4">1.路由发现</font></strong></p>
+<p>路由发现（Route discovery），用于发现网络中的路由</p>
+<p>由需要发送数据给节点 $D$ 的节点 $S$ 使用，该过程只在 $S$ 需要发送数据，并且不知道到 $D$ 的路由时才启动</p>
+<p><strong><font size="4">2.路由维护</font></strong></p>
+<p>路由维护（Route maintenance），用于维护网络中的路由</p>
+<p>节点 $S$ 在给 $D$ 发送数据时，要能检测出由于网络拓扑动态变化导致源路由中断的情况</p>
+<p>当前的源路由不能用时，节点 $S$ 会切换到另一条已知的路由，或者重新发起 Route discovery 来寻找新路由</p>
+<hr>
+<p>DSR 协议的路由发现和路由维护都是按需进行的，既不需要周期性地发送路由广播分组，也不需要感测链路状态，更不需要邻居检测，同时其不依赖于任何底层协议，仅需要维护路径上结点间的路由，能够完全地消除路由环路，并且能够同时提供多条路由</p>
+<p>但相较于周期性通告来说，DSR 协议的每个分组都要携带完整路由的信息，这不仅增大了开销，还降低了网络带宽利用率，同时，会引起过时路由问题</p>
+<h1 id="【DSR-多路径】"><a href="#【DSR-多路径】" class="headerlink" title="【DSR 多路径】"></a>【DSR 多路径】</h1><p>在 DSR 协议中，如果正在使用的一条路径中断，节点可立即切换到另一条缓存的路由，这样多条路由的缓存可避免每次路由中断后执行路由发现，减少了开销</p>
+<p>多路径的获得途径有以下三种：</p>
+<ul>
+<li>作为路由发现的响应</li>
+<li>其他路由控制包和数据包中的路由信息</li>
+<li>为任何目的地缓存多条路由</li>
+</ul>
+<h1 id="【路由发现】"><a href="#【路由发现】" class="headerlink" title="【路由发现】"></a>【路由发现】</h1><h2 id="过程"><a href="#过程" class="headerlink" title="过程"></a>过程</h2><p>当源节点将<strong>路由请求消息（Route Request）</strong>作为局部广播分组发送时，这个分组包含两个参数：</p>
+<ul>
+<li><code>Request id</code>：请求 id</li>
+<li><code>List</code>：初始为空的链表，用于记录路由发现包经过的结点</li>
+</ul>
+<p>如下图，$A$ 是路由发现的发起者，$E$ 是路由发现的目标</p>
+<p><img width="500" src="/images/notes/wireless-network/14-1.png"></p>
+<p>如果目标结点 $E$ 收到请求包，那么会给请求源 $A$ 回答一个<strong>路由回复消息（Route Reply）</strong>，其值是 <code>List</code> 的拷贝，当路由请求源收到路由回复消息后，会在本地的路由 Cache 中缓存该路由信息。</p>
+<p><img width="500" src="/images/notes/wireless-network/14-2.png"></p>
+<p>路由请求消息记录了一条从路由发现发起端到本节点的路由，路由回复消息给出了一条从目标端到发起端的反向路由，数据分组给出记录了一条从数据报源端到目标端的正向路由</p>
+<h2 id="无穷迭代路由发现"><a href="#无穷迭代路由发现" class="headerlink" title="无穷迭代路由发现"></a>无穷迭代路由发现</h2><p>如果网络存在单向链路，且目标端在路由 Cache 中未找到去往发起端的路由信息，那么会发起新一轮路由发现过程，来寻找一条路径，这就造成了<strong>无穷迭代路由发现</strong></p>
+<p>为避免上述问题，DSR 规定目标端可使用路由请求消息中记录的路由，作为返回的路由回复消息的源路由，这样首选逆向路由，不仅可以避免无穷迭代路由的发现过程，还可以避免第二次路由发现过程带来的开销</p>
+<h2 id="路由缓存"><a href="#路由缓存" class="headerlink" title="路由缓存"></a>路由缓存</h2><p>如果两个节点间的链路是双向的，那么在缓存侦听时获得的路由信息会被缓存</p>
+<p>如下图，假设 $C$ 与 $X$ 间的链路是双向的，那么在从节点 $V$ 到节点 $Z$ 的路由发现过程中，$C$ 会缓存如下路由</p>
+<p><img width="500" src="/images/notes/wireless-network/14-3.png"></p>
+<p>收到路由请求包的中间结点可以使用自己的路由 Cache 缓存的到目标节点的路由信息应答路由请求，即：</p>
+<script type="math/tex; mode=display">
+路由回复消息中的路由记录=路由请求消息中的 List+缓存的路由消息</script><p>需要注意的是，在返回路由回复消息前，要检查是否存在路由环路，若存在环路，则需要丢弃</p>
+<p><img width="200" src="/images/notes/wireless-network/14-4.png"></p>
+<h2 id="应答风暴"><a href="#应答风暴" class="headerlink" title="应答风暴"></a>应答风暴</h2><p>应答风暴是指：当一个节点广播针对某目标端的路由请求时，若其邻居的 Cache 中都有该目标端的路由，每个邻居都试图以自己的缓存路由响应</p>
+<p><img width="200" src="/images/notes/wireless-network/14-5.png"></p>
+<p>应答风暴会加剧局部网络冲突，且浪费网络带宽，为预防应答风暴，可采用以下三种方法：</p>
+<ul>
+<li>节点将网络接口置于混杂接收方式（promiscuous）</li>
+<li>延迟发送路由回复消息</li>
+<li>同时侦听路由请求端是否在用更短的路径发送</li>
+</ul>
+<h1 id="【路由维护】"><a href="#【路由维护】" class="headerlink" title="【路由维护】"></a>【路由维护】</h1><h2 id="过程-1"><a href="#过程-1" class="headerlink" title="过程"></a>过程</h2><p>路由维护过程会确保每个节点能够使用源路由发送或转发的数据分组被路由的下一跳接收，当没有收到下一跳的确认时，会不断地重发，直至最大重试次数</p>
+<p>如果数据分组被重发了最大次数，但仍未收到下一跳的确认，那么节点要向源端路由发送<strong>路由错误消息（Route Error）</strong>，并指明中断的链路</p>
+<p>同时，分组的源端会将该路由从路由缓存中删除</p>
+<p>之后，若源端路由缓存中存在另一条到目标的路由，那么会重发此分组，否则，重新开始路由发现过程</p>
+<p><img width="500" src="/images/notes/wireless-network/14-6.png"></p>
+<p>在新一轮的路由发现过程中，新的路由请求消息会捎带路由错误消息的内容，以便通告所有邻居特定链路中断情况，由此保证之后收到的路由回复消息不是原来的过时路由</p>
+<p><img width="500" src="/images/notes/wireless-network/14-7.png"></p>
+<h2 id="营救分组"><a href="#营救分组" class="headerlink" title="营救分组"></a>营救分组</h2><p>如果节点在自己的缓存路由中发现有到目标的路由，那么在报告路由错误消息后会努力<strong>营救分组（Slavaging）</strong></p>
+<p>营救分组有两种方式：</p>
+<ul>
+<li>将分组的源路由替换成缓存的路径</li>
+<li>保留分组源路由的前缀，用缓存的路由替换分组源路由的后缀</li>
+</ul>
+<p><img width="500" src="/images/notes/wireless-network/14-8.png"></p>
+<h2 id="路由最短自动化"><a href="#路由最短自动化" class="headerlink" title="路由最短自动化"></a>路由最短自动化</h2><p>数据分组使用的源路由在一个或多个中间节点不需要时，节点会给数据分组的源端发回一个免费的路由回复消息消息，从而能够自动实行路由最短化</p>
+<p><img width="500" src="/images/notes/wireless-network/14-9.png"></p>
+<h2 id="缓存否定消息"><a href="#缓存否定消息" class="headerlink" title="缓存否定消息"></a>缓存否定消息</h2><p>节点收到路由错误消息后，其实并不是简单地删除该路由，而是会将特定链路中断信息缓存一段时间，这样随后收到的所有包含该中断链路的路由都很容易判断为不可用，但缓存的链路中断信息必须超时删除，以便在该链路恢复工作时可用</p>
+<p><img width="500" src="/images/notes/wireless-network/14-10.png"></p>
+
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>感谢您对我的支持，让我继续努力分享有用的技术与知识点！</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/wechatpay.jpg" alt="Alex_McAvoy 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/alipay.jpg" alt="Alex_McAvoy 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Alex_McAvoy
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://alex-mcavoy.github.io/notes/wireless-network/f5050039.html" title="动态源路由协议 DSR">https://alex-mcavoy.github.io/notes/wireless-network/f5050039.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/notes/" rel="tag"># 学习笔记</a>
+              <a href="/tags/network/" rel="tag"># 网络相关</a>
+              <a href="/tags/wireless-network/" rel="tag"># 无线网络</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/essay/ego/d7950a94.html" rel="prev" title="Disillusionment and Nothingness">
+      <i class="fa fa-chevron-left"></i> Disillusionment and Nothingness
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/notes/wireless-network/dd981625.html" rel="next" title="分区路由协议 ZRP">
+      分区路由协议 ZRP <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【概述】"><span class="nav-number">1.</span> <span class="nav-text">【概述】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【DSR-协议描述】"><span class="nav-number">2.</span> <span class="nav-text">【DSR 协议描述】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【DSR-多路径】"><span class="nav-number">3.</span> <span class="nav-text">【DSR 多路径】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【路由发现】"><span class="nav-number">4.</span> <span class="nav-text">【路由发现】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#过程"><span class="nav-number">4.1.</span> <span class="nav-text">过程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#无穷迭代路由发现"><span class="nav-number">4.2.</span> <span class="nav-text">无穷迭代路由发现</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#路由缓存"><span class="nav-number">4.3.</span> <span class="nav-text">路由缓存</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#应答风暴"><span class="nav-number">4.4.</span> <span class="nav-text">应答风暴</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【路由维护】"><span class="nav-number">5.</span> <span class="nav-text">【路由维护】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#过程-1"><span class="nav-number">5.1.</span> <span class="nav-text">过程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#营救分组"><span class="nav-number">5.2.</span> <span class="nav-text">营救分组</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#路由最短自动化"><span class="nav-number">5.3.</span> <span class="nav-text">路由最短自动化</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#缓存否定消息"><span class="nav-number">5.4.</span> <span class="nav-text">缓存否定消息</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">  
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Alex_McAvoy"
+      src="/assets/img/head.jpg">
+  <p class="site-author-name" itemprop="name">Alex_McAvoy</p>
+  <div class="site-description" itemprop="description">想要成为渔夫的猎手</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">541</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">56</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">61</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Alex-McAvoy" title="GitHub → https://github.com/Alex-McAvoy" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/u011815404" title="CSDN → https://blog.csdn.net/u011815404" rel="noopener" target="_blank"><i class="fas fa-copyright fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+<!-- 访客地图 -->
+<script type="text/javascript" src="//rf.revolvermaps.com/0/0/5.js?i=50n58yo58ow&amp;m=0&amp;c=ff0000&amp;cr1=ffffff&amp;s=140" async="async"></script>
+
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdz20172133" title="https://blog.csdn.net/sdz20172133" rel="noopener" target="_blank">神仙队友</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://pxlsdz.gitee.io/" title="https://pxlsdz.gitee.io/" rel="noopener" target="_blank">神仙队友的另一个博客</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://bycore.net" title="https://bycore.net" rel="noopener" target="_blank">凉了的某饼同学</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://kris-cn.github.io/" title="http://kris-cn.github.io/" rel="noopener" target="_blank">翟孙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://deng.fun/" title="http://deng.fun/" rel="noopener" target="_blank">芙蓉姐姐</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdau_fangshifeng" title="https://blog.csdn.net/sdau_fangshifeng" rel="noopener" target="_blank">一个头很酷的家伙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/wentong_Xu" title="https://blog.csdn.net/wentong_Xu" rel="noopener" target="_blank">小黑贱胖子</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.yuheng.tech/" title="https://www.yuheng.tech/" rel="noopener" target="_blank">咸于</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/lanshan1111" title="https://blog.csdn.net/lanshan1111" rel="noopener" target="_blank">肥硕硕</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdauguanweihong" title="https://blog.csdn.net/sdauguanweihong" rel="noopener" target="_blank">管少</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_41661919" title="https://blog.csdn.net/qq_41661919" rel="noopener" target="_blank">俊杰</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_40859951" title="https://blog.csdn.net/qq_40859951" rel="noopener" target="_blank">峰哥</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/LSD20164388" title="https://blog.csdn.net/LSD20164388" rel="noopener" target="_blank">狗冬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37748451" title="https://blog.csdn.net/qq_37748451" rel="noopener" target="_blank">胖亚亚</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37868325" title="https://blog.csdn.net/qq_37868325" rel="noopener" target="_blank">妍大佬</a>
+        </li>
+    </ul>
+  </div>
+
+		
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+  
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Alex_McAvoy</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+</br>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script><script src="/js/bookmark.js"></script>
+
+
+
+  
+
+
+
+
+  <script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '48fd73a538d3fa927f65',
+      clientSecret: '56618aefeee90bac3c20de8d51bb0b985d67252d',
+      repo        : 'Gitalk-Comment',
+      owner       : 'Alex-McAvoy',
+      admin       : ['Alex-McAvoy'],
+      id          : '3de87310854c68d3e0df1b58bdd65fa0',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+  
+  <!-- 鼠标单击粒子特效 -->
+  <script type="text/javascript" src="/js/cursor-effects.js"></script>
+  <!-- 多级目录 -->
+  <script type="text/javascript" src="/js/category.js"></script>
+  
+</body>
+</html>

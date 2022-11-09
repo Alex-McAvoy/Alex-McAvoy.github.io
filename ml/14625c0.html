@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.9.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/img/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/assets/img/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/pace-js@1/themes/blue/pace-theme-minimal.css">
+  <script src="//cdn.jsdelivr.net/npm/pace-js@1/pace.min.js"></script>
+
+
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"alex-mcavoy.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":16,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":true,"color":"#ff0000","save":"manual"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":true},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.json"};
+  </script>
+
+  <meta name="description" content="Reference  梯度下降法 —— 经典的优化方法 梯度下降算法（Gradient Descent)的原理和实现步骤 详解梯度下降法（干货篇） 什么是梯度下降 梯度下降算法原理讲解——机器学习 随机梯度下降（stochastic gradient descent，SGD） 梯度下降法(Gradient Descent)优化函数的详解（3）小批量随机梯度下降法（mini-batch SGD ）">
+<meta name="keywords" content="机器学习">
+<meta property="og:type" content="article">
+<meta property="og:title" content="梯度下降法">
+<meta property="og:url" content="https://alex-mcavoy.github.io/ml/14625c0.html">
+<meta property="og:site_name" content="Alex_McAvoy">
+<meta property="og:description" content="Reference  梯度下降法 —— 经典的优化方法 梯度下降算法（Gradient Descent)的原理和实现步骤 详解梯度下降法（干货篇） 什么是梯度下降 梯度下降算法原理讲解——机器学习 随机梯度下降（stochastic gradient descent，SGD） 梯度下降法(Gradient Descent)优化函数的详解（3）小批量随机梯度下降法（mini-batch SGD ）">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/14-1.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/14-2.png">
+<meta property="og:updated_time" content="2022-09-10T00:57:29.703Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="梯度下降法">
+<meta name="twitter:description" content="Reference  梯度下降法 —— 经典的优化方法 梯度下降算法（Gradient Descent)的原理和实现步骤 详解梯度下降法（干货篇） 什么是梯度下降 梯度下降算法原理讲解——机器学习 随机梯度下降（stochastic gradient descent，SGD） 梯度下降法(Gradient Descent)优化函数的详解（3）小批量随机梯度下降法（mini-batch SGD ）">
+<meta name="twitter:image" content="https://alex-mcavoy.github.io/images/ml/14-1.png">
+
+<link rel="canonical" href="https://alex-mcavoy.github.io/ml/14625c0.html">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>梯度下降法 | Alex_McAvoy</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Alex_McAvoy</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">想要成为渔夫的猎手</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+
+	
+	
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/ml/14625c0.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/assets/img/head.jpg">
+      <meta itemprop="name" content="Alex_McAvoy">
+      <meta itemprop="description" content="想要成为渔夫的猎手">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Alex_McAvoy">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          梯度下降法
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-06-17 11:12:00" itemprop="dateCreated datePublished" datetime="2019-06-17T11:12:00+08:00">2019-06-17</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/ml/" itemprop="url" rel="index"><span itemprop="name">机器学习</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>6.2k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>6 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <blockquote>
+<p>Reference</p>
+<ul>
+<li><a href="https://zhuanlan.zhihu.com/p/36564434" target="_blank" rel="noopener">梯度下降法 —— 经典的优化方法</a></li>
+<li><a href="https://zhuanlan.zhihu.com/p/68468520" target="_blank" rel="noopener">梯度下降算法（Gradient Descent)的原理和实现步骤</a></li>
+<li><a href="https://zhuanlan.zhihu.com/p/112416130" target="_blank" rel="noopener">详解梯度下降法（干货篇）</a></li>
+<li><a href="https://zhuanlan.zhihu.com/p/113714840" target="_blank" rel="noopener">什么是梯度下降</a></li>
+<li><a href="https://blog.csdn.net/qq_41800366/article/details/86583789" target="_blank" rel="noopener">梯度下降算法原理讲解——机器学习</a></li>
+<li><a href="https://zhuanlan.zhihu.com/p/357963858" target="_blank" rel="noopener">随机梯度下降（stochastic gradient descent，SGD）</a></li>
+<li><a href="https://blog.csdn.net/qq_25628891/article/details/83245253" target="_blank" rel="noopener">梯度下降法(Gradient Descent)优化函数的详解（3）小批量随机梯度下降法（mini-batch SGD ）</a></li>
+</ul>
+</blockquote>
+<h1 id="【概述】"><a href="#【概述】" class="headerlink" title="【概述】"></a>【概述】</h1><p><strong>梯度下降法（Gradient Descent）</strong>不是一个机器学习算法，而是一种基于搜索的最优化方法，其目的是通过迭代来最小化一个效用函数，是求解无约束优化问题最简单、最经典的方法之一</p>
+<p>梯度下降法就好比一个蒙着眼睛的人下山，每次在负梯度最大的方向，向前走一步，走出一步后，比较前后的的落差，若落差小于一定阈值，则认为到达山谷，若落差大于阈值，则继续向前走，直到到达山谷</p>
+<p><img src="/images/ml/14-1.png"></p>
+<p>在机器学习中，绝大多数的机器学习模型都会有一个损失函数，用来衡量机器学习模型的精确度，一般来说，损失函数的值越小，模型的精确度就越高，如果要提高机器学习模型的精确度，就要尽可能的降低损失函数的值，而梯度下降法，就是用来优化损失函数的值的</p>
+<p>关于损失函数，详见：<a href="https://alex-mcavoy.github.io/ml/d6bfa51b.html">机器学习三要素</a></p>
+<p>常见的梯度下降法有：批量梯度下降（Batch Gradient Descent，BGD）、随机梯度下降（Stochastic Gradient Descent，SGD）、小批量梯度下降（Mini-Batch Gradient Descent，MBGD），其中小批量梯度下降法常用于深度学习中进行模型的训练</p>
+<h1 id="【梯度】"><a href="#【梯度】" class="headerlink" title="【梯度】"></a>【梯度】</h1><p>梯度，实际上就是多变量微分的一般化：</p>
+<ul>
+<li>单变量函数：梯度就是函数的微分，代表着函数在某个<strong>给定点的切线的斜率</strong></li>
+<li>多变量函数：梯度是一个向量，梯度的方向指出了函数<strong>在给定点上升最快的方向</strong></li>
+</ul>
+<p>而这就说明了梯度向量法为何需要求梯度，即<strong>梯度的反方向就是函数在给定点下降最快的方向</strong>，只要沿着这个方向一直走，就能走到最低点或局部最低点</p>
+<p>举例来说，对于函数：<script type="math/tex">J(x,y,z) = 15x + y - 3z</script>，其梯度为：</p>
+<script type="math/tex; mode=display">
+\bigtriangledown J(x,y,z) = \left \langle \frac{\partial J}{\partial x}, \frac{\partial J}{\partial y}, \frac{\partial J}{\partial z} \right \rangle = \left \langle 15,1,-3 \right \rangle</script><h1 id="【梯度下降法的一般形式】"><a href="#【梯度下降法的一般形式】" class="headerlink" title="【梯度下降法的一般形式】"></a>【梯度下降法的一般形式】</h1><h2 id="一般形式"><a href="#一般形式" class="headerlink" title="一般形式"></a>一般形式</h2><p>首先给出梯度下降法的一般形式：</p>
+<script type="math/tex; mode=display">
+\boldsymbol{\theta_{k+1}}=\boldsymbol{\theta_k} - \alpha \bigtriangledown J(\boldsymbol{\theta})</script><p>该公式的含义为：对于当前点 $\boldsymbol{\theta_k}$，要从这个点走向关于 $\boldsymbol{\theta}$ 的函数 $J(\boldsymbol{\theta})$ 的最小值点，前进的方向是函数 $J(\boldsymbol{\theta})$ 的梯度的反方向，行走一段距离的步长为 $\alpha$，到达的点即为 $\boldsymbol{\theta_k}$</p>
+<p>步长 $\alpha$ 在机器学习中又被称为<strong>学习率（Learning Rate）</strong>，意味着可以通过控制 $\alpha$ 来控制每一步走的距离</p>
+<p>$\alpha$ 的设置不能太小，太小会导致收敛慢，也不能设置太大，太大会导致错过最优解，通常来说，需要从小到大，分别测试，来选出一个最优解</p>
+<p>当我们到达最优点或局部最优点时，其梯度为 $0$，此时无论步长 $\alpha$ 为多大，都不会再进行更新</p>
+<p><img src="/images/ml/14-2.png"></p>
+<h2 id="实例"><a href="#实例" class="headerlink" title="实例"></a>实例</h2><p>以最简单的线性回归模型为例</p>
+<p>对于给定的容量为 $n$ 的样本集 $T={(\mathbf{x_1},y_1),(\mathbf{x_2},y_2),…,(\mathbf{x_n},y_n)}$，第 $i$ 组样本中的输入 $\mathbf{x_i}$ 具有 $m$ 个特征值，即：$\mathbf{x_i}=(x_i^{(1)},x_i^{(2)},…,x_i^{(m)})\in \mathbb{R}^m$</p>
+<p>设习得的模型的假设函数为：</p>
+<script type="math/tex; mode=display">
+f(\mathbf{x_i};\boldsymbol{\theta})=\theta^{(0)} + \theta^{(1)} x_i^{(1)} + \theta^{(2)} x_i^{(2)} + ... + \theta^{(m)} x_i^{(m)}</script><p>其中，特征参数 $\boldsymbol{\theta}$ 为 $(m+1)\times 1$ 的列向量，即：</p>
+<script type="math/tex; mode=display">
+\boldsymbol{\theta}=[\theta^{(0)},\theta^{(1)},...,\theta^{(m)}]^T\in \mathbb{R}^{m+1}</script><p>为了表述方便，对假设函数进行简化，定义一个额外的第 $0$ 个特征量，这个特征量对所有样本的取值全部为 $1$，这使得特征量从过去的 $m$ 个变为 $m+1$ 个，即设：$x_i^{(0)}=1$</p>
+<p>那么假设函数就可以写为：</p>
+<script type="math/tex; mode=display">
+f(\mathbf{x_i};\boldsymbol{\theta})=\theta^{(0)} x_i^{(0)} + \theta^{(1)} x_i^{(1)} + \theta^{(2)} x_i^{(2)} + ... + \theta^{(m)} x_i^{(m)}</script><p>假设损失函数为：</p>
+<script type="math/tex; mode=display">
+J(\boldsymbol{\theta})=\frac{1}{2}\big[f(\mathbf{x_i};\boldsymbol{\theta})-y_i\big]^2</script><p>之所以要乘以 $\frac{1}{2}$，是因为在求导后会带来 $\times 2$，不利于表达与计算，当乘以 $\frac{1}{2}$ 后，求导带来的 $\times 2$ 就与 $\frac{1}{2}$ 抵消，从而简化计算</p>
+<p>目标是通过最小化代价函数 $J(\boldsymbol{\theta})$ 来在参数空间 $\Theta$ 中找到合适的 $\boldsymbol{\theta}$ 参数，即：</p>
+<script type="math/tex; mode=display">
+\boldsymbol{\theta}^*=\arg \min_{\Theta}\:J(\boldsymbol{\theta})</script><p>在最小化代价函数 $J(\boldsymbol{\theta})$ 时，其核心是损失函数对应的梯度函数，即将下列公式<strong>重复直到收敛</strong>为止：</p>
+<script type="math/tex; mode=display">
+\boldsymbol{\theta_{k+1}} = \boldsymbol{\theta_k} - \alpha \frac{\partial}{\partial \boldsymbol{\theta_k}}J(\boldsymbol{\theta_k})</script><p>根据链式法则：若 $z=f[g(x)]$，则 $z’=f[g(x)]’+g(x)’$</p>
+<p>则对于偏导数项 $\frac{\partial}{\partial  \boldsymbol{\theta}}J( \boldsymbol{\theta})$ 有：</p>
+<script type="math/tex; mode=display">
+\begin{align}
+\frac{\partial}{\partial  \boldsymbol{\theta}}J( \boldsymbol{\theta})
+&= \frac{\partial}{\partial  \boldsymbol{\theta}} \frac{1}{2}\big[f(\mathbf{x_i};\boldsymbol{\theta})-y_i\big]^2 \notag \\
+&= \frac{1}{2} \cdot \frac{\partial}{\partial  \boldsymbol{\theta}} \Big[\big(f(\mathbf{x_i};\boldsymbol{\theta})-y_i\big)^2\Big] \cdot \Big[ \frac{\partial}{\partial  \boldsymbol{\theta}} \big(f(\mathbf{x_i};\boldsymbol{\theta}) - y_i\big)\Big] \notag \\
+&= \big(f(\mathbf{x_i};\boldsymbol{\theta})-y_i\big) \cdot \Big[ \frac{\partial}{\partial  \boldsymbol{\theta}} \big(f(\mathbf{x_i};\boldsymbol{\theta}) - y_i\big)\Big] \notag \\
+&=  \big(f(\mathbf{x_i};\boldsymbol{\theta})-y_i\big) \cdot \frac{\partial}{\partial  \boldsymbol{\theta}} \bigg( \sum_{j=0}^m \theta^{(j)} x_i^{(j)} - y_i \bigg) \notag \\
+&= \big(f(\mathbf{x_i};\boldsymbol{\theta})-y_i\big) \cdot \bigg[ \frac{\partial}{\partial  \boldsymbol{\theta}}  \sum_{j=0}^m \theta^{(j)} x_i^{(j)} - 0 \bigg] \notag \\
+&= \big(f(\mathbf{x_i};\boldsymbol{\theta})-y_i\big) \cdot \frac{\partial}{\partial  \boldsymbol{\theta}}  \big(\theta^{(0)}x_i^{(0)}+\theta^{(1)}x_i^{(1)}+...+\theta^{(m)}x_i^{(m)}\big)  \notag 
+\end{align}</script><p>对于求和函数展开的部分，当对其中第 $j$ 项求导时，其余各项实际上就是一个常数，它们在求导这一刻是固定不变的，因此有：</p>
+<script type="math/tex; mode=display">
+\frac{\partial}{\partial  \boldsymbol{\theta}} f(\mathbf{x_i};\boldsymbol{\theta}) 
+= 0+...+ \frac{\partial}{\partial  \boldsymbol{\theta}} \theta^{(j)}x_i^{(j)}+...+0</script><p>对于得到的乘积函数 $\frac{\partial}{\partial \boldsymbol{\theta}} \theta^{(j)}x_i^{(j)}$，有：</p>
+<script type="math/tex; mode=display">
+\frac{\partial}{\partial \boldsymbol{\theta}} \theta^{(j)}x_i^{(j)}= x_i^{(j)}</script><p>将得到的结果组合回去，即有：</p>
+<script type="math/tex; mode=display">
+\frac{\partial}{\partial  \boldsymbol{\theta}}  J(\boldsymbol{\theta})= \big[f(\mathbf{x_i};\boldsymbol{\theta}) -y_i\big] \cdot x_i^{(j)}</script><p>故而，只需将下列公式<strong>重复至收敛</strong>即可：</p>
+<script type="math/tex; mode=display">
+\boldsymbol{\theta_{k+1}} = \boldsymbol{\theta_k} - \alpha \big[f(\mathbf{x_i};\boldsymbol{\theta}) -y_i \big] \cdot x_i^{(j)},j = 0,1,...,m</script><p>其中，$x_i^{(0)}=1$</p>
+<h1 id="【常见的梯度下降法】"><a href="#【常见的梯度下降法】" class="headerlink" title="【常见的梯度下降法】"></a>【常见的梯度下降法】</h1><h2 id="随机梯度下降法-SGD"><a href="#随机梯度下降法-SGD" class="headerlink" title="随机梯度下降法 SGD"></a>随机梯度下降法 SGD</h2><p>在上文中所举的例子即<strong>随机梯度下降（Stochastic Gradient Descent，SGD）</strong>，其每次迭代更新时只用到了一个样本来调整</p>
+<p>其一般形式为：</p>
+<script type="math/tex; mode=display">
+\begin{align}
+for & \quad i=1,...,n: \notag \\
+&Repeat\:until\:convergence: \notag \\
+&\quad \boldsymbol{\theta_{k+1}} = \boldsymbol{\theta_k} - \alpha \big[f(\mathbf{x_i};\boldsymbol{\theta}) -y_i \big] \cdot x_i^{(j)},j = 0,1,...,m \notag
+\end{align}</script><p>SGD 从概率意义上来说，单个样本的梯度是对整个数据集合梯度的无偏估计，但是由于存在着一定的不确定性，即下降路径容易受到训练数据自身噪音的影响，因此在每次迭代更新时并不一定是向最优方向进行的</p>
+<p>同时，学习率 $\alpha$ 不能设置过大，不然容易在最优解附近出现震荡，始终无法解决最优解，但从另一个角度来看，这种在最优解附近出现震荡的路径，在损失的优化路线在损失函数局部极小值较多时，能够有效避免模型陷入局部最优解</p>
+<p>虽然 SGD 不是每次迭代得到的损失函数都向着全局最优方向，但是整体方向是向全局最优解前进的，最终的结果往往是在全局最优解附近，这种方法相比于 BGD 来说，收敛的更快，虽然不是全局最优，但很多时候是可以接受的</p>
+<h2 id="批量梯度下降法-BGD"><a href="#批量梯度下降法-BGD" class="headerlink" title="批量梯度下降法 BGD"></a>批量梯度下降法 BGD</h2><p><strong>批量梯度下降（Batch Gradient Descent，BGD）</strong>认为，对于 $\boldsymbol{\theta}$ 的更新，数据集中的所有样本的损失函数都有贡献，因此，BGD 是计算数据集中所有样本的损失函数的总和后再进行更新</p>
+<p>其一般形式为：</p>
+<script type="math/tex; mode=display">
+\begin{align}
+&Repeat\:until\:convergence: \notag \\
+&\quad \boldsymbol{\theta_{k+1}} = \boldsymbol{\theta_k} - \alpha \frac{1}{n} \Big[\sum_{i=1}^n \big(f(\mathbf{x_i};\boldsymbol{\theta})-y_i\big) \Big] \cdot x_i^{(j)},j = 0,1,...,m \notag
+\end{align}</script><p>BGD 每迭代更新一次参数，都要使用到数据集中的所有样本，其下降方向是最优方向，学习率 $\alpha$ 可以设置的比 SGD 大，但计算量大、速度慢，且不支持在线学习</p>
+<h2 id="小批量梯度下降法-MBGD"><a href="#小批量梯度下降法-MBGD" class="headerlink" title="小批量梯度下降法 MBGD"></a>小批量梯度下降法 MBGD</h2><p><strong>小批量梯度下降（Mini-Batch Gradient Descent，MBGD）</strong>是为克服 SGD、BGD 两种方法的缺点而出现的，其采用了一种折中手段</p>
+<p>MBGD 将数据分为若干批次，按批次更新参数，每一批次中的一组数据共同决定了本次梯度的方向，这样下降起来就不容易跑偏，减少了随机性，同时因为每一批的样本数相较整个数据集来说少了很多，计算量也不是很大，在数据量较大的项目中，可以明显地减少梯度计算的时间</p>
+<p>其一般形式为：</p>
+<script type="math/tex; mode=display">
+\begin{align}
+for & \quad i=1,...,n: \notag \\
+&Repeat\:until\:convergence: \notag \\
+&\quad \boldsymbol{\theta_{k+1}} = \boldsymbol{\theta_k} - \alpha \frac{1}{b} \Big[\sum_{k=i}^{i+b-1} \big(f(\mathbf{x_k};\boldsymbol{\theta})-y_k\big) \Big] \cdot x_k^{(j)},,j = 0,1,...,m \notag \\
+&\quad i=i+b \notag
+\end{align}</script><p>其中，$b$ 为<strong>批大小（Batch Size）</strong>，即选取的样本数量，一般根据数据集的数据量的实际情况进行选取</p>
+
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>感谢您对我的支持，让我继续努力分享有用的技术与知识点！</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/wechatpay.jpg" alt="Alex_McAvoy 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/alipay.jpg" alt="Alex_McAvoy 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Alex_McAvoy
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://alex-mcavoy.github.io/ml/14625c0.html" title="梯度下降法">https://alex-mcavoy.github.io/ml/14625c0.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/ml/" rel="tag"># 机器学习</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/ml/c13ce69f.html" rel="prev" title="机器学习中的距离度量">
+      <i class="fa fa-chevron-left"></i> 机器学习中的距离度量
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/ml/9550a8b2.html" rel="next" title="牛顿迭代法">
+      牛顿迭代法 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【概述】"><span class="nav-number">1.</span> <span class="nav-text">【概述】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【梯度】"><span class="nav-number">2.</span> <span class="nav-text">【梯度】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【梯度下降法的一般形式】"><span class="nav-number">3.</span> <span class="nav-text">【梯度下降法的一般形式】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#一般形式"><span class="nav-number">3.1.</span> <span class="nav-text">一般形式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#实例"><span class="nav-number">3.2.</span> <span class="nav-text">实例</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【常见的梯度下降法】"><span class="nav-number">4.</span> <span class="nav-text">【常见的梯度下降法】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#随机梯度下降法-SGD"><span class="nav-number">4.1.</span> <span class="nav-text">随机梯度下降法 SGD</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#批量梯度下降法-BGD"><span class="nav-number">4.2.</span> <span class="nav-text">批量梯度下降法 BGD</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#小批量梯度下降法-MBGD"><span class="nav-number">4.3.</span> <span class="nav-text">小批量梯度下降法 MBGD</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">  
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Alex_McAvoy"
+      src="/assets/img/head.jpg">
+  <p class="site-author-name" itemprop="name">Alex_McAvoy</p>
+  <div class="site-description" itemprop="description">想要成为渔夫的猎手</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">541</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">56</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">61</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Alex-McAvoy" title="GitHub → https://github.com/Alex-McAvoy" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/u011815404" title="CSDN → https://blog.csdn.net/u011815404" rel="noopener" target="_blank"><i class="fas fa-copyright fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+<!-- 访客地图 -->
+<script type="text/javascript" src="//rf.revolvermaps.com/0/0/5.js?i=50n58yo58ow&amp;m=0&amp;c=ff0000&amp;cr1=ffffff&amp;s=140" async="async"></script>
+
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdz20172133" title="https://blog.csdn.net/sdz20172133" rel="noopener" target="_blank">神仙队友</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://pxlsdz.gitee.io/" title="https://pxlsdz.gitee.io/" rel="noopener" target="_blank">神仙队友的另一个博客</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://bycore.net" title="https://bycore.net" rel="noopener" target="_blank">凉了的某饼同学</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://kris-cn.github.io/" title="http://kris-cn.github.io/" rel="noopener" target="_blank">翟孙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://deng.fun/" title="http://deng.fun/" rel="noopener" target="_blank">芙蓉姐姐</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdau_fangshifeng" title="https://blog.csdn.net/sdau_fangshifeng" rel="noopener" target="_blank">一个头很酷的家伙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/wentong_Xu" title="https://blog.csdn.net/wentong_Xu" rel="noopener" target="_blank">小黑贱胖子</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.yuheng.tech/" title="https://www.yuheng.tech/" rel="noopener" target="_blank">咸于</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/lanshan1111" title="https://blog.csdn.net/lanshan1111" rel="noopener" target="_blank">肥硕硕</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdauguanweihong" title="https://blog.csdn.net/sdauguanweihong" rel="noopener" target="_blank">管少</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_41661919" title="https://blog.csdn.net/qq_41661919" rel="noopener" target="_blank">俊杰</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_40859951" title="https://blog.csdn.net/qq_40859951" rel="noopener" target="_blank">峰哥</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/LSD20164388" title="https://blog.csdn.net/LSD20164388" rel="noopener" target="_blank">狗冬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37748451" title="https://blog.csdn.net/qq_37748451" rel="noopener" target="_blank">胖亚亚</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37868325" title="https://blog.csdn.net/qq_37868325" rel="noopener" target="_blank">妍大佬</a>
+        </li>
+    </ul>
+  </div>
+
+		
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+  
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Alex_McAvoy</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+</br>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script><script src="/js/bookmark.js"></script>
+
+
+
+  
+
+
+
+
+  <script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '48fd73a538d3fa927f65',
+      clientSecret: '56618aefeee90bac3c20de8d51bb0b985d67252d',
+      repo        : 'Gitalk-Comment',
+      owner       : 'Alex-McAvoy',
+      admin       : ['Alex-McAvoy'],
+      id          : '28e47512c2e184e3da6972cf346d4521',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+  
+  <!-- 鼠标单击粒子特效 -->
+  <script type="text/javascript" src="/js/cursor-effects.js"></script>
+  <!-- 多级目录 -->
+  <script type="text/javascript" src="/js/category.js"></script>
+  
+</body>
+</html>

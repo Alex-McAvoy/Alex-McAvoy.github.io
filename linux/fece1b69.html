@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.9.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/img/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/assets/img/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/pace-js@1/themes/blue/pace-theme-minimal.css">
+  <script src="//cdn.jsdelivr.net/npm/pace-js@1/pace.min.js"></script>
+
+
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"alex-mcavoy.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":16,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":true,"color":"#ff0000","save":"manual"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":true},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.json"};
+  </script>
+
+  <meta name="description" content="【概述】在 Linux 系统中，不同的用户处于不同的地位，拥有不同的权限，为保护系统安全性，Linux 系统对不同的用户访问同一文件（包括目录文件）的权限做了不同的规定 Linux 系统的每一个文件或目录都有访问权限，这些访问权限决定了哪些用户和组群能访问文件和能执行的操作">
+<meta name="keywords" content="Linux">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Linux 文件属性">
+<meta property="og:url" content="https://alex-mcavoy.github.io/linux/fece1b69.html">
+<meta property="og:site_name" content="Alex_McAvoy">
+<meta property="og:description" content="【概述】在 Linux 系统中，不同的用户处于不同的地位，拥有不同的权限，为保护系统安全性，Linux 系统对不同的用户访问同一文件（包括目录文件）的权限做了不同的规定 Linux 系统的每一个文件或目录都有访问权限，这些访问权限决定了哪些用户和组群能访问文件和能执行的操作">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/linux/07-1.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/linux/07-2.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/linux/07-3.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/linux/07-4.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/linux/07-5.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/linux/07-6.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/linux/07-7.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/linux/07-8.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/linux/07-9.png">
+<meta property="og:updated_time" content="2022-06-03T10:34:06.401Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Linux 文件属性">
+<meta name="twitter:description" content="【概述】在 Linux 系统中，不同的用户处于不同的地位，拥有不同的权限，为保护系统安全性，Linux 系统对不同的用户访问同一文件（包括目录文件）的权限做了不同的规定 Linux 系统的每一个文件或目录都有访问权限，这些访问权限决定了哪些用户和组群能访问文件和能执行的操作">
+<meta name="twitter:image" content="https://alex-mcavoy.github.io/images/linux/07-1.png">
+
+<link rel="canonical" href="https://alex-mcavoy.github.io/linux/fece1b69.html">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Linux 文件属性 | Alex_McAvoy</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Alex_McAvoy</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">想要成为渔夫的猎手</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+
+	
+	
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/linux/fece1b69.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/assets/img/head.jpg">
+      <meta itemprop="name" content="Alex_McAvoy">
+      <meta itemprop="description" content="想要成为渔夫的猎手">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Alex_McAvoy">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Linux 文件属性
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2018-06-13 16:21:00" itemprop="dateCreated datePublished" datetime="2018-06-13T16:21:00+08:00">2018-06-13</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/linux/" itemprop="url" rel="index"><span itemprop="name">Linux</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>2.6k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>2 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="【概述】"><a href="#【概述】" class="headerlink" title="【概述】"></a>【概述】</h1><p>在 Linux 系统中，不同的用户处于不同的地位，拥有不同的权限，为保护系统安全性，Linux 系统对不同的用户访问同一文件（包括目录文件）的权限做了不同的规定</p>
+<p>Linux 系统的每一个文件或目录都有访问权限，这些访问权限决定了哪些用户和组群能访问文件和能执行的操作</p>
+<h1 id="【文件属性】"><a href="#【文件属性】" class="headerlink" title="【文件属性】"></a>【文件属性】</h1><h2 id="ls-命令"><a href="#ls-命令" class="headerlink" title="ls 命令"></a>ls 命令</h2><p>使用 <code>ls –l</code> 命令可以显示文件的属性以及文件所属的用户和组，ls 是 list 的意思，用于显示文件的文件名和相关属性</p>
+<p><img width="500" src="/images/linux/07-1.png"></p>
+<p>如图，以第一行为例：drwxr-xr-x 2 root root 4096 6月 10 00:53 公共</p>
+<p>其基本构成是：文件属性 链接数 所有者 所属用户组 最后修改时间 文件名</p>
+<h2 id="文件类型与权限"><a href="#文件类型与权限" class="headerlink" title="文件类型与权限"></a>文件类型与权限</h2><p>使用 <code>ls</code> 命令列出的第 1 列是文件的类型与权限，其有 10 个字符，第一个字符代表了文件的类型，其后 9 个字符三个一组，分分别代表了文件所有者、文件所有者的同组用户、其他用户对该文件的权限</p>
+<h3 id="文件类型"><a href="#文件类型" class="headerlink" title="文件类型"></a>文件类型</h3><p>文件类型的具体代表字符有：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:center">字符</th>
+<th style="text-align:center">类型</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">d</td>
+<td style="text-align:center">目录</td>
+</tr>
+<tr>
+<td style="text-align:center">-</td>
+<td style="text-align:center">普通文件</td>
+</tr>
+<tr>
+<td style="text-align:center">I</td>
+<td style="text-align:center">软链接，即链接文档（link file）</td>
+</tr>
+<tr>
+<td style="text-align:center">b</td>
+<td style="text-align:center">块设备，装置文件中可供存储的接口设备（可随机存储装置）</td>
+</tr>
+<tr>
+<td style="text-align:center">c</td>
+<td style="text-align:center">字符设备，装置文件中串行端口设备（一次性读取装置）</td>
+</tr>
+<tr>
+<td style="text-align:center">s</td>
+<td style="text-align:center">网络套接字（socket）</td>
+</tr>
+<tr>
+<td style="text-align:center">p</td>
+<td style="text-align:center">管道（piep）</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h3 id="文件权限"><a href="#文件权限" class="headerlink" title="文件权限"></a>文件权限</h3><p>文件类型其后的九个字符三个一组，均为 <code>r</code>、<code>w</code>、<code>x</code> 三个字符的组合</p>
+<p>其中，<code>r</code> 代表可读（read）、<code>w</code> 代表可写（write）、<code>x</code> 代表可执行（execute），这三个权限的位置不会改变，若没有权限，仅会出现 <code>-</code> 符号</p>
+<p>读权限，表示可以用一些命令来读取某个文件的内容；写权限，表示可以编辑和修改某个文件；执行权限，通常指可以运行的二进制程序文件或者脚本文件</p>
+<p>以下图为例，从左至右用 0-9 表示 10 个字符，第 0 位确定文件类型，第 1-3 位确定属主权限拥有该文件的权限（该文件的所有者的权限），第 4-6 位确定属组权限拥有该文件的权限（所有者的同组用户），第 7-9 位确定其他用户拥有该文件的权限</p>
+<p><img width="500" src="/images/linux/07-2.png"></p>
+<p>需要说明的是，一个目录只有同时具有读权限和执行权限才可以打开并查看内部文件，而一个目录要有写权限才允许在其中创建其它文件，这是因为目录文件实际保存着该目录里面的文件的列表等信息</p>
+<h2 id="链接数"><a href="#链接数" class="headerlink" title="链接数"></a>链接数</h2><p>使用 <code>ls</code> 命令列出的第 2 列是文件的链接数</p>
+<p>链接数表示了有多少文件名连接到此节点(i-node)，每个文件都会将它的权限与属性记录到文件系统的 <code>i-node</code> 中</p>
+<p>由于目录树是使用文件名来记录，因此每个文件名就会连接到一个 <code>i-node</code>，这个属性记录的就是有多少不同的文件名连接到相同的一个 <code>i-node</code> 号码</p>
+<h2 id="所有者与所属用户组"><a href="#所有者与所属用户组" class="headerlink" title="所有者与所属用户组"></a>所有者与所属用户组</h2><p>使用 <code>ls</code> 命令列出的第 3 列是文件的所有者，第 4 列是文件所属用户组</p>
+<p>在 Linux 系统中，每个文件都有一特定的所有者，也就是对该文件具有所有权的用户，同时，用户是按组分类的，一个用户属于一个或多个组，而文件所有者以外的用户又可以分为文件所有者的同组用户和其他用户</p>
+<p>所有者与所属用户组，标明了该文件具所有权的用户及该文件所属的用户组</p>
+<h2 id="文件大小"><a href="#文件大小" class="headerlink" title="文件大小"></a>文件大小</h2><p>使用 <code>ls</code> 命令列出的第 5 列是文件的大小</p>
+<p>其是以 <code>i-node</code> 节点大小为单位来表示文件大小，其默认单位为字节（B）</p>
+<p>可以给 <code>ls</code> 命令加上 <code>-h</code> 选项来更直观的查看文件的大小，即： <code>ls -lh</code></p>
+<p>同时，可以利用 <code>-S</code> 选项，按照文件大小升序排序显示，即：<code>ls -lS</code>。</p>
+<h2 id="修改日期"><a href="#修改日期" class="headerlink" title="修改日期"></a>修改日期</h2><p>使用 <code>ls</code> 命令列出的第 6 列是文件的创建日期或最近的修改日期</p>
+<p>其内容分别为：月、日、时间，如果某个文件被修改的时间距离现在太久，那么时间部分会显示年份，反之，会显示具体的时间</p>
+<p>如果想要显示完整的时间格式，可以利用 <code>ls</code> 命令的选项，即：<code>ls -l --full-time</code>，其包括年、月、日、时间</p>
+<p>同时，可以利用 <code>-t</code> 选项，按照时间顺序升序显示，即：<code>ls -lt</code></p>
+<h2 id="文件名"><a href="#文件名" class="headerlink" title="文件名"></a>文件名</h2><p>使用 <code>ls</code> 命令列出的第 7 列是文件的文件名</p>
+<p>需要注意的是，使用 <code>ls -l</code> 并不会列出隐藏文件，若想查看某目录下的隐藏文件，要加上 <code>-a</code> 选项，即：<code>ls -al</code></p>
+<p>隐藏文件的特点是文件名前多了一个 “.”，例如：<code>.gconf</code></p>
+<h1 id="【文件属性的更改】"><a href="#【文件属性的更改】" class="headerlink" title="【文件属性的更改】"></a>【文件属性的更改】</h1><p>在 Linux 中，复制行为会复制执行者的属性和权限，这就使得即使将某个文件给予某用户，但由于没有相应权限，其无法进行操作，因此就必须要修改文件的所有者与用户组，乃至于文件权限</p>
+<h2 id="chgrp-命令"><a href="#chgrp-命令" class="headerlink" title="chgrp 命令"></a>chgrp 命令</h2><p><code>chgrp</code> 命令用于更改文件属组，即改变文件所属的用户组，其语法为：<code>chgrp [选项] 用户组名 文件名</code></p>
+<p><img width="500" src="/images/linux/07-3.png"></p>
+<p>其支持递归更改，即连同子目录下的所有文件、目录都进行更新，常用于更改某一目录内所有文件。</p>
+<p>若想递归更改，加上 <code>-R</code> 选项即可</p>
+<h2 id="chown-命令"><a href="#chown-命令" class="headerlink" title="chown 命令"></a>chown 命令</h2><p><code>chown</code> 命令用于更改文件属主，即改变文件所有者，其语法为：<code>chown [选项] 属主名 文件名</code></p>
+<p><img width="500" src="/images/linux/07-4.png"></p>
+<p>chown 命令更改文件属主的同时，也可以更改文件属组，其语法为：<code>chown [选项] 属主名：属组名 文件名</code></p>
+<p><img width="500" src="/images/linux/07-5.png"></p>
+<p>同样的，若想递归更改，加上 <code>-R</code> 选项即可</p>
+<h2 id="chmod-命令"><a href="#chmod-命令" class="headerlink" title="chmod 命令"></a>chmod 命令</h2><p>Linux 文件的基本权限有九个，分别是 owner / group / others 三种身份各有自己的 read / write / execute 权限</p>
+<p><code>chmod</code> 命令用于更改文件权限，有两种方法，一种是用数字表示，一种是用字符表示</p>
+<h3 id="利用数字更改权限"><a href="#利用数字更改权限" class="headerlink" title="利用数字更改权限"></a>利用数字更改权限</h3><p>利用数字更改权限的语法为：<code>chmod [选项] xyz 文件名或目录名</code></p>
+<p>其中，<code>xyz</code> 为数字类型的权限属性</p>
+<p>由于这九个权限是三个一组的，那么我们将每组的三个权限视为一个长度为 3 的二进制数，用 1、0 来表示权限是否存在，那么各权限的位权对照如下：</p>
+<ul>
+<li>r: 4</li>
+<li>w: 2</li>
+<li>x: 1</li>
+</ul>
+<p>由于二进制数的特性，对于每种身份的三种权限，我们将其位权累加，即可得到一组唯一的权限对照，例如权限为 <code>rwx</code> 时，其分数为：4+2+1=7.</p>
+<p>这样，对于三种身份的权限，我们只需要按次序将累加后的三个分数串接在一起即可，即数字类型的权限属性。</p>
+<p>例如：</p>
+<p>当权限为 <code>[ -rwxrwxrwx ]</code> 时，分数如下</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">owner = rwx = 4+2+1 = 7</span><br><span class="line">group = rwx = 4+2+1 = 7</span><br><span class="line">others = --- = 4+2+1 = 7</span><br></pre></td></tr></table></figure>
+<p>因此在设定权限变更时，该文件的权限数字为 <code>777</code></p>
+<p><img width="500" src="/images/linux/07-6.png"></p>
+<h3 id="利用字符更改"><a href="#利用字符更改" class="headerlink" title="利用字符更改"></a>利用字符更改</h3><p>九个权限分别是 user、group、others 三种身份的权限，那么可用 <code>u</code>、<code>g</code>、<code>o</code> 来代表三种身份的权限，此外，用 <code>a</code> 代表 all，即所有的身份</p>
+<p>基于上述约定，利用字符更改权限的语法为：<code>chmod 身份 符号 权限 文件名或目录名</code></p>
+<p>其中，<code>符号</code> 有三种，分别是：<code>+</code> 加入、<code>-</code> 除去、<code>=</code> 设定</p>
+<p>其语法示意图如下：</p>
+<p><img width="700" src="/images/linux/07-7.png"></p>
+<p>如下图，给出了一个利用符号更改权限的实例</p>
+<p><img width="500" src="/images/linux/07-8.png"></p>
+<p>需要注意的是，使用 <code>+</code>、<code>-</code> 两个符号时，若没有指定到的选项，权限不会变动</p>
+<h1 id="【文件类型查看】"><a href="#【文件类型查看】" class="headerlink" title="【文件类型查看】"></a>【文件类型查看】</h1><p>当仅想要查看一个文件的类型时，使用 <code>file</code> 命令即可，该命令会告诉我们是 ASCII 的纯文本文件、二进制文件、数据文件、空文件等</p>
+<p><img width="500" src="/images/linux/07-9.png"></p>
+
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>感谢您对我的支持，让我继续努力分享有用的技术与知识点！</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/wechatpay.jpg" alt="Alex_McAvoy 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/alipay.jpg" alt="Alex_McAvoy 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Alex_McAvoy
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://alex-mcavoy.github.io/linux/fece1b69.html" title="Linux 文件属性">https://alex-mcavoy.github.io/linux/fece1b69.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/linux/" rel="tag"># Linux</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/linux/5bb8281.html" rel="prev" title="Linux 关机与重启">
+      <i class="fa fa-chevron-left"></i> Linux 关机与重启
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/linux/2eca33f9.html" rel="next" title="Linux 文件类型与扩展名">
+      Linux 文件类型与扩展名 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【概述】"><span class="nav-number">1.</span> <span class="nav-text">【概述】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【文件属性】"><span class="nav-number">2.</span> <span class="nav-text">【文件属性】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#ls-命令"><span class="nav-number">2.1.</span> <span class="nav-text">ls 命令</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#文件类型与权限"><span class="nav-number">2.2.</span> <span class="nav-text">文件类型与权限</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#文件类型"><span class="nav-number">2.2.1.</span> <span class="nav-text">文件类型</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#文件权限"><span class="nav-number">2.2.2.</span> <span class="nav-text">文件权限</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#链接数"><span class="nav-number">2.3.</span> <span class="nav-text">链接数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#所有者与所属用户组"><span class="nav-number">2.4.</span> <span class="nav-text">所有者与所属用户组</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#文件大小"><span class="nav-number">2.5.</span> <span class="nav-text">文件大小</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#修改日期"><span class="nav-number">2.6.</span> <span class="nav-text">修改日期</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#文件名"><span class="nav-number">2.7.</span> <span class="nav-text">文件名</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【文件属性的更改】"><span class="nav-number">3.</span> <span class="nav-text">【文件属性的更改】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#chgrp-命令"><span class="nav-number">3.1.</span> <span class="nav-text">chgrp 命令</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#chown-命令"><span class="nav-number">3.2.</span> <span class="nav-text">chown 命令</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#chmod-命令"><span class="nav-number">3.3.</span> <span class="nav-text">chmod 命令</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#利用数字更改权限"><span class="nav-number">3.3.1.</span> <span class="nav-text">利用数字更改权限</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#利用字符更改"><span class="nav-number">3.3.2.</span> <span class="nav-text">利用字符更改</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【文件类型查看】"><span class="nav-number">4.</span> <span class="nav-text">【文件类型查看】</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">  
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Alex_McAvoy"
+      src="/assets/img/head.jpg">
+  <p class="site-author-name" itemprop="name">Alex_McAvoy</p>
+  <div class="site-description" itemprop="description">想要成为渔夫的猎手</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">541</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">56</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">61</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Alex-McAvoy" title="GitHub → https://github.com/Alex-McAvoy" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/u011815404" title="CSDN → https://blog.csdn.net/u011815404" rel="noopener" target="_blank"><i class="fas fa-copyright fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+<!-- 访客地图 -->
+<script type="text/javascript" src="//rf.revolvermaps.com/0/0/5.js?i=50n58yo58ow&amp;m=0&amp;c=ff0000&amp;cr1=ffffff&amp;s=140" async="async"></script>
+
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdz20172133" title="https://blog.csdn.net/sdz20172133" rel="noopener" target="_blank">神仙队友</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://pxlsdz.gitee.io/" title="https://pxlsdz.gitee.io/" rel="noopener" target="_blank">神仙队友的另一个博客</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://bycore.net" title="https://bycore.net" rel="noopener" target="_blank">凉了的某饼同学</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://kris-cn.github.io/" title="http://kris-cn.github.io/" rel="noopener" target="_blank">翟孙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://deng.fun/" title="http://deng.fun/" rel="noopener" target="_blank">芙蓉姐姐</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdau_fangshifeng" title="https://blog.csdn.net/sdau_fangshifeng" rel="noopener" target="_blank">一个头很酷的家伙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/wentong_Xu" title="https://blog.csdn.net/wentong_Xu" rel="noopener" target="_blank">小黑贱胖子</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.yuheng.tech/" title="https://www.yuheng.tech/" rel="noopener" target="_blank">咸于</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/lanshan1111" title="https://blog.csdn.net/lanshan1111" rel="noopener" target="_blank">肥硕硕</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdauguanweihong" title="https://blog.csdn.net/sdauguanweihong" rel="noopener" target="_blank">管少</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_41661919" title="https://blog.csdn.net/qq_41661919" rel="noopener" target="_blank">俊杰</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_40859951" title="https://blog.csdn.net/qq_40859951" rel="noopener" target="_blank">峰哥</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/LSD20164388" title="https://blog.csdn.net/LSD20164388" rel="noopener" target="_blank">狗冬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37748451" title="https://blog.csdn.net/qq_37748451" rel="noopener" target="_blank">胖亚亚</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37868325" title="https://blog.csdn.net/qq_37868325" rel="noopener" target="_blank">妍大佬</a>
+        </li>
+    </ul>
+  </div>
+
+		
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+  
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Alex_McAvoy</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+</br>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script><script src="/js/bookmark.js"></script>
+
+
+
+  
+
+
+
+
+  <script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '48fd73a538d3fa927f65',
+      clientSecret: '56618aefeee90bac3c20de8d51bb0b985d67252d',
+      repo        : 'Gitalk-Comment',
+      owner       : 'Alex-McAvoy',
+      admin       : ['Alex-McAvoy'],
+      id          : '9349f46e06d90e9946a3b54feb12a6b3',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+  
+  <!-- 鼠标单击粒子特效 -->
+  <script type="text/javascript" src="/js/cursor-effects.js"></script>
+  <!-- 多级目录 -->
+  <script type="text/javascript" src="/js/category.js"></script>
+  
+</body>
+</html>

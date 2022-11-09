@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.9.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/img/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/assets/img/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/pace-js@1/themes/blue/pace-theme-minimal.css">
+  <script src="//cdn.jsdelivr.net/npm/pace-js@1/pace.min.js"></script>
+
+
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"alex-mcavoy.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":16,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":true,"color":"#ff0000","save":"manual"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":true},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.json"};
+  </script>
+
+  <meta name="description" content="【浮点数表示】表示格式通常，浮点数被表示为：">
+<meta name="keywords" content="学习笔记,计算机组成">
+<meta property="og:type" content="article">
+<meta property="og:title" content="浮点数的表示与加减运算">
+<meta property="og:url" content="https://alex-mcavoy.github.io/notes/computer-composition/73592ba1.html">
+<meta property="og:site_name" content="Alex_McAvoy">
+<meta property="og:description" content="【浮点数表示】表示格式通常，浮点数被表示为：">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/computer-composition/06-1.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/computer-composition/06-2.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/computer-composition/06-3.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/computer-composition/06-3.png">
+<meta property="og:updated_time" content="2022-05-06T15:13:15.138Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="浮点数的表示与加减运算">
+<meta name="twitter:description" content="【浮点数表示】表示格式通常，浮点数被表示为：">
+<meta name="twitter:image" content="https://alex-mcavoy.github.io/images/notes/computer-composition/06-1.png">
+
+<link rel="canonical" href="https://alex-mcavoy.github.io/notes/computer-composition/73592ba1.html">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>浮点数的表示与加减运算 | Alex_McAvoy</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Alex_McAvoy</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">想要成为渔夫的猎手</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+
+	
+	
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/notes/computer-composition/73592ba1.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/assets/img/head.jpg">
+      <meta itemprop="name" content="Alex_McAvoy">
+      <meta itemprop="description" content="想要成为渔夫的猎手">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Alex_McAvoy">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          浮点数的表示与加减运算
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-03-07 21:15:00" itemprop="dateCreated datePublished" datetime="2019-03-07T21:15:00+08:00">2019-03-07</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/notes/" itemprop="url" rel="index"><span itemprop="name">学习笔记</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/notes/computer-composition/" itemprop="url" rel="index"><span itemprop="name">计算机组成</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>3.5k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>3 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="【浮点数表示】"><a href="#【浮点数表示】" class="headerlink" title="【浮点数表示】"></a>【浮点数表示】</h1><h2 id="表示格式"><a href="#表示格式" class="headerlink" title="表示格式"></a>表示格式</h2><p>通常，浮点数被表示为：</p>
+<script type="math/tex; mode=display">
+N = r^E \times M</script><p>其中，$r$ 是浮点数阶码的底，与尾数的基数相同，通常 $r=2$，$E$、$M$ 是带符号的定点数，$E$ 被称为阶码，$M$ 被称为尾数</p>
+<p>如下图，显示了浮点数的一般格式，阶符 $J_f$ 和阶码的位数 $m$ 合起来反映浮点数的表示范围与小数点的实际位置，数符 $S_f$ 表示浮点数的符号，尾数的位数 $n$ 反映了浮点数的精度</p>
+<p><img width="500" src="/images/notes/computer-composition/06-1.png"></p>
+<h2 id="规格化浮点数"><a href="#规格化浮点数" class="headerlink" title="规格化浮点数"></a>规格化浮点数</h2><h3 id="规格化操作"><a href="#规格化操作" class="headerlink" title="规格化操作"></a>规格化操作</h3><p>为了提高运算的精度，需要充分地利用尾数的有效数位，通常采取浮点数规格化形式，即规定尾数的最高数位必须是一个有效值</p>
+<p>非规格化浮点数需要进行<strong>规格化操作</strong>才能变成规格化浮点数，规格化操作就是通过调整一个非规格化浮点数的尾数和阶码的大小，使非零的浮点数在尾数的最高数位上保证是一个有效值</p>
+<p>规格化操作有以下两种：</p>
+<ul>
+<li>左规：当浮点数运算的结果为非规格化时要进行规格化处理，将尾数算术左移一位，阶码 $-1$ 的</li>
+<li>右规：当浮点数运算的结果尾数出现溢出（双符号位为 $01$ 或 $10$）时，将尾数算术右移一位，阶码 $+1$ </li>
+</ul>
+<p>左规可能要进行多次，右规只需进行一次</p>
+<h3 id="规格化尾数"><a href="#规格化尾数" class="headerlink" title="规格化尾数"></a>规格化尾数</h3><p>在规格化后，规格化浮点数的尾数 $M$ 的绝对值应满足：</p>
+<script type="math/tex; mode=display">
+\frac{1}{r} \leq |M| \leq 1</script><p>在计算机中，常取 $r=2$，故有：</p>
+<script type="math/tex; mode=display">
+\frac{1}{2} \leq |M| \leq 1</script><p>而规格化表示的尾数形式如下：</p>
+<p><strong><font size="4">1.原码规格化</font></strong></p>
+<p>对于正数为 $0.1xx···x$ 的形式，其最大值表示为 $0.11···1$，最小值表示为 $0.100···0$，此时尾数的表示范围为：</p>
+<script type="math/tex; mode=display">
+\frac{1}{2} \leq M \leq 1-2^{-n}</script><p>对于负数为 $1.1xx···x$的形式，其最大值表示为 $1.10···0$，最小值表示为 $1.11··1$，此时尾数的表示范围为：</p>
+<script type="math/tex; mode=display">
+-(1-2^{-n})\leq M \leq -\frac{1}{2}</script><p><strong><font size="4">2.补码规格化</font></strong></p>
+<p>对于正数为 $0.1xx···x$ 的形式，其最大值表示为 $0.11···1$，最小值表示为 $0.100···0$，此时尾数的表示范围为：</p>
+<script type="math/tex; mode=display">
+\frac{1}{2} \leq M \leq 1-2^{-n}</script><p>对于负数为 $1.0xx···x$ 的形式，其最大值表示为 $1.01···1$，最小值表示为 $1.00···0$，此时尾数的表示范围为：</p>
+<script type="math/tex; mode=display">
+-1\leq M \leq -(\frac{1}{2}+2^{-n})</script><p>需要注意的是，当浮点数尾数的基数为 $2$ 时，原码规格化数的尾数最高位一定是 $1$，补码规格化数的尾数最高位一定与尾数符号位相反</p>
+<p>同时，基数不同，浮点数的规格化形式也不同，例如：当基数为 $4$ 时，原码规格化形式的尾数最高两位不全为 $0$；当基数为 $8$ 时，原码规格化形式的尾数最高 $3$ 位不全为 $0$</p>
+<h2 id="溢出"><a href="#溢出" class="headerlink" title="溢出"></a>溢出</h2><p>当运算结果大于最大正数称为<strong>正上溢</strong>，小于绝对值最大负数称为<strong>负上溢</strong>，正上溢和负上溢统称为<strong>上溢</strong>，数据一旦产生上溢，计算机必须中断运算操作，进行溢出处理</p>
+<p>当运算结果在 $0$ 至最小正数之间称为<strong>正下溢</strong>，在 $0$ 至绝对值最小负数之间称为<strong>负下溢</strong>，正下溢和负下溢统称为<strong>下溢</strong>，数据下溢时，浮点数数值趋于 $0$，计算机会将其当作机器零进行处理</p>
+<p><img width="500" src="/images/notes/computer-composition/06-2.png"></p>
+<h2 id="IEEE754-标准"><a href="#IEEE754-标准" class="headerlink" title="IEEE754 标准"></a>IEEE754 标准</h2><p>IEEE754 标准规定常用的浮点数格式如下</p>
+<p><img width="500" src="/images/notes/computer-composition/06-3.png"></p>
+<p>在该标准中，规定常用的浮点数格式有短浮点数（单精度 float 型）、长浮点数（双精度 double 型）、临时浮点数上中年，具体格式要求如下表</p>
+<p><img width="500" src="/images/notes/computer-composition/06-3.png"></p>
+<p>对于短浮点数和长浮点数来说，尾数用隐藏位策略的<strong>原码</strong>表示，阶码用<strong>移码</strong>表示，故对于真值，有：</p>
+<ul>
+<li>短浮点数：$(-1)^s \times 1.M \times 2^{E-127}$</li>
+<li>长浮点数：$(-1)^s \times 1.M \times 2^{E-1023}$</li>
+</ul>
+<p>其中，$s=0$ 表示正数，$s=1$ 表示负数；短浮点数 $E$ 为 $8$ 位表示，其取值为 $1 \sim 254$，$M$ 为 $23$ 位，共 $32$ 位；长浮点数 $E$ 的取值为 $11$ 位表示，其取值为 $1\sim 2046$，$M$ 为 $52$ 位 ，共 $64$ 位</p>
+<p>综上，IEEE754 标准浮点数范围可见下表：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:center">格式</th>
+<th style="text-align:center">最小值</th>
+<th style="text-align:center">最大值</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">单精度</td>
+<td style="text-align:center">$E=1$，$M=0$<br>$1.0\times 2^{1-127}=2^{-126}$</td>
+<td style="text-align:center">$E=254$，$M=.111…$<br>$1.111…1\times 2^{254-127}=2^{127}\times (2-2^{-23})$</td>
+</tr>
+<tr>
+<td style="text-align:center">双精度</td>
+<td style="text-align:center">$E=1$，$M=0$<br>$1.0\times 2^{1-1023}=2^{-1022}$</td>
+<td style="text-align:center">$E=2046$，$M=.111…$<br>$1.111…1\times 2^{2046-1023}=2^{1023}\times (2-2^{-52})$</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h1 id="【浮点数的加减运算】"><a href="#【浮点数的加减运算】" class="headerlink" title="【浮点数的加减运算】"></a>【浮点数的加减运算】</h1><h2 id="步骤"><a href="#步骤" class="headerlink" title="步骤"></a>步骤</h2><p>浮点数的加减运算一律采用补码，其特点是阶码运算和尾数运算分开进行，具体步骤如下：</p>
+<p><strong><font size="4">1.对阶</font></strong></p>
+<p>对阶的目的是使两个操作数的小数点位置对齐，即使两个数的阶码相等</p>
+<p>对阶的步骤是：先求阶差，然后按小阶向大阶看齐的原则，将阶码小的尾数右移一位，同时阶 $+1$，直到两个数的阶码相等为止</p>
+<p>要注意的是，在进行尾数右移时，舍弃掉有效位会产生误差，影响计算精度</p>
+<p><strong><font size="4">2.尾数求和</font></strong></p>
+<p>在对阶后，将对阶的尾数按定点数加减运算规则进行计算</p>
+<p>关于定点数加减法的运算规则具体见：<a href="https://alex-mcavoy.github.io/notes/computer-composition/de65be17.html">定点数的表示与加减运算</a></p>
+<p><strong><font size="4">3.规格化</font></strong></p>
+<p>以双符号位为例，当尾数大于 $0$ 时，其补码规格化形式为：</p>
+<script type="math/tex; mode=display">
+[S]_补 = 00.1xx...x</script><p>当尾数小于 $0$ 时，其补码规格化形式为：</p>
+<script type="math/tex; mode=display">
+[S]_补 = 11.0xx...x</script><p>可见，当尾数最高数值位与符号位不同时，即为规格化形式</p>
+<p>规格化分为左规和右规两种：</p>
+<ul>
+<li>左规：当尾数出现 $00.0xx…x$ 或 $11.1xx…x$ 时，需要进行左规，即尾数左移 $1$ 位，和的阶码 $-1$，直到尾数为 $00.1xx…x$ 或 $11.0xx…x$ </li>
+<li>右规：当尾数求和结果溢出，即尾数出现 $10.xx…x$ 或 $01.xx…x$ 的形式时，需要进行右规，即尾数右移 $1$ 位，和的阶码 $+1$</li>
+</ul>
+<p><strong><font size="4">4.舍入</font></strong></p>
+<p>在对阶和右规的过程中，对尾数进行了舍入，这个过程可能会将尾数低位丢失，引起误差，影响精度</p>
+<p>常见的舍入方法两种有：</p>
+<ul>
+<li>$0$ 舍 $1$ 入法：类似于十进制数运算中的四舍五入即在尾数右移时，被移去的最高数值位为 $0$，则舍去；被移去的最高数值位为 $1$，则在尾数的末位 $+1$，这样做可能会使尾数又溢出，此时需再做一次右规</li>
+<li>恒置 $1$ 法：尾数右移时，不论丢掉的最高数值位是 $1$ 还是 $0$，都使右移后的尾数末位恒置 $1$，这种方法可能会使尾数变大，也可能会使尾数变小</li>
+</ul>
+<p><strong><font size="4">5.溢出判断</font></strong></p>
+<p>与定点数加减法一样，浮点数加减运算最后一步也需判断溢出</p>
+<p>在浮点数规格化中已指出，当尾数之和或尾数之差出现 $01.xx···x$或 $10.xx···x$ 时，并不表示溢出，只有将此数右规后，再根据阶码来判断浮点数运算结果是否溢出</p>
+<p>而浮点数的溢出与否是由阶码的符号决定的，以双符号位补码为例，当阶码的符号位出现 $01$ 时，即阶码大于最大阶码，表示上溢，进入中断处理；当阶码的符号位出现 $10$ 时，即阶码小于最小阶码，表示下溢，按机器零处理</p>
+<p>实际原理还是阶码符号位不同表示溢出，且真实符号位和高位符号位一致</p>
+<h2 id="实例"><a href="#实例" class="headerlink" title="实例"></a>实例</h2><p>设浮点数阶码、尾数用补码表示，采用双符号位，阶码位数为 $5$，尾数位数为 $7$</p>
+<p>已知 $x=2^7 \times \frac{29}{32}$，$y=2^5\times \frac{5}{8}$，求 $x+y$</p>
+<p>对于 $x$，将其转成二进制形式有：</p>
+<script type="math/tex; mode=display">
+\begin{align}
+x &= 2^7 \times \frac{29}{32} \notag \\
+&= 2^{00,111}\times 00,11101 \notag \\
+&= 00,111;00,11101 \notag 
+\end{align}</script><p>对于 $y$，将其转成二进制形式有：</p>
+<script type="math/tex; mode=display">
+\begin{align}
+y &= 2^5\times \frac{5}{8} \notag \\
+&= 2^{00,101}\times 00,10100 \notag \\
+&= 00,101;00,101000 \notag 
+\end{align}</script><p>首先进行对阶，$x$、$y$ 的阶码相减有：</p>
+<script type="math/tex; mode=display">
+\begin{align}
+\Delta E &= 00,111-00,101 \notag \\
+&= 00,111+11,011 \notag \\
+&= 00,010 \notag 
+\end{align}</script><p>易得 $x$ 阶码比 $y$ 大 $2$，将 $y$ 的阶码 $+2$，尾数右移 $2$ 位，有：</p>
+<script type="math/tex; mode=display">
+y = 00,111;00,00101</script><p>之后，令对阶后的 $x$、$y$ 的尾数相加，有：</p>
+<script type="math/tex; mode=display">
+00,11101+00,00101=01,00010</script><p>可以发现符号位为 $01$，需要进行右规</p>
+<p>令尾数右移一位，阶码 $+1$，有：</p>
+<script type="math/tex; mode=display">
+x+y=01,000;00,001</script><p>此时，阶码符号位为 $01$，可以判断发生上溢，进入中断处理</p>
+
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>感谢您对我的支持，让我继续努力分享有用的技术与知识点！</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/wechatpay.jpg" alt="Alex_McAvoy 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/alipay.jpg" alt="Alex_McAvoy 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Alex_McAvoy
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://alex-mcavoy.github.io/notes/computer-composition/73592ba1.html" title="浮点数的表示与加减运算">https://alex-mcavoy.github.io/notes/computer-composition/73592ba1.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/notes/" rel="tag"># 学习笔记</a>
+              <a href="/tags/computer-composition/" rel="tag"># 计算机组成</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/notes/computer-composition/de65be17.html" rel="prev" title="定点数的表示与加减运算">
+      <i class="fa fa-chevron-left"></i> 定点数的表示与加减运算
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/notes/computer-composition/d7e92617.html" rel="next" title="存储器分类与指标">
+      存储器分类与指标 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【浮点数表示】"><span class="nav-number">1.</span> <span class="nav-text">【浮点数表示】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#表示格式"><span class="nav-number">1.1.</span> <span class="nav-text">表示格式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#规格化浮点数"><span class="nav-number">1.2.</span> <span class="nav-text">规格化浮点数</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#规格化操作"><span class="nav-number">1.2.1.</span> <span class="nav-text">规格化操作</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#规格化尾数"><span class="nav-number">1.2.2.</span> <span class="nav-text">规格化尾数</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#溢出"><span class="nav-number">1.3.</span> <span class="nav-text">溢出</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#IEEE754-标准"><span class="nav-number">1.4.</span> <span class="nav-text">IEEE754 标准</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【浮点数的加减运算】"><span class="nav-number">2.</span> <span class="nav-text">【浮点数的加减运算】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#步骤"><span class="nav-number">2.1.</span> <span class="nav-text">步骤</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#实例"><span class="nav-number">2.2.</span> <span class="nav-text">实例</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">  
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Alex_McAvoy"
+      src="/assets/img/head.jpg">
+  <p class="site-author-name" itemprop="name">Alex_McAvoy</p>
+  <div class="site-description" itemprop="description">想要成为渔夫的猎手</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">541</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">56</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">61</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Alex-McAvoy" title="GitHub → https://github.com/Alex-McAvoy" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/u011815404" title="CSDN → https://blog.csdn.net/u011815404" rel="noopener" target="_blank"><i class="fas fa-copyright fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+<!-- 访客地图 -->
+<script type="text/javascript" src="//rf.revolvermaps.com/0/0/5.js?i=50n58yo58ow&amp;m=0&amp;c=ff0000&amp;cr1=ffffff&amp;s=140" async="async"></script>
+
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdz20172133" title="https://blog.csdn.net/sdz20172133" rel="noopener" target="_blank">神仙队友</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://pxlsdz.gitee.io/" title="https://pxlsdz.gitee.io/" rel="noopener" target="_blank">神仙队友的另一个博客</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://bycore.net" title="https://bycore.net" rel="noopener" target="_blank">凉了的某饼同学</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://kris-cn.github.io/" title="http://kris-cn.github.io/" rel="noopener" target="_blank">翟孙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://deng.fun/" title="http://deng.fun/" rel="noopener" target="_blank">芙蓉姐姐</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdau_fangshifeng" title="https://blog.csdn.net/sdau_fangshifeng" rel="noopener" target="_blank">一个头很酷的家伙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/wentong_Xu" title="https://blog.csdn.net/wentong_Xu" rel="noopener" target="_blank">小黑贱胖子</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.yuheng.tech/" title="https://www.yuheng.tech/" rel="noopener" target="_blank">咸于</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/lanshan1111" title="https://blog.csdn.net/lanshan1111" rel="noopener" target="_blank">肥硕硕</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdauguanweihong" title="https://blog.csdn.net/sdauguanweihong" rel="noopener" target="_blank">管少</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_41661919" title="https://blog.csdn.net/qq_41661919" rel="noopener" target="_blank">俊杰</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_40859951" title="https://blog.csdn.net/qq_40859951" rel="noopener" target="_blank">峰哥</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/LSD20164388" title="https://blog.csdn.net/LSD20164388" rel="noopener" target="_blank">狗冬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37748451" title="https://blog.csdn.net/qq_37748451" rel="noopener" target="_blank">胖亚亚</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37868325" title="https://blog.csdn.net/qq_37868325" rel="noopener" target="_blank">妍大佬</a>
+        </li>
+    </ul>
+  </div>
+
+		
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+  
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Alex_McAvoy</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+</br>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script><script src="/js/bookmark.js"></script>
+
+
+
+  
+
+
+
+
+  <script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '48fd73a538d3fa927f65',
+      clientSecret: '56618aefeee90bac3c20de8d51bb0b985d67252d',
+      repo        : 'Gitalk-Comment',
+      owner       : 'Alex-McAvoy',
+      admin       : ['Alex-McAvoy'],
+      id          : '712277197bcf9a4a8cd3f0adb1396f3d',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+  
+  <!-- 鼠标单击粒子特效 -->
+  <script type="text/javascript" src="/js/cursor-effects.js"></script>
+  <!-- 多级目录 -->
+  <script type="text/javascript" src="/js/category.js"></script>
+  
+</body>
+</html>

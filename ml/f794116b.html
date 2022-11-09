@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.9.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/img/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/assets/img/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/pace-js@1/themes/blue/pace-theme-minimal.css">
+  <script src="//cdn.jsdelivr.net/npm/pace-js@1/pace.min.js"></script>
+
+
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"alex-mcavoy.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":16,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":true,"color":"#ff0000","save":"manual"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":true},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.json"};
+  </script>
+
+  <meta name="description" content="Reference  Explicitly Representing Expected Cost Cost curves: An improved method for visualizingclassifier performance 机器学习模型性能评估二：代价曲线与性能评估方法总结 模型评估与选择（后篇）-代价曲线 西瓜书《机器学习》阅读笔记4——Chapter2_代价曲线   【概述】评">
+<meta name="keywords" content="机器学习">
+<meta property="og:type" content="article">
+<meta property="og:title" content="分类问题的评价指标（三）">
+<meta property="og:url" content="https://alex-mcavoy.github.io/ml/f794116b.html">
+<meta property="og:site_name" content="Alex_McAvoy">
+<meta property="og:description" content="Reference  Explicitly Representing Expected Cost Cost curves: An improved method for visualizingclassifier performance 机器学习模型性能评估二：代价曲线与性能评估方法总结 模型评估与选择（后篇）-代价曲线 西瓜书《机器学习》阅读笔记4——Chapter2_代价曲线   【概述】评">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/11-1.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/11-2.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/11-3.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/11-4.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/11-5.png">
+<meta property="og:updated_time" content="2022-08-09T01:45:28.455Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="分类问题的评价指标（三）">
+<meta name="twitter:description" content="Reference  Explicitly Representing Expected Cost Cost curves: An improved method for visualizingclassifier performance 机器学习模型性能评估二：代价曲线与性能评估方法总结 模型评估与选择（后篇）-代价曲线 西瓜书《机器学习》阅读笔记4——Chapter2_代价曲线   【概述】评">
+<meta name="twitter:image" content="https://alex-mcavoy.github.io/images/ml/11-1.png">
+
+<link rel="canonical" href="https://alex-mcavoy.github.io/ml/f794116b.html">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>分类问题的评价指标（三） | Alex_McAvoy</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Alex_McAvoy</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">想要成为渔夫的猎手</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+
+	
+	
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/ml/f794116b.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/assets/img/head.jpg">
+      <meta itemprop="name" content="Alex_McAvoy">
+      <meta itemprop="description" content="想要成为渔夫的猎手">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Alex_McAvoy">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          分类问题的评价指标（三）
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-06-13 11:15:00" itemprop="dateCreated datePublished" datetime="2019-06-13T11:15:00+08:00">2019-06-13</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/ml/" itemprop="url" rel="index"><span itemprop="name">机器学习</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>3.9k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>4 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <blockquote>
+<p>Reference</p>
+<ul>
+<li><a href="https://dl.acm.org/doi/pdf/10.1145/347090.347126" target="_blank" rel="noopener">Explicitly Representing Expected Cost</a></li>
+<li><a href="https://research.cs.wisc.edu/areas/ai/airg/cost-curves.pdf" target="_blank" rel="noopener">Cost curves: An improved method for visualizing<br>classifier performance</a></li>
+<li><a href="https://zhuanlan.zhihu.com/p/53781144" target="_blank" rel="noopener">机器学习模型性能评估二：代价曲线与性能评估方法总结</a></li>
+<li><a href="https://blog.csdn.net/qq_37059483/article/details/78614189" target="_blank" rel="noopener">模型评估与选择（后篇）-代价曲线</a></li>
+<li><a href="https://blog.csdn.net/victoriaw/article/details/77863463" target="_blank" rel="noopener">西瓜书《机器学习》阅读笔记4——Chapter2_代价曲线</a></li>
+</ul>
+</blockquote>
+<h1 id="【概述】"><a href="#【概述】" class="headerlink" title="【概述】"></a>【概述】</h1><p>评价指标可以说明模型的性能，辨别模型的结果，在建立一个模型后，计算指标，从指标获取反馈，再继续改进模型，直到达到理想的效果，因此，在预测之前检查模型的评估指标至关重要，不应在建立一个模型后，就直接将模型应用到看不见的数据上</p>
+<p>对于分类问题来说，其根据所分类别的个数，可分为<strong>二分类问题</strong>、<strong>多分类问题</strong></p>
+<p>在二分类问题中，使用的评价指标有：误差率（Error Rate）、准确率（Accuracy）、精确率（Precision）、召回率（Recall）、F1 分数（F1 score）、$F<em>\beta$ 分数（$F</em>\beta$ score）、PR 曲线、ROC 曲线、AUC、代价敏感错误率（Cost-sensitive Error Rate）、代价曲线（Cost Curve）等</p>
+<p>在多分类问题中，使用的评价指标有： 宏精确率（macro-P）、宏召回率（macro-R）、宏 F1（macro-F1） 、微精确率（micro-P）、微召回率（micro-R）、微F1（micro-F1）等</p>
+<p>本文将详细介绍代价敏感错误率（Cost-sensitive Error Rate）、代价曲线（Cost Curve）</p>
+<h1 id="【误分类代价与代价矩阵】"><a href="#【误分类代价与代价矩阵】" class="headerlink" title="【误分类代价与代价矩阵】"></a>【误分类代价与代价矩阵】</h1><p>在 <a href="https://alex-mcavoy.github.io/ml/ba8ab239.html">分类问题的评价指标（二）</a> 中，简单提及了误分类代价 $C(-|+)$ 与 $C(+|-)$ ，下面将详细进行介绍</p>
+<p>现实情况中，不同的错误造成的后果不同，为权衡不同错误造成的不同损失，为错误赋予<strong>非均等代价（Unequal Cost）</strong></p>
+<p>对于二分类问题，设定一个<strong>代价矩阵（Cost Matrix）</strong>，用<strong>误分类代价</strong> $C(j|i)$ 代表第 $i$ 类样本预测为第 $j$ 类样本的代价，且 $C(i|i)=0$，此处的代价是指的比值，即 5：1 与 50：10 的效果相当</p>
+<p>若将第 $0$ 类判别为第 $1$ 类所造成的损失更大，则 $C(1|0)&gt;C(0|1)$，损失程度相差越大，$C(1|0)$ 与 $C(0|1)$ 差别越大</p>
+<p>如下图，设第 $0$ 类为负类，第 $1$ 类为正类，则 $cost<em>{01}$ 是负类样本被预测为正类样本的代价，$cost</em>{10}$ 是正类样本为预测为负类样本的代价</p>
+<p><img width="300" src="/images/ml/11-1.png"></p>
+<h1 id="【代价敏感错误率】"><a href="#【代价敏感错误率】" class="headerlink" title="【代价敏感错误率】"></a>【代价敏感错误率】</h1><p>在均等代价下，错误率大多都是直接计算错误次数，并没有考虑不同错误造成不同的后果，在非均等代价下，我们希望的不再是最小化错误次数，而是最小化<strong>总体代价（Total Cost）</strong></p>
+<p>对于样本容量为 $n$ 的测试集 $T$，若将第 $1$ 类作为正类，第 $0$ 类作为负类，令 $T^+$ 表示测试集的正类集，$T^-$ 表示测试集的负类集，对于学习到的模型为 $Y=f(X;\boldsymbol{\theta})$，<strong>代价敏感错误率（Cost-sensitive Error Rate）</strong>定义为：</p>
+<script type="math/tex; mode=display">
+E_T(f;cost)
+= \frac{1}{n} \bigl[ \sum_{x_i\in T^+} I(f(\mathbf{x_i};\boldsymbol{\theta})\neq y_i) \cdot  C(0|1) 
++ \sum_{x_i\in T^-} I(f(\mathbf{x_i};\boldsymbol{\theta})\neq y_i) \cdot C(1|0)\bigr]</script><p>此外，如果令 $C(j|i)$ 中 $i$、$j$ 的取值不仅限于 $0$、$1$，则可定义出<strong>多分类问题</strong>的代价敏感性能度量标准</p>
+<h1 id="【代价曲线】"><a href="#【代价曲线】" class="headerlink" title="【代价曲线】"></a>【代价曲线】</h1><p>ROC 曲线无法直接反应<strong>期望总体代价</strong>，为解决该问题，引入了<strong>代价曲线（Cost Curve）</strong></p>
+<h2 id="均等代价下的代价曲线"><a href="#均等代价下的代价曲线" class="headerlink" title="均等代价下的代价曲线"></a>均等代价下的代价曲线</h2><p>在均等代价下，即 $C(-|+)=C(+|-)$ 时，此时期望代价就是错误率，且<strong>运行条件（Operating Condition）</strong>就是数据集中正类所占的比例 $p(+)$</p>
+<p>关于<strong>运行条件（Operating Condition）</strong>详见：<a href="https://alex-mcavoy.github.io/ml/ba8ab239.html">分类问题的评价指标（二）</a> </p>
+<p>我们希望用实际使用时的性能来评估分类器，但实际数据集中的正类所占比例 $p(+)$ 是未知的，因此应该得到所有可能的 $p(+)$ 值上的性能来对分类器进行评估</p>
+<p>此时，绘制一个二维坐标系统，的 $x$ 轴是 $p(+)$，$y$ 轴是错误率，当 $x=0$ 时，意味着数据集中全是反例，一个分类器在该数据集上的整体错误率就等于将所有正例预测为反例的概率，即 FNR；当 $x=1$ 时，意味着数据集中全是正例，一个分类器在该数据集上的整体错误率就等于将反例预测为正例的概率，即 FPR</p>
+<p>这样一来，在 ROC 空间中的一个分类器所对应的点，在该二维坐标系统中就成了一条线段，这个二维坐标系统中的所有线段所围成的<strong>下包络线</strong>，就是在误分类代价等价下的代价曲线</p>
+<p><img width="400" src="/images/ml/11-2.png"></p>
+<h2 id="非均等代价下的代价曲线"><a href="#非均等代价下的代价曲线" class="headerlink" title="非均等代价下的代价曲线"></a>非均等代价下的代价曲线</h2><p>下面从均等代价向非均等代价推广</p>
+<p>在非均等代价下，即 $C(-|+)\neq C(+|-)$ 时，考虑所有可能的运行条件（Operating Condition），即考虑所有的 （类别分布，误分类代价）对，此时，一个分类器的期望代价为：</p>
+<script type="math/tex; mode=display">
+E(Cost)=FNR*p(+)*C(-|+)+FPR*p(-)*C(+|-)</script><p>最大期望代价是在所有的样本都被错误分类，即 $FNR=FPR=1$ 时，此时有：</p>
+<script type="math/tex; mode=display">
+\max E(Cost)=p(+)*C(-|+)+p(-)*C(+|-)</script><p>通过期望代价对最大期望代价进行归一化，有：</p>
+<script type="math/tex; mode=display">
+E_{Norm}(Cost)
+=\frac{FNR*p(+)*C(-|+)+FPR*p(-)*C(+|-)}{p(+)*C(-|+)+p(-)*C(+|-)}</script><p>此时，归一化后的最大期望代价 $E_{Norm}(Cost)$，即<strong>非均等代价下的代价曲线的纵轴</strong>，其取值范围是 $[0,1]$</p>
+<p>回过头来看 ROC 空间中的一个点 $(TPR,FPR)$，由于 $TPR=1-FNR$</p>
+<p>那么，由于在均等代价下，ROC 空间与 CC 空间中的直线是一一对应的，可以视为<strong>不严格的对偶（Dual）</strong>，那么在从均等代价向非均等代价推广过程中也应当极力保障这个性质，这样可以对模型的分析、评价带来极大的便捷</p>
+<p>为了配合纵轴的归一化思路，只有对横轴进行同样的操作才可确保直线，即在数据集中正类所占的比例 $p(+)$ 的基础上引入包含误分类代价的信息，有：</p>
+<script type="math/tex; mode=display">
+p(+)*C(-|+)</script><p>之后再进行归一化：</p>
+<script type="math/tex; mode=display">
+PC(+)
+=\frac{p(+)*C(-|+)}{p(+)*C(-|+)+p(-)*C(+|-)}</script><p>此时，归一化后的引入误分类代价信息的在数据集中正类所占的比例 $PC(+)$，即<strong>非均等代价下的代价曲线的横轴</strong>，其取值范围是 $[0,1]$</p>
+<p>类似的，还可定义 $PC(-)$，即：</p>
+<script type="math/tex; mode=display">
+PC(-)
+=\frac{p(-)*C(+|-)}{p(+)*C(-|+)+p(-)*C(+|-)}</script><p>由于 $p(+)=1-p(-)$，易得：</p>
+<script type="math/tex; mode=display">
+PC(-)=1-PC(+)</script><p>将上式带入归一化后的最大期望代价 $E_{Norm}(Cost)$，有：</p>
+<script type="math/tex; mode=display">
+E_{Norm}(Cost)=FNR*PC(+)+FPR*(1-PC(+))</script><p>将 $PC(+)\in[0,1]$ 整体看作自变量，至此，就得到了非等价代价下的代价曲线的线性参数方程，其绘制出的图形是一条左端点位于点 $(0,FPR)$，右端点位于点 $(1,FNR)$ 的线段</p>
+<p>在非均等代价的 CC 空间中所有线段围成<strong>下包络线</strong>就是非均等代价的代价曲线</p>
+<p><img width="400" src="/images/ml/11-3.png"></p>
+<h2 id="ROC-曲线与代价曲线的转换"><a href="#ROC-曲线与代价曲线的转换" class="headerlink" title="ROC 曲线与代价曲线的转换"></a>ROC 曲线与代价曲线的转换</h2><p>ROC 曲线，它可视化的是 $FPR$（横轴） 和 $TPR$（纵轴）的关系，代价曲线则可视化了正例先验概率 $PC(+)$ 和最小代价期望 $E_{Norm}(Cost)$ 的关系</p>
+<p>而 ROC 空间中的一个点是与 CC 空间中的一条线段存在着不严格的对偶关系，也就是说，ROC 曲线与代价曲线是可以互相转换的：一旦获得了 ROC 曲线的所有信息，就可以逐点画出另个坐标系里对应的线段；反之，如果有一条代价曲线，就可以通过画切线，看切线左右的截距来得到 $FPR$ 和 $FNR$，而 $TPR=1-FNR$，进而即可绘制出 ROC 曲线</p>
+<p><img width="700" src="/images/ml/11-4.png"></p>
+<h2 id="包络线下的面积"><a href="#包络线下的面积" class="headerlink" title="包络线下的面积"></a>包络线下的面积</h2><p>在 CC 空间中，任一直线的绘制均与代价无关，那么所有直线拟合出的下包络线即代价曲线，也与代价无关</p>
+<p>简单来说，对于分类器，给定一个阈值，相应地统计出一个 $(FPR,FNR)$ 组合，再根据该组合绘制出一条直线，全程没有用到代价</p>
+<p>对于已知的 $(FPR,FNR)$ 组合，其在 CC 空间中绘制出的单根线段与横轴间的梯形面积，即<strong>模型对于某一阈值的期望总体代价（期望总体错误率）</strong></p>
+<p>在代价曲线中，横轴是正例先验概率，即一个关于正例概率 $p$ 的函数，那么，利用积分的方法，即可求出这个梯形面积：</p>
+<script type="math/tex; mode=display">
+\int_{p\in[0,1]} err(p)\: dp = \int_{p\in[0,1]} FNR*p+FPR*(1-p)\:dp</script><p>既然当给出一个 $(FPR,FNR)$ 组合时，任一直线的绘制与代价无关，那么所有直线拟出的下包络线即代价曲线，也与代价无关</p>
+<p>同样，当给定一个正例概率 $p$ 的函数时，代价曲线下的面积即<strong>模型对于所有阈值的期望总体代价（期望总体错误率）</strong>，也可通过积分的方式求出：</p>
+<script type="math/tex; mode=display">
+\int_{p\in[0,1]} err(p)\: dp 
+= \int_{p\in[0,1]} \inf_{(FNR,FPR)\in\Omega} FNR*p+FPR*(1-p) \:dp</script><p>其中，$\Omega$ 是一个模型对应的所有 $(FNR,FPR)$ 的集合，即 CC 空间中所有线段的端点，寻找下确界 $\inf$ 的操作则对应了寻找下包络线</p>
+<p><img width="500" src="/images/ml/11-5.png"></p>
+
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>感谢您对我的支持，让我继续努力分享有用的技术与知识点！</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/wechatpay.jpg" alt="Alex_McAvoy 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/alipay.jpg" alt="Alex_McAvoy 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Alex_McAvoy
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://alex-mcavoy.github.io/ml/f794116b.html" title="分类问题的评价指标（三）">https://alex-mcavoy.github.io/ml/f794116b.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/ml/" rel="tag"># 机器学习</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/ml/ba8ab239.html" rel="prev" title="分类问题的评价指标（二）">
+      <i class="fa fa-chevron-left"></i> 分类问题的评价指标（二）
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/ml/40b9080e.html" rel="next" title="分类问题的评价指标（四）">
+      分类问题的评价指标（四） <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【概述】"><span class="nav-number">1.</span> <span class="nav-text">【概述】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【误分类代价与代价矩阵】"><span class="nav-number">2.</span> <span class="nav-text">【误分类代价与代价矩阵】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【代价敏感错误率】"><span class="nav-number">3.</span> <span class="nav-text">【代价敏感错误率】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【代价曲线】"><span class="nav-number">4.</span> <span class="nav-text">【代价曲线】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#均等代价下的代价曲线"><span class="nav-number">4.1.</span> <span class="nav-text">均等代价下的代价曲线</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#非均等代价下的代价曲线"><span class="nav-number">4.2.</span> <span class="nav-text">非均等代价下的代价曲线</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ROC-曲线与代价曲线的转换"><span class="nav-number">4.3.</span> <span class="nav-text">ROC 曲线与代价曲线的转换</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#包络线下的面积"><span class="nav-number">4.4.</span> <span class="nav-text">包络线下的面积</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">  
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Alex_McAvoy"
+      src="/assets/img/head.jpg">
+  <p class="site-author-name" itemprop="name">Alex_McAvoy</p>
+  <div class="site-description" itemprop="description">想要成为渔夫的猎手</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">541</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">56</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">61</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Alex-McAvoy" title="GitHub → https://github.com/Alex-McAvoy" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/u011815404" title="CSDN → https://blog.csdn.net/u011815404" rel="noopener" target="_blank"><i class="fas fa-copyright fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+<!-- 访客地图 -->
+<script type="text/javascript" src="//rf.revolvermaps.com/0/0/5.js?i=50n58yo58ow&amp;m=0&amp;c=ff0000&amp;cr1=ffffff&amp;s=140" async="async"></script>
+
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdz20172133" title="https://blog.csdn.net/sdz20172133" rel="noopener" target="_blank">神仙队友</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://pxlsdz.gitee.io/" title="https://pxlsdz.gitee.io/" rel="noopener" target="_blank">神仙队友的另一个博客</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://bycore.net" title="https://bycore.net" rel="noopener" target="_blank">凉了的某饼同学</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://kris-cn.github.io/" title="http://kris-cn.github.io/" rel="noopener" target="_blank">翟孙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://deng.fun/" title="http://deng.fun/" rel="noopener" target="_blank">芙蓉姐姐</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdau_fangshifeng" title="https://blog.csdn.net/sdau_fangshifeng" rel="noopener" target="_blank">一个头很酷的家伙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/wentong_Xu" title="https://blog.csdn.net/wentong_Xu" rel="noopener" target="_blank">小黑贱胖子</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.yuheng.tech/" title="https://www.yuheng.tech/" rel="noopener" target="_blank">咸于</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/lanshan1111" title="https://blog.csdn.net/lanshan1111" rel="noopener" target="_blank">肥硕硕</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdauguanweihong" title="https://blog.csdn.net/sdauguanweihong" rel="noopener" target="_blank">管少</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_41661919" title="https://blog.csdn.net/qq_41661919" rel="noopener" target="_blank">俊杰</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_40859951" title="https://blog.csdn.net/qq_40859951" rel="noopener" target="_blank">峰哥</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/LSD20164388" title="https://blog.csdn.net/LSD20164388" rel="noopener" target="_blank">狗冬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37748451" title="https://blog.csdn.net/qq_37748451" rel="noopener" target="_blank">胖亚亚</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37868325" title="https://blog.csdn.net/qq_37868325" rel="noopener" target="_blank">妍大佬</a>
+        </li>
+    </ul>
+  </div>
+
+		
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+  
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Alex_McAvoy</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+</br>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script><script src="/js/bookmark.js"></script>
+
+
+
+  
+
+
+
+
+  <script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '48fd73a538d3fa927f65',
+      clientSecret: '56618aefeee90bac3c20de8d51bb0b985d67252d',
+      repo        : 'Gitalk-Comment',
+      owner       : 'Alex-McAvoy',
+      admin       : ['Alex-McAvoy'],
+      id          : '6c369cc1ccd3621b1cf0eda90bc497fd',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+  
+  <!-- 鼠标单击粒子特效 -->
+  <script type="text/javascript" src="/js/cursor-effects.js"></script>
+  <!-- 多级目录 -->
+  <script type="text/javascript" src="/js/category.js"></script>
+  
+</body>
+</html>

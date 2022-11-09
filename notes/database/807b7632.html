@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.9.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/img/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/assets/img/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/pace-js@1/themes/blue/pace-theme-minimal.css">
+  <script src="//cdn.jsdelivr.net/npm/pace-js@1/pace.min.js"></script>
+
+
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"alex-mcavoy.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":16,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":true,"color":"#ff0000","save":"manual"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":true},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.json"};
+  </script>
+
+  <meta name="description" content="【基本表定义】基本语法创建了一个模式，就创建了一个数据库的命名空间，在这个命名空间中，首先要做的就是创建该模式所包含的数据库基本表">
+<meta name="keywords" content="学习笔记,数据库系统,SQL">
+<meta property="og:type" content="article">
+<meta property="og:title" content="SQL 基本表的数据定义">
+<meta property="og:url" content="https://alex-mcavoy.github.io/notes/database/807b7632.html">
+<meta property="og:site_name" content="Alex_McAvoy">
+<meta property="og:description" content="【基本表定义】基本语法创建了一个模式，就创建了一个数据库的命名空间，在这个命名空间中，首先要做的就是创建该模式所包含的数据库基本表">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/database/15-1.png">
+<meta property="og:updated_time" content="2021-08-23T14:00:57.306Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="SQL 基本表的数据定义">
+<meta name="twitter:description" content="【基本表定义】基本语法创建了一个模式，就创建了一个数据库的命名空间，在这个命名空间中，首先要做的就是创建该模式所包含的数据库基本表">
+<meta name="twitter:image" content="https://alex-mcavoy.github.io/images/notes/database/15-1.png">
+
+<link rel="canonical" href="https://alex-mcavoy.github.io/notes/database/807b7632.html">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>SQL 基本表的数据定义 | Alex_McAvoy</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Alex_McAvoy</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">想要成为渔夫的猎手</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+
+	
+	
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/notes/database/807b7632.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/assets/img/head.jpg">
+      <meta itemprop="name" content="Alex_McAvoy">
+      <meta itemprop="description" content="想要成为渔夫的猎手">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Alex_McAvoy">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          SQL 基本表的数据定义
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2018-10-05 13:48:00" itemprop="dateCreated datePublished" datetime="2018-10-05T13:48:00+08:00">2018-10-05</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/notes/" itemprop="url" rel="index"><span itemprop="name">学习笔记</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/notes/database/" itemprop="url" rel="index"><span itemprop="name">数据库系统</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>3k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>3 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="【基本表定义】"><a href="#【基本表定义】" class="headerlink" title="【基本表定义】"></a>【基本表定义】</h1><h2 id="基本语法"><a href="#基本语法" class="headerlink" title="基本语法"></a>基本语法</h2><p>创建了一个模式，就创建了一个数据库的<strong>命名空间</strong>，在这个命名空间中，首先要做的就是创建该模式所包含的<strong>数据库基本表</strong></p>
+<p>在 SQL 中，创建基本表的语法如下：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> &lt;表名&gt; (&lt;列名<span class="number">1</span>&gt; &lt;数据类型<span class="number">1</span>&gt; [列级完整性约束条件<span class="number">1</span>]</span><br><span class="line">                   [,&lt;列名<span class="number">2</span>&gt; &lt;数据类型<span class="number">2</span>&gt; [列级完整性约束条件<span class="number">2</span>]]</span><br><span class="line">                   ...</span><br><span class="line">                   [,&lt;列名n&gt; &lt;数据类型n&gt; [列级完整性约束条件n]]</span><br><span class="line">                   [,&lt;表级完整性约束条件&gt;]);</span><br></pre></td></tr></table></figure>
+<p>建表的同时可以定义与该表有关的<strong>完整性约束条件</strong>，这些完整性约束条件会被存入系统的数据字典中，当用户操作表中数据时，RDBMS 会自动检查该操作是否违背完整性约束条件</p>
+<p>需要注意的是，如果完整性约束条件涉及到该表的多个属性列，则必须定义在<strong>表级</strong>上，否则，既可以定义在列级也可以定义在表级</p>
+<h2 id="数据类型"><a href="#数据类型" class="headerlink" title="数据类型"></a>数据类型</h2><p>在<strong>关系模型</strong>中，每一个属性来自一个域，其取值必须是域中的值</p>
+<p>而在 <strong>SQL</strong> 中，域的概念用<strong>数据类型</strong>来实现，因此在定义表的各属性时，要指明数据类型及长度，一个属性选用何种数据类型要根据实际情况来决定，一般从<strong>取值范围</strong>、<strong>要做的运算</strong>两个方向来进行考虑</p>
+<p>基本的数据类型如下表，要注意的是，不同的 RDBMS 中，支持的数据类型不完全相同</p>
+<p><img width="500" src="/images/notes/database/15-1.png"></p>
+<h2 id="实例"><a href="#实例" class="headerlink" title="实例"></a>实例</h2><p>建立学生表 student，表中包含学号 Sno、姓名 Sname、性别 Ssex、年龄 Sage、专业 Sdept 五个属性，要求 Sno 是主码（列级完整性约束条件为 <code>PRIMARY KEY</code>），Sname 取值唯一（列级完整性约束条件为 <code>UNIQUE</code>）</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> student (</span><br><span class="line">    Sno <span class="built_in">CHAR</span>(<span class="number">9</span>) PRIMARY <span class="keyword">KEY</span>,   <span class="comment">/*列级完整性约束条件，主码*/</span></span><br><span class="line">    Sname <span class="built_in">CHAR</span>(<span class="number">20</span>) <span class="keyword">UNIQUE</span>,     <span class="comment">/*列级完整性约束条件，取唯一值*/</span></span><br><span class="line">    Ssex <span class="built_in">CHAR</span>(<span class="number">2</span>),</span><br><span class="line">    Sage <span class="built_in">SMALLINT</span>,</span><br><span class="line">    Sdept <span class="built_in">CHAR</span>(<span class="number">20</span>)</span><br><span class="line">);</span><br></pre></td></tr></table></figure>
+<p>建立课程表 course，表中包含课程号 Cno、课程名 Cname、先修课号 Cpno、学分 Ccredit 四个属性，要求 Cno 是主码（列级完整性约束条件为 <code>PRIMARY KEY</code>），Cname 不能为空（列级完整性约束条件为 <code>NOT NULL</code>），同时要求将 Cpno 设为外码，被参照表是 Course 表，被参照列是 Cno（表级完整性约束条件为 <code>FOREING KEY(外码) REFERENCES 被参照表(被参照列)</code>）</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> course (</span><br><span class="line">    Cno <span class="built_in">CHAR</span>(<span class="number">4</span>) PRIMARY <span class="keyword">KEY</span>,   <span class="comment">/*列级完整性约束条件，主码*/</span></span><br><span class="line">    Cname <span class="built_in">CHAR</span>(<span class="number">40</span>) <span class="keyword">NOT</span> <span class="literal">NULL</span>,   <span class="comment">/*列级完整性约束条件，非空*/</span></span><br><span class="line">    Cpno <span class="built_in">CHAR</span>(<span class="number">4</span>),</span><br><span class="line">    Ccredit <span class="built_in">SMALLINT</span>,</span><br><span class="line">    <span class="keyword">FOREIGN</span> <span class="keyword">KEY</span>(Cpno) <span class="keyword">REFERENCES</span> Course(Cno) <span class="comment">/*表级完整性约束条件*/</span></span><br><span class="line">);</span><br></pre></td></tr></table></figure>
+<p>建立学生选课表 sc，表中包含学生学号 Sno、课程号 Cno、成绩 SMALLINT，要求 Sno 与 Cno 共同作为主码，同时将 Sno、Cno 设为外码，被参照表分别为 Student 和 Course</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> sc (</span><br><span class="line">    Sno <span class="built_in">CHAR</span>(<span class="number">9</span>),</span><br><span class="line">    Cno <span class="built_in">CHAR</span>(<span class="number">4</span>),</span><br><span class="line">    Grade <span class="built_in">SMALLINT</span>,</span><br><span class="line">    PRIMARY <span class="keyword">KEY</span>(Sno, Cno),                     <span class="comment">/*表级完整性约束条件*/</span></span><br><span class="line">    <span class="keyword">FOREIGN</span> <span class="keyword">KEY</span>(Sno) <span class="keyword">REFERENCES</span> Student(Sno),  <span class="comment">/*表级完整性约束条件*/</span></span><br><span class="line">    <span class="keyword">FOREIGN</span> <span class="keyword">KEY</span>(Cno) <span class="keyword">REFERENCES</span> Course(Cno)    <span class="comment">/*表级完整性约束条件*/</span></span><br><span class="line">);</span><br></pre></td></tr></table></figure>
+<h2 id="模式与表"><a href="#模式与表" class="headerlink" title="模式与表"></a>模式与表</h2><p>每一个基本表都属于某一个模式，一个模式中包含多个基本表，在定义基本表时，有以下三种方法来定义其所属的模式</p>
+<ol>
+<li>在创建模式时同时创建表名：<code>CREATE SCHEMA &lt;模式名&gt; AUTHORIZATION &lt;用户名&gt; &lt;表定义子句&gt;;</code></li>
+<li>在表名中显示给出模式名：<code>CREATE TABLE &lt;模式名&gt;.&lt;表名&gt;(...);</code></li>
+<li>设置所属模式，在创建表时不必给出模式名</li>
+</ol>
+<p>对于第一种方法，在 <a href="https://alex-mcavoy.github.io/notes/database/6a894b26.html">SQL 模式的定义与删除</a> 中，介绍了模型定义的子句支持，可以在定义模式的同时创建基本表</p>
+<p>对于第二种方法，其具体使用详见如下实例</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> S-T.Student(...);  <span class="comment">/*Student所属的模式是S-T*/</span></span><br></pre></td></tr></table></figure>
+<p>对于第三种方法，系统根据<strong>搜索路径</strong>来确定该对象所属的模式，RDBMS 会使用<strong>模式列表中第一个存在的模式</strong>作为数据库对象的模式名，如果搜索路径中的模式名都不存在，系统会报异常错误</p>
+<p>使用 <code>SHOW search_path;</code> 语句可以显示当前的搜索路径，其默认值是 <code>$user, PUBLIC</code>，含义是先搜索与用户名相同的模式名，如果该模式名不存在，则使用 <code>PUBLIC</code> 模式</p>
+<p>数据库管理员可以使用 <code>SET search_path TO &lt;路径&gt;, PUBLIC</code> 命令来设置搜索路径</p>
+<h1 id="【基本表修改】"><a href="#【基本表修改】" class="headerlink" title="【基本表修改】"></a>【基本表修改】</h1><p>在 SQL 中，修改基本表的语法如下</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">ALTER</span> <span class="keyword">TABLE</span> &lt;表名&gt;</span><br><span class="line">[<span class="keyword">ADD</span> [<span class="keyword">COLUMN</span>] &lt;新列名&gt; &lt;数据类型&gt; [完整性约束]]</span><br><span class="line">[<span class="keyword">ADD</span> &lt;表级完整性约束&gt;]</span><br><span class="line">[<span class="keyword">DROP</span> [<span class="keyword">COLUMN</span>] &lt;列名&gt; [<span class="keyword">CASCADE</span>|RESTRICT]]</span><br><span class="line">[<span class="keyword">DROP</span> <span class="keyword">CONSTRAINT</span> &lt;完整性约束名&gt; [<span class="keyword">CASCADE</span>|RESTRICT]]</span><br><span class="line">[<span class="keyword">ALTER</span> <span class="keyword">COLUMN</span> &lt;列名&gt; &lt;数据类型&gt;];</span><br></pre></td></tr></table></figure>
+<p>其中，<code>&lt;表名&gt;</code> 是要修改的基本表，<code>ADD</code> 子句用于增加新列、新的列级完整性约束条件、新的表级完整性约束条件，<code>DROP</code> 子句用于删除表中的列，<code>DROP CONSTRAINT</code> 子句用于删除指定的完整性约束条件，<code>ALTER COLUMN</code> 用于修改原有的列定义（列名与数据类型）</p>
+<p>在 <code>DROP</code> 子句和 <code>DROP CONSTRAINT</code> 子句中，如果指定了<strong>级联短语 <code>CASCADE</code></strong>，则自动删除引用了该列的其他对象；如果指定了<strong>约束短语 <code>RESTRICT</code></strong>，则若该列被其他对象引用，RDBMS 将拒绝删除该列</p>
+<p>例如，向学生表 student 中增加入学时间 S_entrance 列，其数据类型为日期型</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">ALTER</span> <span class="keyword">TABLE</span> stuendt <span class="keyword">ADD</span> S_entrance <span class="keyword">DATA</span>;</span><br></pre></td></tr></table></figure>
+<p>此时，无论基本表中原来是否有数据，新增加的列一律为空值</p>
+<h1 id="【基本表删除】"><a href="#【基本表删除】" class="headerlink" title="【基本表删除】"></a>【基本表删除】</h1><p>在 SQL 中，删除基本表的语法如下</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">DROP</span> <span class="keyword">TABLE</span> &lt;表名&gt; [<span class="keyword">CASCADE</span>|RESTRICT];</span><br></pre></td></tr></table></figure>
+<p>如果指定了<strong>级联短语 <code>CASCADE</code></strong>，则删除该表时，会将相关的依赖对象一起删除</p>
+<p>例如，student 表上建有视图 IS_Student，删除该表时，指定级联短语 <code>CASCADE</code></p>
+<p>此时，基本表定义与数据会被删除，同时表上建立的视图也会被删除</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">DROP</span> <span class="keyword">TABLE</span> student <span class="keyword">CASCADE</span>;</span><br><span class="line"><span class="comment">--NOTICE: drop cascades to view IS_Student</span></span><br></pre></td></tr></table></figure>
+<p>如果指定了<strong>约束短语 <code>RESTRICT</code></strong>，则被删除的表不能被其他表的约束所引用，同时如果存在依赖该表的对象，RDBMS 也将拒绝删除该表，同时报出错误</p>
+<p>例如，删除 student 表，指定级联短语 <code>RESTRICT</code></p>
+<p>此时，系统将返回错误信息，存在依赖该表的对象，此表不能被删除</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">DROP</span> <span class="keyword">TABLE</span> student RESTRICT;</span><br><span class="line"><span class="comment">--ERROR: cannot drop table Student because other object depend on it</span></span><br></pre></td></tr></table></figure>
+
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>感谢您对我的支持，让我继续努力分享有用的技术与知识点！</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/wechatpay.jpg" alt="Alex_McAvoy 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/alipay.jpg" alt="Alex_McAvoy 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Alex_McAvoy
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://alex-mcavoy.github.io/notes/database/807b7632.html" title="SQL 基本表的数据定义">https://alex-mcavoy.github.io/notes/database/807b7632.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/notes/" rel="tag"># 学习笔记</a>
+              <a href="/tags/database/" rel="tag"># 数据库系统</a>
+              <a href="/tags/sql/" rel="tag"># SQL</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/notes/database/6a894b26.html" rel="prev" title="SQL 模式的数据定义">
+      <i class="fa fa-chevron-left"></i> SQL 模式的数据定义
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/notes/database/da97f9a1.html" rel="next" title="SQL 视图的数据定义">
+      SQL 视图的数据定义 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【基本表定义】"><span class="nav-number">1.</span> <span class="nav-text">【基本表定义】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#基本语法"><span class="nav-number">1.1.</span> <span class="nav-text">基本语法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#数据类型"><span class="nav-number">1.2.</span> <span class="nav-text">数据类型</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#实例"><span class="nav-number">1.3.</span> <span class="nav-text">实例</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#模式与表"><span class="nav-number">1.4.</span> <span class="nav-text">模式与表</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【基本表修改】"><span class="nav-number">2.</span> <span class="nav-text">【基本表修改】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【基本表删除】"><span class="nav-number">3.</span> <span class="nav-text">【基本表删除】</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">  
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Alex_McAvoy"
+      src="/assets/img/head.jpg">
+  <p class="site-author-name" itemprop="name">Alex_McAvoy</p>
+  <div class="site-description" itemprop="description">想要成为渔夫的猎手</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">541</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">56</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">61</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Alex-McAvoy" title="GitHub → https://github.com/Alex-McAvoy" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/u011815404" title="CSDN → https://blog.csdn.net/u011815404" rel="noopener" target="_blank"><i class="fas fa-copyright fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+<!-- 访客地图 -->
+<script type="text/javascript" src="//rf.revolvermaps.com/0/0/5.js?i=50n58yo58ow&amp;m=0&amp;c=ff0000&amp;cr1=ffffff&amp;s=140" async="async"></script>
+
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdz20172133" title="https://blog.csdn.net/sdz20172133" rel="noopener" target="_blank">神仙队友</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://pxlsdz.gitee.io/" title="https://pxlsdz.gitee.io/" rel="noopener" target="_blank">神仙队友的另一个博客</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://bycore.net" title="https://bycore.net" rel="noopener" target="_blank">凉了的某饼同学</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://kris-cn.github.io/" title="http://kris-cn.github.io/" rel="noopener" target="_blank">翟孙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://deng.fun/" title="http://deng.fun/" rel="noopener" target="_blank">芙蓉姐姐</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdau_fangshifeng" title="https://blog.csdn.net/sdau_fangshifeng" rel="noopener" target="_blank">一个头很酷的家伙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/wentong_Xu" title="https://blog.csdn.net/wentong_Xu" rel="noopener" target="_blank">小黑贱胖子</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.yuheng.tech/" title="https://www.yuheng.tech/" rel="noopener" target="_blank">咸于</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/lanshan1111" title="https://blog.csdn.net/lanshan1111" rel="noopener" target="_blank">肥硕硕</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdauguanweihong" title="https://blog.csdn.net/sdauguanweihong" rel="noopener" target="_blank">管少</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_41661919" title="https://blog.csdn.net/qq_41661919" rel="noopener" target="_blank">俊杰</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_40859951" title="https://blog.csdn.net/qq_40859951" rel="noopener" target="_blank">峰哥</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/LSD20164388" title="https://blog.csdn.net/LSD20164388" rel="noopener" target="_blank">狗冬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37748451" title="https://blog.csdn.net/qq_37748451" rel="noopener" target="_blank">胖亚亚</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37868325" title="https://blog.csdn.net/qq_37868325" rel="noopener" target="_blank">妍大佬</a>
+        </li>
+    </ul>
+  </div>
+
+		
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+  
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Alex_McAvoy</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+</br>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script><script src="/js/bookmark.js"></script>
+
+
+
+  
+
+
+
+
+  <script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '48fd73a538d3fa927f65',
+      clientSecret: '56618aefeee90bac3c20de8d51bb0b985d67252d',
+      repo        : 'Gitalk-Comment',
+      owner       : 'Alex-McAvoy',
+      admin       : ['Alex-McAvoy'],
+      id          : '949da0d9404a156f93f82fd5fb1f3dff',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+  
+  <!-- 鼠标单击粒子特效 -->
+  <script type="text/javascript" src="/js/cursor-effects.js"></script>
+  <!-- 多级目录 -->
+  <script type="text/javascript" src="/js/category.js"></script>
+  
+</body>
+</html>

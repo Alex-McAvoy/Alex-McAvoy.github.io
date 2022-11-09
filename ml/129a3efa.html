@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.9.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/img/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/assets/img/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/pace-js@1/themes/blue/pace-theme-minimal.css">
+  <script src="//cdn.jsdelivr.net/npm/pace-js@1/pace.min.js"></script>
+
+
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"alex-mcavoy.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":16,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":true,"color":"#ff0000","save":"manual"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":true},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.json"};
+  </script>
+
+  <meta name="description" content="Reference  Logistic regression 周志华机器学习（西瓜书）学习笔记（持续更新） 西瓜书学习笔记(3)—线性模型 最大似然估计 机器学习算法系列（七）-对数几率回归算法（一）（Logistic Regression Algorithm）   【概述】对数几率回归（Logistic regression）即 Logistic 回归，虽然名为回归，但其实际上是一种解决分类问">
+<meta name="keywords" content="机器学习">
+<meta property="og:type" content="article">
+<meta property="og:title" content="二元 Logistic 回归">
+<meta property="og:url" content="https://alex-mcavoy.github.io/ml/129a3efa.html">
+<meta property="og:site_name" content="Alex_McAvoy">
+<meta property="og:description" content="Reference  Logistic regression 周志华机器学习（西瓜书）学习笔记（持续更新） 西瓜书学习笔记(3)—线性模型 最大似然估计 机器学习算法系列（七）-对数几率回归算法（一）（Logistic Regression Algorithm）   【概述】对数几率回归（Logistic regression）即 Logistic 回归，虽然名为回归，但其实际上是一种解决分类问">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/31-1.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/31-2.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/31-3.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/31-4.png">
+<meta property="og:updated_time" content="2022-09-10T01:06:00.633Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="二元 Logistic 回归">
+<meta name="twitter:description" content="Reference  Logistic regression 周志华机器学习（西瓜书）学习笔记（持续更新） 西瓜书学习笔记(3)—线性模型 最大似然估计 机器学习算法系列（七）-对数几率回归算法（一）（Logistic Regression Algorithm）   【概述】对数几率回归（Logistic regression）即 Logistic 回归，虽然名为回归，但其实际上是一种解决分类问">
+<meta name="twitter:image" content="https://alex-mcavoy.github.io/images/ml/31-1.png">
+
+<link rel="canonical" href="https://alex-mcavoy.github.io/ml/129a3efa.html">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>二元 Logistic 回归 | Alex_McAvoy</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Alex_McAvoy</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">想要成为渔夫的猎手</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+
+	
+	
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/ml/129a3efa.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/assets/img/head.jpg">
+      <meta itemprop="name" content="Alex_McAvoy">
+      <meta itemprop="description" content="想要成为渔夫的猎手">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Alex_McAvoy">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          二元 Logistic 回归
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-07-05 19:37:00" itemprop="dateCreated datePublished" datetime="2019-07-05T19:37:00+08:00">2019-07-05</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/ml/" itemprop="url" rel="index"><span itemprop="name">机器学习</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>13k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>12 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <blockquote>
+<p>Reference</p>
+<ul>
+<li><a href="https://en.wikipedia.org/wiki/Logistic_regression" target="_blank" rel="noopener">Logistic regression</a></li>
+<li><a href="https://blog.csdn.net/yhdsss875/article/details/121145253" target="_blank" rel="noopener">周志华机器学习（西瓜书）学习笔记（持续更新）</a></li>
+<li><a href="https://www.heywhale.com/mw/project/5e4f9a690e2b66002c1f7dc2" target="_blank" rel="noopener">西瓜书学习笔记(3)—线性模型</a></li>
+<li><a href="https://en.wikipedia.org/wiki/Maximum_likelihood_estimation" target="_blank" rel="noopener">最大似然估计</a></li>
+<li><a href="https://segmentfault.com/a/1190000041249667" target="_blank" rel="noopener"><a href="https://segmentfault.com/a/1190000041249667" target="_blank" rel="noopener">机器学习算法系列（七）-对数几率回归算法（一）（Logistic Regression Algorithm）</a></a></li>
+</ul>
+</blockquote>
+<h1 id="【概述】"><a href="#【概述】" class="headerlink" title="【概述】"></a>【概述】</h1><p><strong>对数几率回归（Logistic regression）</strong>即 <strong>Logistic 回归</strong>，虽然名为回归，但其实际上是一种解决<strong>分类问题</strong>的分类学习方法，在现实中应用十分广泛，比如垃圾邮件识别，手写数字识别，人脸识别，语音识别等</p>
+<p>对于分类问题来说，如果利用线性回归来拟合，假设函数 $f(\mathbf{x_i};\boldsymbol{\theta})$ 的输出值会出现 $f(\mathbf{x_i};\boldsymbol{\theta})&gt;1$ 或 $f(\mathbf{x_i};\boldsymbol{\theta})&lt;0$ 的情况，无法对结果进行归纳，因此，有了 Logistic 回归</p>
+<p>其利用一个单调可微的<strong>激活函数</strong>，将分类任务的真实标记 $y_i$ 与线性回归模型的预测值 $f(\mathbf{x_i};\boldsymbol{\theta})$ 联系起来，从而将数值结果转换为分类结果，简单来说，其是利用线性回归模型的预测结果去逼近真实标记的对数几率</p>
+<p>关于激活函数的详细介绍，详见：<a href="https://alex-mcavoy.github.io/ml/dae268f.html">常见的激活函数</a></p>
+<p>Logistic 回归根据分类数据的类别，分为以下三种情况：</p>
+<ul>
+<li>二元 Logistic 回归：分类数据为两类（例如：有/没有）</li>
+<li>多元无序 Logistic 回归：分类数据超过两类，且类别间没有对比意义（例如：一线城市、二线城市、三线城市）</li>
+<li>多元有序 Logistic 回归：分类数据超过两类，且类别间有对比意义（例如：喜欢、不喜欢、无所谓）</li>
+</ul>
+<p>需要注意的是，这里的元，指的不是自变量的个数，而是<strong>因变量的取值范围</strong></p>
+<p>本文仅介绍二元 Logistic 回归，关于多元 Logistic 回归，详见：<a href="https://alex-mcavoy.github.io/ml/c957033e.html">多元 Logistic 回归</a></p>
+<h1 id="【假设形式】"><a href="#【假设形式】" class="headerlink" title="【假设形式】"></a>【假设形式】</h1><h2 id="假设函数"><a href="#假设函数" class="headerlink" title="假设函数"></a>假设函数</h2><p>对于给定的容量为 $n$ 的样本集 $D={(\mathbf{x_1},y_1),(\mathbf{x_2},y_2),…,(\mathbf{x_n},y_n)}$，第 $i$ 组样本中的输入 $\mathbf{x_i}$ 具有 $m$ 个特征值，即：$\mathbf{x_i}=(x_i^{(1)},x_i^{(2)},…,x_i^{(m)})\in \mathbb{R}^m$，输出为 $y_i\in {0,1}$，二元 Logistic 回归学习到的模型为 $f(\mathbf{x_i};\boldsymbol{\theta})$，使得 $f(\mathbf{x_i};\boldsymbol{\theta})\simeq y_i$</p>
+<p>假设函数 $f(\mathbf{x_i};\boldsymbol{\theta})$ 为：</p>
+<script type="math/tex; mode=display">
+f(\mathbf{x_i};\boldsymbol{\theta})=g(\theta^{(0)} + \theta^{(1)} x_i^{(1)} + \theta^{(2)} x_i^{(2)} + ... + \theta^{(m)} x_i^{(m)})</script><p>其中，特征参数 $\boldsymbol{\theta}$ 为 $(m+1)\times 1$ 的列向量，即：</p>
+<script type="math/tex; mode=display">
+\boldsymbol{\theta}=[\theta^{(0)},\theta^{(1)},...,\theta^{(m)}]^T\in \mathbb{R}^{m+1}</script><p>$g(z)$ 为激活函数，就是假说表示，对于不同的问题，根据实际情况来选择不同的激活函数</p>
+<p>为了表述方便，对假设函数进行简化，定义一个额外的第 $0$ 个特征量，这个特征量对所有样本的取值全部为 $1$，这使得特征量从过去的 $m$ 个变为 $m+1$ 个，即设：$x_i^{(0)}=1$</p>
+<p>那么假设函数就可以写为：</p>
+<script type="math/tex; mode=display">
+f(\mathbf{x_i};\boldsymbol{\theta})=g(\theta^{(0)} x_i^{(0)} + \theta^{(1)} x_i^{(1)} + \theta^{(2)} x_i^{(2)} + ... + \theta^{(m)} x_i^{(m)})</script><p>在二元 Logistic 回归中，采用 <code>sigmoid</code> 函数 $\sigma(z)=\frac{1}{1+e^{-z}}$ 作为激活函数，其图像如下：</p>
+<p><img width="500" src="/images/ml/31-1.png"></p>
+<p>不难看出，<code>sigmoid</code> 函数左侧无限接近于 $0$，右侧无限接近于 $1$，具有很好的对称性，值域 $y \in (0,1)$，正好符合对二分类问题模型的要求</p>
+<p>于是，假设函数可以写作：</p>
+<script type="math/tex; mode=display">
+f(\mathbf{x_i};\boldsymbol{\theta})=\frac{1}{1+e^{-\boldsymbol{\theta}^T\mathbf{x_i}}}</script><h2 id="对数几率形式"><a href="#对数几率形式" class="headerlink" title="对数几率形式"></a>对数几率形式</h2><p>对于假设函数 $f(\mathbf{x_i};\boldsymbol{\theta})=\frac{1}{1+e^{-\boldsymbol{\theta}^T\mathbf{x_i}}}$，将假设函数 $f(\mathbf{x_i};\boldsymbol{\theta})$ 的值 $\hat{y_i}$ 记为样本 $\mathbf{x_i}$ 为正例的可能性，则 $1-\hat{y_i}$ 是其为反例的可能性，则两者的比值，称为<strong>几率（Odds）</strong>，其反映了 $\mathbf{x_i}$ 作为正例的相对可能性：</p>
+<script type="math/tex; mode=display">
+\frac{\hat{y_i}}{1-\hat{y_i}}</script><p>当假设输出标记 $\hat{y_i}$ 是在指数尺度上变化时，可对几率取对数，称为<strong>对数几率（Log Odds）</strong>，即：</p>
+<script type="math/tex; mode=display">
+logit(p)=\ln \frac{\hat{y_i}}{1-\hat{y_i}}</script><p>将对数几率作为模型逼近的目标，并将假设函数带入，即二元 Logistic 回归模型的对数几率形式：</p>
+<script type="math/tex; mode=display">
+\ln \frac{\hat{y_i}}{1-\hat{y_i}}=\boldsymbol{\theta}^T\mathbf{x_i}</script><p>若将 $\hat{y_i}$ 视为后验概率估计 $P(y_i=1|\mathbf{x_i};\boldsymbol{\theta})$，即在给定概率参数为 $\boldsymbol{\theta}$ 时，对具有 $\mathbf{x_i}$ 特征的条件下 $y_i=1$ 时的概率，即：</p>
+<script type="math/tex; mode=display">
+\hat{y_i} = P(y_i=1|\mathbf{x_i};\boldsymbol{\theta})</script><p>那么对于二分类问题，由于输出值非 $0$ 即 $1$，故而可计算出 $y_i=0$ 的概率，即：</p>
+<script type="math/tex; mode=display">
+\begin{align}
+P(y_i=0 | \mathbf{x_i};\boldsymbol{\theta}) 
+&= 1- P(y_i=1 | \mathbf{x_i};\boldsymbol{\theta}) \notag \\
+&=  1 - \hat{y_i} \notag
+\end{align}</script><p>那么对数几率可写为：</p>
+<script type="math/tex; mode=display">
+\ln \frac{P(y_i=1|\mathbf{x_i};\boldsymbol{\theta})}{P(y_i=0|\mathbf{x_i};\boldsymbol{\theta})}=\boldsymbol{\theta}^T\mathbf{x_i}</script><h2 id="后验概率形式"><a href="#后验概率形式" class="headerlink" title="后验概率形式"></a>后验概率形式</h2><p>对于对数几率 $\ln \frac{P(y_i=1|\mathbf{x_i};\boldsymbol{\theta})}{P(y_i=0|\mathbf{x_i};\boldsymbol{\theta})}=\boldsymbol{\theta}^T\mathbf{x_i}$ 中的 $P(y_i=1|\mathbf{x_i};\boldsymbol{\theta})$ 有：</p>
+<script type="math/tex; mode=display">
+\begin{gather}
+&& \ln \frac{P(y_i=1|\mathbf{x_i};\boldsymbol{\theta})}{P(y_i=0|\mathbf{x_i};\boldsymbol{\theta})}=\boldsymbol{\theta}^T\mathbf{x_i} \notag \\
+&\Rightarrow& \frac{P(y_i=1|\mathbf{x_i};\boldsymbol{\theta})}{P(y_i=0|\mathbf{x_i};\boldsymbol{\theta})} = e^{\boldsymbol{\theta}^T\mathbf{x_i}} \notag \\
+&\Rightarrow&  \frac{P(y_i=1|\mathbf{x_i};\boldsymbol{\theta})}{1-P(y_i=1|\mathbf{x_i};\boldsymbol{\theta})} = e^{\boldsymbol{\theta}^T\mathbf{x_i}}\notag \\
+&\Rightarrow& P(y_i=1|\mathbf{x_i};\boldsymbol{\theta})= e^{\boldsymbol{\theta}^T\mathbf{x_i}}-P(y_i=1|\mathbf{x_i};\boldsymbol{\theta}) e^{\boldsymbol{\theta}^T\mathbf{x_i}} \notag \\
+&\Rightarrow& P(y_i=1|\mathbf{x_i};\boldsymbol{\theta})(1+e^{\boldsymbol{\theta}^T\mathbf{x_i}})= e^{\boldsymbol{\theta}^T\mathbf{x_i}} \notag \\
+&\Rightarrow& P(y_i=1|\mathbf{x_i};\boldsymbol{\theta})=\frac{e^{\boldsymbol{\theta}^T\mathbf{x_i}}}{1+e^{\boldsymbol{\theta}^T\mathbf{x_i}}} \notag 
+\end{gather}</script><p>进而可得：</p>
+<script type="math/tex; mode=display">
+\begin{align}
+P(y_i=0 | \mathbf{x_i};\boldsymbol{\theta}) 
+&= 1- P(y_i=1|\mathbf{x_i};\boldsymbol{\theta}) \notag \\
+&=1- \frac{e^{\boldsymbol{\theta}^T\mathbf{x_i}}}{1+e^{\boldsymbol{\theta}^T\mathbf{x_i}}} \notag \\
+&= \frac{1}{1+e^{\boldsymbol{\theta}^T\mathbf{x_i}}} \notag 
+\end{align}</script><p>即：</p>
+<script type="math/tex; mode=display">
+\left\{\begin{array}{rl}
+P(y_i=1|\mathbf{x_i};\boldsymbol{\theta}) &=& \frac{e^{\boldsymbol{\theta}^T\mathbf{x_i}}}{1+e^{\boldsymbol{\theta}^T\mathbf{x_i}}}\\
+P(y_i=0 |\mathbf{x_i};\boldsymbol{\theta}) &=& \frac{1}{1+e^{\boldsymbol{\theta}^T\mathbf{x_i}}}
+\end{array} \right.</script><p>由于 $y_i$ 只能取 $0$ 或 $1$，那么可以将上面两个式子合写为一个，即二元 Logistic 回归模型的后验概率形式：</p>
+<script type="math/tex; mode=display">
+P(y_i|\mathbf{x_i};\boldsymbol{\theta})=\Big(\frac{e^{\boldsymbol{\theta}^T\mathbf{x_i}}}{1+e^{\boldsymbol{\theta}^T\mathbf{x_i}}}\Big)^{y_i} \Big( \frac{1}{1+e^{\boldsymbol{\theta}^T\mathbf{x_i}}} \Big)^{1-y_i}</script><h1 id="【损失函数】"><a href="#【损失函数】" class="headerlink" title="【损失函数】"></a>【损失函数】</h1><h2 id="引入"><a href="#引入" class="headerlink" title="引入"></a>引入</h2><p>在多元线性回归模型中，当批量使用梯度下降法求解时，损失函数为：</p>
+<script type="math/tex; mode=display">
+J(\boldsymbol{\theta})=\frac{1}{2n}\sum_{i=1}^n (f(\mathbf{x_i};\boldsymbol{\theta})-y_i)^2</script><p>在二元 Logistic 回归中，将假设函数 $\hat{y_i}=\frac{1}{1+e^{-\boldsymbol{\theta}^T\mathbf{x_i}}}$ 带入上述的代价函数里，并画出代价函数的图像，会发现可能是一个类似下图的<strong>非凸函数</strong>，即有许多局部最优值，如果将梯度下降法用在这样一个函数上，无法保证其能收敛到全局最小值</p>
+<p><img width="400" src="/images/ml/31-2.png"></p>
+<p>因此，为了保证使用梯度下降法使得代价函数收敛到全局最小值，代价函数需要是一个凸函数，那么就要另找一个不同的代价函数</p>
+<h2 id="损失函数"><a href="#损失函数" class="headerlink" title="损失函数"></a>损失函数</h2><p>对于得到的二元 Logistic 回归模型的后验概率形式：</p>
+<script type="math/tex; mode=display">
+P(y_i|\mathbf{x_i};\boldsymbol{\theta})=\Big(\frac{e^{\boldsymbol{\theta}^T\mathbf{x_i}}}{1+e^{\boldsymbol{\theta}^T\mathbf{x_i}}}\Big)^{y_i} \Big( \frac{1}{1+e^{\boldsymbol{\theta}^T\mathbf{x_i}}} \Big)^{1-y_i}</script><p>采用<strong>最大似然法（Maximum Likelihood Method）</strong>来估计 $\boldsymbol{\theta}$，即对于给定的容量为 $n$ 的训练集 $D={(\mathbf{x_1},y_1),(\mathbf{x_2},y_2),…,(\mathbf{x_n},y_n)}$，可得到似然函数：</p>
+<script type="math/tex; mode=display">
+\begin{align}
+L(\boldsymbol{\theta})
+&= \prod_{i=1}^n  P(y_i|\mathbf{x_i};\boldsymbol{\theta}) \notag \\
+&= \prod_{i=1}^n  \Big(\frac{e^{\boldsymbol{\theta}^T\mathbf{x_i}}}{1+e^{\boldsymbol{\theta}^T\mathbf{x_i}}}\Big)^{y_i} \Big( \frac{1}{1+e^{\boldsymbol{\theta}^T\mathbf{x_i}}} \Big)^{1-y_i}  \notag 
+\end{align}</script><p>在 $\boldsymbol{\theta}$ 的所有可能取值中找一个使得似然函数取到最大值，这时求得的解就是最大似然估计，即：</p>
+<script type="math/tex; mode=display">
+\boldsymbol{\theta}^*=\arg \max_{\Theta}\:L(\boldsymbol{\theta})</script><p>由于带连乘运算的似然函数 $L(\boldsymbol{\theta})$ 不好优化，考虑到似然函数的取值范围为 $(0,1)$，那么对似然函数取自然对数不影响其单调性，同时为将最大化问题转为最小化问题，再对取自然对数后的似然函数进行取反，这样就得到了二元 Logistic 回归的损失函数：</p>
+<script type="math/tex; mode=display">
+\begin{align}
+J(\boldsymbol{\theta})
+&= -\ln L(\boldsymbol{\theta}) \notag \\
+&= -\sum_{i=1}^n \Big[ y_i \ln \big(\frac{e^{\boldsymbol{\theta}^T\mathbf{x_i}}}{1+e^{\boldsymbol{\theta}^T\mathbf{x_i}}}\big)+ (1-y_i) \ln \big( \frac{1}{1+e^{\boldsymbol{\theta}^T\mathbf{x_i}}}\big) \Big] \notag \\
+&= -\sum_{i=1}^n \Big[ y_i \ln \big(\frac{e^{\boldsymbol{\theta}^T\mathbf{x_i}}}{1+e^{\boldsymbol{\theta}^T\mathbf{x_i}}}\big)+ (1-y_i) \ln \big(1- \frac{e^{\boldsymbol{\theta}^T\mathbf{x_i}}}{1+e^{\boldsymbol{\theta}^T\mathbf{x_i}}}\big) \Big] \notag \\
+&= -\sum_{i=1}^n \big[ y_i \ln \hat{y_i} + (1-y_i) \ln (1-\hat{y_i}) \big] \notag
+\end{align}</script><p>此时的损失函数 $J(\boldsymbol{\theta})=-\sum\limits_{i=1}^n \big[ y_i \ln \hat{y_i} + (1-y_i) \ln (1-\hat{y_i}) \big] $，就是整个训练集的损失函数</p>
+<p>下面继续对损失函数 $J(\boldsymbol{\theta})$ 进行化简，考虑使用<strong>对数几率</strong> $\ln \frac{\hat{y_i}}{1-\hat{y_i}}=\boldsymbol{\theta}^T\mathbf{x_i}$ 进行表示，则有：</p>
+<script type="math/tex; mode=display">
+\begin{align}
+J(\boldsymbol{\theta})
+&=-\sum_{i=1}^n \Big[ y_i\ln \hat{y_i} + (1-y_i) \ln(1-\hat{y_i})  \Big]\notag \\
+&= -\sum_{i=1}^n \Big[ y_i\ln\hat{y_i}+\ln(1-\hat{y_i})-y_i\ln(1-\hat{y_i}) \Big]\notag \\
+&= -\sum_{i=1}^n \Big[ y_i\ln\frac{\hat{y_i}}{1-\hat{y_i}}+\ln(1-\hat{y_i})-0 \Big]\notag \\
+&= -\sum_{i=1}^n \Big[ y_i\ln\frac{\hat{y_i}}{1-\hat{y_i}}-(\ln1-\ln(1-\hat{y_i})) \Big]\notag \\
+&= -\sum_{i=1}^n \Big[ y_i\ln\frac{\hat{y_i}}{1-\hat{y_i}}-\ln\frac{1}{1-\hat{y_i}} \Big]\notag \\
+&= \sum_{i=1}^n \Big[ -y_i\ln\frac{\hat{y_i}}{1-\hat{y_i}}+\ln\frac{1}{1-\hat{y_i}}\Big] \notag \\
+&= \sum_{i=1}^n \Big[ -y_i\ln\frac{\hat{y_i}}{1-\hat{y_i}}+\ln(1+\frac{\hat{y_i}}{1-\hat{y_i}})\Big] \notag \\
+&= \sum_{i=1}^n \Big[ -y_i\boldsymbol{\theta}^T\mathbf{x_i}+\ln(1+e^{\boldsymbol{\theta}^T\mathbf{x_i}}) \Big] \notag
+\end{align}</script><p>即：</p>
+<script type="math/tex; mode=display">
+J(\boldsymbol{\theta})= \sum_{i=1}^n \Big[ -y_i\boldsymbol{\theta}^T\mathbf{x_i}+\ln(1+e^{\boldsymbol{\theta}^T\mathbf{x_i}}) \Big]</script><p>接下来要做的，就是要最小化代价函数，为训练集拟合出参数，即：</p>
+<script type="math/tex; mode=display">
+\boldsymbol{\theta}^*=\arg \min_{\Theta}\:J(\boldsymbol{\theta})</script><h1 id="【批量梯度下降法求解】"><a href="#【批量梯度下降法求解】" class="headerlink" title="【批量梯度下降法求解】"></a>【批量梯度下降法求解】</h1><p>使用<strong>批量梯度下降法</strong>来最小化代价函数：</p>
+<script type="math/tex; mode=display">
+J(\boldsymbol{\theta})= \sum_{i=1}^n \Big[ -y_i\boldsymbol{\theta}^T\mathbf{x_i}+\ln(1+e^{\boldsymbol{\theta}^T\mathbf{x_i}}) \Big]</script><p>即将下列公式<strong>重复直到收敛</strong>为止：</p>
+<script type="math/tex; mode=display">
+\theta^{(j)} = \theta^{(j)} - \alpha \frac{1}{n} \Big[\sum_{i=1}^n \big(\hat{y_i}-y_i\big) \Big] \cdot x_i^{(j)}</script><p>关于批量梯度下降法的具体介绍，详见：<a href="https://alex-mcavoy.github.io/ml/14625c0.html">梯度下降法</a></p>
+<h1 id="【决策边界】"><a href="#【决策边界】" class="headerlink" title="【决策边界】"></a>【决策边界】</h1><p><strong>决策边界（Decision Boundary）</strong>是分类问题中假设函数的一个属性，其决定于 $\boldsymbol{\theta}$ 参数，一旦通过训练集拟合出了 $\boldsymbol{\theta}$ 参数，就确定了决策边界</p>
+<p>首先来看假设函数：</p>
+<script type="math/tex; mode=display">
+f(\mathbf{x_i};\boldsymbol{\theta})=\frac{1}{1+e^{-\boldsymbol{\theta}^T\mathbf{x_i}}}</script><p>接着给出 <code>sigmoid</code> 函数的图像，来看一下假设函数何时会预测 $y=0$，何时又会预测 $y=1$</p>
+<p><img width="400" src="/images/ml/31-3.png"></p>
+<p>根据 <code>sigmoid</code> 函数图像的对称性，可以认为，只要假设函数输出 $y=1$ 的概率大于或等于 $0.5$，那么意味着 $y=1$，相反地，只要假设函数输出 $y=0$ 的概率小于 $0.5$，那么意味着 $y=0$，即：</p>
+<script type="math/tex; mode=display">
+\left\{\begin{matrix}
+y=1, & \hat{y_i}\geq 0.5
+\\y=0, & \hat{y_i}< 0.5
+\end{matrix}\right.</script><p>也就是说，只要 $\boldsymbol{\theta}^T\mathbf{x_i} \geq 0$，那么 $\hat{y_i} \geq 0.5$，就预测 $y=1$，同理，只要 $\boldsymbol{\theta}^T\mathbf{x_i} &lt; 0$，那么 $\hat{y_i} &lt; 0.5$，就预测 $y=0$</p>
+<p>而<strong>决策边界</strong>，是一条直线，其将预测值为 $1$ 和 $0$ 的两个区域分隔开来，这一条线对应的就是 $\hat{y_i}=0.5$，即 $\boldsymbol{\theta}^T\mathbf{x_i}=0$ 时所对应的线</p>
+<hr>
+<p>如下图，假设有一个存在两个特征的模型：$\hat{y_i}=g(\theta_0+\theta_1x_1+\theta_2x_2)$</p>
+<p>通过训练集拟合出的 $\boldsymbol{\theta}=[-3,1,1]^T$，则：</p>
+<ul>
+<li><p>当 $\boldsymbol{\theta}^T\mathbf{x_i} \geq 0$，即：$-3+x_1+x_2 \geq 0$ 时，模型预测 $y=1$</p>
+</li>
+<li><p>当 $\boldsymbol{\theta}^T\mathbf{x_i} &lt; 0$，即：$-3+x_1+x_2 &lt; 0$ 时，模型预测 $y=0$</p>
+</li>
+</ul>
+<p>此时，$x_1+x_2=3$ 就是该模型的决策边界</p>
+<p><img width="400" src="/images/ml/31-4.png"></p>
+<h1 id="【实现】"><a href="#【实现】" class="headerlink" title="【实现】"></a>【实现】</h1><p>以 sklearn 中的鸢尾花数据集为例，选取其后两个特征实现二元 Logistic 回归</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> pandas <span class="keyword">as</span> pd</span><br><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"><span class="keyword">import</span> matplotlib.pyplot <span class="keyword">as</span> plt</span><br><span class="line"><span class="keyword">from</span> sklearn.datasets <span class="keyword">import</span> load_iris</span><br><span class="line"><span class="keyword">from</span> sklearn.model_selection <span class="keyword">import</span> train_test_split</span><br><span class="line"><span class="keyword">from</span> sklearn.preprocessing <span class="keyword">import</span> StandardScaler</span><br><span class="line"><span class="keyword">from</span> sklearn.linear_model <span class="keyword">import</span> LogisticRegression</span><br><span class="line"><span class="keyword">from</span> sklearn.metrics <span class="keyword">import</span> confusion_matrix,accuracy_score,classification_report,precision_score,recall_score,f1_score,roc_auc_score</span><br><span class="line"><span class="keyword">from</span> matplotlib.colors <span class="keyword">import</span> ListedColormap</span><br><span class="line"></span><br><span class="line"><span class="comment"># 特征提取</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">deal_data</span><span class="params">()</span>:</span></span><br><span class="line">    iris = load_iris()  <span class="comment"># sklearn的鸢尾花数据集</span></span><br><span class="line">    <span class="comment"># iris分为三类，前50行一类，51-100行一类，101-150行一类</span></span><br><span class="line">    X = iris.data[:<span class="number">100</span>, [<span class="number">2</span>, <span class="number">3</span>]] <span class="comment"># 选用后两个特征作为样本特征</span></span><br><span class="line">    y = iris.target[:<span class="number">100</span>]  <span class="comment"># 取species列，类别</span></span><br><span class="line">    <span class="keyword">return</span> X,y</span><br><span class="line"></span><br><span class="line"><span class="comment"># 数据归一化</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">standard_scaler</span><span class="params">(X_train,X_test)</span>:</span></span><br><span class="line">    sc = StandardScaler() <span class="comment"># 初始化一个sc对象去对数据集作变换</span></span><br><span class="line">    scaler = sc.fit(X_train) <span class="comment"># 归一化，存有计算出的均值和方差</span></span><br><span class="line">    X_train_std = scaler.transform(X_train) <span class="comment"># 利用 scaler 进行标准化</span></span><br><span class="line">    X_test_std = scaler.transform(X_test) <span class="comment"># 利用 scaler 进行标准化</span></span><br><span class="line">    <span class="keyword">return</span> X_train_std, X_test_std</span><br><span class="line"></span><br><span class="line"><span class="comment"># 模型训练</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">train_model</span><span class="params">(X_train_std, y_train)</span>:</span></span><br><span class="line">    <span class="comment"># 建立Logistic回归模型</span></span><br><span class="line">    model = LogisticRegression(random_state=<span class="number">0</span>)</span><br><span class="line">    <span class="comment"># 训练</span></span><br><span class="line">    model.fit(X_train_std, y_train)</span><br><span class="line">    <span class="keyword">return</span> model</span><br><span class="line"></span><br><span class="line"><span class="comment"># 模型评估</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">estimate_model</span><span class="params">(y_pred, y_test, model)</span>:</span></span><br><span class="line">    <span class="comment"># 混淆矩阵</span></span><br><span class="line">    cm2 = confusion_matrix(y_test,y_pred) </span><br><span class="line">    <span class="comment"># 准确率</span></span><br><span class="line">    acc = accuracy_score(y_test,y_pred)</span><br><span class="line">    <span class="comment"># 正确分类的样本数</span></span><br><span class="line">    acc_num = accuracy_score(y_test,y_pred,normalize=<span class="literal">False</span>)</span><br><span class="line">    <span class="comment"># 分类报告</span></span><br><span class="line">    class_report = classification_report(y_test, y_pred,target_names=[<span class="string">"类0"</span>,<span class="string">"类1"</span>])</span><br><span class="line">    <span class="comment"># 精确率</span></span><br><span class="line">    p = precision_score(y_test,y_pred)</span><br><span class="line">    <span class="comment"># 召回率</span></span><br><span class="line">    r = recall_score(y_test,y_pred)</span><br><span class="line">    <span class="comment"># F1得分</span></span><br><span class="line">    f1 = f1_score(y_test,y_pred)</span><br><span class="line">    <span class="comment"># ROC-AUC</span></span><br><span class="line">    auc = roc_auc_score(y_test,y_pred)</span><br><span class="line"> </span><br><span class="line">    indicators = &#123;<span class="string">"cm2"</span>: cm2, <span class="string">"acc"</span>: acc, <span class="string">"acc_num"</span>: acc_num, <span class="string">"class_report"</span>: class_report, <span class="string">"p"</span>: p, <span class="string">"r"</span>: r, <span class="string">"f1"</span>: f1, <span class="string">"auc"</span>: auc&#125;</span><br><span class="line">    <span class="keyword">return</span> indicators</span><br><span class="line"></span><br><span class="line"><span class="comment"># 可视化</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">visualization</span><span class="params">(X, y, classifier, test_id=None, resolution=<span class="number">0.02</span>)</span>:</span></span><br><span class="line">    <span class="comment"># 创建 color map</span></span><br><span class="line">    markers = (<span class="string">'s'</span>, <span class="string">'x'</span>, <span class="string">'o'</span>, <span class="string">'^'</span>, <span class="string">'v'</span>)</span><br><span class="line">    colors = (<span class="string">'red'</span>, <span class="string">'blue'</span>, <span class="string">'lightgreen'</span>, <span class="string">'gray'</span>, <span class="string">'cyan'</span>)</span><br><span class="line">    cmap = ListedColormap(colors[:len(np.unique(y))])</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 绘制决策边界</span></span><br><span class="line">    x1_min, x1_max = X[:, <span class="number">0</span>].min() - <span class="number">1</span>, X[:, <span class="number">0</span>].max() + <span class="number">1</span>  <span class="comment"># 第一个特征取值范围作为横轴</span></span><br><span class="line">    x2_min, x2_max = X[:, <span class="number">1</span>].min() - <span class="number">1</span>, X[:, <span class="number">1</span>].max() + <span class="number">1</span>  <span class="comment"># 第二个特征取值范围作为纵轴</span></span><br><span class="line">    xx1, xx2 = np.meshgrid(np.arange(x1_min, x1_max, resolution), np.arange(</span><br><span class="line">        x2_min, x2_max, resolution))  <span class="comment"># reolution为网格剖分粒度</span></span><br><span class="line">    <span class="comment"># 对组合的特征进行预测，ravel为数组展平</span></span><br><span class="line">    Z = classifier.predict(np.array([xx1.ravel(), xx2.ravel()]).T)</span><br><span class="line">    Z = Z.reshape(xx1.shape)  <span class="comment"># Z是列向量</span></span><br><span class="line">    <span class="comment"># x和y为两个等长一维数组，z为二维数组，指定每一对xy所对应的z值</span></span><br><span class="line">    plt.contourf(xx1, xx2, Z, alpha=<span class="number">0.4</span>, cmap=cmap)</span><br><span class="line">    plt.xlim(xx1.min(), xx1.max())  <span class="comment"># 对等高线间的区域进行填充</span></span><br><span class="line">    plt.ylim(xx2.min(), xx2.max())  <span class="comment"># 对等高线间的区域进行填充</span></span><br><span class="line"></span><br><span class="line">    <span class="comment"># 全数据集，不同类别样本点的特征作为坐标(x,y)，用不同颜色画散点图</span></span><br><span class="line">    <span class="keyword">for</span> idx, cl <span class="keyword">in</span> enumerate(np.unique(y)):</span><br><span class="line">        plt.scatter(x=X[y == cl, <span class="number">0</span>], y=X[y == cl, <span class="number">1</span>], alpha=<span class="number">0.8</span>,</span><br><span class="line">                    c=cmap(idx), marker=markers[idx], label=cl)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># # 高亮测试集</span></span><br><span class="line">    <span class="keyword">if</span> test_id:</span><br><span class="line">        X_test, y_test = X[test_id, :], y[test_id]</span><br><span class="line">        <span class="comment"># c设置颜色，测试集不同类别的实例点画图不区别颜色</span></span><br><span class="line">        plt.scatter(x=X_test[:, <span class="number">0</span>], y=X_test[:, <span class="number">1</span>], alpha=<span class="number">1.0</span>,</span><br><span class="line">                    c=<span class="string">'gray'</span>, marker=<span class="string">'^'</span>, linewidths=<span class="number">1</span>, s=<span class="number">55</span>, label=<span class="string">'test set'</span>)</span><br><span class="line"></span><br><span class="line">    plt.xlabel(<span class="string">'petal length [standardized]'</span>)</span><br><span class="line">    plt.ylabel(<span class="string">'petal width [standardized]'</span>)</span><br><span class="line">    plt.legend(loc=<span class="string">'upper left'</span>)</span><br><span class="line">    plt.tight_layout()</span><br><span class="line">    plt.show()</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:</span><br><span class="line">    <span class="comment"># 特征提取</span></span><br><span class="line">    X, y = deal_data()</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 简单交叉验证</span></span><br><span class="line">    X_train, X_test, y_train, y_test = train_test_split(</span><br><span class="line">        X, y, test_size=<span class="number">0.3</span>, random_state=<span class="number">0</span>)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 数据标准化</span></span><br><span class="line">    X_train_std, X_test_std = standard_scaler(X_train, X_test)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 模型训练</span></span><br><span class="line">    model = train_model(X_train_std, y_train)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 预测结果</span></span><br><span class="line">    y_pred = model.predict(X_test_std)</span><br><span class="line">    print(<span class="string">"y test:"</span>, y_test)  <span class="comment"># 测试集y值</span></span><br><span class="line">    print(<span class="string">"y pred:"</span>, y_pred)  <span class="comment"># 预测y值</span></span><br><span class="line"></span><br><span class="line">    <span class="comment"># 模型评估</span></span><br><span class="line">    indicators = estimate_model(y_pred, y_test, model)</span><br><span class="line">    cm2 = indicators[<span class="string">"cm2"</span>]</span><br><span class="line">    print(<span class="string">"混淆矩阵：\n"</span>, cm2)</span><br><span class="line">    acc = indicators[<span class="string">"acc"</span>]</span><br><span class="line">    print(<span class="string">"准确率："</span>, acc)</span><br><span class="line">    acc_num = indicators[<span class="string">"acc_num"</span>]</span><br><span class="line">    print(<span class="string">"正确分类的样本数："</span>, acc_num)</span><br><span class="line">    class_report = indicators[<span class="string">"class_report"</span>]</span><br><span class="line">    print(<span class="string">"分类报告：\n"</span>, class_report)</span><br><span class="line">    p = indicators[<span class="string">"p"</span>]</span><br><span class="line">    print(<span class="string">"精确率："</span>, p)</span><br><span class="line">    r = indicators[<span class="string">"r"</span>]</span><br><span class="line">    print(<span class="string">"召回率："</span>, r)</span><br><span class="line">    f1 = indicators[<span class="string">"f1"</span>]</span><br><span class="line">    print(<span class="string">"F1得分："</span>, f1)</span><br><span class="line">    auc = indicators[<span class="string">"auc"</span>]</span><br><span class="line">    print(<span class="string">"AUC："</span>, auc)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 可视化</span></span><br><span class="line">    X_combined_std = np.vstack((X_train_std, X_test_std))</span><br><span class="line">    y_combined = np.hstack((y_train, y_test))</span><br><span class="line">    <span class="comment"># classifier为分类器，test_id为测试集序号</span></span><br><span class="line">    visualization(X_combined_std, y_combined, classifier=model, test_id=range(<span class="number">70</span>, <span class="number">100</span>))</span><br></pre></td></tr></table></figure>
+
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>感谢您对我的支持，让我继续努力分享有用的技术与知识点！</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/wechatpay.jpg" alt="Alex_McAvoy 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/alipay.jpg" alt="Alex_McAvoy 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Alex_McAvoy
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://alex-mcavoy.github.io/ml/129a3efa.html" title="二元 Logistic 回归">https://alex-mcavoy.github.io/ml/129a3efa.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/ml/" rel="tag"># 机器学习</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/ml/dae268f.html" rel="prev" title="常见的激活函数">
+      <i class="fa fa-chevron-left"></i> 常见的激活函数
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/ml/c957033e.html" rel="next" title="多元 Logistic 回归">
+      多元 Logistic 回归 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【概述】"><span class="nav-number">1.</span> <span class="nav-text">【概述】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【假设形式】"><span class="nav-number">2.</span> <span class="nav-text">【假设形式】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#假设函数"><span class="nav-number">2.1.</span> <span class="nav-text">假设函数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#对数几率形式"><span class="nav-number">2.2.</span> <span class="nav-text">对数几率形式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#后验概率形式"><span class="nav-number">2.3.</span> <span class="nav-text">后验概率形式</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【损失函数】"><span class="nav-number">3.</span> <span class="nav-text">【损失函数】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#引入"><span class="nav-number">3.1.</span> <span class="nav-text">引入</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#损失函数"><span class="nav-number">3.2.</span> <span class="nav-text">损失函数</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【批量梯度下降法求解】"><span class="nav-number">4.</span> <span class="nav-text">【批量梯度下降法求解】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【决策边界】"><span class="nav-number">5.</span> <span class="nav-text">【决策边界】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【实现】"><span class="nav-number">6.</span> <span class="nav-text">【实现】</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">  
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Alex_McAvoy"
+      src="/assets/img/head.jpg">
+  <p class="site-author-name" itemprop="name">Alex_McAvoy</p>
+  <div class="site-description" itemprop="description">想要成为渔夫的猎手</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">541</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">56</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">61</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Alex-McAvoy" title="GitHub → https://github.com/Alex-McAvoy" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/u011815404" title="CSDN → https://blog.csdn.net/u011815404" rel="noopener" target="_blank"><i class="fas fa-copyright fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+<!-- 访客地图 -->
+<script type="text/javascript" src="//rf.revolvermaps.com/0/0/5.js?i=50n58yo58ow&amp;m=0&amp;c=ff0000&amp;cr1=ffffff&amp;s=140" async="async"></script>
+
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdz20172133" title="https://blog.csdn.net/sdz20172133" rel="noopener" target="_blank">神仙队友</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://pxlsdz.gitee.io/" title="https://pxlsdz.gitee.io/" rel="noopener" target="_blank">神仙队友的另一个博客</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://bycore.net" title="https://bycore.net" rel="noopener" target="_blank">凉了的某饼同学</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://kris-cn.github.io/" title="http://kris-cn.github.io/" rel="noopener" target="_blank">翟孙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://deng.fun/" title="http://deng.fun/" rel="noopener" target="_blank">芙蓉姐姐</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdau_fangshifeng" title="https://blog.csdn.net/sdau_fangshifeng" rel="noopener" target="_blank">一个头很酷的家伙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/wentong_Xu" title="https://blog.csdn.net/wentong_Xu" rel="noopener" target="_blank">小黑贱胖子</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.yuheng.tech/" title="https://www.yuheng.tech/" rel="noopener" target="_blank">咸于</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/lanshan1111" title="https://blog.csdn.net/lanshan1111" rel="noopener" target="_blank">肥硕硕</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdauguanweihong" title="https://blog.csdn.net/sdauguanweihong" rel="noopener" target="_blank">管少</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_41661919" title="https://blog.csdn.net/qq_41661919" rel="noopener" target="_blank">俊杰</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_40859951" title="https://blog.csdn.net/qq_40859951" rel="noopener" target="_blank">峰哥</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/LSD20164388" title="https://blog.csdn.net/LSD20164388" rel="noopener" target="_blank">狗冬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37748451" title="https://blog.csdn.net/qq_37748451" rel="noopener" target="_blank">胖亚亚</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37868325" title="https://blog.csdn.net/qq_37868325" rel="noopener" target="_blank">妍大佬</a>
+        </li>
+    </ul>
+  </div>
+
+		
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+  
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Alex_McAvoy</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+</br>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script><script src="/js/bookmark.js"></script>
+
+
+
+  
+
+
+
+
+  <script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '48fd73a538d3fa927f65',
+      clientSecret: '56618aefeee90bac3c20de8d51bb0b985d67252d',
+      repo        : 'Gitalk-Comment',
+      owner       : 'Alex-McAvoy',
+      admin       : ['Alex-McAvoy'],
+      id          : '65ecfd05a0e5bf18485b3de738d83303',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+  
+  <!-- 鼠标单击粒子特效 -->
+  <script type="text/javascript" src="/js/cursor-effects.js"></script>
+  <!-- 多级目录 -->
+  <script type="text/javascript" src="/js/category.js"></script>
+  
+</body>
+</html>

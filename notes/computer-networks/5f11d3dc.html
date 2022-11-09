@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.9.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/img/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/assets/img/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/pace-js@1/themes/blue/pace-theme-minimal.css">
+  <script src="//cdn.jsdelivr.net/npm/pace-js@1/pace.min.js"></script>
+
+
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"alex-mcavoy.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":16,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":true,"color":"#ff0000","save":"manual"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":true},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.json"};
+  </script>
+
+  <meta name="description" content="【概述】帧在传输过程中会出现帧错或位错，造成这两种差错的来源是噪声，其可分为两方面：  线路本身电气特性造成的随机噪声：信道固有、随机存在，可通过提高信噪比来减少 外界原因造成的短暂冲击噪声：由于外界冲击造成、偶然发生，可通过编码技术来检错和纠错">
+<meta name="keywords" content="学习笔记,网络相关,计算机网络">
+<meta property="og:type" content="article">
+<meta property="og:title" content="数据链路层差错控制与常见校验码">
+<meta property="og:url" content="https://alex-mcavoy.github.io/notes/computer-networks/5f11d3dc.html">
+<meta property="og:site_name" content="Alex_McAvoy">
+<meta property="og:description" content="【概述】帧在传输过程中会出现帧错或位错，造成这两种差错的来源是噪声，其可分为两方面：  线路本身电气特性造成的随机噪声：信道固有、随机存在，可通过提高信噪比来减少 外界原因造成的短暂冲击噪声：由于外界冲击造成、偶然发生，可通过编码技术来检错和纠错">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/computer-networks/12-1.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/computer-networks/12-2.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/computer-networks/12-3.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/computer-networks/12-4.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/computer-networks/12-5.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/computer-networks/12-6.png">
+<meta property="og:updated_time" content="2022-05-04T11:33:06.110Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="数据链路层差错控制与常见校验码">
+<meta name="twitter:description" content="【概述】帧在传输过程中会出现帧错或位错，造成这两种差错的来源是噪声，其可分为两方面：  线路本身电气特性造成的随机噪声：信道固有、随机存在，可通过提高信噪比来减少 外界原因造成的短暂冲击噪声：由于外界冲击造成、偶然发生，可通过编码技术来检错和纠错">
+<meta name="twitter:image" content="https://alex-mcavoy.github.io/images/notes/computer-networks/12-1.png">
+
+<link rel="canonical" href="https://alex-mcavoy.github.io/notes/computer-networks/5f11d3dc.html">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>数据链路层差错控制与常见校验码 | Alex_McAvoy</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Alex_McAvoy</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">想要成为渔夫的猎手</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+
+	
+	
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/notes/computer-networks/5f11d3dc.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/assets/img/head.jpg">
+      <meta itemprop="name" content="Alex_McAvoy">
+      <meta itemprop="description" content="想要成为渔夫的猎手">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Alex_McAvoy">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          数据链路层差错控制与常见校验码
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-09-24 20:48:00" itemprop="dateCreated datePublished" datetime="2019-09-24T20:48:00+08:00">2019-09-24</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/notes/" itemprop="url" rel="index"><span itemprop="name">学习笔记</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/notes/computer-networks/" itemprop="url" rel="index"><span itemprop="name">计算机网络</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>2.4k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>2 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="【概述】"><a href="#【概述】" class="headerlink" title="【概述】"></a>【概述】</h1><p>帧在传输过程中会出现<strong>帧错</strong>或<strong>位错</strong>，造成这两种差错的来源是<strong>噪声</strong>，其可分为两方面：</p>
+<ul>
+<li>线路本身电气特性造成的随机噪声：信道固有、随机存在，可通过提高信噪比来减少</li>
+<li>外界原因造成的短暂冲击噪声：由于外界冲击造成、偶然发生，可通过编码技术来检错和纠错</li>
+</ul>
+<p>对于<strong>帧错</strong>，通常在数据链路层引入<strong>定时器</strong>与<strong>编号机制</strong>，当定时器到达设定的时间而帧的确认帧未到达时，发送方将重发该帧，同时，为保证接收方不会收到重复帧，对每个发送的帧进行编号，从而保证每一帧都能有且仅有一次正确地交付目的结点</p>
+<p>对于<strong>位错</strong>，通常采用<strong>检错编码</strong>或<strong>纠错编码</strong>的方法，关于这两种方法的具体介绍见下</p>
+<h1 id="【检错编码】"><a href="#【检错编码】" class="headerlink" title="【检错编码】"></a>【检错编码】</h1><h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>检错编码是利用<strong>自动重传请求 ARQ</strong> 的方式进行差错控制，在接收端检测出错后，就通知发送端重发，直到接收到正确的编码位置</p>
+<p>具体来说，检测编码采用了<strong>冗余编码技术</strong>，核心思想是在信息位发送前，先按一定关系附加一定的<strong>冗余校验位</strong>，构成一个符合某一规则的<strong>校验码</strong>后再发送，在接收方收到校验码后，根据有效位重新生成冗余校验位，与原冗余校验位进行比较，判断是否出现错误</p>
+<p>在检测出错误后，有三种处理方案：请求重发、删除数据、通过余数的值由接收端自行纠正（CRC 码）</p>
+<p>常见的检错编码有能<strong>检测奇数位错误</strong>的<strong>奇偶校验码</strong>，以及能<strong>确定一位具体出错位置</strong>并纠正的<strong>循环冗余校验码</strong></p>
+<h2 id="奇偶校验码"><a href="#奇偶校验码" class="headerlink" title="奇偶校验码"></a>奇偶校验码</h2><p>奇偶校验码是奇校验码和偶校验码的统称，是最基本的一种检错码，可以<strong>检测出奇数位错误</strong>，无法确定出错的位置</p>
+<p>对于若干位信息位，再其前或其后增加一位的被称为<strong>奇偶校验位</strong>的冗余位，其取值将使得整个校验码（有效信息位和校验位）中 <code>1</code> 的个数为奇数或偶数</p>
+<p>对于奇校验码来说，整个校验码中 <code>1</code> 的个数为奇数；对于偶校验码来说，整个校验码中 <code>1</code> 的个数为偶数</p>
+<p><img width="300" src="/images/notes/computer-networks/12-1.png"></p>
+<h2 id="循环冗余校验码"><a href="#循环冗余校验码" class="headerlink" title="循环冗余校验码"></a>循环冗余校验码</h2><p><strong>循环冗余校验码（Cyclic Redundancy Code，CRC）</strong>，又称多项式码，其基于线性编码理论，可以<strong>检测出一位错误</strong>，在 $k$ 位信息位后再拼接 $r$ 位的校验位，整个编码长度为 $n=k+r$ 位</p>
+<p>一个 $k$ 位的帧可以看成从 $x^{k-1}$ 到 $x^0$ 的 $k$ 次多项式的系数序列，这个多项式的阶数是 $k-1$，高位是 $x^{k-1}$ 项的系数，举例来说，对于 <code>1110011</code>，其表示成多项式为 $x^6+x^5+x^4+x+1$</p>
+<p>发送方和接收方会事先商定一个阶为 $r$ 的多项式 $G(x)$，在发送方，会将 $k$ 位的信息位左移 $r$ 位，低端补 <code>0</code>，生成长度为 $n=k+r$ 的<strong>带检验码的帧</strong></p>
+<p>之后，将带检验码的帧对阶为 $r$ 的多项式 $G(x)$ 作模 $2$ 除法，得到的 $r$ 位余数即长度为 $r$ 的<strong>冗余校验位</strong>，称为<strong>帧检验序列（FCS）</strong></p>
+<p>最后，将 $k$ 位信息位与 $r$ 位帧检验序列拼接，即可得到长度为 $n=k+r$ 位<strong>循环冗余校验码</strong></p>
+<p>接收方会用这个多项式 $G(x)$ 来除以收到的循环冗余校验码，如果余数为 $0$，则认为无差错，若余数不为 $0$，则说明该余数对应的十进制位出错（左端为高位，右端为低位）</p>
+<hr>
+<p>举例来说，设生成多项式为 $G(x)=x^3+x^2+1$，要发送的信息为 <code>101001</code></p>
+<p>生成多项式的最高幂次为 $3$，即有 $r=3$；信息位长度为 $6$，即 $k=6$；同时，生成多项式对应的二进制码为 <code>1101</code></p>
+<p>首先对要发送的信息码向左移 $r$ 位，低位补 $0$，有：<code>101001000</code></p>
+<p>之后，对 <code>101001000</code> 用生成多项式对应的二进制码 <code>1101</code> 进行模 $2$ 除法，产生余数 <code>001</code>，即帧检验序列，具体过程如下图</p>
+<p><img width="300" src="/images/notes/computer-networks/12-2.png"></p>
+<p>此时，得到编码后的 CRC 码 <code>101001001</code></p>
+<p>对于接收方来说，假若收到的 CRC 码为 <code>101001011</code>，对其与生成多项式 $G(x)$ 对应的二进制码 <code>1101</code> 进行模 $2$ 除法，得到余数为 <code>010</code>，说明第 $2$ 位出错</p>
+<h1 id="【纠错编码】"><a href="#【纠错编码】" class="headerlink" title="【纠错编码】"></a>【纠错编码】</h1><h2 id="概述-1"><a href="#概述-1" class="headerlink" title="概述"></a>概述</h2><p>纠错编码是利用<strong>前向纠错 FEC</strong> 的方式进行差错控制，在接收端检测出错后，可以确定二进制编码的出错位置，并加以纠正</p>
+<p>具体来说，检测编码采用了<strong>冗余编码技术</strong>，核心思想是在信息位发送前，先按一定关系附加一定的<strong>冗余校验位</strong>，构成一个符合某一规则的<strong>校验码</strong>后再发送，在接收方收到校验码后，根据一定规则推测发送方实际送出的应该是什么样的编码</p>
+<p>最常见的纠错编码是<strong>海明码</strong></p>
+<h2 id="纠错理论"><a href="#纠错理论" class="headerlink" title="纠错理论"></a>纠错理论</h2><p>对于任意两个合法码字之间最少变化的二进制位数，称为<strong>码距</strong>，简单来说，就是两个长度相同的编码对应位不同的个数</p>
+<p>例如：<code>1100</code> 与 <code>1101</code> 间的码距为 $1$，<code>1001</code> 与 <code>0010</code> 间的码距为 $3$</p>
+<p>对于码距不小于 $2$ 的数据校验码，开始具有检错能力，码距越大，检错、纠错的能力就越强，且检错能力总是大于等于纠错能力</p>
+<p>设可检测错误的位数为 $D$，可纠正错误的位数为 $C$，编码的码距为 $L$，那么有：</p>
+<script type="math/tex; mode=display">
+L-1=D+C,\quad D\geq C</script><h2 id="海明码"><a href="#海明码" class="headerlink" title="海明码"></a>海明码</h2><p>海明码<strong>纠错 $d$ 位需要码距为 $2d+1$ 的编码方案，检错 $d$ 位需要码距为 $d+1$ 的编码方案</strong></p>
+<p>对于 $m$ 位信息位，将插入 $r$ 位校验位组成 $n=m+r$ 位码字，要求满足以下关系：</p>
+<script type="math/tex; mode=display">
+2^r\geq m+r+1</script><p>下面，以 $n=4$ 的数据编码 $D_4D_3D_2D_1=1010$ 为例，说明发送端计算海明码与接收端检验海明码的过程</p>
+<p>对于<strong>发送端</strong>，会将码字的位编号，规定校验位 $P_i$ 位于数据位位号 $2^{i-1}$ 的位置上，对于 $4$ 位数据编码 $D_4D_3D_2D_1$，将会插入 $3$ 位校验码 $P_3P_2P_1$，从而实际传输 $7$ 位码字 $H_7H_6H_5H_4H_3H_2H_1$</p>
+<p><img width="300" src="/images/notes/computer-networks/12-3.png"></p>
+<p>之后，将每个数据位用多个校验位进行校验，被校验数据位的海明位号等于校验该数据位的将由<strong>改写各校验位海明位号</strong>，进行分组</p>
+<p><img width="400" src="/images/notes/computer-networks/12-4.png"></p>
+<p>对于校验位 $P_i$，其值为<strong>该校验位校验的所有数据位求异或</strong></p>
+<p><img width="300" src="/images/notes/computer-networks/12-5.png"></p>
+<p>由此，可得到 <code>1010</code> 所对应的海明码为</p>
+<script type="math/tex; mode=display">
+101\underline{0}0\underline{10}</script><p>其中，带有下划线的为校验位，其余为原信息位</p>
+<p>对于<strong>接收端</strong>，会将<strong>每个校验位 $P_i$ 与参与形成该校验位的信息位求异或</strong></p>
+<p><img width="200" src="/images/notes/computer-networks/12-6.png"></p>
+<p>若求得的 $r$ 个校验位值均为 <code>0</code>，说明没有出现错误，否则说明出错，且这个 $r$ 位二进制数对应的十进制数就是错误位的位号，将其取反，即可进行纠错</p>
+
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>感谢您对我的支持，让我继续努力分享有用的技术与知识点！</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/wechatpay.jpg" alt="Alex_McAvoy 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/alipay.jpg" alt="Alex_McAvoy 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Alex_McAvoy
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://alex-mcavoy.github.io/notes/computer-networks/5f11d3dc.html" title="数据链路层差错控制与常见校验码">https://alex-mcavoy.github.io/notes/computer-networks/5f11d3dc.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/notes/" rel="tag"># 学习笔记</a>
+              <a href="/tags/network/" rel="tag"># 网络相关</a>
+              <a href="/tags/computer-networks/" rel="tag"># 计算机网络</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/notes/computer-networks/31d0416.html" rel="prev" title="数据链路层组帧">
+      <i class="fa fa-chevron-left"></i> 数据链路层组帧
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/notes/computer-networks/d7e1debd.html" rel="next" title="数据链路层流量控制与可靠传输机制">
+      数据链路层流量控制与可靠传输机制 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【概述】"><span class="nav-number">1.</span> <span class="nav-text">【概述】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【检错编码】"><span class="nav-number">2.</span> <span class="nav-text">【检错编码】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#概述"><span class="nav-number">2.1.</span> <span class="nav-text">概述</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#奇偶校验码"><span class="nav-number">2.2.</span> <span class="nav-text">奇偶校验码</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#循环冗余校验码"><span class="nav-number">2.3.</span> <span class="nav-text">循环冗余校验码</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【纠错编码】"><span class="nav-number">3.</span> <span class="nav-text">【纠错编码】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#概述-1"><span class="nav-number">3.1.</span> <span class="nav-text">概述</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#纠错理论"><span class="nav-number">3.2.</span> <span class="nav-text">纠错理论</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#海明码"><span class="nav-number">3.3.</span> <span class="nav-text">海明码</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">  
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Alex_McAvoy"
+      src="/assets/img/head.jpg">
+  <p class="site-author-name" itemprop="name">Alex_McAvoy</p>
+  <div class="site-description" itemprop="description">想要成为渔夫的猎手</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">541</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">56</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">61</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Alex-McAvoy" title="GitHub → https://github.com/Alex-McAvoy" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/u011815404" title="CSDN → https://blog.csdn.net/u011815404" rel="noopener" target="_blank"><i class="fas fa-copyright fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+<!-- 访客地图 -->
+<script type="text/javascript" src="//rf.revolvermaps.com/0/0/5.js?i=50n58yo58ow&amp;m=0&amp;c=ff0000&amp;cr1=ffffff&amp;s=140" async="async"></script>
+
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdz20172133" title="https://blog.csdn.net/sdz20172133" rel="noopener" target="_blank">神仙队友</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://pxlsdz.gitee.io/" title="https://pxlsdz.gitee.io/" rel="noopener" target="_blank">神仙队友的另一个博客</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://bycore.net" title="https://bycore.net" rel="noopener" target="_blank">凉了的某饼同学</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://kris-cn.github.io/" title="http://kris-cn.github.io/" rel="noopener" target="_blank">翟孙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://deng.fun/" title="http://deng.fun/" rel="noopener" target="_blank">芙蓉姐姐</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdau_fangshifeng" title="https://blog.csdn.net/sdau_fangshifeng" rel="noopener" target="_blank">一个头很酷的家伙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/wentong_Xu" title="https://blog.csdn.net/wentong_Xu" rel="noopener" target="_blank">小黑贱胖子</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.yuheng.tech/" title="https://www.yuheng.tech/" rel="noopener" target="_blank">咸于</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/lanshan1111" title="https://blog.csdn.net/lanshan1111" rel="noopener" target="_blank">肥硕硕</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdauguanweihong" title="https://blog.csdn.net/sdauguanweihong" rel="noopener" target="_blank">管少</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_41661919" title="https://blog.csdn.net/qq_41661919" rel="noopener" target="_blank">俊杰</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_40859951" title="https://blog.csdn.net/qq_40859951" rel="noopener" target="_blank">峰哥</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/LSD20164388" title="https://blog.csdn.net/LSD20164388" rel="noopener" target="_blank">狗冬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37748451" title="https://blog.csdn.net/qq_37748451" rel="noopener" target="_blank">胖亚亚</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37868325" title="https://blog.csdn.net/qq_37868325" rel="noopener" target="_blank">妍大佬</a>
+        </li>
+    </ul>
+  </div>
+
+		
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+  
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Alex_McAvoy</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+</br>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script><script src="/js/bookmark.js"></script>
+
+
+
+  
+
+
+
+
+  <script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '48fd73a538d3fa927f65',
+      clientSecret: '56618aefeee90bac3c20de8d51bb0b985d67252d',
+      repo        : 'Gitalk-Comment',
+      owner       : 'Alex-McAvoy',
+      admin       : ['Alex-McAvoy'],
+      id          : '02ab771a82a400d03843014fd097cbbc',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+  
+  <!-- 鼠标单击粒子特效 -->
+  <script type="text/javascript" src="/js/cursor-effects.js"></script>
+  <!-- 多级目录 -->
+  <script type="text/javascript" src="/js/category.js"></script>
+  
+</body>
+</html>

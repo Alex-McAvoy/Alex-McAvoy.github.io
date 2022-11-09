@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.9.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/img/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/assets/img/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/pace-js@1/themes/blue/pace-theme-minimal.css">
+  <script src="//cdn.jsdelivr.net/npm/pace-js@1/pace.min.js"></script>
+
+
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"alex-mcavoy.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":16,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":true,"color":"#ff0000","save":"manual"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":true},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.json"};
+  </script>
+
+  <meta name="description" content="【概述】数据库安全最重要的就是确保只授权给有资格的用户访问数据库的权限，同时令所有未被授权的人员无法接近数据，这主要通过存取控制来实现 存取控制机制主要包括两部分：">
+<meta name="keywords" content="学习笔记,数据库系统">
+<meta property="og:type" content="article">
+<meta property="og:title" content="数据库存取控制">
+<meta property="og:url" content="https://alex-mcavoy.github.io/notes/database/7fd9d48.html">
+<meta property="og:site_name" content="Alex_McAvoy">
+<meta property="og:description" content="【概述】数据库安全最重要的就是确保只授权给有资格的用户访问数据库的权限，同时令所有未被授权的人员无法接近数据，这主要通过存取控制来实现 存取控制机制主要包括两部分：">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/database/46-1.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/database/46-2.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/database/46-3.png">
+<meta property="og:updated_time" content="2021-08-23T14:04:51.487Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="数据库存取控制">
+<meta name="twitter:description" content="【概述】数据库安全最重要的就是确保只授权给有资格的用户访问数据库的权限，同时令所有未被授权的人员无法接近数据，这主要通过存取控制来实现 存取控制机制主要包括两部分：">
+<meta name="twitter:image" content="https://alex-mcavoy.github.io/images/notes/database/46-1.png">
+
+<link rel="canonical" href="https://alex-mcavoy.github.io/notes/database/7fd9d48.html">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>数据库存取控制 | Alex_McAvoy</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Alex_McAvoy</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">想要成为渔夫的猎手</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+
+	
+	
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/notes/database/7fd9d48.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/assets/img/head.jpg">
+      <meta itemprop="name" content="Alex_McAvoy">
+      <meta itemprop="description" content="想要成为渔夫的猎手">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Alex_McAvoy">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          数据库存取控制
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2018-10-26 14:37:00" itemprop="dateCreated datePublished" datetime="2018-10-26T14:37:00+08:00">2018-10-26</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/notes/" itemprop="url" rel="index"><span itemprop="name">学习笔记</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/notes/database/" itemprop="url" rel="index"><span itemprop="name">数据库系统</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>3.2k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>3 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="【概述】"><a href="#【概述】" class="headerlink" title="【概述】"></a>【概述】</h1><p>数据库安全最重要的就是确保只授权给有资格的用户访问数据库的权限，同时令所有未被授权的人员无法接近数据，这主要通过<strong>存取控制</strong>来实现</p>
+<p>存取控制机制主要包括两部分：</p>
+<ul>
+<li>用户权限定义：将用户权限登记到数据字典中</li>
+<li>合法权限检查：当用户发出存取数据库请求后，DBMS 查找数据字典，进行合法权限检查，若操作请求超出定义的权限，拒绝该次操作</li>
+</ul>
+<p>用户权限定义和合法权限检查一起组成了 DBMS 的<strong>存取控制安全子系统</strong>，C2 级的 DBMS 系统支持<strong>自主权限控制 DAC</strong>，B1 级的 DBMS 支持<strong>强制存取控制 MAC</strong></p>
+<h1 id="【自主存取控制】"><a href="#【自主存取控制】" class="headerlink" title="【自主存取控制】"></a>【自主存取控制】</h1><h2 id="自主存取控制方法"><a href="#自主存取控制方法" class="headerlink" title="自主存取控制方法"></a>自主存取控制方法</h2><p>对于<strong>自主存取控制 DAC</strong>来说，用户对于不同的数据库对象有不同的存取权限，不同的用户对同一对象也有不同的权限，而且用户可将其拥有的权限转授给其他用户，<strong>十分灵活</strong></p>
+<p>用户权限由<strong>数据库对象</strong>、<strong>操作类型</strong>两个要素组成，定义一个用户的存取权限就是要定义这个用户可以在哪些数据库对象上进行哪些类型的操作，这个过程被称为<strong>授权</strong></p>
+<p>在非关系数据库系统中，用户只能对数据进行操作，存取控制的数据库对象也仅限于数据本身</p>
+<p>在关系数据库系统中，存取控制的对象不仅有数据本身，还有数据库模式，如下表，列出了关系数据库系统中的存取权限</p>
+<p><img width="400" src="/images/notes/database/46-1.png"></p>
+<h2 id="授权与收回"><a href="#授权与收回" class="headerlink" title="授权与收回"></a>授权与收回</h2><p>在 SQL 中，使用 <code>GRANT</code> 和 <code>REVOKE</code> 语句向用户授权、收回权限</p>
+<h3 id="GRANT-语句"><a href="#GRANT-语句" class="headerlink" title="GRANT 语句"></a>GRANT 语句</h3><p><code>GRANT</code> 语句用于将对指定操作对象的指定操作权限授予指定用户，其语法如下</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">GRANT</span> &lt;权限<span class="number">1</span>&gt; [,&lt;权限<span class="number">2</span>&gt;,...,&lt;权限n&gt;]</span><br><span class="line"><span class="keyword">ON</span> &lt;对象类型<span class="number">1</span>&gt; &lt;对象名<span class="number">1</span>&gt; [,&lt;对象类型<span class="number">2</span>&gt; &lt;对象名<span class="number">2</span>&gt;,...,&lt;对象类型n&gt; &lt;对象名n&gt;]</span><br><span class="line"><span class="keyword">TO</span> &lt;用户<span class="number">1</span>&gt; [,&lt;用户<span class="number">2</span>&gt;,...,&lt;用户n&gt;]</span><br><span class="line">[<span class="keyword">WITH</span> <span class="keyword">GRANT</span> <span class="keyword">OPTION</span>];</span><br></pre></td></tr></table></figure>
+<p>发出 <code>GRANT</code> 语句的可以是<strong>数据库管理员</strong>，也可以是该<strong>数据库创建者（属主 owner）</strong>，还可以是<strong>已拥有该权限的用户</strong></p>
+<p>接受权限的用户可以是一个或多个具体用户，也可以是全体用户 <code>PUBLIC</code></p>
+<p>如果指定了 <code>WITH GRANT OPTION</code> 子句，则获得某种权限的用户可以将该种权限再授权给其他用户，如果没有指定，则获取权限的用户不可再传播权限</p>
+<p>例如，将查询 student 表的权限授予给用户 user1</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">GRANT</span> <span class="keyword">SELECT</span></span><br><span class="line"><span class="keyword">ON</span> <span class="keyword">TABLE</span> student</span><br><span class="line"><span class="keyword">TO</span> user1;</span><br></pre></td></tr></table></figure>
+<p>要注意的是，<code>WITH GRANT OPTION</code> 子句<strong>不允许循环授权</strong>，即被授权者不能再将权限授权给授权者或其祖先</p>
+<p><img width="300" src="/images/notes/database/46-2.png"></p>
+<h3 id="REVOKE-语句"><a href="#REVOKE-语句" class="headerlink" title="REVOKE 语句"></a>REVOKE 语句</h3><p><code>REVOKE</code> 语句用于收回已赋予的权限，其语法如下</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">REVOKE</span> &lt;权限<span class="number">1</span>&gt; [,&lt;权限<span class="number">2</span>&gt;,...,&lt;权限n&gt;]</span><br><span class="line"><span class="keyword">ON</span> &lt;对象类型<span class="number">1</span>&gt; &lt;对象名<span class="number">1</span>&gt; [,&lt;对象类型<span class="number">2</span>&gt; &lt;对象名<span class="number">2</span>&gt;,...,&lt;对象类型n&gt; &lt;对象名n&gt;]</span><br><span class="line"><span class="keyword">FROM</span> &lt;用户<span class="number">1</span>&gt; [,&lt;用户<span class="number">2</span>&gt;,...,&lt;用户n&gt;]</span><br><span class="line">[<span class="keyword">CASCADE</span>|RESTRICT];</span><br></pre></td></tr></table></figure>
+<p>例如，将用户 user1 修改 student 表学生学号的权限收回</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">REVOKE</span> <span class="keyword">UPDATE</span>(Sno)</span><br><span class="line"><span class="keyword">ON</span> <span class="keyword">TABLE</span> student</span><br><span class="line"><span class="keyword">FROM</span> user1;</span><br></pre></td></tr></table></figure>
+<h2 id="创建数据库模式权限"><a href="#创建数据库模式权限" class="headerlink" title="创建数据库模式权限"></a>创建数据库模式权限</h2><p>对创建数据库模式一类的数据库对线下的授权，由数据库管理员使用 <code>CREATE USER</code> 语句在创建用户时实现</p>
+<p><code>CREATE USER</code> 语句的语法如下</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">USER</span> &lt;用户名&gt; [<span class="keyword">WITH</span>] [DBA|<span class="keyword">RESOURCE</span>|<span class="keyword">CONNECT</span>];</span><br></pre></td></tr></table></figure>
+<p>只有系统的超级用户才有权创建一个新的数据库用户，新创建的数据库用户有 <code>DBA</code>、<code>RESOURCE</code>、<code>CONNECT</code> 三种权限，具体权限说明如下</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:center">拥有权限</th>
+<th style="text-align:center">CREATE USER</th>
+<th style="text-align:center">CREATE SCHEMA</th>
+<th style="text-align:center">CREATE TABLE</th>
+<th style="text-align:center">操纵数据</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">DBA</td>
+<td style="text-align:center">可以</td>
+<td style="text-align:center">可以</td>
+<td style="text-align:center">可以</td>
+<td style="text-align:center">可以</td>
+</tr>
+<tr>
+<td style="text-align:center">RESOURCE</td>
+<td style="text-align:center">不可以</td>
+<td style="text-align:center">不可以</td>
+<td style="text-align:center">可以</td>
+<td style="text-align:center">可以</td>
+</tr>
+<tr>
+<td style="text-align:center">CONNECT</td>
+<td style="text-align:center">不可以</td>
+<td style="text-align:center">不可以</td>
+<td style="text-align:center">不可以</td>
+<td style="text-align:center">可以，但必须拥有相应权限</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h2 id="数据库角色"><a href="#数据库角色" class="headerlink" title="数据库角色"></a>数据库角色</h2><p><strong>数据库角色</strong>是一组被命名的与数据库操作相关的权限，与 Windows 中的用户组十分相似</p>
+<p>角色是权限的集合，因此可以为一组具有相同权限的用户创建一个角色，来简化授权的过程</p>
+<p>在 SQL 中，使用 <code>CREATE ROLE</code> 语句来创建角色，用 <code>GRANT</code> 语句为角色授权，用 <code>REVOKE</code> 语句收回权限</p>
+<font size="4">1.角色创建</font>
+
+<p><code>CREATE ROLE</code> 语句用于来创建角色，其语法如下</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">ROLE</span> &lt;角色名&gt;;</span><br></pre></td></tr></table></figure>
+<font size="4">2.角色授权</font>
+
+<p>刚创建的角色是空的，没有任何内容，用 <code>GRANT</code> 语句为角色授权，其语法如下</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">GRANT</span> &lt;权限<span class="number">1</span>&gt; [,&lt;权限<span class="number">2</span>&gt;,...,&lt;权限n&gt;]</span><br><span class="line"><span class="keyword">ON</span> &lt;对象类型<span class="number">1</span>&gt; &lt;对象名<span class="number">1</span>&gt; [,&lt;对象类型<span class="number">2</span>&gt; &lt;对象名<span class="number">2</span>&gt;,...,&lt;对象类型n&gt; &lt;对象名n&gt;]</span><br><span class="line"><span class="keyword">TO</span> &lt;角色<span class="number">1</span>&gt; [,&lt;角色<span class="number">2</span>&gt;,...,&lt;角色n&gt;];</span><br></pre></td></tr></table></figure>
+<font size="4">3.角色授予</font>
+
+<p>一个角色的权限是直接授予这个角色的权限加上其他角色授予这个角色的权限的总和</p>
+<p>当想将一个角色授权给某个用户，或者授予另一个角色时，同样可以使用 <code>GRANT</code> 语句来授权，语法如下</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">GRANT</span> &lt;角色<span class="number">1</span>&gt; [,&lt;角色<span class="number">2</span>&gt;,...,&lt;角色n&gt;]</span><br><span class="line"><span class="keyword">TO</span> &lt;角色或用户<span class="number">1</span>&gt; [,&lt;角色或用户<span class="number">2</span>&gt;,...,&lt;角色或用户n&gt;]</span><br><span class="line">[<span class="keyword">WITH</span> <span class="keyword">ADMIN</span> <span class="keyword">OPTION</span>];</span><br></pre></td></tr></table></figure>
+<p>当指定了 <code>WITH ADMIN OPTION</code> 子句，则获得某种权限的角色或用户还可以将这种权限再授予其他角色</p>
+<font size="4">4.收回权限</font>
+
+<p> <code>REVOKE</code> 语句用于收回权限，其语法如下</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">REVOKE</span> &lt;权限<span class="number">1</span>&gt; [,&lt;权限<span class="number">2</span>&gt;,...,&lt;权限n&gt;]</span><br><span class="line"><span class="keyword">ON</span> &lt;对象类型<span class="number">1</span>&gt; &lt;对象名<span class="number">1</span>&gt; [,&lt;对象类型<span class="number">2</span>&gt; &lt;对象名<span class="number">2</span>&gt;,...,&lt;对象类型n&gt; &lt;对象名n&gt;]</span><br><span class="line"><span class="keyword">FROM</span> &lt;角色<span class="number">1</span>&gt; [,&lt;角色<span class="number">2</span>&gt;,...,&lt;角色n&gt;];</span><br></pre></td></tr></table></figure>
+<h1 id="【强制存取控制】"><a href="#【强制存取控制】" class="headerlink" title="【强制存取控制】"></a>【强制存取控制】</h1><h2 id="实体划分"><a href="#实体划分" class="headerlink" title="实体划分"></a>实体划分</h2><p>对于<strong>强制存取控制 MAC</strong>来说，每一个数据库对被标记一定的密级，没一个用户也被授权某一个级别的许可证，对于任意一个对象，只有具有合法许可证的用户才可以存取，因此该方法<strong>比较严格</strong></p>
+<p>在 MAC 中，DBMS 所管理的全部实体被分为<strong>主体</strong>、<strong>客体</strong>两大类</p>
+<ul>
+<li>主体：系统中活动的实体，包括 DBMS 管理的实际用户、代表用户的各进程</li>
+<li>客体：系统中的被动实体，受主体操纵，包括文件、基本表、索引、视图等</li>
+</ul>
+<h2 id="敏感度标记"><a href="#敏感度标记" class="headerlink" title="敏感度标记"></a>敏感度标记</h2><p>对于主体与客体，DBMS 为他们每个实例指派一个<strong>敏感度标记 label</strong>，其被分为若干级别：绝密 TS、机密 S、可信 C、公开 P，其次序是 $TS\geq S\geq C\geq P$</p>
+<p>主体的敏感度标记被称为<strong>许可证级别</strong>，客体的敏感度标记被称为<strong>密级</strong>，强制存取控制就是通过对比主体的敏感度标记和客体的敏感度标记，最终确定主体是否能够存取客体</p>
+<h2 id="存取规则"><a href="#存取规则" class="headerlink" title="存取规则"></a>存取规则</h2><p>当某一用户以标记 label 注册进系统时，系统要求他对任何客体的存取必须遵循如下规则：</p>
+<ol>
+<li>当主体的许可证级别 $\geq$ 客体的密级时，该主体才能<strong>读取</strong>相应的客体</li>
+<li>当主体的许可证级别 $\leq$ 客体的密级时，该主体才能<strong>写</strong>相应的客体</li>
+</ol>
+<p>强制存取控制是对数据本身进行密级标记，无论数据如何复制，标记与数据是一个不可分的整体，只有符合密级标记要求的用户才可以操纵数据</p>
+<h1 id="【安全检查机制】"><a href="#【安全检查机制】" class="headerlink" title="【安全检查机制】"></a>【安全检查机制】</h1><p>较高安全级别提供的安全保护要包含较低级别的所有保护，因此在实现强制存取控制的安全保护，就要先实现自主存取控制，即自主存取控制与强制存取控制共同构成 DBMS 的安全检查机制</p>
+<p>如下图，系统首先进行自主存取控制检查，对通过自主存取控制检查的允许存取的数据库对象，再由系统自动进行强制存取控制检查，只有通过强制存取控制检查的数据库对象才可存取</p>
+<p><img width="500" src="/images/notes/database/46-3.png"></p>
+
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>感谢您对我的支持，让我继续努力分享有用的技术与知识点！</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/wechatpay.jpg" alt="Alex_McAvoy 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/alipay.jpg" alt="Alex_McAvoy 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Alex_McAvoy
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://alex-mcavoy.github.io/notes/database/7fd9d48.html" title="数据库存取控制">https://alex-mcavoy.github.io/notes/database/7fd9d48.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/notes/" rel="tag"># 学习笔记</a>
+              <a href="/tags/database/" rel="tag"># 数据库系统</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/oi-acm/data-structure/thread-binary-tree/480c4b9d.html" rel="prev" title="二叉树的线索化">
+      <i class="fa fa-chevron-left"></i> 二叉树的线索化
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/notes/database/9e8e2b3e.html" rel="next" title="数据库审计">
+      数据库审计 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【概述】"><span class="nav-number">1.</span> <span class="nav-text">【概述】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【自主存取控制】"><span class="nav-number">2.</span> <span class="nav-text">【自主存取控制】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#自主存取控制方法"><span class="nav-number">2.1.</span> <span class="nav-text">自主存取控制方法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#授权与收回"><span class="nav-number">2.2.</span> <span class="nav-text">授权与收回</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#GRANT-语句"><span class="nav-number">2.2.1.</span> <span class="nav-text">GRANT 语句</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#REVOKE-语句"><span class="nav-number">2.2.2.</span> <span class="nav-text">REVOKE 语句</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#创建数据库模式权限"><span class="nav-number">2.3.</span> <span class="nav-text">创建数据库模式权限</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#数据库角色"><span class="nav-number">2.4.</span> <span class="nav-text">数据库角色</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【强制存取控制】"><span class="nav-number">3.</span> <span class="nav-text">【强制存取控制】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#实体划分"><span class="nav-number">3.1.</span> <span class="nav-text">实体划分</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#敏感度标记"><span class="nav-number">3.2.</span> <span class="nav-text">敏感度标记</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#存取规则"><span class="nav-number">3.3.</span> <span class="nav-text">存取规则</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【安全检查机制】"><span class="nav-number">4.</span> <span class="nav-text">【安全检查机制】</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">  
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Alex_McAvoy"
+      src="/assets/img/head.jpg">
+  <p class="site-author-name" itemprop="name">Alex_McAvoy</p>
+  <div class="site-description" itemprop="description">想要成为渔夫的猎手</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">541</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">56</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">61</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Alex-McAvoy" title="GitHub → https://github.com/Alex-McAvoy" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/u011815404" title="CSDN → https://blog.csdn.net/u011815404" rel="noopener" target="_blank"><i class="fas fa-copyright fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+<!-- 访客地图 -->
+<script type="text/javascript" src="//rf.revolvermaps.com/0/0/5.js?i=50n58yo58ow&amp;m=0&amp;c=ff0000&amp;cr1=ffffff&amp;s=140" async="async"></script>
+
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdz20172133" title="https://blog.csdn.net/sdz20172133" rel="noopener" target="_blank">神仙队友</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://pxlsdz.gitee.io/" title="https://pxlsdz.gitee.io/" rel="noopener" target="_blank">神仙队友的另一个博客</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://bycore.net" title="https://bycore.net" rel="noopener" target="_blank">凉了的某饼同学</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://kris-cn.github.io/" title="http://kris-cn.github.io/" rel="noopener" target="_blank">翟孙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://deng.fun/" title="http://deng.fun/" rel="noopener" target="_blank">芙蓉姐姐</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdau_fangshifeng" title="https://blog.csdn.net/sdau_fangshifeng" rel="noopener" target="_blank">一个头很酷的家伙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/wentong_Xu" title="https://blog.csdn.net/wentong_Xu" rel="noopener" target="_blank">小黑贱胖子</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.yuheng.tech/" title="https://www.yuheng.tech/" rel="noopener" target="_blank">咸于</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/lanshan1111" title="https://blog.csdn.net/lanshan1111" rel="noopener" target="_blank">肥硕硕</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdauguanweihong" title="https://blog.csdn.net/sdauguanweihong" rel="noopener" target="_blank">管少</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_41661919" title="https://blog.csdn.net/qq_41661919" rel="noopener" target="_blank">俊杰</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_40859951" title="https://blog.csdn.net/qq_40859951" rel="noopener" target="_blank">峰哥</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/LSD20164388" title="https://blog.csdn.net/LSD20164388" rel="noopener" target="_blank">狗冬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37748451" title="https://blog.csdn.net/qq_37748451" rel="noopener" target="_blank">胖亚亚</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37868325" title="https://blog.csdn.net/qq_37868325" rel="noopener" target="_blank">妍大佬</a>
+        </li>
+    </ul>
+  </div>
+
+		
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+  
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Alex_McAvoy</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+</br>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script><script src="/js/bookmark.js"></script>
+
+
+
+  
+
+
+
+
+  <script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '48fd73a538d3fa927f65',
+      clientSecret: '56618aefeee90bac3c20de8d51bb0b985d67252d',
+      repo        : 'Gitalk-Comment',
+      owner       : 'Alex-McAvoy',
+      admin       : ['Alex-McAvoy'],
+      id          : '7ddcacfa4e4e7c41a4a8ad3724a5260a',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+  
+  <!-- 鼠标单击粒子特效 -->
+  <script type="text/javascript" src="/js/cursor-effects.js"></script>
+  <!-- 多级目录 -->
+  <script type="text/javascript" src="/js/category.js"></script>
+  
+</body>
+</html>

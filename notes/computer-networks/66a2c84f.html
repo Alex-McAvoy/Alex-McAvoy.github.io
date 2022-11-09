@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.9.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/img/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/assets/img/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/pace-js@1/themes/blue/pace-theme-minimal.css">
+  <script src="//cdn.jsdelivr.net/npm/pace-js@1/pace.min.js"></script>
+
+
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"alex-mcavoy.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":16,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":true,"color":"#ff0000","save":"manual"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":true},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.json"};
+  </script>
+
+  <meta name="description" content="【概述】交换技术，是指各台主机之间、各台通信设备之间、主机与通信设备之间为交换信息采用的数据格式和交换装置的方式 常见的交换技术有：电路交换、报文交换、分组交换">
+<meta name="keywords" content="学习笔记,网络相关,计算机网络">
+<meta property="og:type" content="article">
+<meta property="og:title" content="物理层交换技术">
+<meta property="og:url" content="https://alex-mcavoy.github.io/notes/computer-networks/66a2c84f.html">
+<meta property="og:site_name" content="Alex_McAvoy">
+<meta property="og:description" content="【概述】交换技术，是指各台主机之间、各台通信设备之间、主机与通信设备之间为交换信息采用的数据格式和交换装置的方式 常见的交换技术有：电路交换、报文交换、分组交换">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/computer-networks/08-1.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/computer-networks/08-2.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/computer-networks/08-3.png">
+<meta property="og:updated_time" content="2021-08-23T12:44:53.324Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="物理层交换技术">
+<meta name="twitter:description" content="【概述】交换技术，是指各台主机之间、各台通信设备之间、主机与通信设备之间为交换信息采用的数据格式和交换装置的方式 常见的交换技术有：电路交换、报文交换、分组交换">
+<meta name="twitter:image" content="https://alex-mcavoy.github.io/images/notes/computer-networks/08-1.png">
+
+<link rel="canonical" href="https://alex-mcavoy.github.io/notes/computer-networks/66a2c84f.html">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>物理层交换技术 | Alex_McAvoy</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Alex_McAvoy</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">想要成为渔夫的猎手</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+
+	
+	
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/notes/computer-networks/66a2c84f.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/assets/img/head.jpg">
+      <meta itemprop="name" content="Alex_McAvoy">
+      <meta itemprop="description" content="想要成为渔夫的猎手">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Alex_McAvoy">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          物理层交换技术
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-09-17 18:04:00" itemprop="dateCreated datePublished" datetime="2019-09-17T18:04:00+08:00">2019-09-17</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/notes/" itemprop="url" rel="index"><span itemprop="name">学习笔记</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/notes/computer-networks/" itemprop="url" rel="index"><span itemprop="name">计算机网络</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>2.6k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>2 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="【概述】"><a href="#【概述】" class="headerlink" title="【概述】"></a>【概述】</h1><p>交换技术，是指各台主机之间、各台通信设备之间、主机与通信设备之间为交换信息采用的数据格式和交换装置的方式</p>
+<p>常见的交换技术有：电路交换、报文交换、分组交换</p>
+<p>下图给出了三种数据交换方式的比较</p>
+<p><img width="500" src="/images/notes/computer-networks/08-1.png"></p>
+<p>由图可以看出，若要传送的数据量很大，且发送时间远大于呼叫时间，采用电路交换比较合适；当端到端的通路由多段链路组成，采用分组交换较为合适</p>
+<p>从提高整个网络的信道利用率来看，报文交换和分组交换优于电路交换，其中分组交换比报文交换时延小，适用于计算机间突发的数据通信</p>
+<h1 id="【电路交换】"><a href="#【电路交换】" class="headerlink" title="【电路交换】"></a>【电路交换】</h1><p>在进行数据传输前，两个结点间必须先建立一条专用的物理通信路径，其由通信双方间的交换设备和链路逐段连接而成，且可能经过诸多中间结点，该线路在整个数据传输期间一直被独占，直到通信结束后才被释放</p>
+<p>由此，电路交换技术分为三个阶段：<strong>连接建立</strong>、<strong>数据传输</strong>、<strong>连接释放</strong></p>
+<p>需要注意的是，当电路建立后，除了源结点与目的结点外，电路上的任何结点均采用<strong>直通式收发数据</strong>，即不存在存储转发所消耗的时间</p>
+<p>电路交换的优缺点如下：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:center">优点</th>
+<th style="text-align:center">缺点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">通信时延小，数据量大时是否明显</td>
+<td style="text-align:center">建立连接耗时间长</td>
+</tr>
+<tr>
+<td style="text-align:center">有序传输，不存在失序问题</td>
+<td style="text-align:center">线路独占，信道利用率低</td>
+</tr>
+<tr>
+<td style="text-align:center">无冲突，不会出现争用物理信道的问题</td>
+<td style="text-align:center">灵活性差，通信双方连接通路上任一结点出现故障，必须重新建立连接</td>
+</tr>
+<tr>
+<td style="text-align:center">适用范围广，既可传模拟信号，又可传数字信号</td>
+<td style="text-align:center">数据直达，不同终端间的通信难以规格化</td>
+</tr>
+<tr>
+<td style="text-align:center">实时性强，通信双方连接一旦建立，可随时通信</td>
+<td style="text-align:center">难以进行差错控制</td>
+</tr>
+<tr>
+<td style="text-align:center">控制简单，交换设备的控制较为简单</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h1 id="【报文交换】"><a href="#【报文交换】" class="headerlink" title="【报文交换】"></a>【报文交换】</h1><p>报文交换数据交换的单位是<strong>报文</strong>，报文携带有目标地址、源地址等信息</p>
+<p>报文交换在交换结点采用<strong>存储转发</strong>方式，即交换设备会将到来的报文缓存，在检查数据包是否正确后，根据查找表选择一条合适的空闲线路，将报文转发出去</p>
+<p>报文交换的优缺点如下：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:center">优点</th>
+<th style="text-align:center">缺点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">无需建立连接，用户可随时发送报文</td>
+<td style="text-align:center">存在转发时延，即数据进入交换结点后要经历存储、转发这一过程，包括接收报文、检验正确性、排队等</td>
+</tr>
+<tr>
+<td style="text-align:center">动态分配线路，根据网络状况选择合适的线路转发报文</td>
+<td style="text-align:center">对报文大小无限制，要求网络结点要有较大的缓存空间</td>
+</tr>
+<tr>
+<td style="text-align:center">线路可靠性高，若某条线路出现故障，可重新选择另一条路径传输</td>
+<td style="text-align:center"></td>
+</tr>
+<tr>
+<td style="text-align:center">线路利用率高，通信双方不是固定占有一条通信线路，而是在不同时间段内占有该条物理信道</td>
+<td style="text-align:center"></td>
+</tr>
+<tr>
+<td style="text-align:center">提供多目标服务，一个报文可同时发送到多个目的地址</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h1 id="【分组交换】"><a href="#【分组交换】" class="headerlink" title="【分组交换】"></a>【分组交换】</h1><h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>分组交换也采用<strong>存储转发</strong>方式，但其解决了报文交换中大报文传输的问题</p>
+<p>分组交换限制了每次传送的数据块大小的上限，将大的数据块划分为合理的小数据块，再加上必要的控制信息，从而构成<strong>分组（Packet）</strong></p>
+<p>网络结点根据分组的控制信息将分组发送到下一结点，下一结点接收到分组后，暂存下了排队等待传输，然后再根据分组信息继续选择下一结点，直到到达目的结点</p>
+<p>根据通信子网向端点系统提供的服务，分组交换还可进一步分为<strong>面向连接的虚电路方式</strong>、<strong>无连接的数据报方式</strong>，这两种服务方式均由<strong>网络层</strong>提供</p>
+<p>分组交换的优缺点如下：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:center">优点</th>
+<th style="text-align:center">缺点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">无建立时延，用户可随时发送分组</td>
+<td style="text-align:center">存在传输时延，且要求交换结点具有更强的处理能力</td>
+</tr>
+<tr>
+<td style="text-align:center">线路利用率高，通信双方不是固定占有一条通信线路，而是在不同时间段内占有该条物理信道</td>
+<td style="text-align:center">要传送额外的控制信息，一定程度上降低了通信效率，增加了处理时延</td>
+</tr>
+<tr>
+<td style="text-align:center">结点的缓冲区大小固定，存储管理比报文交换简单</td>
+<td style="text-align:center">若采用数据报服务，可能会出现失序、丢失、重复分组</td>
+</tr>
+<tr>
+<td style="text-align:center">流水线方式传输，减少传输时间</td>
+<td style="text-align:center">若采用虚电路服务，有呼叫建立、数据传输、虚电路释放三个过程，较为繁琐</td>
+</tr>
+<tr>
+<td style="text-align:center">分组较短，减少出错几率与重发数据量</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h2 id="数据报方式"><a href="#数据报方式" class="headerlink" title="数据报方式"></a>数据报方式</h2><p>当作为通信子网用户的端系统要发送一个报文时，在端系统中实现的高层协议会将报文拆为若干带序号的数据单元，并在网络层加上控制信息形成<strong>数据报分组（网络层 PDU）</strong>，之后，在发送过程中，中间结点会尽快找到最佳路由，转发各个分组</p>
+<p>值得注意的是，不同的分组可以走不同的路径，也可以按照不同的顺序到达目的结点，在到达目的结点后，会对分组按照编号进行排序</p>
+<p>以下图为例，假定主机 $A$ 要向主机 $B$ 发送分组，那么采用数据报方式转发分组过程如下：</p>
+<ol>
+<li>主机 $A$ 将分组逐个发往与其直相连的结点 $A$，交换结点 $A$ 会将收到的分组缓存</li>
+<li>交换结点 $A$ 查找自己的<strong>转发表</strong>，由于不同时刻网络状态不同，因此转发表内容会改变，故有的分组转发给结点 $C$，也有的分组转发给结点 $D$</li>
+<li>网络中的其他结点收到分组后，与步骤 2 相似，类似的转发分组，直到分组到达目的主机 $B$</li>
+</ol>
+<p><img width="500" src="/images/notes/computer-networks/08-2.png"></p>
+<p>可以发现，数据报方式具有以下特点：</p>
+<ul>
+<li>发送分组前不需建立连接</li>
+<li>网络尽最大努力交付，不保证传输可靠性</li>
+<li>每个分组独立选择路由，分组不一定按序到达目的结点</li>
+<li>分组在交换结点存储转发时需要排队等待，会带来一定的时延</li>
+<li>网络具有冗余路径，对故障适应力强</li>
+<li>收发双方不独占某一链路，信道利用率较高</li>
+</ul>
+<h2 id="虚电路方式"><a href="#虚电路方式" class="headerlink" title="虚电路方式"></a>虚电路方式</h2><p>虚电路方式是电路交换与数据报方式的结合，充分发挥了两种方法的优点，以达到最佳的数据交换效果</p>
+<p>在分组发送前，要求发送方和接收方建立一条<strong>逻辑上相连</strong>的虚电路，并且一旦连接建立，虚电路对应的物理路径就固定了</p>
+<p>与电路交换类型，整个通信过程分为三个阶段：<strong>虚电路建立</strong>、<strong>数据传输</strong>、<strong>虚电路释放</strong></p>
+<p>端系统每次建立虚电路时，会选择一个不曾使用过的<strong>虚电路号</strong>分配给该虚电路，以区别于系统中的其他虚电路</p>
+<p>在传输数据时，每个数据分组不仅要有分组号、检验和等控制信息，还要有其要通过的虚电路号，以区别于其他虚电路上的分组</p>
+<p>同时，在虚电路网络上的每个结点都维持着一张<strong>虚电路表</strong>，其每一项记录了一个打开的虚电路的信息</p>
+<p>以下图为例，假定主机 $A$ 要向主机 $B$ 发送分组，那么采用虚电路方式转发分组过程如下：</p>
+<ol>
+<li>主机 $A$ 与主机 $B$ 之间建立一条逻辑通路，主机 $A$ 发送一个特殊的<strong>呼叫请求分组</strong>，该分组通过中间结点发往主机 $B$，若主机 $B$ 同意建立连接，就发送<strong>呼叫应答分组</strong>进行回应</li>
+<li>虚电路建立后，主机 $A$ 可以通过虚电路以存储转发的方式向主机 $B$ 发送数据，主机 $B$ 也可以通过虚电路以存储转发的方式向主机 $A$ 发送数据</li>
+<li>数据传送完毕后，主机 $A$ 发送<strong>释放请求分组</strong>以申请拆除虚电路，若主机 $B$ 同意拆除，就发送<strong>释放应答分组</strong>，之后整个连接逐段断开</li>
+</ol>
+<p><img width="500" src="/images/notes/computer-networks/08-3.png"></p>
+<p>可以发现，虚电路方式具有以下特点：</p>
+<ul>
+<li>虚电路的建立与拆除需要额外的时间开销，适用于长时间、频繁的数据交换</li>
+<li>虚电路的路由选择体现在连接建立阶段，连接建立后，传输路径就确定了</li>
+<li>虚电路提供可靠通信功能，能保证每个分组正确有序到达</li>
+<li>虚电路可以对两个数据端点进行流量控制，当接收方来不及接收数据时，可通知发送方暂缓发送</li>
+<li>当网络中某个结点出现故障时，所有经过该结点的虚电路将遭到破坏</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>感谢您对我的支持，让我继续努力分享有用的技术与知识点！</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/wechatpay.jpg" alt="Alex_McAvoy 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/alipay.jpg" alt="Alex_McAvoy 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Alex_McAvoy
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://alex-mcavoy.github.io/notes/computer-networks/66a2c84f.html" title="物理层交换技术">https://alex-mcavoy.github.io/notes/computer-networks/66a2c84f.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/notes/" rel="tag"># 学习笔记</a>
+              <a href="/tags/network/" rel="tag"># 网络相关</a>
+              <a href="/tags/computer-networks/" rel="tag"># 计算机网络</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/notes/computer-networks/1748423c.html" rel="prev" title="通信基础">
+      <i class="fa fa-chevron-left"></i> 通信基础
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/notes/computer-networks/8d3ab262.html" rel="next" title="物理层设备与传输介质">
+      物理层设备与传输介质 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【概述】"><span class="nav-number">1.</span> <span class="nav-text">【概述】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【电路交换】"><span class="nav-number">2.</span> <span class="nav-text">【电路交换】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【报文交换】"><span class="nav-number">3.</span> <span class="nav-text">【报文交换】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【分组交换】"><span class="nav-number">4.</span> <span class="nav-text">【分组交换】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#概述"><span class="nav-number">4.1.</span> <span class="nav-text">概述</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#数据报方式"><span class="nav-number">4.2.</span> <span class="nav-text">数据报方式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#虚电路方式"><span class="nav-number">4.3.</span> <span class="nav-text">虚电路方式</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">  
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Alex_McAvoy"
+      src="/assets/img/head.jpg">
+  <p class="site-author-name" itemprop="name">Alex_McAvoy</p>
+  <div class="site-description" itemprop="description">想要成为渔夫的猎手</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">541</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">56</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">61</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Alex-McAvoy" title="GitHub → https://github.com/Alex-McAvoy" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/u011815404" title="CSDN → https://blog.csdn.net/u011815404" rel="noopener" target="_blank"><i class="fas fa-copyright fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+<!-- 访客地图 -->
+<script type="text/javascript" src="//rf.revolvermaps.com/0/0/5.js?i=50n58yo58ow&amp;m=0&amp;c=ff0000&amp;cr1=ffffff&amp;s=140" async="async"></script>
+
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdz20172133" title="https://blog.csdn.net/sdz20172133" rel="noopener" target="_blank">神仙队友</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://pxlsdz.gitee.io/" title="https://pxlsdz.gitee.io/" rel="noopener" target="_blank">神仙队友的另一个博客</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://bycore.net" title="https://bycore.net" rel="noopener" target="_blank">凉了的某饼同学</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://kris-cn.github.io/" title="http://kris-cn.github.io/" rel="noopener" target="_blank">翟孙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://deng.fun/" title="http://deng.fun/" rel="noopener" target="_blank">芙蓉姐姐</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdau_fangshifeng" title="https://blog.csdn.net/sdau_fangshifeng" rel="noopener" target="_blank">一个头很酷的家伙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/wentong_Xu" title="https://blog.csdn.net/wentong_Xu" rel="noopener" target="_blank">小黑贱胖子</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.yuheng.tech/" title="https://www.yuheng.tech/" rel="noopener" target="_blank">咸于</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/lanshan1111" title="https://blog.csdn.net/lanshan1111" rel="noopener" target="_blank">肥硕硕</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdauguanweihong" title="https://blog.csdn.net/sdauguanweihong" rel="noopener" target="_blank">管少</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_41661919" title="https://blog.csdn.net/qq_41661919" rel="noopener" target="_blank">俊杰</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_40859951" title="https://blog.csdn.net/qq_40859951" rel="noopener" target="_blank">峰哥</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/LSD20164388" title="https://blog.csdn.net/LSD20164388" rel="noopener" target="_blank">狗冬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37748451" title="https://blog.csdn.net/qq_37748451" rel="noopener" target="_blank">胖亚亚</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37868325" title="https://blog.csdn.net/qq_37868325" rel="noopener" target="_blank">妍大佬</a>
+        </li>
+    </ul>
+  </div>
+
+		
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+  
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Alex_McAvoy</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+</br>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script><script src="/js/bookmark.js"></script>
+
+
+
+  
+
+
+
+
+  <script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '48fd73a538d3fa927f65',
+      clientSecret: '56618aefeee90bac3c20de8d51bb0b985d67252d',
+      repo        : 'Gitalk-Comment',
+      owner       : 'Alex-McAvoy',
+      admin       : ['Alex-McAvoy'],
+      id          : '842f66feec03c076d3336cfe001e7751',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+  
+  <!-- 鼠标单击粒子特效 -->
+  <script type="text/javascript" src="/js/cursor-effects.js"></script>
+  <!-- 多级目录 -->
+  <script type="text/javascript" src="/js/category.js"></script>
+  
+</body>
+</html>

@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.9.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/img/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/assets/img/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/pace-js@1/themes/blue/pace-theme-minimal.css">
+  <script src="//cdn.jsdelivr.net/npm/pace-js@1/pace.min.js"></script>
+
+
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"alex-mcavoy.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":16,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":true,"color":"#ff0000","save":"manual"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":true},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.json"};
+  </script>
+
+  <meta name="description" content="【软件实现方法】软件实现方法，是在进入区设置和检查一些标志，来标明是否有进程在临界区中，若已有进程在临界区，则在进入区通过循环检查进行等待，进程离开临界区后，在退出区修改标志 单标志法">
+<meta name="keywords" content="C++,学习笔记,操作系统">
+<meta property="og:type" content="article">
+<meta property="og:title" content="实现临界区互斥的基本方法">
+<meta property="og:url" content="https://alex-mcavoy.github.io/notes/operating-system/238d6eca.html">
+<meta property="og:site_name" content="Alex_McAvoy">
+<meta property="og:description" content="【软件实现方法】软件实现方法，是在进入区设置和检查一些标志，来标明是否有进程在临界区中，若已有进程在临界区，则在进入区通过循环检查进行等待，进程离开临界区后，在退出区修改标志 单标志法">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2021-10-11T13:46:26.195Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="实现临界区互斥的基本方法">
+<meta name="twitter:description" content="【软件实现方法】软件实现方法，是在进入区设置和检查一些标志，来标明是否有进程在临界区中，若已有进程在临界区，则在进入区通过循环检查进行等待，进程离开临界区后，在退出区修改标志 单标志法">
+
+<link rel="canonical" href="https://alex-mcavoy.github.io/notes/operating-system/238d6eca.html">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>实现临界区互斥的基本方法 | Alex_McAvoy</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Alex_McAvoy</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">想要成为渔夫的猎手</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+
+	
+	
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/notes/operating-system/238d6eca.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/assets/img/head.jpg">
+      <meta itemprop="name" content="Alex_McAvoy">
+      <meta itemprop="description" content="想要成为渔夫的猎手">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Alex_McAvoy">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          实现临界区互斥的基本方法
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-11-14 19:48:57" itemprop="dateCreated datePublished" datetime="2019-11-14T19:48:57+08:00">2019-11-14</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/notes/" itemprop="url" rel="index"><span itemprop="name">学习笔记</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/notes/operating-system/" itemprop="url" rel="index"><span itemprop="name">操作系统</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>3.7k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>3 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="【软件实现方法】"><a href="#【软件实现方法】" class="headerlink" title="【软件实现方法】"></a>【软件实现方法】</h1><p>软件实现方法，是在<strong>进入区</strong>设置和检查一些标志，来标明是否有进程在临界区中，若已有进程在临界区，则在进入区通过循环检查进行等待，进程离开临界区后，在<strong>退出区</strong>修改标志</p>
+<h2 id="单标志法"><a href="#单标志法" class="headerlink" title="单标志法"></a>单标志法</h2><p>单标志法其通过设置一个公用整型变量 <code>turn</code>，来指示被允许进入临界区的进程编号，从而确保每次只允许一个进程进入临界区，例如，当 <code>turn=0</code> 时，允许进程 $P_0$ 进入临界区</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> turn;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">init</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    turn = <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">P0</span><span class="params">()</span> </span>&#123;            <span class="comment">//P0进程</span></span><br><span class="line">    <span class="keyword">while</span> (turn != <span class="number">0</span>); <span class="comment">//进入区</span></span><br><span class="line">    critical section;  <span class="comment">//临界区</span></span><br><span class="line">    turn = <span class="number">1</span>;          <span class="comment">//退出区</span></span><br><span class="line">    remainder section; <span class="comment">//剩余区</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">P1</span><span class="params">()</span> </span>&#123;            <span class="comment">//P1进程</span></span><br><span class="line">    <span class="keyword">while</span> (turn != <span class="number">1</span>); <span class="comment">//进入区</span></span><br><span class="line">    critical section;  <span class="comment">//临界区</span></span><br><span class="line">    turn = <span class="number">0</span>;          <span class="comment">//退出区</span></span><br><span class="line">    remainder section; <span class="comment">//剩余区</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>但该算法违反了<strong>空闲让进</strong>原则，其要求两个进程交替进入临界区，如果某个进程不再进入临界区，那么另一个进程也无法进入临界区</p>
+<p>例如，$P_0$ 进入临界区并从临界区离开，那么此时临界区是空闲的，但 $P_1$ 并没有进入临界区的打算，<code>trun=1</code> 会一直成立，$P_0$ 会被 <code>while</code> 死循环困住，无法进入临界区</p>
+<h2 id="双标志先检查法"><a href="#双标志先检查法" class="headerlink" title="双标志先检查法"></a>双标志先检查法</h2><p>双标志先检查法的基本思想是在每一个进程访问临界区资源前，先检查临界资源是否正在被访问，若正被访问，该进程需要等待，若未被访问，该进程才可进入临界区</p>
+<p>该方法设置了一个 <code>flag[i]</code> 标志，标识第 $i$ 个进程 $P_i$ 是否已经进入临界区，若 <code>flag[i]=ture</code>，表示 $P_i$ 已经进入临界区，若 <code>flag[i]=false</code>，表示 $P_i$ 未进入临界区</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">bool</span> flag[<span class="number">2</span>];</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">init</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    flag[<span class="number">0</span>] = <span class="literal">false</span>;</span><br><span class="line">    flag[<span class="number">1</span>] = <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">P0</span><span class="params">()</span> </span>&#123;            <span class="comment">//P0进程</span></span><br><span class="line">    <span class="keyword">while</span> (flag[<span class="number">1</span>]);   <span class="comment">//1 进入区</span></span><br><span class="line">    flag[<span class="number">0</span>] = <span class="literal">true</span>;    <span class="comment">//2</span></span><br><span class="line">    critical section;  <span class="comment">//3 临界区</span></span><br><span class="line">    flag[<span class="number">0</span>] = <span class="literal">false</span>;   <span class="comment">//4 退出区</span></span><br><span class="line">    remainder section; <span class="comment">//剩余区</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">P1</span><span class="params">()</span> </span>&#123;            <span class="comment">//P1进程</span></span><br><span class="line">    <span class="keyword">while</span> (flag[<span class="number">0</span>]);   <span class="comment">//5 进入区</span></span><br><span class="line">    flag[<span class="number">1</span>] = <span class="literal">true</span>;    <span class="comment">//6</span></span><br><span class="line">    critical section;  <span class="comment">//7 临界区</span></span><br><span class="line">    flag[<span class="number">1</span>] = <span class="literal">false</span>;   <span class="comment">//8 退出区</span></span><br><span class="line">    remainder section; <span class="comment">//剩余区</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>按 $1$、$5$、$2$、$6$、$3$、$7\dots$ 的顺序，可能会导致 $P_0$、$P_1$ 同时访问临界区，违反了<strong>忙则等待</strong>原则</p>
+<p>这是因为先检测对方进程状态标志后，再设置自己的标志，由于检测和放置中可插入另一个进程到达时的检测操作，从而可能造成两个进程分别检测后同时进入临界区</p>
+<h2 id="双标志后检查法"><a href="#双标志后检查法" class="headerlink" title="双标志后检查法"></a>双标志后检查法</h2><p>双标志后检查法先设置自己的标志为 <code>true</code> 后，再检测对方的标志，若对方标志为 <code>true</code>，则进程等待，否则进入临界区</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">bool</span> flag[<span class="number">2</span>];</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">init</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    flag[<span class="number">0</span>] = <span class="literal">false</span>;</span><br><span class="line">    flag[<span class="number">1</span>] = <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">P0</span><span class="params">()</span> </span>&#123;            <span class="comment">//P0进程</span></span><br><span class="line">    flag[<span class="number">0</span>] = <span class="literal">true</span>;    <span class="comment">//1 进入区</span></span><br><span class="line">    <span class="keyword">while</span> (flag[<span class="number">1</span>]);   <span class="comment">//2</span></span><br><span class="line">    critical section;  <span class="comment">//3 临界区</span></span><br><span class="line">    flag[<span class="number">0</span>] = <span class="literal">false</span>;   <span class="comment">//4 退出区</span></span><br><span class="line">    remainder section; <span class="comment">//剩余区</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">P1</span><span class="params">()</span> </span>&#123;            <span class="comment">//P1进程</span></span><br><span class="line">    flag[<span class="number">1</span>] = <span class="literal">true</span>;    <span class="comment">//5 进入区</span></span><br><span class="line">    <span class="keyword">while</span> (flag[<span class="number">0</span>]);   <span class="comment">//6</span></span><br><span class="line">    critical section;  <span class="comment">//7 临界区</span></span><br><span class="line">    flag[<span class="number">1</span>] = <span class="literal">false</span>;   <span class="comment">//8 退出区</span></span><br><span class="line">    remainder section; <span class="comment">//剩余区</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>按 $1$、$5$、$2$、$6\dots$ 的顺序，可能会导致 $P_0$、$P_1$ 都无法进入临界区，导致出现饥饿现象，违反了<strong>空闲让进</strong>和<strong>有限等待</strong>原则</p>
+<h2 id="Peterson-算法"><a href="#Peterson-算法" class="headerlink" title="Peterson 算法"></a>Peterson 算法</h2><p>Peterson 算法结合了单标志法、双标志后检查法，若双方都想进入临界区，会尝试让进程彼此谦让</p>
+<p>每个进程先设置自己的 <code>flag[i]</code> 标志，表示 $P_i$ 是否进入临界区，用于解决互斥；又设置了 <code>turn</code> 标志，表示优先让哪个进程进入，用于解决饥饿</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">bool</span> flag[<span class="number">2</span>];</span><br><span class="line"><span class="keyword">int</span> turn;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">init</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    turn = <span class="number">0</span>;</span><br><span class="line">    flag[<span class="number">0</span>] = <span class="literal">false</span>;</span><br><span class="line">    flag[<span class="number">1</span>] = <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">P0</span><span class="params">()</span> </span>&#123;            <span class="comment">//P0进程</span></span><br><span class="line">    flag[<span class="number">0</span>] = <span class="literal">true</span>;    <span class="comment">//进入区</span></span><br><span class="line">    turn = <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">while</span> (flag[<span class="number">1</span>] &amp;&amp; turn == <span class="number">1</span>);   </span><br><span class="line">    critical section;  <span class="comment">//临界区</span></span><br><span class="line">    flag[<span class="number">0</span>] = <span class="literal">false</span>;   <span class="comment">//退出区</span></span><br><span class="line">    remainder section; <span class="comment">//剩余区</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">P1</span><span class="params">()</span> </span>&#123;            <span class="comment">//P1进程</span></span><br><span class="line">    flag[<span class="number">1</span>] = <span class="literal">true</span>;    <span class="comment">//进入区</span></span><br><span class="line">    turn = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">while</span> (flag[<span class="number">0</span>] &amp;&amp; turn == <span class="number">0</span>);   </span><br><span class="line">    critical section;  <span class="comment">//临界区</span></span><br><span class="line">    flag[<span class="number">1</span>] = <span class="literal">false</span>;   <span class="comment">//退出区</span></span><br><span class="line">    remainder section; <span class="comment">//剩余区</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>可以发现，Peterson 算法在进入区中，是先主动争取，然后主动谦让，最后再检查对方是否想进入临界区，己方是否谦让</p>
+<p>其遵循了空闲让进、忙则等待、有限等待原则，但违反了<strong>让权等待</strong>原则，可能会造成忙等</p>
+<h1 id="【硬件实现方法】"><a href="#【硬件实现方法】" class="headerlink" title="【硬件实现方法】"></a>【硬件实现方法】</h1><p>许多计算机中提供了一些特殊的硬件指令，允许对一个字中的内容进行检测和修正，或对两个字的内容进行交换，利用这些特殊的硬件指令，可以解决临界区问题。</p>
+<p>进入临界区往往与其标志有关，我们可以将标志看做一个<strong>初始时开启</strong>的锁：锁开启时，允许进入，且进入后关闭锁；锁关闭时，必须等待</p>
+<h2 id="中断屏蔽法"><a href="#中断屏蔽法" class="headerlink" title="中断屏蔽法"></a>中断屏蔽法</h2><p>中断屏蔽法是实现互斥的最简单的方法，其利用了开关中断指令实现互斥</p>
+<p>在进入锁测试前关闭中断，直到完成锁测试并上锁后才能打开中断，这样进程在临界区执行期间，系统不响应中断，从而也就不会引发调度</p>
+<p>但关中断的方法具有许多缺点，例如：滥用关中断权力、关中断时间过长影响系统效率、不适用于多 CPU 系统等</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">while</span> (<span class="literal">true</span>) &#123;</span><br><span class="line">    关中断;            <span class="comment">//进入区</span></span><br><span class="line">    critical section; <span class="comment">//临界区</span></span><br><span class="line">    开中断;            <span class="comment">//退出区</span></span><br><span class="line">    remainder section <span class="comment">//剩余区</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="TSL-指令"><a href="#TSL-指令" class="headerlink" title="TSL 指令"></a>TSL 指令</h2><p>TSL 指令是一条硬件指令：<strong>Test-and-Set-Lock 指令</strong>，其是用硬件实现的原子操作，在读出指定标志后，会将标志设为真，整个检查、上锁过程一气呵成</p>
+<p>该指令一般性描述如下：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">bool</span> <span class="title">TSL</span> <span class="params">(<span class="keyword">bool</span> *lock)</span> </span>&#123; <span class="comment">//lock表示临界区是否被上锁</span></span><br><span class="line">    <span class="keyword">bool</span> old = *lock;   <span class="comment">//存放lock原来的值</span></span><br><span class="line">    *lock = <span class="literal">true</span>;       <span class="comment">//无论之前是否加锁，都上锁</span></span><br><span class="line">    <span class="keyword">return</span> old;         <span class="comment">//返回lock原来的值</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>TSL 指令可以看做一个函数过程，其执行过程是不可分割的，即其是一条<strong>原语</strong>，其中 <code>lock</code> 具有两种状态：</p>
+<ul>
+<li><code>*lock=false</code> 时：表示该资源空闲</li>
+<li><code>*lock=true</code> 时：表示该资源正被使用</li>
+</ul>
+<p>用 TSL 指令管理临界区时，现为每个临界资源设置一个布尔变量 <code>lock</code>，由于变量 <code>lock</code> 代表了该资源的状态，故可以将其看作一把锁</p>
+<p>利用 TSL 指令实现互斥的循环进程结构描述如下：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">while</span> (<span class="literal">true</span>) &#123;</span><br><span class="line">    <span class="keyword">while</span>(TS(&amp;lock)); <span class="comment">//进入区</span></span><br><span class="line">    critical section; <span class="comment">//临界区</span></span><br><span class="line">    lock = <span class="literal">false</span>;       <span class="comment">//退出区</span></span><br><span class="line">    remainder section <span class="comment">//剩余区</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>该方法实现简单，适合多处理机，但不满足<strong>让权等待</strong>原则，无法进入临界区的进程会占用 CPU 并循环执行 TSL 指令</p>
+<h2 id="swap-指令"><a href="#swap-指令" class="headerlink" title="swap 指令"></a>swap 指令</h2><p><code>swap</code> 指令即对换指令，其同样是由硬件实现的原子操作，用于交换两个字的内容，其处理过程描述如下：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">swap</span> <span class="params">(<span class="keyword">bool</span> *a, <span class="keyword">bool</span> *b)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">bool</span> temp;</span><br><span class="line">    temp = *a;</span><br><span class="line">    *a = *b;</span><br><span class="line">    *b = temp;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>使用对换指令可以简单有效地实现互斥，其方法是为每个临界资源设置一个初值为 <code>false</code> 的全局布尔变量 <code>lock</code>，在每个进程中再利用一个局部布尔变量 <code>key</code>，利用 <code>swap</code> 进行交换来实现互斥</p>
+<p>利用 <code>swap</code> 指令实现互斥的循环进程结构描述如下：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">while</span> (<span class="literal">true</span>) &#123;</span><br><span class="line">    <span class="keyword">bool</span> key = <span class="literal">true</span>; <span class="comment">//进入区</span></span><br><span class="line">    <span class="keyword">while</span>(key)</span><br><span class="line">        swap(&amp;lock, &amp;key);</span><br><span class="line">    critical section; <span class="comment">//临界区</span></span><br><span class="line">    lock = <span class="literal">false</span>;<span class="comment">//退出区</span></span><br><span class="line">    remainder section <span class="comment">//剩余区</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>该方法与 TSL 指令方法一样，实现简单，适合多处理机，且不满足<strong>让权等待</strong>原则</p>
+
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>感谢您对我的支持，让我继续努力分享有用的技术与知识点！</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/wechatpay.jpg" alt="Alex_McAvoy 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/alipay.jpg" alt="Alex_McAvoy 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Alex_McAvoy
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://alex-mcavoy.github.io/notes/operating-system/238d6eca.html" title="实现临界区互斥的基本方法">https://alex-mcavoy.github.io/notes/operating-system/238d6eca.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/cpp/" rel="tag"># C++</a>
+              <a href="/tags/notes/" rel="tag"># 学习笔记</a>
+              <a href="/tags/operating-system/" rel="tag"># 操作系统</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/notes/operating-system/d2f7777c.html" rel="prev" title="进程同步与进程互斥的基本概念">
+      <i class="fa fa-chevron-left"></i> 进程同步与进程互斥的基本概念
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/notes/operating-system/d0c0f553.html" rel="next" title="信号量机制">
+      信号量机制 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【软件实现方法】"><span class="nav-number">1.</span> <span class="nav-text">【软件实现方法】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#单标志法"><span class="nav-number">1.1.</span> <span class="nav-text">单标志法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#双标志先检查法"><span class="nav-number">1.2.</span> <span class="nav-text">双标志先检查法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#双标志后检查法"><span class="nav-number">1.3.</span> <span class="nav-text">双标志后检查法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Peterson-算法"><span class="nav-number">1.4.</span> <span class="nav-text">Peterson 算法</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【硬件实现方法】"><span class="nav-number">2.</span> <span class="nav-text">【硬件实现方法】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#中断屏蔽法"><span class="nav-number">2.1.</span> <span class="nav-text">中断屏蔽法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#TSL-指令"><span class="nav-number">2.2.</span> <span class="nav-text">TSL 指令</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#swap-指令"><span class="nav-number">2.3.</span> <span class="nav-text">swap 指令</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">  
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Alex_McAvoy"
+      src="/assets/img/head.jpg">
+  <p class="site-author-name" itemprop="name">Alex_McAvoy</p>
+  <div class="site-description" itemprop="description">想要成为渔夫的猎手</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">541</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">56</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">61</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Alex-McAvoy" title="GitHub → https://github.com/Alex-McAvoy" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/u011815404" title="CSDN → https://blog.csdn.net/u011815404" rel="noopener" target="_blank"><i class="fas fa-copyright fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+<!-- 访客地图 -->
+<script type="text/javascript" src="//rf.revolvermaps.com/0/0/5.js?i=50n58yo58ow&amp;m=0&amp;c=ff0000&amp;cr1=ffffff&amp;s=140" async="async"></script>
+
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdz20172133" title="https://blog.csdn.net/sdz20172133" rel="noopener" target="_blank">神仙队友</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://pxlsdz.gitee.io/" title="https://pxlsdz.gitee.io/" rel="noopener" target="_blank">神仙队友的另一个博客</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://bycore.net" title="https://bycore.net" rel="noopener" target="_blank">凉了的某饼同学</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://kris-cn.github.io/" title="http://kris-cn.github.io/" rel="noopener" target="_blank">翟孙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://deng.fun/" title="http://deng.fun/" rel="noopener" target="_blank">芙蓉姐姐</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdau_fangshifeng" title="https://blog.csdn.net/sdau_fangshifeng" rel="noopener" target="_blank">一个头很酷的家伙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/wentong_Xu" title="https://blog.csdn.net/wentong_Xu" rel="noopener" target="_blank">小黑贱胖子</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.yuheng.tech/" title="https://www.yuheng.tech/" rel="noopener" target="_blank">咸于</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/lanshan1111" title="https://blog.csdn.net/lanshan1111" rel="noopener" target="_blank">肥硕硕</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdauguanweihong" title="https://blog.csdn.net/sdauguanweihong" rel="noopener" target="_blank">管少</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_41661919" title="https://blog.csdn.net/qq_41661919" rel="noopener" target="_blank">俊杰</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_40859951" title="https://blog.csdn.net/qq_40859951" rel="noopener" target="_blank">峰哥</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/LSD20164388" title="https://blog.csdn.net/LSD20164388" rel="noopener" target="_blank">狗冬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37748451" title="https://blog.csdn.net/qq_37748451" rel="noopener" target="_blank">胖亚亚</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37868325" title="https://blog.csdn.net/qq_37868325" rel="noopener" target="_blank">妍大佬</a>
+        </li>
+    </ul>
+  </div>
+
+		
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+  
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Alex_McAvoy</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+</br>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script><script src="/js/bookmark.js"></script>
+
+
+
+  
+
+
+
+
+  <script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '48fd73a538d3fa927f65',
+      clientSecret: '56618aefeee90bac3c20de8d51bb0b985d67252d',
+      repo        : 'Gitalk-Comment',
+      owner       : 'Alex-McAvoy',
+      admin       : ['Alex-McAvoy'],
+      id          : '5abae8036d06f8cf8f9a8b88bc3e32ca',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+  
+  <!-- 鼠标单击粒子特效 -->
+  <script type="text/javascript" src="/js/cursor-effects.js"></script>
+  <!-- 多级目录 -->
+  <script type="text/javascript" src="/js/category.js"></script>
+  
+</body>
+</html>

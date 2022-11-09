@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.9.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/img/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/assets/img/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/pace-js@1/themes/blue/pace-theme-minimal.css">
+  <script src="//cdn.jsdelivr.net/npm/pace-js@1/pace.min.js"></script>
+
+
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"alex-mcavoy.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":16,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":true,"color":"#ff0000","save":"manual"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":true},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.json"};
+  </script>
+
+  <meta name="description" content="【概述】对于 IP 数据报来说，有三种通信方式：  单播：点对点通信，发送数据报到单个目的地，每次发送都使用单播 IP 作为目的地址 广播：点对多点通信，发送数据报到同一广播域，子网中所有设备都会收到数据 组播（多播）：某些用户需要数据时，发送方仅发送一次数据，借助组播路由协议为数据报建立组播分发树，被传送的数据到达距离用户端尽可能近的结点后复制、分发">
+<meta name="keywords" content="学习笔记,网络相关,计算机网络">
+<meta property="og:type" content="article">
+<meta property="og:title" content="IP 组播">
+<meta property="og:url" content="https://alex-mcavoy.github.io/notes/computer-networks/46b1c324.html">
+<meta property="og:site_name" content="Alex_McAvoy">
+<meta property="og:description" content="【概述】对于 IP 数据报来说，有三种通信方式：  单播：点对点通信，发送数据报到单个目的地，每次发送都使用单播 IP 作为目的地址 广播：点对多点通信，发送数据报到同一广播域，子网中所有设备都会收到数据 组播（多播）：某些用户需要数据时，发送方仅发送一次数据，借助组播路由协议为数据报建立组播分发树，被传送的数据到达距离用户端尽可能近的结点后复制、分发">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/computer-networks/36-1.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/computer-networks/36-2.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/computer-networks/36-3.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/computer-networks/36-4.png">
+<meta property="og:updated_time" content="2021-08-29T13:47:55.468Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="IP 组播">
+<meta name="twitter:description" content="【概述】对于 IP 数据报来说，有三种通信方式：  单播：点对点通信，发送数据报到单个目的地，每次发送都使用单播 IP 作为目的地址 广播：点对多点通信，发送数据报到同一广播域，子网中所有设备都会收到数据 组播（多播）：某些用户需要数据时，发送方仅发送一次数据，借助组播路由协议为数据报建立组播分发树，被传送的数据到达距离用户端尽可能近的结点后复制、分发">
+<meta name="twitter:image" content="https://alex-mcavoy.github.io/images/notes/computer-networks/36-1.png">
+
+<link rel="canonical" href="https://alex-mcavoy.github.io/notes/computer-networks/46b1c324.html">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>IP 组播 | Alex_McAvoy</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Alex_McAvoy</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">想要成为渔夫的猎手</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+
+	
+	
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/notes/computer-networks/46b1c324.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/assets/img/head.jpg">
+      <meta itemprop="name" content="Alex_McAvoy">
+      <meta itemprop="description" content="想要成为渔夫的猎手">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Alex_McAvoy">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          IP 组播
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-10-22 11:51:00" itemprop="dateCreated datePublished" datetime="2019-10-22T11:51:00+08:00">2019-10-22</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/notes/" itemprop="url" rel="index"><span itemprop="name">学习笔记</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/notes/computer-networks/" itemprop="url" rel="index"><span itemprop="name">计算机网络</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>2.6k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>2 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="【概述】"><a href="#【概述】" class="headerlink" title="【概述】"></a>【概述】</h1><p>对于 IP 数据报来说，有三种通信方式：</p>
+<ul>
+<li><strong>单播</strong>：点对点通信，发送数据报到单个目的地，每次发送都使用单播 IP 作为目的地址</li>
+<li><strong>广播</strong>：点对多点通信，发送数据报到同一广播域，子网中所有设备都会收到数据</li>
+<li><strong>组播（多播）</strong>：某些用户需要数据时，发送方仅发送一次数据，借助<strong>组播路由协议</strong>为数据报建立<strong>组播分发树</strong>，被传送的数据到达距离用户端尽可能近的结点后复制、分发</li>
+</ul>
+<p>对于视频点播、视频会议这样的多媒体应用，要将一个分组发送给多个目的主机，如果每个目的主机都要发送一个 IP 数据报，这无疑会引起大量的处理开销与太多的网络通信量</p>
+<p>因此，可以令这些目的主机的 IP 地址用一组地址来标识，发送方仅发送时仅发送一份数据，只有数据在传送路径出现分岔时才将分组复制后继续转发，这样对于发送者而言，数据只需要发送一次就可以发送给所有的接受者，极大的减轻了网络负载与发送方的负担</p>
+<p>单播与组播的比较示意图如下</p>
+<p><img width="500" src="/images/notes/computer-networks/36-1.png"></p>
+<h1 id="【IP-组播的特点】"><a href="#【IP-组播的特点】" class="headerlink" title="【IP 组播的特点】"></a>【IP 组播的特点】</h1><p>IP 组播具有如下特点：</p>
+<ul>
+<li>组播地址仅可作为<strong>目的地址</strong>，不能采用源地址（源地址采用单播地址）</li>
+<li>对组播数据报<strong>不产生 ICMP 差错报文</strong>，因此若在 PING 命令后键入组播地址，将永远不会收到响应</li>
+<li>组播是基于 <strong>UDP</strong> 的，其尽最大努力交付，不提供可靠交付</li>
+<li>组播分为<strong>在本局域网上的硬件组播</strong>、在<strong>因特网上的组播</strong></li>
+<li>组播地址<strong>永久不变</strong>，由因特网号码指派管理局 IANA 负责指派</li>
+<li>组播的<strong>组成员是动态的，</strong>一个主机可以选择加入或离开一个组，也可以同时属于多个组</li>
+<li>组播数据报使用的 D 类 IP 地址仅作为<strong>目的地址（源地址为单播地址）</strong>，且首部中的协议字段值为 $2$，表明使用 <strong>IGMP 协议</strong></li>
+</ul>
+<h1 id="【IP-组播地址】"><a href="#【IP-组播地址】" class="headerlink" title="【IP 组播地址】"></a>【IP 组播地址】</h1><p>IP 组播分为在本局域网上进行的<strong>硬件组播</strong>和在因特网范围内的<strong>因特网组播</strong>，但在因特网组播的最后阶段，还是要将组播数据报在局域网上将硬件组播交付给组播组内的所有成员</p>
+<p>在 IPv4 中，组播地址在 D 类地址空间中分配，在 IPv6 中，保留了一部分地址空间用于组播地址，这里仅介绍 IPv4 下的组播</p>
+<p><strong>因特网组播</strong>采用的是 <strong>D 类地址</strong>，其前四位是 <code>1110</code>，故而其地址范围从 <code>224.0.0.0</code> 到 <code>239.255.255.255</code>，每一个 D 类 IP 地址，都标识了一个组播组</p>
+<p>对于<strong>硬件组播</strong>来说，因特网号码指派管理局 IANA 所拥有的以太网组播地址范围从 <code>01-00-5E-00-00-00</code> 到 <code>01-00-5E-7F-FF-FF</code>，可以发现，给出的每一个地址，只有 $23$ 位可用于组播</p>
+<p>由于因特网组播最终要利用硬件组播将组播数据报交付给组播组内的所有成员，因此，对于 IANA 给出的硬件组播地址，与因特网组播中利用的 D 类 IP 地址存在一定的映射关系</p>
+<p>由于硬件组播给出的地址只有 $23$ 位用于组播，而 D 类 IP 地址除去前 $4$ 位外，还剩余 $28$ 位，可见这 $28$ 位中的前 $5$ 位不能用来构成以太网的硬件地址</p>
+<p>下图显示出两地址的对应关系</p>
+<p><img width="500" src="/images/notes/computer-networks/36-2.png"></p>
+<p>举例来说，对于 IP 组播地址 <code>224.128.64.32</code>，转换成十六进制表示为 <code>E0-80-40-20</code>，对于另一 IP 组播地址 <code>224.0.64.32</code>，转换成十六进制表示为 <code>E0-00-40-20</code></p>
+<p>根据硬件组播与因特网组播的对应关系，可以得出这两者的硬件组播地址都是 <code>01-00-5E-00-40-20</code></p>
+<p>由于组播 IP 地址与以太网硬件地址的映射关系不是唯一的，收到多播数据报的主机，还要在 IP 层利用软件进行过滤，把不是本主机要接收的数据报丢弃</p>
+<h1 id="【IGMP-协议】"><a href="#【IGMP-协议】" class="headerlink" title="【IGMP 协议】"></a>【IGMP 协议】</h1><h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p><strong>因特网组管理协议（Internet Group Management Protocol，IGMP）</strong>，是目前最常用组播协议，主机通过运行该协议加入组播组，路由器通过该协议来扩展路由选择与分组转发，从而于因特网上其他组播路由器协同工作，以最小代价将组播数据报传送给所有的组成员</p>
+<p>IGMP 并非在因特网范围内对所有多播组成员进行管理的协议，其并不知道 IP 组播组包含的成员数，也不知道这些成员都分布在哪些网络上，只是让连接在本地局域网上的组播路由器知道本局域网上是否有主机参加或退出了某个组播组</p>
+<p>组播转发必须动态地适应组播组成员的变化，组播路由器在转发组播数据报时，不能仅仅根据组播数据报中的目的地址，而是还要考虑这个组播数据报从什么地方来和要到什么地方去</p>
+<p>组播数据报可以由没有加入组播组的主机发出，也可以通过没有组成员接入的网络</p>
+<h2 id="基本原理"><a href="#基本原理" class="headerlink" title="基本原理"></a>基本原理</h2><p>IGMP 可视为 TCP/IP 的一部分，其工作过程可分为两个阶段： </p>
+<font size="4">1.阶段一</font>
+
+<p>当某个主机加入新的组播组时，该主机应向组播组的组播地址发送<strong>IGMP 报文</strong>，声明自己要成为该组的成员，本地的组播路由器收到 IGMP 报文后，将组成员关系转发给因特网上的其他组播路由器</p>
+<font size="4">2.阶段二</font>
+
+<p>由于组成员关系是动态的，因此本地多播路由器要<strong>周期性探询</strong>本地局域网上的主机，以便知道这些主机是否还继续是组的成员，默认每 $125$ 秒探询一次</p>
+<p>只要对某个组有一个主机响应，那么多播路由器就认为这个组是活跃的</p>
+<p>但一个组在经过几次的探询后仍然没有一个主机响应，则不再将该组的成员关系转发给其他的多播路由器</p>
+<h1 id="【组播的路由选择与分组转发】"><a href="#【组播的路由选择与分组转发】" class="headerlink" title="【组播的路由选择与分组转发】"></a>【组播的路由选择与分组转发】</h1><h2 id="路由选择"><a href="#路由选择" class="headerlink" title="路由选择"></a>路由选择</h2><p>组播路由选择协议尚未标准化，由于一个组播组中的成员是<strong>动态变化</strong>的，随时会有主机加入或离开这个多播组</p>
+<p>因此，组播路由选择实际上就是要找出以源主机为根结点的<strong>组播转发树</strong>，其中每一分组在每条链路上只传输一次，即组播转发树上的路由器不会收到重复的组播数据报，可见，组播转发树很好的避<strong>免了路由环路问题</strong></p>
+<p>对于不同的组播组，对应于不同的组播转发树；对于同一个组播组，对不同的源点也会有不同的组播转发树</p>
+<h2 id="分组转发"><a href="#分组转发" class="headerlink" title="分组转发"></a>分组转发</h2><p>组播数据报的分组转发有三种方法：<strong>洪泛与剪除</strong>、<strong>隧道技术</strong>、<strong>基于核心的发现技术</strong></p>
+<font size="4">1.洪泛与剪除</font>
+
+<p> 洪泛与剪除适用于较小的组播组，同时要求所有的组成员接入的局域网是邻接的</p>
+<p>最开始，路由器转发组播数据报使用<strong>洪泛法</strong>进行广播</p>
+<p>之后，为了避免兜圈子，采用了叫做<strong>反向路径广播（Reverse Path Broadcasting，RPB）</strong>的策略</p>
+<p>简单来说，路由器收到组播数据报时，先检查是否从源点经最短路径传送来的，若是，就向所有其他方向转发刚才收到的组播数据报；若不是，就丢弃而不转发</p>
+<p>若存在几条同样长度的最短路径，就只选择一条最短路径，选择的准则就是看这几条最短路径中的相邻路由器谁的 IP 地址最小</p>
+<p><img width="500" src="/images/notes/computer-networks/36-3.png"></p>
+<font size="4">2.隧道技术</font>
+
+<p>组播数据报采用隧道技术进行分组转发，是将组播数据报封装到单播数据报中，然后通过不支持组播的网络</p>
+<p><img width="500" src="/images/notes/computer-networks/36-4.png"></p>
+<font size="4">3.基于核心的发现技术</font>
+
+<p>基于核心的发现技术适合组播组的大小在较大范围内变化时的情况</p>
+<p>该方法是对每一个多播组 G 指定一个<strong>核心路由器</strong>，给出它的 IP 单播地址</p>
+<p>之后，核心路由器创建出 G 的<strong>组播转发树</strong>，再进行分组转发</p>
+
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>感谢您对我的支持，让我继续努力分享有用的技术与知识点！</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/wechatpay.jpg" alt="Alex_McAvoy 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/alipay.jpg" alt="Alex_McAvoy 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Alex_McAvoy
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://alex-mcavoy.github.io/notes/computer-networks/46b1c324.html" title="IP 组播">https://alex-mcavoy.github.io/notes/computer-networks/46b1c324.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/notes/" rel="tag"># 学习笔记</a>
+              <a href="/tags/network/" rel="tag"># 网络相关</a>
+              <a href="/tags/computer-networks/" rel="tag"># 计算机网络</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/notes/computer-networks/1d3badf2.html" rel="prev" title="IPv6">
+      <i class="fa fa-chevron-left"></i> IPv6
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/notes/computer-networks/74ee5df7.html" rel="next" title="路由算法与路由选择协议">
+      路由算法与路由选择协议 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【概述】"><span class="nav-number">1.</span> <span class="nav-text">【概述】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【IP-组播的特点】"><span class="nav-number">2.</span> <span class="nav-text">【IP 组播的特点】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【IP-组播地址】"><span class="nav-number">3.</span> <span class="nav-text">【IP 组播地址】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【IGMP-协议】"><span class="nav-number">4.</span> <span class="nav-text">【IGMP 协议】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#概述"><span class="nav-number">4.1.</span> <span class="nav-text">概述</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#基本原理"><span class="nav-number">4.2.</span> <span class="nav-text">基本原理</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【组播的路由选择与分组转发】"><span class="nav-number">5.</span> <span class="nav-text">【组播的路由选择与分组转发】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#路由选择"><span class="nav-number">5.1.</span> <span class="nav-text">路由选择</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#分组转发"><span class="nav-number">5.2.</span> <span class="nav-text">分组转发</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">  
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Alex_McAvoy"
+      src="/assets/img/head.jpg">
+  <p class="site-author-name" itemprop="name">Alex_McAvoy</p>
+  <div class="site-description" itemprop="description">想要成为渔夫的猎手</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">541</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">56</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">61</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Alex-McAvoy" title="GitHub → https://github.com/Alex-McAvoy" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/u011815404" title="CSDN → https://blog.csdn.net/u011815404" rel="noopener" target="_blank"><i class="fas fa-copyright fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+<!-- 访客地图 -->
+<script type="text/javascript" src="//rf.revolvermaps.com/0/0/5.js?i=50n58yo58ow&amp;m=0&amp;c=ff0000&amp;cr1=ffffff&amp;s=140" async="async"></script>
+
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdz20172133" title="https://blog.csdn.net/sdz20172133" rel="noopener" target="_blank">神仙队友</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://pxlsdz.gitee.io/" title="https://pxlsdz.gitee.io/" rel="noopener" target="_blank">神仙队友的另一个博客</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://bycore.net" title="https://bycore.net" rel="noopener" target="_blank">凉了的某饼同学</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://kris-cn.github.io/" title="http://kris-cn.github.io/" rel="noopener" target="_blank">翟孙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://deng.fun/" title="http://deng.fun/" rel="noopener" target="_blank">芙蓉姐姐</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdau_fangshifeng" title="https://blog.csdn.net/sdau_fangshifeng" rel="noopener" target="_blank">一个头很酷的家伙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/wentong_Xu" title="https://blog.csdn.net/wentong_Xu" rel="noopener" target="_blank">小黑贱胖子</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.yuheng.tech/" title="https://www.yuheng.tech/" rel="noopener" target="_blank">咸于</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/lanshan1111" title="https://blog.csdn.net/lanshan1111" rel="noopener" target="_blank">肥硕硕</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdauguanweihong" title="https://blog.csdn.net/sdauguanweihong" rel="noopener" target="_blank">管少</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_41661919" title="https://blog.csdn.net/qq_41661919" rel="noopener" target="_blank">俊杰</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_40859951" title="https://blog.csdn.net/qq_40859951" rel="noopener" target="_blank">峰哥</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/LSD20164388" title="https://blog.csdn.net/LSD20164388" rel="noopener" target="_blank">狗冬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37748451" title="https://blog.csdn.net/qq_37748451" rel="noopener" target="_blank">胖亚亚</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37868325" title="https://blog.csdn.net/qq_37868325" rel="noopener" target="_blank">妍大佬</a>
+        </li>
+    </ul>
+  </div>
+
+		
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+  
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Alex_McAvoy</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+</br>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script><script src="/js/bookmark.js"></script>
+
+
+
+  
+
+
+
+
+  <script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '48fd73a538d3fa927f65',
+      clientSecret: '56618aefeee90bac3c20de8d51bb0b985d67252d',
+      repo        : 'Gitalk-Comment',
+      owner       : 'Alex-McAvoy',
+      admin       : ['Alex-McAvoy'],
+      id          : 'b480b0a0c1c2bb22d628237dc833efe7',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+  
+  <!-- 鼠标单击粒子特效 -->
+  <script type="text/javascript" src="/js/cursor-effects.js"></script>
+  <!-- 多级目录 -->
+  <script type="text/javascript" src="/js/category.js"></script>
+  
+</body>
+</html>

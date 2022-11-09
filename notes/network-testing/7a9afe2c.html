@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.9.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/img/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/assets/img/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/pace-js@1/themes/blue/pace-theme-minimal.css">
+  <script src="//cdn.jsdelivr.net/npm/pace-js@1/pace.min.js"></script>
+
+
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"alex-mcavoy.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":16,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":true,"color":"#ff0000","save":"manual"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":true},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.json"};
+  </script>
+
+  <meta name="description" content="【前压测试】当前端设备以超线速发送数据帧时，就会引起输入端口的过载，前压测试是为了度量 DUT 在输入过载的情况下，输出端口对过载的反应，即是否启用了前压 在进行前压测试时，为了人为造成输入端口的过载，需要将测试帧的帧间隙设置成小于 96 位，通常将测试帧间隔设置成 88 位比特长度">
+<meta name="keywords" content="学习笔记,网络相关,网络测试">
+<meta property="og:type" content="article">
+<meta property="og:title" content="以太网 LLC 子层测试">
+<meta property="og:url" content="https://alex-mcavoy.github.io/notes/network-testing/7a9afe2c.html">
+<meta property="og:site_name" content="Alex_McAvoy">
+<meta property="og:description" content="【前压测试】当前端设备以超线速发送数据帧时，就会引起输入端口的过载，前压测试是为了度量 DUT 在输入过载的情况下，输出端口对过载的反应，即是否启用了前压 在进行前压测试时，为了人为造成输入端口的过载，需要将测试帧的帧间隙设置成小于 96 位，通常将测试帧间隔设置成 88 位比特长度">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/network-testing/22-1.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/network-testing/22-2.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/network-testing/22-3.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/network-testing/22-4.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/network-testing/22-5.png">
+<meta property="og:updated_time" content="2021-08-23T13:02:38.156Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="以太网 LLC 子层测试">
+<meta name="twitter:description" content="【前压测试】当前端设备以超线速发送数据帧时，就会引起输入端口的过载，前压测试是为了度量 DUT 在输入过载的情况下，输出端口对过载的反应，即是否启用了前压 在进行前压测试时，为了人为造成输入端口的过载，需要将测试帧的帧间隙设置成小于 96 位，通常将测试帧间隔设置成 88 位比特长度">
+<meta name="twitter:image" content="https://alex-mcavoy.github.io/images/notes/network-testing/22-1.png">
+
+<link rel="canonical" href="https://alex-mcavoy.github.io/notes/network-testing/7a9afe2c.html">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>以太网 LLC 子层测试 | Alex_McAvoy</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Alex_McAvoy</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">想要成为渔夫的猎手</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+
+	
+	
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/notes/network-testing/7a9afe2c.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/assets/img/head.jpg">
+      <meta itemprop="name" content="Alex_McAvoy">
+      <meta itemprop="description" content="想要成为渔夫的猎手">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Alex_McAvoy">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          以太网 LLC 子层测试
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-08-19 19:15:00" itemprop="dateCreated datePublished" datetime="2020-08-19T19:15:00+08:00">2020-08-19</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/notes/" itemprop="url" rel="index"><span itemprop="name">学习笔记</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/notes/network-testing/" itemprop="url" rel="index"><span itemprop="name">网络测试</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>2.1k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>2 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="【前压测试】"><a href="#【前压测试】" class="headerlink" title="【前压测试】"></a>【前压测试】</h1><p>当前端设备以超线速发送数据帧时，就会引起输入端口的过载，前压测试是为了度量 DUT 在输入过载的情况下，输出端口对过载的反应，即是否启用了前压</p>
+<p>在进行前压测试时，为了人为造成输入端口的过载，需要将测试帧的帧间隙设置成小于 96 位，通常将测试帧间隔设置成 88 位比特长度</p>
+<p>测试拓扑使用了 DUT 上的一对端口，并采用了单向流量模式，测试仪表生成的测试帧作为负载传输到DUT的第一个端口（端口1），接收与观测在 DUT 的第二个端口（端口2）进行，拓扑图如下：</p>
+<p><img width="400" src="/images/notes/network-testing/22-1.png"></p>
+<p>当帧间隔为 88 位比特长度的测试帧加载到 DUT 后</p>
+<p>若在观测用的端口 2 上，发现帧转发速率大于最大提交负载或介质的最大理论利用率，则表明 DUT 启用前压机制</p>
+<p>若在观测用的端口 2 上，发现帧转发速率小于最大提交负载或介质的最大理论利用率，则表明 DUT 不具备前压机制</p>
+<h1 id="【地址容量测试】"><a href="#【地址容量测试】" class="headerlink" title="【地址容量测试】"></a>【地址容量测试】</h1><p>地址缓冲容量的测试是为了确定在 RFC2285 中定义的以太网交换设备地址缓冲的能力</p>
+<p><img width="400" src="/images/notes/network-testing/22-2.png"></p>
+<p>该测试使用 DUT 上的三个端口，分别作为学习端口、测试端口、监听端口，测试过程如下：</p>
+<p>1.测试仪表通过学习端口将所生成的多个带有不同源地址和同一个确定目的地址的学习帧传送到 DUT，该确定的目的地址和连接到 DUT 测试端口上的测试设备的 MAC 地址相同<br>2.通过让测试端口接收这些具有不同源地址的帧，DUT 就可以学到这些新地址，并将所学到的地址写入地址表<br>3.将测试端口所接收的测试帧回传到学习端口，并由 DUT 上的监听端口担当检查端口，以监听是否有洪泛帧或错误转发的帧：</p>
+<ul>
+<li>若监听端口所统计到的洪泛帧计数不等于零，即它收到了洪泛帧，说明在此前的地址学习过程中，地址表已经发生溢出，导致部分源地址没有被 DUT 学习并写入地址表</li>
+<li>若监听端口的洪泛帧计数为零，即它没有收到洪泛帧，说明在此前的地址习中，DUT 还拥有足够的地址缓存空间，来确保所有的源地址被 DUT 所学习并写入地址表</li>
+</ul>
+<p>此外，为了确定地址表容量，也需采用某种查找算法来进行反复的测试，以找到 DUT 所能支持的最大地址数目，目前普遍采用的算法是二分迭代算法</p>
+<h1 id="【地址学习速率测试】"><a href="#【地址学习速率测试】" class="headerlink" title="【地址学习速率测试】"></a>【地址学习速率测试】</h1><p>地址学习速率测试的目的在于确定以太网交换设备的极限地址学习速率</p>
+<p>其与地址容量测试类似的测试方法类似，采用相似的测试拓扑，学习端口以不同速率向测试端口发送学习帧，测试端口向学习端口回送所有的学习帧，监听端口监听是否有洪泛帧或错误转发的帧</p>
+<p><img width="400" src="/images/notes/network-testing/22-3.png"></p>
+<p>与地址容量测试的区别在于：地址表容量测试采用<strong>基于学习帧的地址数</strong>的二分迭代法，地址学习速率测试采用<strong>基于学习帧发送速率</strong>的二分迭代法</p>
+<h1 id="【错误帧过滤测试】"><a href="#【错误帧过滤测试】" class="headerlink" title="【错误帧过滤测试】"></a>【错误帧过滤测试】</h1><p>错误帧过滤测试是为了确定交换机在错误或反常帧情况下的行为</p>
+<p>测试结果可以说明 DUT 是否具备了错误帧的过滤功能，还可以用来说明 DUT 所能过滤的错误帧类型</p>
+<p>测试时间可在 1~300s 之间调整，推荐的测试时间为 30s</p>
+<p><img width="400" src="/images/notes/network-testing/22-4.png"></p>
+<p>测试采用 DUT 一组共 8 个端口，其中 4 个作为测试帧的源端口，另 4 个作为监测端口，由测试仪表所生成的错误帧经过 DUT 的 4 个源端口后，向 4 个监测端口发送</p>
+<p>在监测端口，通过观测是否有错误帧的流量泄漏，来判断 DUT 是否提供了错误帧过滤功能以及所能过滤的错误帧类型</p>
+<p>若某种类型的错误帧能够被观测到，则标记为<strong>失效</strong>，若某种类型的错误帧未被观测到，则标记为<strong>通过</strong></p>
+<p>在测试完毕后，需要对各种类型错误帧观测结果的统计与分析：</p>
+<ul>
+<li>若对所有指定类型的错误帧，标记状态为通过，说明 DUT 启用了错误帧过滤功能，且能过滤所有给定类型的错误帧</li>
+<li>若对某些指定类型的错误帧标记状为通过，而另一些类型错误帧的标记状态为失效，说明 DUT 提供了错误帧过滤功能，但只能过滤某些特定类型的错误帧</li>
+<li>若所有指定类型的错误帧，标记状态为失效，说明 DUT 未提供错误帧过滤功能，或错误帧过滤功能失效</li>
+</ul>
+<h1 id="【广播帧转发性能测试】"><a href="#【广播帧转发性能测试】" class="headerlink" title="【广播帧转发性能测试】"></a>【广播帧转发性能测试】</h1><p>广播帧转发性能测试是为了确定交换机对于广播帧的处理能力，包括：</p>
+<ul>
+<li><strong>广播转发速率</strong>：一台交换设备在单位时间内向所在广播域的所有端口发送的广播帧数量</li>
+<li><strong>广播时延</strong>：交换机将广播帧转发到位于同一广播域中的所有端口所需的时间</li>
+</ul>
+<p>该测试拓扑结构由 1 个广播发送端口和若干个广播接收端口组成一个测试块，同时确保测试块中的源端口与接收端口位于同一广播域中，也就是说，若 DUT 上进行了 VLAN 划分，那么要确保测试块中的源端口与接收端口位于同一个 VLAN 中</p>
+<p><img width="400" src="/images/notes/network-testing/22-5.png"></p>
+<p><strong>广播吞吐量测试方法：</strong></p>
+<p>令测试仪表所生成的目的地址为 <code>FF-FF-FF-FF-FF-FF</code> 的广播测试流量通过 DUT 上的唯一源端口发送到各个广播接收端口</p>
+<p>在接收端口，测试仪表只选择对广播测试流量进行转发率和帧丢失率的度量</p>
+<p>通过测试不同负载下的广播帧转发率和帧丢失率，找到在零丢帧率下的最大广播帧转发率，即广播吞吐量</p>
+<p><strong>广播延迟的测试方法：</strong></p>
+<p>测试仪表在每次测试时仅发送一个测试帧，测试帧中包含了一个时间戳</p>
+<p>在接收端口，通过该时间戳来计算帧的广播转发延迟</p>
+<p>对于给定的 DUT，同一广播域中涉及的接收端口越多，需要复制并转发的广播帧数就越多，因此可能带来转发延时的增大</p>
+<p>同一广播域中的不同接收端口，可能会存在延迟值的漂移</p>
+<p>因此若有多个 UP 端口在接收广播流量，则需要对每个接收端口的延迟进行度量并取平均值，以作为广播帧延迟的最终值</p>
+
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>感谢您对我的支持，让我继续努力分享有用的技术与知识点！</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/wechatpay.jpg" alt="Alex_McAvoy 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/alipay.jpg" alt="Alex_McAvoy 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Alex_McAvoy
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://alex-mcavoy.github.io/notes/network-testing/7a9afe2c.html" title="以太网 LLC 子层测试">https://alex-mcavoy.github.io/notes/network-testing/7a9afe2c.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/notes/" rel="tag"># 学习笔记</a>
+              <a href="/tags/network/" rel="tag"># 网络相关</a>
+              <a href="/tags/network-testing/" rel="tag"># 网络测试</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/notes/network-testing/82ca5b3e.html" rel="prev" title="以太网 MAC 子层测试">
+      <i class="fa fa-chevron-left"></i> 以太网 MAC 子层测试
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/notes/network-testing/374d7217.html" rel="next" title="网络层测试与网络层设备">
+      网络层测试与网络层设备 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【前压测试】"><span class="nav-number">1.</span> <span class="nav-text">【前压测试】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【地址容量测试】"><span class="nav-number">2.</span> <span class="nav-text">【地址容量测试】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【地址学习速率测试】"><span class="nav-number">3.</span> <span class="nav-text">【地址学习速率测试】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【错误帧过滤测试】"><span class="nav-number">4.</span> <span class="nav-text">【错误帧过滤测试】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【广播帧转发性能测试】"><span class="nav-number">5.</span> <span class="nav-text">【广播帧转发性能测试】</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">  
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Alex_McAvoy"
+      src="/assets/img/head.jpg">
+  <p class="site-author-name" itemprop="name">Alex_McAvoy</p>
+  <div class="site-description" itemprop="description">想要成为渔夫的猎手</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">541</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">56</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">61</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Alex-McAvoy" title="GitHub → https://github.com/Alex-McAvoy" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/u011815404" title="CSDN → https://blog.csdn.net/u011815404" rel="noopener" target="_blank"><i class="fas fa-copyright fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+<!-- 访客地图 -->
+<script type="text/javascript" src="//rf.revolvermaps.com/0/0/5.js?i=50n58yo58ow&amp;m=0&amp;c=ff0000&amp;cr1=ffffff&amp;s=140" async="async"></script>
+
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdz20172133" title="https://blog.csdn.net/sdz20172133" rel="noopener" target="_blank">神仙队友</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://pxlsdz.gitee.io/" title="https://pxlsdz.gitee.io/" rel="noopener" target="_blank">神仙队友的另一个博客</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://bycore.net" title="https://bycore.net" rel="noopener" target="_blank">凉了的某饼同学</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://kris-cn.github.io/" title="http://kris-cn.github.io/" rel="noopener" target="_blank">翟孙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://deng.fun/" title="http://deng.fun/" rel="noopener" target="_blank">芙蓉姐姐</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdau_fangshifeng" title="https://blog.csdn.net/sdau_fangshifeng" rel="noopener" target="_blank">一个头很酷的家伙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/wentong_Xu" title="https://blog.csdn.net/wentong_Xu" rel="noopener" target="_blank">小黑贱胖子</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.yuheng.tech/" title="https://www.yuheng.tech/" rel="noopener" target="_blank">咸于</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/lanshan1111" title="https://blog.csdn.net/lanshan1111" rel="noopener" target="_blank">肥硕硕</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdauguanweihong" title="https://blog.csdn.net/sdauguanweihong" rel="noopener" target="_blank">管少</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_41661919" title="https://blog.csdn.net/qq_41661919" rel="noopener" target="_blank">俊杰</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_40859951" title="https://blog.csdn.net/qq_40859951" rel="noopener" target="_blank">峰哥</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/LSD20164388" title="https://blog.csdn.net/LSD20164388" rel="noopener" target="_blank">狗冬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37748451" title="https://blog.csdn.net/qq_37748451" rel="noopener" target="_blank">胖亚亚</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37868325" title="https://blog.csdn.net/qq_37868325" rel="noopener" target="_blank">妍大佬</a>
+        </li>
+    </ul>
+  </div>
+
+		
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+  
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Alex_McAvoy</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+</br>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script><script src="/js/bookmark.js"></script>
+
+
+
+  
+
+
+
+
+  <script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '48fd73a538d3fa927f65',
+      clientSecret: '56618aefeee90bac3c20de8d51bb0b985d67252d',
+      repo        : 'Gitalk-Comment',
+      owner       : 'Alex-McAvoy',
+      admin       : ['Alex-McAvoy'],
+      id          : '465ead7416383c79122da1f28ca32907',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+  
+  <!-- 鼠标单击粒子特效 -->
+  <script type="text/javascript" src="/js/cursor-effects.js"></script>
+  <!-- 多级目录 -->
+  <script type="text/javascript" src="/js/category.js"></script>
+  
+</body>
+</html>

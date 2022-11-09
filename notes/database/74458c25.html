@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.9.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/img/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/assets/img/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/pace-js@1/themes/blue/pace-theme-minimal.css">
+  <script src="//cdn.jsdelivr.net/npm/pace-js@1/pace.min.js"></script>
+
+
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"alex-mcavoy.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":16,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":true,"color":"#ff0000","save":"manual"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":true},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.json"};
+  </script>
+
+  <meta name="description" content="【函数依赖】函数依赖设 $R(U)$ 是属性集 $U$ 上的关系模式，$X$、$Y$ 是 $U$ 的子集，若对于 $R(U)$ 的任意一个可能的关系 $r$，$r$ 中不可能存在两个元组在 $X$ 上的属性值相等，而 $Y$ 上的属性值不等，则称 $X$ 函数确定 $Y$，或 $Y$ 函数依赖于 $X$，记作：$X\rightarrow Y$">
+<meta name="keywords" content="学习笔记,数据库系统">
+<meta property="og:type" content="article">
+<meta property="og:title" content="数据依赖">
+<meta property="og:url" content="https://alex-mcavoy.github.io/notes/database/74458c25.html">
+<meta property="og:site_name" content="Alex_McAvoy">
+<meta property="og:description" content="【函数依赖】函数依赖设 $R(U)$ 是属性集 $U$ 上的关系模式，$X$、$Y$ 是 $U$ 的子集，若对于 $R(U)$ 的任意一个可能的关系 $r$，$r$ 中不可能存在两个元组在 $X$ 上的属性值相等，而 $Y$ 上的属性值不等，则称 $X$ 函数确定 $Y$，或 $Y$ 函数依赖于 $X$，记作：$X\rightarrow Y$">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/database/31-1.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/database/31-2.png">
+<meta property="og:updated_time" content="2021-08-23T13:45:18.622Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="数据依赖">
+<meta name="twitter:description" content="【函数依赖】函数依赖设 $R(U)$ 是属性集 $U$ 上的关系模式，$X$、$Y$ 是 $U$ 的子集，若对于 $R(U)$ 的任意一个可能的关系 $r$，$r$ 中不可能存在两个元组在 $X$ 上的属性值相等，而 $Y$ 上的属性值不等，则称 $X$ 函数确定 $Y$，或 $Y$ 函数依赖于 $X$，记作：$X\rightarrow Y$">
+<meta name="twitter:image" content="https://alex-mcavoy.github.io/images/notes/database/31-1.png">
+
+<link rel="canonical" href="https://alex-mcavoy.github.io/notes/database/74458c25.html">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>数据依赖 | Alex_McAvoy</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Alex_McAvoy</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">想要成为渔夫的猎手</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+
+	
+	
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/notes/database/74458c25.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/assets/img/head.jpg">
+      <meta itemprop="name" content="Alex_McAvoy">
+      <meta itemprop="description" content="想要成为渔夫的猎手">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Alex_McAvoy">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          数据依赖
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2018-10-15 14:57:00" itemprop="dateCreated datePublished" datetime="2018-10-15T14:57:00+08:00">2018-10-15</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/notes/" itemprop="url" rel="index"><span itemprop="name">学习笔记</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/notes/database/" itemprop="url" rel="index"><span itemprop="name">数据库系统</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>3.7k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>3 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="【函数依赖】"><a href="#【函数依赖】" class="headerlink" title="【函数依赖】"></a>【函数依赖】</h1><h2 id="函数依赖"><a href="#函数依赖" class="headerlink" title="函数依赖"></a>函数依赖</h2><p>设 $R(U)$ 是属性集 $U$ 上的关系模式，$X$、$Y$ 是 $U$ 的子集，若对于 $R(U)$ 的任意一个可能的关系 $r$，$r$ 中不可能存在两个元组在 $X$ 上的属性值相等，而 $Y$ 上的属性值不等，则称 <strong>$X$ 函数确定 $Y$</strong>，或 <strong>$Y$ 函数依赖于 </strong>$X$，记作：$X\rightarrow Y$</p>
+<p>需要指出的是：</p>
+<p>1.函数依赖不是指关系模式 $R$ 的某个或某些关系满足的约束条件，而是指 $R$ 的一切关系均要满足的约束条件，即<strong>所有的关系实例均要满足</strong></p>
+<p>2.函数依赖与其他的数据依赖均是<strong>语义范畴</strong>的概念，即只能根据语义来确定一个函数依赖，例如：姓名 $\rightarrow$ 年龄这个函数依赖只能在没有同名人的情况下成立</p>
+<p>3.数据库设计者可以对现实世界作<strong>强制性规定</strong>，例如：规定不允许有同名人出现，从而使得姓名 $\rightarrow$ 年龄这个函数依赖成立，这样当插入某个元组时发现有同名人，则拒绝插入该元组</p>
+<h2 id="平凡与非平凡函数依赖"><a href="#平凡与非平凡函数依赖" class="headerlink" title="平凡与非平凡函数依赖"></a>平凡与非平凡函数依赖</h2><p>在关系模式 $R(U)$ 中，对于 $U$ 的子集 $X$、$Y$：</p>
+<p>如果 $X\rightarrow Y$，但 $Y \subseteq X$，则称 $X\rightarrow Y$ 是<strong>平凡的函数依赖</strong></p>
+<p>如果 $X\rightarrow Y$，但 $Y \nsubseteq X$，则称 $X\rightarrow Y$ 是<strong>非平凡的函数依赖</strong></p>
+<p>例如，在关系 <code>SC(Sno, Cno, Grade)</code> 中，<code>(Sno, Cno) → Sno</code> 和 <code>(Sno, Cno) → Cno</code> 是平凡函数依赖，<code>(Sno, Cno) → Grade</code> 是非平凡的函数依赖</p>
+<p>对于任一关系模式，平凡函数依赖都是必然成立的，其不反映新的语义，因此，若不特别声明，讨论的总是非平凡函数依赖</p>
+<h2 id="完全与部分函数依赖"><a href="#完全与部分函数依赖" class="headerlink" title="完全与部分函数依赖"></a>完全与部分函数依赖</h2><p>在介绍完全函数依赖与部分函数依赖前，先给出以下几个定义：</p>
+<ul>
+<li><p>若 $X\rightarrow Y$ ，则 $X$ 称为这个函数依赖的决定属性组，也称为<strong>决定因素</strong></p>
+</li>
+<li><p>若 $X\rightarrow Y$ 且 $Y\rightarrow X$，则记作：$X\leftarrow\rightarrow Y$</p>
+</li>
+<li><p>若 $Y$ 不依赖于 $X$，则记作：$X\nrightarrow Y$</p>
+</li>
+</ul>
+<p>在 $R(U)$ 中，如果 $X\rightarrow Y$，且对于 $X$ 的任何一个真子集 $X’$，都有 $X’ \nrightarrow Y$，则称 $Y$ 对 $X$ <strong>完全函数依赖</strong>，记作：$X\xrightarrow{F}Y$</p>
+<p>若 $X\rightarrow Y$，但 $Y$ 不完全函数依赖于 $X$，则称 $Y$ 对 $X$ <strong>部分函数依赖</strong>，记作：$X\xrightarrow{P}Y$</p>
+<p>例如，在关系 <code>SC(Sno, Cno, Grade, Sdept)</code> 中，<code>(Sno, Cno) → Grade</code> 是完全函数依赖，<code>(Sno, Cno) → Sdept</code> 是部分函数依赖，因为 <code>Sno → Sdept</code> 成立，而 <code>Sno</code> 是 <code>(Sno, Cno)</code> 的真子集</p>
+<h2 id="直接与传递函数依赖"><a href="#直接与传递函数依赖" class="headerlink" title="直接与传递函数依赖"></a>直接与传递函数依赖</h2><p>在 $R(U)$ 中，如果满、$X\leftarrow\rightarrow Y$、$Y\rightarrow Z$ 则称 $Z$ 对 $X$ <strong>直接函数依赖</strong>，记为：$X\xrightarrow{直接}Y$</p>
+<p>在 $R(U)$ 中，如果满足 $X\rightarrow Y$、$Y\nrightarrow X$、$Y\rightarrow Z$，则称 $Z$ 对 $X$ <strong>传递函数依赖</strong>，记为：$X\xrightarrow{传递}Y$</p>
+<p>例如，在关系 <code>SC(Sno, Cno, Grade, Sdept, Mname)</code> 中，有 <code>Sno → Sdept</code> ，<code>Sdept → Mname</code> 成立，故有传递函数依赖 <code>Sno → Mname</code></p>
+<h2 id="属性间联系决定函数依赖关系"><a href="#属性间联系决定函数依赖关系" class="headerlink" title="属性间联系决定函数依赖关系"></a>属性间联系决定函数依赖关系</h2><p>假如 $X$、$Y$ 有 $1:1$ 关系，则：$X\rightarrow Y$ 且 $Y\rightarrow X$，可表示为 $X\leftarrow\rightarrow Y$</p>
+<p>假如 $X$、$Y$ 有 $1:m$ 关系，则：$Y\rightarrow X$，但 $X\nrightarrow Y$ </p>
+<p>假如 $X$、$Y$ 有 $n:m$ 关系，则：$X$、$Y$ 不存在任何函数依赖</p>
+<h1 id="【多值依赖】"><a href="#【多值依赖】" class="headerlink" title="【多值依赖】"></a>【多值依赖】</h1><h2 id="引入"><a href="#引入" class="headerlink" title="引入"></a>引入</h2><p>对于 1NF、2NF、3NF、BCNF 来说，都是在函数依赖的范畴内进行讨论，但 BCNF 并非十分完美（关于范式：<a href="https://alex-mcavoy.github.io/notes/database/29bcc608.html">点击这里</a>）</p>
+<p>如下例，学校中某一门课程由多个教师教授，使用相同的参考书，每个教师可以讲授多门课程，每种参考书可以供多门课程使用，可以用一个非规范化的关系来表示教师 T、课程 C、参考书 B 间的关系</p>
+<p>可以将这个关系以非规范化的形式列出，如下表</p>
+<p><img width="400" src="/images/notes/database/31-1.png"></p>
+<p>可以发现，关系模式 <code>teaching(C, T, B)</code> 的码 $(C, T, B)$ 是<strong>全键（All-Key）</strong>，其属于 BCNF，将其转为规范化的二维表，如下</p>
+<p><img width="400" src="/images/notes/database/31-2.png"></p>
+<p>当某一课程增加一名教师时，必须插入多个元组，例如：物理课程添加一名讲课老师张三时，要插入三个元组 <code>(物理, 张三, 普通物理学)</code>、<code>(物理, 张三, 光学原理)</code>、<code>(物理, 张三, 物理习题集)</code></p>
+<p>这对数据的增删改十分不方便，数据的冗余性也十分明显，考察这类的关系模式，发现其具有一种称为<strong>多值依赖</strong>的数据依赖</p>
+<h2 id="多值依赖"><a href="#多值依赖" class="headerlink" title="多值依赖"></a>多值依赖</h2><p>设 $R(U)$ 是属性集 $U$ 上的一个关系模式，$X$、$Y$、$Z$ 是 $U$ 的子集，且 $Z=U-X-Y$，当且仅当满足对 $R(U)$ 的任一关系 $r$，给定一对 $(x,z)$ 值，有一组 $y$ 值，且这组值仅决定于 $x$ 值而与 $z$ 值无关时 ，关系模式 $R(U)$ 中<strong>多值依赖</strong>成立，记作：$X\rightarrow\rightarrow Y$ </p>
+<p>例如，在关系模式 <code>teaching(C, T, B)</code> 中，对于一个 <code>(物理, 光学原理)</code> 有一组 $T$ 值 <code>{李勇, 王军}</code>，这组值仅决定于课程 $C$ 上的值，即对于另一组值 <code>(物理, 普通物理学)</code> 来说，尽管此时参考书 $B$ 的值已经改变，但其对应的一组 $T$ 值仍为 <code>{李勇, 王军}</code>，因此 $T$ 多值依赖于 $C$，即：$C\rightarrow\rightarrow T$</p>
+<h2 id="平凡与非平凡多值依赖"><a href="#平凡与非平凡多值依赖" class="headerlink" title="平凡与非平凡多值依赖"></a>平凡与非平凡多值依赖</h2><p>若 $X\rightarrow\rightarrow Y$，而 $Z=\phi$，即 $Z$ 为空，则称 $X\rightarrow\rightarrow Y$ 为<strong>平凡的多值依赖</strong></p>
+<p>若 $X\rightarrow\rightarrow Y$，而 $Z\neq \phi$，即 $Z$ 不为空，则称 $X\rightarrow\rightarrow Y$ 为<strong>非平凡的多值依赖</strong></p>
+<p>一般来说，常见的多值依赖均为非平凡多值依赖</p>
+<h2 id="多值依赖的性质"><a href="#多值依赖的性质" class="headerlink" title="多值依赖的性质"></a>多值依赖的性质</h2><p>多值依赖具有以下性质：</p>
+<p>1.对称性：若 $X\rightarrow\rightarrow Y$，则 $X\rightarrow\rightarrow Z$，其中 $Z=U-X-Y$</p>
+<p>2.传递性：若 $X\rightarrow\rightarrow Y$，$Y\rightarrow\rightarrow Z$，则 $X\rightarrow\rightarrow Z-Y$</p>
+<p>3.函数依赖是多值依赖的特殊情况：若 $X\rightarrow Y$，则 $X\rightarrow\rightarrow Y$</p>
+<p>4.若 $X\rightarrow\rightarrow Y$ 且 $X\rightarrow\rightarrow Z$，则 $X\rightarrow\rightarrow Y\cup Z$</p>
+<p>5.若 $X\rightarrow\rightarrow Y$ 且 $X\rightarrow\rightarrow Z$，则 $X\rightarrow\rightarrow Y\cap Z$</p>
+<p>6.若 $X\rightarrow\rightarrow Y$ 且 $X\rightarrow\rightarrow Z$，则 $X\rightarrow\rightarrow Y-Z$ 且 $X\rightarrow\rightarrow Z-Y$ </p>
+<h1 id="【函数依赖与多值依赖的关系】"><a href="#【函数依赖与多值依赖的关系】" class="headerlink" title="【函数依赖与多值依赖的关系】"></a>【函数依赖与多值依赖的关系】</h1><p>函数依赖是多值依赖的特殊情况，即当 $X\rightarrow Y$ 时，有 $X\rightarrow\rightarrow Y$，这是因为，当 $X\rightarrow Y$ 时，对 $X$ 的每个值 $x$，$Y$ 都有一个确定值 $y$ 与其对应</p>
+<p>但多值依赖与函数依赖相比，有以下两个区别：</p>
+<font size="4">1.多值依赖的有效性与属性集范围有关</font>
+
+<p>若 $X\rightarrow\rightarrow Y$ 在 $U$ 上成立，则在 $W(XY\subseteq W\subseteq U)$上一定成立</p>
+<p>反之不然，即若 $X\rightarrow\rightarrow Y$ 在 $W(XY\subseteq W\subseteq U)$上成立，则在 $U$ 上不一定成立</p>
+<p>这是因为多值依赖的定义中不仅涉及属性组 $X$ 和 $Y$，还涉及 $U$ 中其余属性 $Z$</p>
+<p>一般地，在 $R(U)$ 上若有 $X\rightarrow\rightarrow Y$ 在 $W(W\subset U)$ 上成立，则称 $X\rightarrow\rightarrow Y$ 为 $R(U)$ 的<strong>嵌入型多值依赖</strong></p>
+<font size="4">2.多值依赖的子集不成立性</font>
+
+<p>若函数依赖 $X\rightarrow Y$ 在 $R(U)$ 上成立，则对于任何 $Y’\subset Y$ 均有 $X\rightarrow Y$</p>
+<p>若多值依赖 $X\rightarrow\rightarrow Y$ 在 $R(U)$ 上成立，无法断言对于任何 $Y’\subset Y$ 有 $X\rightarrow\rightarrow Y$ 成立</p>
+
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>感谢您对我的支持，让我继续努力分享有用的技术与知识点！</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/wechatpay.jpg" alt="Alex_McAvoy 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/alipay.jpg" alt="Alex_McAvoy 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Alex_McAvoy
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://alex-mcavoy.github.io/notes/database/74458c25.html" title="数据依赖">https://alex-mcavoy.github.io/notes/database/74458c25.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/notes/" rel="tag"># 学习笔记</a>
+              <a href="/tags/database/" rel="tag"># 数据库系统</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/notes/database/91f1e6ed.html" rel="prev" title="关系数据理论">
+      <i class="fa fa-chevron-left"></i> 关系数据理论
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/oi-acm/data-structure/tree-binary-tree/c104fe4d.html" rel="next" title="树、二叉树、森林的相互转换">
+      树、二叉树、森林的相互转换 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【函数依赖】"><span class="nav-number">1.</span> <span class="nav-text">【函数依赖】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#函数依赖"><span class="nav-number">1.1.</span> <span class="nav-text">函数依赖</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#平凡与非平凡函数依赖"><span class="nav-number">1.2.</span> <span class="nav-text">平凡与非平凡函数依赖</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#完全与部分函数依赖"><span class="nav-number">1.3.</span> <span class="nav-text">完全与部分函数依赖</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#直接与传递函数依赖"><span class="nav-number">1.4.</span> <span class="nav-text">直接与传递函数依赖</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#属性间联系决定函数依赖关系"><span class="nav-number">1.5.</span> <span class="nav-text">属性间联系决定函数依赖关系</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【多值依赖】"><span class="nav-number">2.</span> <span class="nav-text">【多值依赖】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#引入"><span class="nav-number">2.1.</span> <span class="nav-text">引入</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#多值依赖"><span class="nav-number">2.2.</span> <span class="nav-text">多值依赖</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#平凡与非平凡多值依赖"><span class="nav-number">2.3.</span> <span class="nav-text">平凡与非平凡多值依赖</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#多值依赖的性质"><span class="nav-number">2.4.</span> <span class="nav-text">多值依赖的性质</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【函数依赖与多值依赖的关系】"><span class="nav-number">3.</span> <span class="nav-text">【函数依赖与多值依赖的关系】</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">  
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Alex_McAvoy"
+      src="/assets/img/head.jpg">
+  <p class="site-author-name" itemprop="name">Alex_McAvoy</p>
+  <div class="site-description" itemprop="description">想要成为渔夫的猎手</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">541</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">56</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">61</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Alex-McAvoy" title="GitHub → https://github.com/Alex-McAvoy" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/u011815404" title="CSDN → https://blog.csdn.net/u011815404" rel="noopener" target="_blank"><i class="fas fa-copyright fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+<!-- 访客地图 -->
+<script type="text/javascript" src="//rf.revolvermaps.com/0/0/5.js?i=50n58yo58ow&amp;m=0&amp;c=ff0000&amp;cr1=ffffff&amp;s=140" async="async"></script>
+
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdz20172133" title="https://blog.csdn.net/sdz20172133" rel="noopener" target="_blank">神仙队友</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://pxlsdz.gitee.io/" title="https://pxlsdz.gitee.io/" rel="noopener" target="_blank">神仙队友的另一个博客</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://bycore.net" title="https://bycore.net" rel="noopener" target="_blank">凉了的某饼同学</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://kris-cn.github.io/" title="http://kris-cn.github.io/" rel="noopener" target="_blank">翟孙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://deng.fun/" title="http://deng.fun/" rel="noopener" target="_blank">芙蓉姐姐</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdau_fangshifeng" title="https://blog.csdn.net/sdau_fangshifeng" rel="noopener" target="_blank">一个头很酷的家伙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/wentong_Xu" title="https://blog.csdn.net/wentong_Xu" rel="noopener" target="_blank">小黑贱胖子</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.yuheng.tech/" title="https://www.yuheng.tech/" rel="noopener" target="_blank">咸于</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/lanshan1111" title="https://blog.csdn.net/lanshan1111" rel="noopener" target="_blank">肥硕硕</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdauguanweihong" title="https://blog.csdn.net/sdauguanweihong" rel="noopener" target="_blank">管少</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_41661919" title="https://blog.csdn.net/qq_41661919" rel="noopener" target="_blank">俊杰</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_40859951" title="https://blog.csdn.net/qq_40859951" rel="noopener" target="_blank">峰哥</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/LSD20164388" title="https://blog.csdn.net/LSD20164388" rel="noopener" target="_blank">狗冬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37748451" title="https://blog.csdn.net/qq_37748451" rel="noopener" target="_blank">胖亚亚</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37868325" title="https://blog.csdn.net/qq_37868325" rel="noopener" target="_blank">妍大佬</a>
+        </li>
+    </ul>
+  </div>
+
+		
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+  
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Alex_McAvoy</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+</br>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script><script src="/js/bookmark.js"></script>
+
+
+
+  
+
+
+
+
+  <script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '48fd73a538d3fa927f65',
+      clientSecret: '56618aefeee90bac3c20de8d51bb0b985d67252d',
+      repo        : 'Gitalk-Comment',
+      owner       : 'Alex-McAvoy',
+      admin       : ['Alex-McAvoy'],
+      id          : 'cd4723bfedc48a83b0f5f902e7501af0',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+  
+  <!-- 鼠标单击粒子特效 -->
+  <script type="text/javascript" src="/js/cursor-effects.js"></script>
+  <!-- 多级目录 -->
+  <script type="text/javascript" src="/js/category.js"></script>
+  
+</body>
+</html>

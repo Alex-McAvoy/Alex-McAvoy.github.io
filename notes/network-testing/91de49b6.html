@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.9.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/img/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/assets/img/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/pace-js@1/themes/blue/pace-theme-minimal.css">
+  <script src="//cdn.jsdelivr.net/npm/pace-js@1/pace.min.js"></script>
+
+
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"alex-mcavoy.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":16,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":true,"color":"#ff0000","save":"manual"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":true},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.json"};
+  </script>
+
+  <meta name="description" content="【以太网技术发展】     名称 带宽 拓扑 组网方式 标准 适用范围     标准以太网 10M 总线、星型 共享、交换 IEEE 802.3 局域网   快速以太网 100M 星型 共享、交换 IEEE 802.3u 局域网   千兆以太网 1G 星型 交换 IEEE 802.3z、IEEE 802.3ab 局域网   万兆以太网 10G 星型、点对点 交换 IEEE 802.3ae 局域网、">
+<meta name="keywords" content="学习笔记,网络相关,网络测试">
+<meta property="og:type" content="article">
+<meta property="og:title" content="以太网技术">
+<meta property="og:url" content="https://alex-mcavoy.github.io/notes/network-testing/91de49b6.html">
+<meta property="og:site_name" content="Alex_McAvoy">
+<meta property="og:description" content="【以太网技术发展】     名称 带宽 拓扑 组网方式 标准 适用范围     标准以太网 10M 总线、星型 共享、交换 IEEE 802.3 局域网   快速以太网 100M 星型 共享、交换 IEEE 802.3u 局域网   千兆以太网 1G 星型 交换 IEEE 802.3z、IEEE 802.3ab 局域网   万兆以太网 10G 星型、点对点 交换 IEEE 802.3ae 局域网、">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/network-testing/18-1.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/network-testing/18-2.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/network-testing/18-3.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/network-testing/18-4.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/network-testing/18-5.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/network-testing/18-6.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/network-testing/18-7.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/network-testing/18-8.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/network-testing/18-9.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/network-testing/18-10.png">
+<meta property="og:updated_time" content="2021-08-23T13:01:34.158Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="以太网技术">
+<meta name="twitter:description" content="【以太网技术发展】     名称 带宽 拓扑 组网方式 标准 适用范围     标准以太网 10M 总线、星型 共享、交换 IEEE 802.3 局域网   快速以太网 100M 星型 共享、交换 IEEE 802.3u 局域网   千兆以太网 1G 星型 交换 IEEE 802.3z、IEEE 802.3ab 局域网   万兆以太网 10G 星型、点对点 交换 IEEE 802.3ae 局域网、">
+<meta name="twitter:image" content="https://alex-mcavoy.github.io/images/notes/network-testing/18-1.png">
+
+<link rel="canonical" href="https://alex-mcavoy.github.io/notes/network-testing/91de49b6.html">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>以太网技术 | Alex_McAvoy</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Alex_McAvoy</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">想要成为渔夫的猎手</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+
+	
+	
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/notes/network-testing/91de49b6.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/assets/img/head.jpg">
+      <meta itemprop="name" content="Alex_McAvoy">
+      <meta itemprop="description" content="想要成为渔夫的猎手">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Alex_McAvoy">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          以太网技术
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-08-12 14:20:00" itemprop="dateCreated datePublished" datetime="2020-08-12T14:20:00+08:00">2020-08-12</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/notes/" itemprop="url" rel="index"><span itemprop="name">学习笔记</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/notes/network-testing/" itemprop="url" rel="index"><span itemprop="name">网络测试</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>2.7k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>2 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="【以太网技术发展】"><a href="#【以太网技术发展】" class="headerlink" title="【以太网技术发展】"></a>【以太网技术发展】</h1><p><img width="400" src="/images/notes/network-testing/18-1.png"></p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:center">名称</th>
+<th style="text-align:center">带宽</th>
+<th style="text-align:center">拓扑</th>
+<th style="text-align:center">组网方式</th>
+<th style="text-align:center">标准</th>
+<th style="text-align:center">适用范围</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">标准以太网</td>
+<td style="text-align:center">10M</td>
+<td style="text-align:center">总线、星型</td>
+<td style="text-align:center">共享、交换</td>
+<td style="text-align:center">IEEE 802.3</td>
+<td style="text-align:center">局域网</td>
+</tr>
+<tr>
+<td style="text-align:center">快速以太网</td>
+<td style="text-align:center">100M</td>
+<td style="text-align:center">星型</td>
+<td style="text-align:center">共享、交换</td>
+<td style="text-align:center">IEEE 802.3u</td>
+<td style="text-align:center">局域网</td>
+</tr>
+<tr>
+<td style="text-align:center">千兆以太网</td>
+<td style="text-align:center">1G</td>
+<td style="text-align:center">星型</td>
+<td style="text-align:center">交换</td>
+<td style="text-align:center">IEEE 802.3z、IEEE 802.3ab</td>
+<td style="text-align:center">局域网</td>
+</tr>
+<tr>
+<td style="text-align:center">万兆以太网</td>
+<td style="text-align:center">10G</td>
+<td style="text-align:center">星型、点对点</td>
+<td style="text-align:center">交换</td>
+<td style="text-align:center">IEEE 802.3ae</td>
+<td style="text-align:center">局域网、城域网</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h1 id="【共享以太网与交换以太网】"><a href="#【共享以太网与交换以太网】" class="headerlink" title="【共享以太网与交换以太网】"></a>【共享以太网与交换以太网】</h1><h2 id="共享以太网"><a href="#共享以太网" class="headerlink" title="共享以太网"></a>共享以太网</h2><p>早期的以太网采用基于总线结构的共享广播式网络，以及基于集线器的星型拓扑，在以太网中，数据以帧的形式传输</p>
+<p>共享式以太网是基于广播的方式来发送数据的，因为集线器不能识别帧，所以它就不知道一个端口收到的帧应该转发到哪个端口，它只好把帧发送到除源端口以外的所有端口</p>
+<p>在这种工作方式下，所有设备与节点位于同一个冲突域，同一时刻网络上只能传输一组数据帧的通讯，对共享介质的争用造成节点间的碰撞或冲突，如果发生碰撞还得重试，影响了网络的运行性能</p>
+<p><img width="300" src="/images/notes/network-testing/18-2.png"></p>
+<h2 id="交换以太网"><a href="#交换以太网" class="headerlink" title="交换以太网"></a>交换以太网</h2><p>通常，解决共享以太网存在的问题就是利用<strong>分段</strong>的方法，即将一个大型的以太网分割成两个或多个小型的以太网，使各网段成为隔离开的冲突域</p>
+<p>交换以太网是借助交换的思想，在数据链路层的帧为数据交换单位，以以太网交换机为基础构成的网络，允许多对节点同时通信，每个节点可以独占传输通道和带宽，交换机为星状拓扑或扩展星状拓扑的中心节点</p>
+<p>交换机的冲突域仅局限于交换机的一个端口上</p>
+<p><img width="300" src="/images/notes/network-testing/18-3.png"></p>
+<h1 id="【以太网交换机】"><a href="#【以太网交换机】" class="headerlink" title="【以太网交换机】"></a>【以太网交换机】</h1><h2 id="工作原理"><a href="#工作原理" class="headerlink" title="工作原理"></a>工作原理</h2><p>交换机具有基于 MAC 地址进行帧过滤和转发的能力，其可以学习 MAC 地址，并将其存放在内部缓存的地址表中，该表给出关于交换机不同接口所连主机的 MAC 地址信息</p>
+<p>交换机收到一个数据帧后，能够识别出这个帧的结构，根据帧的目的地址，将这个帧转发到对应的某个端口上去，而不是广播到其它所有的端口</p>
+<p>根据帧中的目的地址，通过查找地址表决定转发行为：</p>
+<ul>
+<li>若地址表显示目的节点与源节点位于交换机的同一端口，忽略帧</li>
+<li>若地址表显示目的节点在交换机所连的某一端口，且与源节点不在 同一端口，转发到目的端口</li>
+<li>若目的 MAC 地址为广播地址，向除源端口外的所有端口转发帧</li>
+<li>若地址表中找不到目的地址，向除源端口外的所有端口转发帧</li>
+</ul>
+<p><img width="300" src="/images/notes/network-testing/18-4.png"></p>
+<h2 id="交换机体系结构"><a href="#交换机体系结构" class="headerlink" title="交换机体系结构"></a>交换机体系结构</h2><p><strong>背板</strong>是交换机的中央交换部件，用于交换机的各个端口之间传送数据，背板的结构和容量决定了一个交换机的性能</p>
+<p>交换机背板主要有三种结构：</p>
+<ul>
+<li>共享总线（Shared-bus）</li>
+<li>共享存储（Shared-memory）</li>
+<li>交叉矩阵（Cross-bar）</li>
+</ul>
+<h3 id="共享总线型"><a href="#共享总线型" class="headerlink" title="共享总线型"></a>共享总线型</h3><p>交换端口通过 ASIC 芯片同高速总线相连，数据由端口传输至 ASIC 芯片，ASIC 芯片根据目的地址通过高速总线将数据传至目的端口</p>
+<p><img width="300" src="/images/notes/network-testing/18-5.png"></p>
+<p>为了解决多个端口并发访问共享数据总线所产生的竞争或冲突，还引入了仲裁机制</p>
+<p><img width="100" src="/images/notes/network-testing/18-6.png"></p>
+<p>在数据交换的具体实现上，可以选择分布式或集中式</p>
+<p><strong>集中式交换方式</strong>：由交换机的中心处理器保存端口与目的 MAC 地址的映射表，一旦某端口接收到分组，该端口将该分组中的目的 MAC 地址通过高速总线送至交换机仲裁处理器，仲裁处理器通过访问中央数据库，确定 MAC 地址所对应的目的交换端口，然后仲裁处理器对共享总线进行控制，使得来自源端口的数据帧经由共享总线传至目的端口</p>
+<p><strong>分布式交换方式</strong>：每个端口在本地维持一个端口与目的 MAC 地址的映射表，当数据进入交换机端口时，由该端口的 ASIC 芯片截获分组的目的 MAC 地址，ASIC 芯片将该地址在本地数据库中检索，寻找对应的目的端口：</p>
+<ul>
+<li>如果发现目的端口，就将分组通过共享总线发送至目的端口</li>
+<li>如果没有发现目的端口，该端口将目的 MAC 地址发送至所有的交换端口，由知道该目的 MAC 地址的交换端口通知源端口，然后再进行数据交换</li>
+</ul>
+<h3 id="共享存储器"><a href="#共享存储器" class="headerlink" title="共享存储器"></a>共享存储器</h3><p>共享存储器使用一个<strong>全局共享存储池</strong>进行数据传输交换</p>
+<p><img width="300" src="/images/notes/network-testing/18-7.png"></p>
+<p>进入交换机的数据首先存储在共享 RAM 中，共享 RAM 一般由专用集成电路（ASIC）芯片管理</p>
+<p>ASIC 芯片通过查找地址表，找到与目的地址对应的目的端口，然后将数据发送至所对应的目的端口</p>
+<p><img width="200" src="/images/notes/network-testing/18-8.png"></p>
+<p>共享内存结构实现简单，但受内存容量与速度限制，无法支持大容量交换，一般限制在 20G-80G，且交换延时比较大</p>
+<h3 id="交叉矩阵型"><a href="#交叉矩阵型" class="headerlink" title="交叉矩阵型"></a>交叉矩阵型</h3><p>早期的交叉结构中，所有的端口连接汇聚到一个<strong>交叉点</strong>，数据传输通过交叉点进行，当交叉点正在进行端口交换时，端口输入的数据必须暂时存储在输入端口的本地缓存中，等待别的数据传输结束后，再传输至目的端口，这使得当端口数据量大、网络负载重的情况下，会因交叉点的瓶颈而造成阻塞</p>
+<p><img width="300" src="/images/notes/network-testing/18-9.png"></p>
+<p>为此提出了<strong>纵横式交换矩阵</strong>的结构，它是大容量高端交换机中普通采用的结构，通过内部的交换矩阵和仲裁矩阵实现了无阻塞交换</p>
+<p><img width="200" src="/images/notes/network-testing/18-10.png"></p>
+<p>这种方式可以明显地看出其效率很高，不会浪费网络资源，只是对目的地址发送数据，一般来说不易产生网络堵塞，另一方面数据传输十分安全，因为它不是对所有节点都同时发送，发送数据时其它节点很难侦听到所发送的信息</p>
+<h2 id="转发方式"><a href="#转发方式" class="headerlink" title="转发方式"></a>转发方式</h2><p>交换机将数据从一个端口转发至到另一个端口的处理方式称为<strong>转发方式</strong>，又被称为<strong>交换模式</strong></p>
+<p>常见的转发方式有两种：</p>
+<ul>
+<li>直接交换（cut-through）</li>
+<li>存储转发（store-and-forward）</li>
+</ul>
+<p>在实际交换机中，通常引入智能控制方式来进行选择，通过设置帧错误率的阈值，先采用直接交换，一旦帧错误率超过阈值，改用存储转发</p>
+<h3 id="直接交换"><a href="#直接交换" class="headerlink" title="直接交换"></a>直接交换</h3><h4 id="快速转发方式"><a href="#快速转发方式" class="headerlink" title="快速转发方式"></a>快速转发方式</h4><p>在快速转发交换方式下，交换机只读出数据帧的前 6 个字节，即交换机确定目的 MAC 地址，就会查找转发表，将数据帧传输到相应的输出端口，将帧发出去</p>
+<p>快速转发方式在转发帧的过程中不能有任何间隙，而任何时候从低速率转换到高速率时都会有一个间隙，除非使用某种类型的缓冲，这就导致其存在两个问题：</p>
+<ul>
+<li>会转发小于 64 字节的破碎帧和错误帧</li>
+<li>要求交换机的所有端口要以同样的速率工作</li>
+</ul>
+<p>也就是说，如果交换机的大部分端口是 10Mbps 的，那么这台交换机上就不能有快速以太网的端口</p>
+<p>该方法转发速率快，减少了时延，提高了整体吞吐率，但不提供帧的错误检测，在整个帧还未全部接收到之前就开始转发帧，因此错误帧也会被转发出去，导致网络资源的浪费</p>
+<p>其具有最小的时延，适用于网络链路质量较好、错误数据包较少的网络环境</p>
+<h4 id="无碎片交换方式"><a href="#无碎片交换方式" class="headerlink" title="无碎片交换方式"></a>无碎片交换方式</h4><p>在无碎片交换方式下，交换机通过对<strong>无效碎片帧过滤</strong>来降低直接交换错误帧的概率</p>
+<p>它检查数据包的长度是否够 64 个字节，如果小于 64 字节，说明是碎片帧，则丢弃该帧；如果大于等于64字节，则发送该帧</p>
+<p>该方法数据处理速度比存储转发方式快，但相较于快速转发交换方式来说较慢，适用于一般的通讯链路</p>
+<h3 id="存储转发"><a href="#存储转发" class="headerlink" title="存储转发"></a>存储转发</h3><p>在存储转发时，交换机将帧向目的端口转发之前要先接收完整的帧，将数据帧存储到缓冲器中，进行 CRC 循环冗余校验，如果这个数据包有 CRC 错误，则该包将被丢弃；如果数据包完整，交换机查询地址映射表将其转发至相应的端口</p>
+<p>该方法会过滤所有的错误帧，没有残缺数据包转发，减少不必要的数据转发，但由于存在 CRC 循环冗余校验，使得转发速率比直接转发方式慢，适用于普通链路质量或较为恶劣的网络环境</p>
+
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>感谢您对我的支持，让我继续努力分享有用的技术与知识点！</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/wechatpay.jpg" alt="Alex_McAvoy 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/alipay.jpg" alt="Alex_McAvoy 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Alex_McAvoy
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://alex-mcavoy.github.io/notes/network-testing/91de49b6.html" title="以太网技术">https://alex-mcavoy.github.io/notes/network-testing/91de49b6.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/notes/" rel="tag"># 学习笔记</a>
+              <a href="/tags/network/" rel="tag"># 网络相关</a>
+              <a href="/tags/network-testing/" rel="tag"># 网络测试</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/essay/daily/b487462d.html" rel="prev" title="Elementary">
+      <i class="fa fa-chevron-left"></i> Elementary
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/notes/network-testing/74ef6fb7.html" rel="next" title="以太网性能指标">
+      以太网性能指标 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【以太网技术发展】"><span class="nav-number">1.</span> <span class="nav-text">【以太网技术发展】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【共享以太网与交换以太网】"><span class="nav-number">2.</span> <span class="nav-text">【共享以太网与交换以太网】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#共享以太网"><span class="nav-number">2.1.</span> <span class="nav-text">共享以太网</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#交换以太网"><span class="nav-number">2.2.</span> <span class="nav-text">交换以太网</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【以太网交换机】"><span class="nav-number">3.</span> <span class="nav-text">【以太网交换机】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#工作原理"><span class="nav-number">3.1.</span> <span class="nav-text">工作原理</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#交换机体系结构"><span class="nav-number">3.2.</span> <span class="nav-text">交换机体系结构</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#共享总线型"><span class="nav-number">3.2.1.</span> <span class="nav-text">共享总线型</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#共享存储器"><span class="nav-number">3.2.2.</span> <span class="nav-text">共享存储器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#交叉矩阵型"><span class="nav-number">3.2.3.</span> <span class="nav-text">交叉矩阵型</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#转发方式"><span class="nav-number">3.3.</span> <span class="nav-text">转发方式</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#直接交换"><span class="nav-number">3.3.1.</span> <span class="nav-text">直接交换</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#快速转发方式"><span class="nav-number">3.3.1.1.</span> <span class="nav-text">快速转发方式</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#无碎片交换方式"><span class="nav-number">3.3.1.2.</span> <span class="nav-text">无碎片交换方式</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#存储转发"><span class="nav-number">3.3.2.</span> <span class="nav-text">存储转发</span></a></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">  
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Alex_McAvoy"
+      src="/assets/img/head.jpg">
+  <p class="site-author-name" itemprop="name">Alex_McAvoy</p>
+  <div class="site-description" itemprop="description">想要成为渔夫的猎手</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">541</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">56</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">61</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Alex-McAvoy" title="GitHub → https://github.com/Alex-McAvoy" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/u011815404" title="CSDN → https://blog.csdn.net/u011815404" rel="noopener" target="_blank"><i class="fas fa-copyright fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+<!-- 访客地图 -->
+<script type="text/javascript" src="//rf.revolvermaps.com/0/0/5.js?i=50n58yo58ow&amp;m=0&amp;c=ff0000&amp;cr1=ffffff&amp;s=140" async="async"></script>
+
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdz20172133" title="https://blog.csdn.net/sdz20172133" rel="noopener" target="_blank">神仙队友</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://pxlsdz.gitee.io/" title="https://pxlsdz.gitee.io/" rel="noopener" target="_blank">神仙队友的另一个博客</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://bycore.net" title="https://bycore.net" rel="noopener" target="_blank">凉了的某饼同学</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://kris-cn.github.io/" title="http://kris-cn.github.io/" rel="noopener" target="_blank">翟孙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://deng.fun/" title="http://deng.fun/" rel="noopener" target="_blank">芙蓉姐姐</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdau_fangshifeng" title="https://blog.csdn.net/sdau_fangshifeng" rel="noopener" target="_blank">一个头很酷的家伙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/wentong_Xu" title="https://blog.csdn.net/wentong_Xu" rel="noopener" target="_blank">小黑贱胖子</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.yuheng.tech/" title="https://www.yuheng.tech/" rel="noopener" target="_blank">咸于</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/lanshan1111" title="https://blog.csdn.net/lanshan1111" rel="noopener" target="_blank">肥硕硕</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdauguanweihong" title="https://blog.csdn.net/sdauguanweihong" rel="noopener" target="_blank">管少</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_41661919" title="https://blog.csdn.net/qq_41661919" rel="noopener" target="_blank">俊杰</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_40859951" title="https://blog.csdn.net/qq_40859951" rel="noopener" target="_blank">峰哥</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/LSD20164388" title="https://blog.csdn.net/LSD20164388" rel="noopener" target="_blank">狗冬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37748451" title="https://blog.csdn.net/qq_37748451" rel="noopener" target="_blank">胖亚亚</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37868325" title="https://blog.csdn.net/qq_37868325" rel="noopener" target="_blank">妍大佬</a>
+        </li>
+    </ul>
+  </div>
+
+		
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+  
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Alex_McAvoy</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+</br>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script><script src="/js/bookmark.js"></script>
+
+
+
+  
+
+
+
+
+  <script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '48fd73a538d3fa927f65',
+      clientSecret: '56618aefeee90bac3c20de8d51bb0b985d67252d',
+      repo        : 'Gitalk-Comment',
+      owner       : 'Alex-McAvoy',
+      admin       : ['Alex-McAvoy'],
+      id          : 'b6e8e781da34b77d863aeaf4057d32cd',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+  
+  <!-- 鼠标单击粒子特效 -->
+  <script type="text/javascript" src="/js/cursor-effects.js"></script>
+  <!-- 多级目录 -->
+  <script type="text/javascript" src="/js/category.js"></script>
+  
+</body>
+</html>

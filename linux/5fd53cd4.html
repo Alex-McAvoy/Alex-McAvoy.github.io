@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.9.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/img/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/assets/img/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/pace-js@1/themes/blue/pace-theme-minimal.css">
+  <script src="//cdn.jsdelivr.net/npm/pace-js@1/pace.min.js"></script>
+
+
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"alex-mcavoy.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":16,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":true,"color":"#ff0000","save":"manual"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":true},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.json"};
+  </script>
+
+  <meta name="description" content="【概述】著名的 Linux 系统基本分为两大类：  RedHat 系列：Redhat、Centos、Fedora 等 Debian 系列：Debian、Ubuntu、Kali 等">
+<meta name="keywords" content="Linux">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Linux 软件包管理">
+<meta property="og:url" content="https://alex-mcavoy.github.io/linux/5fd53cd4.html">
+<meta property="og:site_name" content="Alex_McAvoy">
+<meta property="og:description" content="【概述】著名的 Linux 系统基本分为两大类：  RedHat 系列：Redhat、Centos、Fedora 等 Debian 系列：Debian、Ubuntu、Kali 等">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2022-05-14T13:32:55.989Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Linux 软件包管理">
+<meta name="twitter:description" content="【概述】著名的 Linux 系统基本分为两大类：  RedHat 系列：Redhat、Centos、Fedora 等 Debian 系列：Debian、Ubuntu、Kali 等">
+
+<link rel="canonical" href="https://alex-mcavoy.github.io/linux/5fd53cd4.html">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Linux 软件包管理 | Alex_McAvoy</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Alex_McAvoy</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">想要成为渔夫的猎手</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+
+	
+	
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/linux/5fd53cd4.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/assets/img/head.jpg">
+      <meta itemprop="name" content="Alex_McAvoy">
+      <meta itemprop="description" content="想要成为渔夫的猎手">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Alex_McAvoy">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Linux 软件包管理
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2018-06-11 18:39:00" itemprop="dateCreated datePublished" datetime="2018-06-11T18:39:00+08:00">2018-06-11</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/linux/" itemprop="url" rel="index"><span itemprop="name">Linux</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>2.2k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>2 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="【概述】"><a href="#【概述】" class="headerlink" title="【概述】"></a>【概述】</h1><p>著名的 Linux 系统基本分为两大类：</p>
+<ul>
+<li>RedHat 系列：Redhat、Centos、Fedora 等</li>
+<li>Debian 系列：Debian、Ubuntu、Kali 等</li>
+</ul>
+<p>两大系列，对软件的安装管理有所区别：</p>
+<ul>
+<li>Redhat 系列：安装软件包格式为 rpm 包，一般利用 <code>rpm -参数</code> 安装，所用的包管理工具为 yum</li>
+<li>Debian 系列：安装软件包格式为 deb 包，一般利用 <code>dpkg -参数</code> 安装，所用的包管理工具为 apt-get</li>
+</ul>
+<p>在 Linux 系统中，当要安装软件时，一般用 yum 安装或 rpm 软件包管理。</p>
+<p>除上述两种软件包外，还有源代码软件包、绿色免安装软件包等，他们的说明如下：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:center">封装类型</th>
+<th style="text-align:center">说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">rpm 软件包</td>
+<td style="text-align:center">扩展名为 .rpm</td>
+</tr>
+<tr>
+<td style="text-align:center">deb 软件包</td>
+<td style="text-align:center">扩展名为 .deb</td>
+</tr>
+<tr>
+<td style="text-align:center">源代码软件包</td>
+<td style="text-align:center">一般为 .tar.gz、.tar.bz2 等格式的压缩包，包含程序的原始代码</td>
+</tr>
+<tr>
+<td style="text-align:center">提供安装程序软件包</td>
+<td style="text-align:center">在压缩包内提供 install.sh、setup 等安装程序或以 .bin 格式的单个执行文件提供</td>
+</tr>
+<tr>
+<td style="text-align:center">绿色免安装软件包</td>
+<td style="text-align:center">在压缩包内提供已编译好的执行程序文件，解压后可直接使用</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h1 id="【Redhat-系列】"><a href="#【Redhat-系列】" class="headerlink" title="【Redhat 系列】"></a>【Redhat 系列】</h1><h2 id="RPM-软件包"><a href="#RPM-软件包" class="headerlink" title="RPM 软件包"></a>RPM 软件包</h2><p>RPM 由 Red Hat 公司提出，其通过建立统一的数据库文件，详细的记录软件包安装、卸载等变化信息，且能够自动分析软件包依赖关系。</p>
+<p>一般命名格式为：</p>
+<script type="math/tex; mode=display">
+软件名称.版本号.发布次数.硬件平台.扩展名</script><p>例如：bash-3.1-16.1.i386.rpm，软件名称为 bash-3，版本号是 1-16，发型次数为 1，硬件平台为 i386，扩展名为 rpm</p>
+<p>命令格式为：<code>rpm [options] [package]</code></p>
+<p>常见的选项有：</p>
+<ul>
+<li>-i：安装一个新的 rpm 软件包</li>
+<li>-e：卸载指定的 rpm 软件包</li>
+<li>-h：以 # 显示安装进度</li>
+<li>-v：显示安装过程中的常用信息</li>
+<li>–nodeps：安装、升级或卸载软件时，忽略依赖关系</li>
+</ul>
+<p>常用的命令为：<code>rpm -ivh *.rpm</code></p>
+<h2 id="yum-软件包管理"><a href="#yum-软件包管理" class="headerlink" title="yum 软件包管理"></a>yum 软件包管理</h2><p>yum 是 Reahat 系列中的 Shell 前端软件包管理器，其基于 rpm 包管理，能够从指定的服务器自动下载 rpm 包并安装，可以处理依赖性关系，一次性安装所有依赖的软件包，无须繁琐地一次次下载、安装。</p>
+<p>yum 提供了管理软件包的便捷方式，在配置软件源后，即可便捷地对软件包进行管理。</p>
+<p>命令格式为：<code>yum [options] [command] [package]</code></p>
+<p>常见的命令有：</p>
+<p>安装：</p>
+<ul>
+<li><code>yum install</code>：全部安装</li>
+<li><code>yum install package1</code>：安装软件包 package1</li>
+<li><code>yum install group1</code>：安装程序组 group1</li>
+</ul>
+<p>更新：</p>
+<ul>
+<li><code>yum check-update</code>：检查可更新的程序</li>
+<li><code>yum update</code>：全部更新</li>
+<li><code>yum update package1</code>：更新软件包 package1</li>
+<li><code>yum update group1</code>：更新程序组 group1</li>
+</ul>
+<p>查找与显示：</p>
+<ul>
+<li><code>yum info package1</code>：显示软件包 package1 的信息</li>
+<li><code>yum list</code>：显示已安装和可安装的软件包</li>
+<li><code>yum list package1</code>：显示程序包 package1 的信息</li>
+<li><code>yum groupinfo group1</code>：显示程序组 group1 的信息</li>
+<li><code>yum search string</code>：根据关键字 string 查找软件包</li>
+</ul>
+<p>删除程序：</p>
+<ul>
+<li><code>yum remove package1</code>：删除程序 package1</li>
+<li><code>yum groupremove group1</code>：删除程序组 group1</li>
+<li><code>yum deplist package1</code>：查看软件 package1 的依赖情况</li>
+</ul>
+<p>清除缓存：</p>
+<ul>
+<li><code>yum clean packages</code>：清除缓存目录下的软件包</li>
+<li><code>yum clean headers</code>：清除缓存目录下的 headers</li>
+<li><code>yum clean oldheaders</code>：清除缓存目录下旧的 headers</li>
+</ul>
+<h1 id="【Debian-系列】"><a href="#【Debian-系列】" class="headerlink" title="【Debian 系列】"></a>【Debian 系列】</h1><h2 id="deb-软件包"><a href="#deb-软件包" class="headerlink" title="deb 软件包"></a>deb 软件包</h2><p>所有源自 Debian 的 Linux 发行版都使用 deb 格式，其与 rpm 十分相似。</p>
+<p>在 Debian 系列中，对软件的安装、更新、移出时，需要使用 Debian 专门开发的套件管理系统 dpkg，其与 RPM 十分相似。</p>
+<p>命令格式为：<code>dpkg [options] [package]</code></p>
+<p>常见的选项有：</p>
+<ul>
+<li>-i：安装一个新的 dep 软件包</li>
+<li>-r：卸载指定的 dep 软件包</li>
+<li>-I：显示 deb 包的信息</li>
+<li>-s：显示已安装的软件信息</li>
+</ul>
+<h2 id="apt-管理工具"><a href="#apt-管理工具" class="headerlink" title="apt 管理工具"></a>apt 管理工具</h2><p>APT 是 Debian 系列中的 Shell 前端软件包管理器，其基于 dpkg 包管理，类似于 yum</p>
+<p>apt 管理器包含多个以 <code>apt-</code> 开头的工具，如：<code>apt-get</code>、<code>apt-cahe</code>、<code>apt-cdrom</code> 等，其中最常用的就是 <code>apt-get</code></p>
+<p><code>apt-get</code> 是用于处理 apt 包的公用程序集，常可用它来在线安装、卸载、升级软件包等。</p>
+<p>当执行安装操作时，<code>apt-get</code> 工具首先会在本地的软件源数据库中搜索关于要安装的软件的相关信息，并根据这些信息在相关的软件源镜像服务器上下载软件，进行安装。</p>
+<p>使用 <code>apt-get</code> 需要定期从服务器上下载一个软件包列表，使用 <code>apt-get update</code> 命令来保持本地的软件包列表是最新的，这个表里会有软件依赖信息的记录</p>
+<p>命令格式为：<code>apt-get [options] [command]</code></p>
+<p>常用的选项有：</p>
+<ul>
+<li>-y：自动回应是否安装软件包的选项</li>
+<li>-f：修复损坏的依赖关系</li>
+<li>-q：静默安装方式，指定多个 q 或 -q=# 来设置静默级别(#为数字)</li>
+<li>–reinstall：重新安装已安装但可能存在问题的软件包</li>
+</ul>
+<p>常用的命令有：</p>
+<ul>
+<li>install：安装软件包</li>
+<li>update：更新本地软件源列表</li>
+<li>remove：移除已安装的软件包与有依赖关系的软件包</li>
+<li>autoremove：移除之前被其他软件包依赖，但现在不再被使用的软件包</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>感谢您对我的支持，让我继续努力分享有用的技术与知识点！</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/wechatpay.jpg" alt="Alex_McAvoy 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/alipay.jpg" alt="Alex_McAvoy 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Alex_McAvoy
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://alex-mcavoy.github.io/linux/5fd53cd4.html" title="Linux 软件包管理">https://alex-mcavoy.github.io/linux/5fd53cd4.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/linux/" rel="tag"># Linux</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/linux/a6f0c50.html" rel="prev" title="Linux 帮助命令">
+      <i class="fa fa-chevron-left"></i> Linux 帮助命令
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/linux/d0f31d63.html" rel="next" title="Linux 系统启动过程">
+      Linux 系统启动过程 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【概述】"><span class="nav-number">1.</span> <span class="nav-text">【概述】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【Redhat-系列】"><span class="nav-number">2.</span> <span class="nav-text">【Redhat 系列】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#RPM-软件包"><span class="nav-number">2.1.</span> <span class="nav-text">RPM 软件包</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#yum-软件包管理"><span class="nav-number">2.2.</span> <span class="nav-text">yum 软件包管理</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【Debian-系列】"><span class="nav-number">3.</span> <span class="nav-text">【Debian 系列】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#deb-软件包"><span class="nav-number">3.1.</span> <span class="nav-text">deb 软件包</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#apt-管理工具"><span class="nav-number">3.2.</span> <span class="nav-text">apt 管理工具</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">  
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Alex_McAvoy"
+      src="/assets/img/head.jpg">
+  <p class="site-author-name" itemprop="name">Alex_McAvoy</p>
+  <div class="site-description" itemprop="description">想要成为渔夫的猎手</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">541</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">56</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">61</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Alex-McAvoy" title="GitHub → https://github.com/Alex-McAvoy" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/u011815404" title="CSDN → https://blog.csdn.net/u011815404" rel="noopener" target="_blank"><i class="fas fa-copyright fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+<!-- 访客地图 -->
+<script type="text/javascript" src="//rf.revolvermaps.com/0/0/5.js?i=50n58yo58ow&amp;m=0&amp;c=ff0000&amp;cr1=ffffff&amp;s=140" async="async"></script>
+
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdz20172133" title="https://blog.csdn.net/sdz20172133" rel="noopener" target="_blank">神仙队友</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://pxlsdz.gitee.io/" title="https://pxlsdz.gitee.io/" rel="noopener" target="_blank">神仙队友的另一个博客</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://bycore.net" title="https://bycore.net" rel="noopener" target="_blank">凉了的某饼同学</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://kris-cn.github.io/" title="http://kris-cn.github.io/" rel="noopener" target="_blank">翟孙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://deng.fun/" title="http://deng.fun/" rel="noopener" target="_blank">芙蓉姐姐</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdau_fangshifeng" title="https://blog.csdn.net/sdau_fangshifeng" rel="noopener" target="_blank">一个头很酷的家伙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/wentong_Xu" title="https://blog.csdn.net/wentong_Xu" rel="noopener" target="_blank">小黑贱胖子</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.yuheng.tech/" title="https://www.yuheng.tech/" rel="noopener" target="_blank">咸于</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/lanshan1111" title="https://blog.csdn.net/lanshan1111" rel="noopener" target="_blank">肥硕硕</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdauguanweihong" title="https://blog.csdn.net/sdauguanweihong" rel="noopener" target="_blank">管少</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_41661919" title="https://blog.csdn.net/qq_41661919" rel="noopener" target="_blank">俊杰</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_40859951" title="https://blog.csdn.net/qq_40859951" rel="noopener" target="_blank">峰哥</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/LSD20164388" title="https://blog.csdn.net/LSD20164388" rel="noopener" target="_blank">狗冬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37748451" title="https://blog.csdn.net/qq_37748451" rel="noopener" target="_blank">胖亚亚</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37868325" title="https://blog.csdn.net/qq_37868325" rel="noopener" target="_blank">妍大佬</a>
+        </li>
+    </ul>
+  </div>
+
+		
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+  
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Alex_McAvoy</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+</br>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script><script src="/js/bookmark.js"></script>
+
+
+
+  
+
+
+
+
+  <script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '48fd73a538d3fa927f65',
+      clientSecret: '56618aefeee90bac3c20de8d51bb0b985d67252d',
+      repo        : 'Gitalk-Comment',
+      owner       : 'Alex-McAvoy',
+      admin       : ['Alex-McAvoy'],
+      id          : 'de8cc8842ee2a2f2c9c4b6bb116b9de4',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+  
+  <!-- 鼠标单击粒子特效 -->
+  <script type="text/javascript" src="/js/cursor-effects.js"></script>
+  <!-- 多级目录 -->
+  <script type="text/javascript" src="/js/category.js"></script>
+  
+</body>
+</html>

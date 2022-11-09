@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.9.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/img/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/assets/img/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/pace-js@1/themes/blue/pace-theme-minimal.css">
+  <script src="//cdn.jsdelivr.net/npm/pace-js@1/pace.min.js"></script>
+
+
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"alex-mcavoy.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":16,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":true,"color":"#ff0000","save":"manual"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":true},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.json"};
+  </script>
+
+  <meta name="description" content="【概述】GUI 数据更新函数，是对 GUI 的各控件进行更新数据所使用的 每调用相关函数一次，就对相关的控件进行数据更新">
+<meta name="keywords" content="C++,MFC">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Sniffer——GUI数据更新函数">
+<meta property="og:url" content="https://alex-mcavoy.github.io/mfc/7d5e25c9.html">
+<meta property="og:site_name" content="Alex_McAvoy">
+<meta property="og:description" content="【概述】GUI 数据更新函数，是对 GUI 的各控件进行更新数据所使用的 每调用相关函数一次，就对相关的控件进行数据更新">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2021-08-31T11:48:06.863Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Sniffer——GUI数据更新函数">
+<meta name="twitter:description" content="【概述】GUI 数据更新函数，是对 GUI 的各控件进行更新数据所使用的 每调用相关函数一次，就对相关的控件进行数据更新">
+
+<link rel="canonical" href="https://alex-mcavoy.github.io/mfc/7d5e25c9.html">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Sniffer——GUI数据更新函数 | Alex_McAvoy</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Alex_McAvoy</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">想要成为渔夫的猎手</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+
+	
+	
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/mfc/7d5e25c9.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/assets/img/head.jpg">
+      <meta itemprop="name" content="Alex_McAvoy">
+      <meta itemprop="description" content="想要成为渔夫的猎手">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Alex_McAvoy">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Sniffer——GUI数据更新函数
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-12-30 15:13:00" itemprop="dateCreated datePublished" datetime="2019-12-30T15:13:00+08:00">2019-12-30</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/mfc/" itemprop="url" rel="index"><span itemprop="name">MFC</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>14k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>13 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="【概述】"><a href="#【概述】" class="headerlink" title="【概述】"></a>【概述】</h1><p>GUI 数据更新函数，是对 GUI 的各控件进行更新数据所使用的</p>
+<p>每调用相关函数一次，就对相关的控件进行数据更新</p>
+<p>具体可分为：保存文件、读取文件、更新编辑框、编辑框格式化显示、更新树形框这五部分</p>
+<h1 id="【保存文件】"><a href="#【保存文件】" class="headerlink" title="【保存文件】"></a>【保存文件】</h1><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//保存文件</span></span><br><span class="line"><span class="keyword">int</span> CSnifferDlg::Sniffer_saveFile() &#123;</span><br><span class="line">    CFileFind find;</span><br><span class="line">    <span class="keyword">if</span> (find.FindFile(CString(filePath)) == <span class="literal">NULL</span>)&#123;</span><br><span class="line">        MessageBox(<span class="string">"保存文件遇到未知意外"</span>);</span><br><span class="line">        <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//保存文件对话框</span></span><br><span class="line">    <span class="keyword">char</span> szFilter[] = <span class="string">"lix文件(*.lix)|*.lix||"</span>;</span><br><span class="line">    <span class="function">CFileDialog <span class="title">openDlg</span><span class="params">(FALSE, <span class="string">".lix"</span>, <span class="number">0</span>, <span class="number">0</span>, szFilter)</span></span>;</span><br><span class="line">    openDlg.m_ofn.lpstrInitialDir = <span class="string">"D:\\"</span>;</span><br><span class="line">    <span class="keyword">if</span> (openDlg.DoModal() == IDOK)</span><br><span class="line">        CopyFile(CString(filePath), openDlg.GetPathName(), TRUE);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h1 id="【读取文件】"><a href="#【读取文件】" class="headerlink" title="【读取文件】"></a>【读取文件】</h1><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//读取文件</span></span><br><span class="line"><span class="keyword">int</span> CSnifferDlg::Sniffer_readFile(CString path) &#123;</span><br><span class="line">    <span class="comment">//处理路径</span></span><br><span class="line">    <span class="keyword">int</span> len = path.GetLength() + <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">char</span>* charPath = (<span class="keyword">char</span> *)<span class="built_in">malloc</span>(len);</span><br><span class="line">    <span class="built_in">memset</span>(charPath, <span class="number">0</span>, len);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (charPath == <span class="literal">NULL</span>)</span><br><span class="line">        <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; len; i++)</span><br><span class="line">        charPath[i] = (<span class="keyword">char</span>)path.GetAt(i);</span><br><span class="line"></span><br><span class="line">    <span class="comment">//打开文件</span></span><br><span class="line">    <span class="keyword">pcap_t</span> *fp;</span><br><span class="line">    <span class="keyword">if</span> ((fp = pcap_open_offline(charPath, errorBufffer)) == <span class="literal">NULL</span>) &#123;</span><br><span class="line">        MessageBox(<span class="string">"打开文件错误"</span> + CString(errorBufffer));</span><br><span class="line">        <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">pcap_pkthdr</span> *<span class="title">data_header</span>;</span><span class="comment">//数据包头</span></span><br><span class="line">    <span class="keyword">const</span> u_char *pkt_data = <span class="literal">NULL</span>;<span class="comment">//收到的字节流数据</span></span><br><span class="line">    <span class="keyword">while</span> (pcap_next_ex(fp, &amp;data_header, &amp;pkt_data) &gt;= <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="class"><span class="keyword">struct</span> <span class="title">data_packet</span> *<span class="title">data</span> = (<span class="title">struct</span> <span class="title">data_packet</span>*)<span class="title">malloc</span>(<span class="title">sizeof</span>(<span class="title">struct</span> <span class="title">data_packet</span>));</span></span><br><span class="line">        <span class="built_in">memset</span>(data, <span class="number">0</span>, <span class="keyword">sizeof</span>(struct data_packet));</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (data == <span class="literal">NULL</span>) &#123;</span><br><span class="line">            MessageBox(<span class="string">"空间已满，无法接收新的数据包"</span>);</span><br><span class="line">            <span class="keyword">return</span>  <span class="number">-1</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">//分析出错或所接收数据包不在处理范围内</span></span><br><span class="line">        <span class="keyword">if</span> (analyse_data_frame(pkt_data, data, &amp;(<span class="keyword">this</span>-&gt;packetCount)) &lt; <span class="number">0</span>)</span><br><span class="line">            <span class="keyword">continue</span>;</span><br><span class="line"></span><br><span class="line">        <span class="comment">//更新各类数据包计数</span></span><br><span class="line">        <span class="keyword">this</span>-&gt;Sniffer_updatePacket();</span><br><span class="line">        <span class="keyword">this</span>-&gt;Sniffer_updateList(data_header, data, pkt_data);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    pcap_close(fp);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h1 id="【更新编辑框】"><a href="#【更新编辑框】" class="headerlink" title="【更新编辑框】"></a>【更新编辑框】</h1><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//更新编辑框</span></span><br><span class="line"><span class="keyword">int</span> CSnifferDlg::Sniffer_updateEdit(<span class="keyword">int</span> index) &#123;</span><br><span class="line">    POSITION localPos = <span class="keyword">this</span>-&gt;m_localDataList.FindIndex(index);</span><br><span class="line">    POSITION netPos = <span class="keyword">this</span>-&gt;m_netDataList.FindIndex(index);</span><br><span class="line"></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">data_packet</span>* <span class="title">localData</span> = (<span class="title">struct</span> <span class="title">data_packet</span>*)(<span class="title">this</span>-&gt;<span class="title">m_localDataList</span>.<span class="title">GetAt</span>(<span class="title">localPos</span>));</span></span><br><span class="line">    u_char * netData = (u_char*)(<span class="keyword">this</span>-&gt;m_netDataList.GetAt(netPos));</span><br><span class="line"></span><br><span class="line">    CString buffer;</span><br><span class="line">    print_packet_hex(netData, localData-&gt;len, &amp;buffer);<span class="comment">//数据格式化显示函数</span></span><br><span class="line">    <span class="keyword">this</span>-&gt;m_edit.SetWindowText(buffer);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h1 id="【编辑框数据格式化显示】"><a href="#【编辑框数据格式化显示】" class="headerlink" title="【编辑框数据格式化显示】"></a>【编辑框数据格式化显示】</h1><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//编辑框数据格式化显示</span></span><br><span class="line"><span class="keyword">void</span> CSnifferDlg::print_packet_hex(<span class="keyword">const</span> u_char* packet, <span class="keyword">int</span> packet_size, CString *buffer) &#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; packet_size; i += <span class="number">16</span>) &#123;</span><br><span class="line">        <span class="comment">//将数据以16进制形式显示</span></span><br><span class="line">        buffer-&gt;AppendFormat(<span class="string">"%04x:  "</span>, (u_int)i);</span><br><span class="line">        <span class="keyword">int</span> row = (packet_size - i) &gt; <span class="number">16</span> ? <span class="number">16</span> : (packet_size - i);</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> j = <span class="number">0</span>; j &lt; row; j++)</span><br><span class="line">            buffer-&gt;AppendFormat(<span class="string">"%02x  "</span>, (u_int)packet[i + j]);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (row &lt; <span class="number">16</span>)<span class="comment">//不足16时，用空格补足</span></span><br><span class="line">            <span class="keyword">for</span> (<span class="keyword">int</span> j = row; j &lt; <span class="number">16</span>; j++)</span><br><span class="line">                buffer-&gt;AppendFormat(<span class="string">"    "</span>);</span><br><span class="line"></span><br><span class="line">        <span class="comment">//将数据以字符形式显示</span></span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> j = <span class="number">0</span>; j &lt; row; j++) &#123;</span><br><span class="line">            u_char ch = packet[i + j];</span><br><span class="line">            ch = <span class="built_in">isprint</span>(ch) ? ch : <span class="string">'.'</span>;</span><br><span class="line">            buffer-&gt;AppendFormat(<span class="string">"%c"</span>, ch);</span><br><span class="line">        &#125;</span><br><span class="line">        buffer-&gt;Append(<span class="string">"\r\n"</span>);</span><br><span class="line">        <span class="keyword">if</span> (row &lt; <span class="number">16</span>)</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h1 id="【更新树形框】"><a href="#【更新树形框】" class="headerlink" title="【更新树形框】"></a>【更新树形框】</h1><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br><span class="line">198</span><br><span class="line">199</span><br><span class="line">200</span><br><span class="line">201</span><br><span class="line">202</span><br><span class="line">203</span><br><span class="line">204</span><br><span class="line">205</span><br><span class="line">206</span><br><span class="line">207</span><br><span class="line">208</span><br><span class="line">209</span><br><span class="line">210</span><br><span class="line">211</span><br><span class="line">212</span><br><span class="line">213</span><br><span class="line">214</span><br><span class="line">215</span><br><span class="line">216</span><br><span class="line">217</span><br><span class="line">218</span><br><span class="line">219</span><br><span class="line">220</span><br><span class="line">221</span><br><span class="line">222</span><br><span class="line">223</span><br><span class="line">224</span><br><span class="line">225</span><br><span class="line">226</span><br><span class="line">227</span><br><span class="line">228</span><br><span class="line">229</span><br><span class="line">230</span><br><span class="line">231</span><br><span class="line">232</span><br><span class="line">233</span><br><span class="line">234</span><br><span class="line">235</span><br><span class="line">236</span><br><span class="line">237</span><br><span class="line">238</span><br><span class="line">239</span><br><span class="line">240</span><br><span class="line">241</span><br><span class="line">242</span><br><span class="line">243</span><br><span class="line">244</span><br><span class="line">245</span><br><span class="line">246</span><br><span class="line">247</span><br><span class="line">248</span><br><span class="line">249</span><br><span class="line">250</span><br><span class="line">251</span><br><span class="line">252</span><br><span class="line">253</span><br><span class="line">254</span><br><span class="line">255</span><br><span class="line">256</span><br><span class="line">257</span><br><span class="line">258</span><br><span class="line">259</span><br><span class="line">260</span><br><span class="line">261</span><br><span class="line">262</span><br><span class="line">263</span><br><span class="line">264</span><br><span class="line">265</span><br><span class="line">266</span><br><span class="line">267</span><br><span class="line">268</span><br><span class="line">269</span><br><span class="line">270</span><br><span class="line">271</span><br><span class="line">272</span><br><span class="line">273</span><br><span class="line">274</span><br><span class="line">275</span><br><span class="line">276</span><br><span class="line">277</span><br><span class="line">278</span><br><span class="line">279</span><br><span class="line">280</span><br><span class="line">281</span><br><span class="line">282</span><br><span class="line">283</span><br><span class="line">284</span><br><span class="line">285</span><br><span class="line">286</span><br><span class="line">287</span><br><span class="line">288</span><br><span class="line">289</span><br><span class="line">290</span><br><span class="line">291</span><br><span class="line">292</span><br><span class="line">293</span><br><span class="line">294</span><br><span class="line">295</span><br><span class="line">296</span><br><span class="line">297</span><br><span class="line">298</span><br><span class="line">299</span><br><span class="line">300</span><br><span class="line">301</span><br><span class="line">302</span><br><span class="line">303</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//更新树形框</span></span><br><span class="line"><span class="keyword">int</span> CSnifferDlg::Sniffer_updateTree(<span class="keyword">int</span> index) &#123;</span><br><span class="line">    <span class="keyword">this</span>-&gt;m_treeCtrl.DeleteAllItems();</span><br><span class="line">    POSITION localPos = <span class="keyword">this</span>-&gt;m_localDataList.FindIndex(index);</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">data_packet</span>* <span class="title">localData</span> = (<span class="title">struct</span> <span class="title">data_packet</span>*)(<span class="title">this</span>-&gt;<span class="title">m_localDataList</span>.<span class="title">GetAt</span>(<span class="title">localPos</span>));</span></span><br><span class="line"></span><br><span class="line">    CString str;</span><br><span class="line">    str.Format(<span class="string">"第%d个数据包"</span>, index + <span class="number">1</span>);</span><br><span class="line">    HTREEITEM root = <span class="keyword">this</span>-&gt;m_treeCtrl.GetRootItem();</span><br><span class="line">    HTREEITEM data = <span class="keyword">this</span>-&gt;m_treeCtrl.InsertItem(str, root);</span><br><span class="line"></span><br><span class="line">    <span class="comment">/****************链路层****************/</span></span><br><span class="line">    HTREEITEM frame = <span class="keyword">this</span>-&gt;m_treeCtrl.InsertItem(<span class="string">"链路层"</span>, data);</span><br><span class="line"></span><br><span class="line">    str.Format(<span class="string">"源MAC："</span>);</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">6</span>; i++) &#123;</span><br><span class="line">        <span class="keyword">if</span> (i &lt;= <span class="number">4</span>)</span><br><span class="line">            str.AppendFormat(<span class="string">"%02x-"</span>, localData-&gt;ethh-&gt;src[i]);</span><br><span class="line">        <span class="keyword">else</span></span><br><span class="line">            str.AppendFormat(<span class="string">"%02x"</span>, localData-&gt;ethh-&gt;src[i]);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">this</span>-&gt;m_treeCtrl.InsertItem(str, frame);</span><br><span class="line"></span><br><span class="line">    str.Format(<span class="string">"目的MAC："</span>);</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">6</span>; i++) &#123;</span><br><span class="line">        <span class="keyword">if</span> (i &lt;= <span class="number">4</span>)</span><br><span class="line">            str.AppendFormat(<span class="string">"%02x-"</span>, localData-&gt;ethh-&gt;dest[i]);</span><br><span class="line">        <span class="keyword">else</span></span><br><span class="line">            str.AppendFormat(<span class="string">"%02x"</span>, localData-&gt;ethh-&gt;dest[i]);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">this</span>-&gt;m_treeCtrl.InsertItem(str, frame);</span><br><span class="line"></span><br><span class="line">    str.Format(<span class="string">"类型：0x%02x"</span>, localData-&gt;ethh-&gt;type);</span><br><span class="line">    <span class="keyword">this</span>-&gt;m_treeCtrl.InsertItem(str, frame);</span><br><span class="line"></span><br><span class="line">    <span class="comment">/****************网络层****************/</span></span><br><span class="line">    <span class="comment">//ARP头</span></span><br><span class="line">    <span class="keyword">if</span> (localData-&gt;ethh-&gt;type == PROTO_ARP) &#123;</span><br><span class="line">        HTREEITEM arp = <span class="keyword">this</span>-&gt;m_treeCtrl.InsertItem(<span class="string">"ARP头"</span>, data);</span><br><span class="line">        str.Format(<span class="string">"硬件类型：%d"</span>, localData-&gt;arph-&gt;hard_type);</span><br><span class="line">        <span class="keyword">this</span>-&gt;m_treeCtrl.InsertItem(str, arp);</span><br><span class="line">        str.Format(<span class="string">"协议类型：0x%02x"</span>, localData-&gt;arph-&gt;pro_type);</span><br><span class="line">        <span class="keyword">this</span>-&gt;m_treeCtrl.InsertItem(str, arp);</span><br><span class="line">        str.Format(<span class="string">"硬件地址长度：%d"</span>, localData-&gt;arph-&gt;hard_len);</span><br><span class="line">        <span class="keyword">this</span>-&gt;m_treeCtrl.InsertItem(str, arp);</span><br><span class="line">        str.Format(<span class="string">"协议地址长度：%d"</span>, localData-&gt;arph-&gt;pro_len);</span><br><span class="line">        <span class="keyword">this</span>-&gt;m_treeCtrl.InsertItem(str, arp);</span><br><span class="line">        str.Format(<span class="string">"操作码：%d"</span>, localData-&gt;arph-&gt;oper);</span><br><span class="line">        <span class="keyword">this</span>-&gt;m_treeCtrl.InsertItem(str, arp);</span><br><span class="line"></span><br><span class="line">        str.Format(<span class="string">"发送方MAC："</span>);</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">6</span>; i++) &#123;</span><br><span class="line">            <span class="keyword">if</span> (i &lt;= <span class="number">4</span>)  </span><br><span class="line">                str.AppendFormat(<span class="string">"%02x-"</span>, localData-&gt;arph-&gt;src_mac[i]);</span><br><span class="line">            <span class="keyword">else</span>  </span><br><span class="line">                str.AppendFormat(<span class="string">"%02x"</span>, localData-&gt;arph-&gt;src_mac[i]);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">this</span>-&gt;m_treeCtrl.InsertItem(str, arp);</span><br><span class="line"></span><br><span class="line">        str.Format(<span class="string">"发送方IP："</span>);</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">4</span>; i++) &#123;</span><br><span class="line">            <span class="keyword">if</span> (i &lt;= <span class="number">2</span>)  </span><br><span class="line">                str.AppendFormat(<span class="string">"%d."</span>, localData-&gt;arph-&gt;src_ip[i]);</span><br><span class="line">            <span class="keyword">else</span>  </span><br><span class="line">                str.AppendFormat(<span class="string">"%d"</span>, localData-&gt;arph-&gt;src_ip[i]);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">this</span>-&gt;m_treeCtrl.InsertItem(str, arp);</span><br><span class="line"></span><br><span class="line">        str.Format(<span class="string">"接收方MAC："</span>);</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">6</span>; i++) &#123;</span><br><span class="line">            <span class="keyword">if</span> (i &lt;= <span class="number">4</span>)  </span><br><span class="line">                str.AppendFormat(<span class="string">"%02x-"</span>, localData-&gt;arph-&gt;dest_mac[i]);</span><br><span class="line">            <span class="keyword">else</span>  </span><br><span class="line">                str.AppendFormat(<span class="string">"%02x"</span>, localData-&gt;arph-&gt;dest_mac[i]);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">this</span>-&gt;m_treeCtrl.InsertItem(str, arp);</span><br><span class="line"></span><br><span class="line">        str.Format(<span class="string">"接收方IP："</span>);</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">4</span>; i++) &#123;</span><br><span class="line">            <span class="keyword">if</span> (i &lt;= <span class="number">2</span>)  </span><br><span class="line">                str.AppendFormat(<span class="string">"%d."</span>, localData-&gt;arph-&gt;dest_ip[i]);</span><br><span class="line">            <span class="keyword">else</span>  </span><br><span class="line">                str.AppendFormat(<span class="string">"%d"</span>, localData-&gt;arph-&gt;dest_ip[i]);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">this</span>-&gt;m_treeCtrl.InsertItem(str, arp);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">//IPv4头</span></span><br><span class="line">    <span class="keyword">if</span> (localData-&gt;ethh-&gt;type == PROTO_IP_V4) &#123; </span><br><span class="line">        HTREEITEM ip = <span class="keyword">this</span>-&gt;m_treeCtrl.InsertItem(<span class="string">"IPv4头"</span>, data);</span><br><span class="line"></span><br><span class="line">        str.Format(<span class="string">"版本：%d"</span>, localData-&gt;ip4h-&gt;version);</span><br><span class="line">        <span class="keyword">this</span>-&gt;m_treeCtrl.InsertItem(str, ip);</span><br><span class="line">        str.Format(<span class="string">"IP头长：%d"</span>, localData-&gt;ip4h-&gt;ihl);</span><br><span class="line">        <span class="keyword">this</span>-&gt;m_treeCtrl.InsertItem(str, ip);</span><br><span class="line">        str.Format(<span class="string">"服务类型：%d"</span>, localData-&gt;ip4h-&gt;tos);</span><br><span class="line">        <span class="keyword">this</span>-&gt;m_treeCtrl.InsertItem(str, ip);</span><br><span class="line">        str.Format(<span class="string">"总长度：%d"</span>, localData-&gt;ip4h-&gt;total_len);</span><br><span class="line">        <span class="keyword">this</span>-&gt;m_treeCtrl.InsertItem(str, ip);</span><br><span class="line">        str.Format(<span class="string">"标识：0x%02x"</span>, localData-&gt;ip4h-&gt;id);</span><br><span class="line">        <span class="keyword">this</span>-&gt;m_treeCtrl.InsertItem(str, ip);</span><br><span class="line">        str.Format(<span class="string">"段偏移：%d"</span>, localData-&gt;ip4h-&gt;frag_off);</span><br><span class="line">        <span class="keyword">this</span>-&gt;m_treeCtrl.InsertItem(str, ip);</span><br><span class="line">        str.Format(<span class="string">"生存期：%d"</span>, localData-&gt;ip4h-&gt;ttl);</span><br><span class="line">        <span class="keyword">this</span>-&gt;m_treeCtrl.InsertItem(str, ip);</span><br><span class="line">        str.Format(<span class="string">"协议：%d"</span>, localData-&gt;ip4h-&gt;proto);</span><br><span class="line">        <span class="keyword">this</span>-&gt;m_treeCtrl.InsertItem(str, ip);</span><br><span class="line">        str.Format(<span class="string">"头部校验和：0x%02x"</span>, localData-&gt;ip4h-&gt;check);</span><br><span class="line">        <span class="keyword">this</span>-&gt;m_treeCtrl.InsertItem(str, ip);</span><br><span class="line"></span><br><span class="line">        str.Format(<span class="string">"源IP："</span>);</span><br><span class="line">        <span class="class"><span class="keyword">struct</span> <span class="title">in_addr</span> <span class="title">in</span>;</span></span><br><span class="line">        in.S_un.S_addr = localData-&gt;ip4h-&gt;src_addr;</span><br><span class="line">        str.AppendFormat(CString(inet_ntoa(in)));</span><br><span class="line">        <span class="keyword">this</span>-&gt;m_treeCtrl.InsertItem(str, ip);</span><br><span class="line"></span><br><span class="line">        str.Format(<span class="string">"目的IP："</span>);</span><br><span class="line">        in.S_un.S_addr = localData-&gt;ip4h-&gt;dest_addr;</span><br><span class="line">        str.AppendFormat(CString(inet_ntoa(in)));</span><br><span class="line">        <span class="keyword">this</span>-&gt;m_treeCtrl.InsertItem(str, ip);</span><br><span class="line"></span><br><span class="line">        <span class="comment">/****************传输层****************/</span></span><br><span class="line">        <span class="comment">//ICMPv4头</span></span><br><span class="line">        <span class="keyword">if</span> (localData-&gt;ip4h-&gt;proto == V4_PROTO_ICMP_V4) &#123;</span><br><span class="line">            HTREEITEM icmp = <span class="keyword">this</span>-&gt;m_treeCtrl.InsertItem(<span class="string">"ICMPv4头"</span>, data);</span><br><span class="line"></span><br><span class="line">            str.Format(<span class="string">"类型:%d"</span>, localData-&gt;icmp4h-&gt;type);</span><br><span class="line">            <span class="keyword">this</span>-&gt;m_treeCtrl.InsertItem(str, icmp);</span><br><span class="line">            str.Format(<span class="string">"代码:%d"</span>, localData-&gt;icmp4h-&gt;code);</span><br><span class="line">            <span class="keyword">this</span>-&gt;m_treeCtrl.InsertItem(str, icmp);</span><br><span class="line">            str.Format(<span class="string">"序号:%d"</span>, localData-&gt;icmp4h-&gt;seq);</span><br><span class="line">            <span class="keyword">this</span>-&gt;m_treeCtrl.InsertItem(str, icmp);</span><br><span class="line">            str.Format(<span class="string">"校验和:%d"</span>, localData-&gt;icmp4h-&gt;check);</span><br><span class="line">            <span class="keyword">this</span>-&gt;m_treeCtrl.InsertItem(str, icmp);</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        <span class="comment">//TCP头</span></span><br><span class="line">        <span class="keyword">if</span> (localData-&gt;ip4h-&gt;proto == V4_PROTO_TCP) &#123;</span><br><span class="line">            HTREEITEM tcp = <span class="keyword">this</span>-&gt;m_treeCtrl.InsertItem(<span class="string">"TCP协议头"</span>, data);</span><br><span class="line"></span><br><span class="line">            str.Format(<span class="string">"  源端口:%d"</span>, localData-&gt;tcph-&gt;src_port);</span><br><span class="line">            <span class="keyword">this</span>-&gt;m_treeCtrl.InsertItem(str, tcp);</span><br><span class="line">            str.Format(<span class="string">"  目的端口:%d"</span>, localData-&gt;tcph-&gt;dest_port);</span><br><span class="line">            <span class="keyword">this</span>-&gt;m_treeCtrl.InsertItem(str, tcp);</span><br><span class="line">            str.Format(<span class="string">"  序列号:0x%02x"</span>, localData-&gt;tcph-&gt;seq);</span><br><span class="line">            <span class="keyword">this</span>-&gt;m_treeCtrl.InsertItem(str, tcp);</span><br><span class="line">            str.Format(<span class="string">"  确认号:%d"</span>, localData-&gt;tcph-&gt;ack_seq);</span><br><span class="line">            <span class="keyword">this</span>-&gt;m_treeCtrl.InsertItem(str, tcp);</span><br><span class="line">            str.Format(<span class="string">"  头部长度:%d"</span>, localData-&gt;tcph-&gt;doff);</span><br><span class="line"></span><br><span class="line">            HTREEITEM flag = <span class="keyword">this</span>-&gt;m_treeCtrl.InsertItem(<span class="string">" +标志位"</span>, tcp);</span><br><span class="line">            str.Format(<span class="string">"cwr %d"</span>, localData-&gt;tcph-&gt;cwr);</span><br><span class="line">            <span class="keyword">this</span>-&gt;m_treeCtrl.InsertItem(str, flag);</span><br><span class="line">            str.Format(<span class="string">"ece %d"</span>, localData-&gt;tcph-&gt;ece);</span><br><span class="line">            <span class="keyword">this</span>-&gt;m_treeCtrl.InsertItem(str, flag);</span><br><span class="line">            str.Format(<span class="string">"urg %d"</span>, localData-&gt;tcph-&gt;urg);</span><br><span class="line">            <span class="keyword">this</span>-&gt;m_treeCtrl.InsertItem(str, flag);</span><br><span class="line">            str.Format(<span class="string">"ack %d"</span>, localData-&gt;tcph-&gt;ack);</span><br><span class="line">            <span class="keyword">this</span>-&gt;m_treeCtrl.InsertItem(str, flag);</span><br><span class="line">            str.Format(<span class="string">"psh %d"</span>, localData-&gt;tcph-&gt;psh);</span><br><span class="line">            <span class="keyword">this</span>-&gt;m_treeCtrl.InsertItem(str, flag);</span><br><span class="line">            str.Format(<span class="string">"rst %d"</span>, localData-&gt;tcph-&gt;rst);</span><br><span class="line">            <span class="keyword">this</span>-&gt;m_treeCtrl.InsertItem(str, flag);</span><br><span class="line">            str.Format(<span class="string">"syn %d"</span>, localData-&gt;tcph-&gt;syn);</span><br><span class="line">            <span class="keyword">this</span>-&gt;m_treeCtrl.InsertItem(str, flag);</span><br><span class="line">            str.Format(<span class="string">"fin %d"</span>, localData-&gt;tcph-&gt;fin);</span><br><span class="line">            <span class="keyword">this</span>-&gt;m_treeCtrl.InsertItem(str, flag);</span><br><span class="line">            str.Format(<span class="string">"  紧急指针:%d"</span>, localData-&gt;tcph-&gt;urg_ptr);</span><br><span class="line">            <span class="keyword">this</span>-&gt;m_treeCtrl.InsertItem(str, tcp);</span><br><span class="line">            str.Format(<span class="string">"  校验和:0x%02x"</span>, localData-&gt;tcph-&gt;check);</span><br><span class="line">            <span class="keyword">this</span>-&gt;m_treeCtrl.InsertItem(str, tcp);</span><br><span class="line">            str.Format(<span class="string">"  选项:%d"</span>, localData-&gt;tcph-&gt;opt);</span><br><span class="line">            <span class="keyword">this</span>-&gt;m_treeCtrl.InsertItem(str, tcp);</span><br><span class="line">        &#125;</span><br><span class="line">         </span><br><span class="line">        <span class="comment">//UDP头</span></span><br><span class="line">        <span class="keyword">if</span> (localData-&gt;ip4h-&gt;proto == V4_PROTO_UDP) &#123;</span><br><span class="line">            HTREEITEM udp = <span class="keyword">this</span>-&gt;m_treeCtrl.InsertItem(<span class="string">"UDP协议头"</span>, data);</span><br><span class="line"></span><br><span class="line">            str.Format(<span class="string">"源端口:%d"</span>, localData-&gt;udph-&gt;sport);</span><br><span class="line">            <span class="keyword">this</span>-&gt;m_treeCtrl.InsertItem(str, udp);</span><br><span class="line">            str.Format(<span class="string">"目的端口:%d"</span>, localData-&gt;udph-&gt;dport);</span><br><span class="line">            <span class="keyword">this</span>-&gt;m_treeCtrl.InsertItem(str, udp);</span><br><span class="line">            str.Format(<span class="string">"总长度:%d"</span>, localData-&gt;udph-&gt;len);</span><br><span class="line">            <span class="keyword">this</span>-&gt;m_treeCtrl.InsertItem(str, udp);</span><br><span class="line">            str.Format(<span class="string">"校验和:0x%02x"</span>, localData-&gt;udph-&gt;check);</span><br><span class="line">            <span class="keyword">this</span>-&gt;m_treeCtrl.InsertItem(str, udp);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">//IPv6头</span></span><br><span class="line">    <span class="keyword">if</span> (localData-&gt;ethh-&gt;type == PROTO_IP_V6) &#123;</span><br><span class="line">        HTREEITEM ip6 = <span class="keyword">this</span>-&gt;m_treeCtrl.InsertItem(<span class="string">"IPv6头"</span>, data);</span><br><span class="line"></span><br><span class="line">        str.Format(<span class="string">"版本:%d"</span>, localData-&gt;ip6h-&gt;flowtype);</span><br><span class="line">        <span class="keyword">this</span>-&gt;m_treeCtrl.InsertItem(str, ip6);</span><br><span class="line">        str.Format(<span class="string">"流类型:%d"</span>, localData-&gt;ip6h-&gt;version);</span><br><span class="line">        <span class="keyword">this</span>-&gt;m_treeCtrl.InsertItem(str, ip6);</span><br><span class="line">        str.Format(<span class="string">"流标签:%d"</span>, localData-&gt;ip6h-&gt;flowid);</span><br><span class="line">        <span class="keyword">this</span>-&gt;m_treeCtrl.InsertItem(str, ip6);</span><br><span class="line">        str.Format(<span class="string">"有效载荷长度:%d"</span>, localData-&gt;ip6h-&gt;plen);</span><br><span class="line">        <span class="keyword">this</span>-&gt;m_treeCtrl.InsertItem(str, ip6);</span><br><span class="line">        str.Format(<span class="string">"下一个首部:0x%02x"</span>, localData-&gt;ip6h-&gt;next_head);</span><br><span class="line">        <span class="keyword">this</span>-&gt;m_treeCtrl.InsertItem(str, ip6);</span><br><span class="line">        str.Format(<span class="string">"跳限制:%d"</span>, localData-&gt;ip6h-&gt;hop_limit);</span><br><span class="line">        <span class="keyword">this</span>-&gt;m_treeCtrl.InsertItem(str, ip6);</span><br><span class="line">        </span><br><span class="line">        str.Format(<span class="string">"源地址:"</span>);</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">8</span>; i++) &#123;</span><br><span class="line">            <span class="keyword">if</span> (i &lt;= <span class="number">6</span>)  </span><br><span class="line">                str.AppendFormat(<span class="string">"%02x:"</span>, localData-&gt;ip6h-&gt;src_addr[i]);</span><br><span class="line">            <span class="keyword">else</span>  </span><br><span class="line">                str.AppendFormat(<span class="string">"%02x"</span>, localData-&gt;ip6h-&gt;src_addr[i]);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">this</span>-&gt;m_treeCtrl.InsertItem(str, ip6);</span><br><span class="line">        </span><br><span class="line">        str.Format(<span class="string">"目的地址:"</span>);</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">8</span>; i++) &#123;</span><br><span class="line">            <span class="keyword">if</span> (i &lt;= <span class="number">6</span>)  </span><br><span class="line">                str.AppendFormat(<span class="string">"%02x:"</span>, localData-&gt;ip6h-&gt;src_addr[i]);</span><br><span class="line">            <span class="keyword">else</span>  </span><br><span class="line">                str.AppendFormat(<span class="string">"%02x"</span>, localData-&gt;ip6h-&gt;src_addr[i]);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">this</span>-&gt;m_treeCtrl.InsertItem(str, ip6);</span><br><span class="line"></span><br><span class="line">        <span class="comment">/****************传输层****************/</span></span><br><span class="line">        <span class="comment">//IPv6头</span></span><br><span class="line">        <span class="keyword">if</span> (localData-&gt;ip6h-&gt;next_head == V6_PROTO_ICMP_V6) &#123;</span><br><span class="line">            HTREEITEM icmp6 = <span class="keyword">this</span>-&gt;m_treeCtrl.InsertItem(<span class="string">"ICMPv6协议头"</span>, data);</span><br><span class="line">            str.Format(<span class="string">"类型:%d"</span>, localData-&gt;icmp6h-&gt;type);</span><br><span class="line">            <span class="keyword">this</span>-&gt;m_treeCtrl.InsertItem(str, icmp6);</span><br><span class="line">            str.Format(<span class="string">"代码:%d"</span>, localData-&gt;icmp6h-&gt;code);</span><br><span class="line">            <span class="keyword">this</span>-&gt;m_treeCtrl.InsertItem(str, icmp6);</span><br><span class="line">            str.Format(<span class="string">"序号:%d"</span>, localData-&gt;icmp6h-&gt;seq);</span><br><span class="line">            <span class="keyword">this</span>-&gt;m_treeCtrl.InsertItem(str, icmp6);</span><br><span class="line">            str.Format(<span class="string">"校验和:%d"</span>, localData-&gt;icmp6h-&gt;check);</span><br><span class="line">            <span class="keyword">this</span>-&gt;m_treeCtrl.InsertItem(str, icmp6);</span><br><span class="line">            str.Format(<span class="string">"选项-类型:%d"</span>, localData-&gt;icmp6h-&gt;op_type);</span><br><span class="line">            <span class="keyword">this</span>-&gt;m_treeCtrl.InsertItem(str, icmp6);</span><br><span class="line">            str.Format(<span class="string">"选项-长度%d"</span>, localData-&gt;icmp6h-&gt;op_len);</span><br><span class="line">            <span class="keyword">this</span>-&gt;m_treeCtrl.InsertItem(str, icmp6);</span><br><span class="line">            str.Format(<span class="string">"选项-链路层地址:"</span>);</span><br><span class="line">            <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">6</span>; i++) &#123;</span><br><span class="line">                <span class="keyword">if</span> (i &lt;= <span class="number">4</span>)  </span><br><span class="line">                    str.AppendFormat(<span class="string">"%02x-"</span>, localData-&gt;icmp6h-&gt;op_eth_addr[i]);</span><br><span class="line">                <span class="keyword">else</span>  </span><br><span class="line">                    str.AppendFormat(<span class="string">"%02x"</span>, localData-&gt;icmp6h-&gt;op_eth_addr[i]);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">this</span>-&gt;m_treeCtrl.InsertItem(str, icmp6);</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        <span class="comment">//TCP头</span></span><br><span class="line">        <span class="keyword">if</span> (localData-&gt;ip6h-&gt;next_head == V6_PROTO_TCP) &#123;</span><br><span class="line">            HTREEITEM tcp = <span class="keyword">this</span>-&gt;m_treeCtrl.InsertItem(<span class="string">"TCP协议头"</span>, data);</span><br><span class="line">            str.Format(<span class="string">"  源端口:%d"</span>, localData-&gt;tcph-&gt;src_port);</span><br><span class="line">            <span class="keyword">this</span>-&gt;m_treeCtrl.InsertItem(str, tcp);</span><br><span class="line">            str.Format(<span class="string">"  目的端口:%d"</span>, localData-&gt;tcph-&gt;dest_port);</span><br><span class="line">            <span class="keyword">this</span>-&gt;m_treeCtrl.InsertItem(str, tcp);</span><br><span class="line">            str.Format(<span class="string">"  序列号:0x%02x"</span>, localData-&gt;tcph-&gt;seq);</span><br><span class="line">            <span class="keyword">this</span>-&gt;m_treeCtrl.InsertItem(str, tcp);</span><br><span class="line">            str.Format(<span class="string">"  确认号:%d"</span>, localData-&gt;tcph-&gt;ack_seq);</span><br><span class="line">            <span class="keyword">this</span>-&gt;m_treeCtrl.InsertItem(str, tcp);</span><br><span class="line">            str.Format(<span class="string">"  头部长度:%d"</span>, localData-&gt;tcph-&gt;doff);</span><br><span class="line">            HTREEITEM flag = <span class="keyword">this</span>-&gt;m_treeCtrl.InsertItem(<span class="string">"标志位"</span>, tcp);</span><br><span class="line">            str.Format(<span class="string">"cwr %d"</span>, localData-&gt;tcph-&gt;cwr);</span><br><span class="line">            <span class="keyword">this</span>-&gt;m_treeCtrl.InsertItem(str, flag);</span><br><span class="line">            str.Format(<span class="string">"ece %d"</span>, localData-&gt;tcph-&gt;ece);</span><br><span class="line">            <span class="keyword">this</span>-&gt;m_treeCtrl.InsertItem(str, flag);</span><br><span class="line">            str.Format(<span class="string">"urg %d"</span>, localData-&gt;tcph-&gt;urg);</span><br><span class="line">            <span class="keyword">this</span>-&gt;m_treeCtrl.InsertItem(str, flag);</span><br><span class="line">            str.Format(<span class="string">"ack %d"</span>, localData-&gt;tcph-&gt;ack);</span><br><span class="line">            <span class="keyword">this</span>-&gt;m_treeCtrl.InsertItem(str, flag);</span><br><span class="line">            str.Format(<span class="string">"psh %d"</span>, localData-&gt;tcph-&gt;psh);</span><br><span class="line">            <span class="keyword">this</span>-&gt;m_treeCtrl.InsertItem(str, flag);</span><br><span class="line">            str.Format(<span class="string">"rst %d"</span>, localData-&gt;tcph-&gt;rst);</span><br><span class="line">            <span class="keyword">this</span>-&gt;m_treeCtrl.InsertItem(str, flag);</span><br><span class="line">            str.Format(<span class="string">"syn %d"</span>, localData-&gt;tcph-&gt;syn);</span><br><span class="line">            <span class="keyword">this</span>-&gt;m_treeCtrl.InsertItem(str, flag);</span><br><span class="line">            str.Format(<span class="string">"fin %d"</span>, localData-&gt;tcph-&gt;fin);</span><br><span class="line">            <span class="keyword">this</span>-&gt;m_treeCtrl.InsertItem(str, flag);</span><br><span class="line">            str.Format(<span class="string">"  紧急指针:%d"</span>, localData-&gt;tcph-&gt;urg_ptr);</span><br><span class="line">            <span class="keyword">this</span>-&gt;m_treeCtrl.InsertItem(str, tcp);</span><br><span class="line">            str.Format(<span class="string">"  校验和:0x%02x"</span>, localData-&gt;tcph-&gt;check);</span><br><span class="line">            <span class="keyword">this</span>-&gt;m_treeCtrl.InsertItem(str, tcp);</span><br><span class="line">            str.Format(<span class="string">"  选项:%d"</span>, localData-&gt;tcph-&gt;opt);</span><br><span class="line">            <span class="keyword">this</span>-&gt;m_treeCtrl.InsertItem(str, tcp);</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        <span class="comment">//UDP头</span></span><br><span class="line">        <span class="keyword">if</span> (localData-&gt;ip6h-&gt;next_head == V6_PROTO_UDP) &#123;</span><br><span class="line">            HTREEITEM udp = <span class="keyword">this</span>-&gt;m_treeCtrl.InsertItem(<span class="string">"UDP协议头"</span>, data);</span><br><span class="line">            str.Format(<span class="string">"源端口:%d"</span>, localData-&gt;udph-&gt;sport);</span><br><span class="line">            <span class="keyword">this</span>-&gt;m_treeCtrl.InsertItem(str, udp);</span><br><span class="line">            str.Format(<span class="string">"目的端口:%d"</span>, localData-&gt;udph-&gt;dport);</span><br><span class="line">            <span class="keyword">this</span>-&gt;m_treeCtrl.InsertItem(str, udp);</span><br><span class="line">            str.Format(<span class="string">"总长度:%d"</span>, localData-&gt;udph-&gt;len);</span><br><span class="line">            <span class="keyword">this</span>-&gt;m_treeCtrl.InsertItem(str, udp);</span><br><span class="line">            str.Format(<span class="string">"校验和:0x%02x"</span>, localData-&gt;udph-&gt;check);</span><br><span class="line">            <span class="keyword">this</span>-&gt;m_treeCtrl.InsertItem(str, udp);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>感谢您对我的支持，让我继续努力分享有用的技术与知识点！</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/wechatpay.jpg" alt="Alex_McAvoy 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/alipay.jpg" alt="Alex_McAvoy 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Alex_McAvoy
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://alex-mcavoy.github.io/mfc/7d5e25c9.html" title="Sniffer——GUI数据更新函数">https://alex-mcavoy.github.io/mfc/7d5e25c9.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/cpp/" rel="tag"># C++</a>
+              <a href="/tags/mfc/" rel="tag"># MFC</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/mfc/98221520.html" rel="prev" title="Sniffer——数据包接收线程">
+      <i class="fa fa-chevron-left"></i> Sniffer——数据包接收线程
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/mfc/486a9243.html" rel="next" title="Sniffer——消息处理函数">
+      Sniffer——消息处理函数 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【概述】"><span class="nav-number">1.</span> <span class="nav-text">【概述】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【保存文件】"><span class="nav-number">2.</span> <span class="nav-text">【保存文件】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【读取文件】"><span class="nav-number">3.</span> <span class="nav-text">【读取文件】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【更新编辑框】"><span class="nav-number">4.</span> <span class="nav-text">【更新编辑框】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【编辑框数据格式化显示】"><span class="nav-number">5.</span> <span class="nav-text">【编辑框数据格式化显示】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【更新树形框】"><span class="nav-number">6.</span> <span class="nav-text">【更新树形框】</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">  
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Alex_McAvoy"
+      src="/assets/img/head.jpg">
+  <p class="site-author-name" itemprop="name">Alex_McAvoy</p>
+  <div class="site-description" itemprop="description">想要成为渔夫的猎手</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">541</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">56</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">61</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Alex-McAvoy" title="GitHub → https://github.com/Alex-McAvoy" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/u011815404" title="CSDN → https://blog.csdn.net/u011815404" rel="noopener" target="_blank"><i class="fas fa-copyright fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+<!-- 访客地图 -->
+<script type="text/javascript" src="//rf.revolvermaps.com/0/0/5.js?i=50n58yo58ow&amp;m=0&amp;c=ff0000&amp;cr1=ffffff&amp;s=140" async="async"></script>
+
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdz20172133" title="https://blog.csdn.net/sdz20172133" rel="noopener" target="_blank">神仙队友</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://pxlsdz.gitee.io/" title="https://pxlsdz.gitee.io/" rel="noopener" target="_blank">神仙队友的另一个博客</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://bycore.net" title="https://bycore.net" rel="noopener" target="_blank">凉了的某饼同学</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://kris-cn.github.io/" title="http://kris-cn.github.io/" rel="noopener" target="_blank">翟孙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://deng.fun/" title="http://deng.fun/" rel="noopener" target="_blank">芙蓉姐姐</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdau_fangshifeng" title="https://blog.csdn.net/sdau_fangshifeng" rel="noopener" target="_blank">一个头很酷的家伙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/wentong_Xu" title="https://blog.csdn.net/wentong_Xu" rel="noopener" target="_blank">小黑贱胖子</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.yuheng.tech/" title="https://www.yuheng.tech/" rel="noopener" target="_blank">咸于</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/lanshan1111" title="https://blog.csdn.net/lanshan1111" rel="noopener" target="_blank">肥硕硕</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdauguanweihong" title="https://blog.csdn.net/sdauguanweihong" rel="noopener" target="_blank">管少</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_41661919" title="https://blog.csdn.net/qq_41661919" rel="noopener" target="_blank">俊杰</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_40859951" title="https://blog.csdn.net/qq_40859951" rel="noopener" target="_blank">峰哥</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/LSD20164388" title="https://blog.csdn.net/LSD20164388" rel="noopener" target="_blank">狗冬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37748451" title="https://blog.csdn.net/qq_37748451" rel="noopener" target="_blank">胖亚亚</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37868325" title="https://blog.csdn.net/qq_37868325" rel="noopener" target="_blank">妍大佬</a>
+        </li>
+    </ul>
+  </div>
+
+		
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+  
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Alex_McAvoy</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+</br>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script><script src="/js/bookmark.js"></script>
+
+
+
+  
+
+
+
+
+  <script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '48fd73a538d3fa927f65',
+      clientSecret: '56618aefeee90bac3c20de8d51bb0b985d67252d',
+      repo        : 'Gitalk-Comment',
+      owner       : 'Alex-McAvoy',
+      admin       : ['Alex-McAvoy'],
+      id          : '7369bcabb39cc7d3b5f91b0fc94ced5a',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+  
+  <!-- 鼠标单击粒子特效 -->
+  <script type="text/javascript" src="/js/cursor-effects.js"></script>
+  <!-- 多级目录 -->
+  <script type="text/javascript" src="/js/category.js"></script>
+  
+</body>
+</html>

@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.9.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/img/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/assets/img/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/pace-js@1/themes/blue/pace-theme-minimal.css">
+  <script src="//cdn.jsdelivr.net/npm/pace-js@1/pace.min.js"></script>
+
+
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"alex-mcavoy.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":16,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":true,"color":"#ff0000","save":"manual"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":true},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.json"};
+  </script>
+
+  <meta name="description" content="【结构】二叉排序树（Binary Sort Tree，BST），又称二叉搜索树（Binary Search Tree），属于数据结构中的一类，在需要经常进行查找的情景中，该数据结构常被使用，在一般情况下，查询效率比链表结构要高 二叉排序树或是一棵空树，或是一棵具有以下性质的二叉树：">
+<meta name="keywords" content="C++,OI&amp;ACM,数据结构,二叉排序树&amp;平衡树,二叉排序树">
+<meta property="og:type" content="article">
+<meta property="og:title" content="二叉排序树 BST">
+<meta property="og:url" content="https://alex-mcavoy.github.io/oi-acm/data-structure/bst-avl/bst/317052a9.html">
+<meta property="og:site_name" content="Alex_McAvoy">
+<meta property="og:description" content="【结构】二叉排序树（Binary Sort Tree，BST），又称二叉搜索树（Binary Search Tree），属于数据结构中的一类，在需要经常进行查找的情景中，该数据结构常被使用，在一般情况下，查询效率比链表结构要高 二叉排序树或是一棵空树，或是一棵具有以下性质的二叉树：">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/oi-acm/data-structure/10.bst-avl/01.bst/01-1.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/oi-acm/data-structure/10.bst-avl/01.bst/01-2.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/oi-acm/data-structure/10.bst-avl/01.bst/01-3.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/oi-acm/data-structure/10.bst-avl/01.bst/01-4.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/oi-acm/data-structure/10.bst-avl/01.bst/01-5.png">
+<meta property="og:updated_time" content="2021-09-22T12:04:04.228Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="二叉排序树 BST">
+<meta name="twitter:description" content="【结构】二叉排序树（Binary Sort Tree，BST），又称二叉搜索树（Binary Search Tree），属于数据结构中的一类，在需要经常进行查找的情景中，该数据结构常被使用，在一般情况下，查询效率比链表结构要高 二叉排序树或是一棵空树，或是一棵具有以下性质的二叉树：">
+<meta name="twitter:image" content="https://alex-mcavoy.github.io/images/oi-acm/data-structure/10.bst-avl/01.bst/01-1.png">
+
+<link rel="canonical" href="https://alex-mcavoy.github.io/oi-acm/data-structure/bst-avl/bst/317052a9.html">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>二叉排序树 BST | Alex_McAvoy</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Alex_McAvoy</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">想要成为渔夫的猎手</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+
+	
+	
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/oi-acm/data-structure/bst-avl/bst/317052a9.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/assets/img/head.jpg">
+      <meta itemprop="name" content="Alex_McAvoy">
+      <meta itemprop="description" content="想要成为渔夫的猎手">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Alex_McAvoy">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          二叉排序树 BST
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2018-11-11 22:17:03" itemprop="dateCreated datePublished" datetime="2018-11-11T22:17:03+08:00">2018-11-11</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/oi-acm/" itemprop="url" rel="index"><span itemprop="name">OI&ACM</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/oi-acm/data-structure/" itemprop="url" rel="index"><span itemprop="name">数据结构</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/oi-acm/data-structure/bst-avl/" itemprop="url" rel="index"><span itemprop="name">二叉排序树&平衡树</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/oi-acm/data-structure/bst-avl/bst/" itemprop="url" rel="index"><span itemprop="name">二叉排序树</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>4k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>4 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="【结构】"><a href="#【结构】" class="headerlink" title="【结构】"></a>【结构】</h1><p><strong>二叉排序树（Binary Sort Tree，BST）</strong>，又称<strong>二叉搜索树（Binary Search Tree）</strong>，属于数据结构中的一类，在需要经常进行查找的情景中，该数据结构常被使用，在一般情况下，查询效率比链表结构要高</p>
+<p>二叉排序树或是一棵空树，或是一棵具有以下性质的二叉树：</p>
+<ol>
+<li>若左子树非空，则左子树上的所有结点值均<strong>小于</strong>根结点值</li>
+<li>若右子树非空，则右子树上的所有结点值均<strong>大于</strong>根结点值</li>
+<li>左、右子树分别也是一棵二叉排序树</li>
+</ol>
+<p>根据上述定义可以看出，对于二叉排序树来说，左子树结点值 $&lt;$ 根结点值 $&lt;$ 右子树结点值</p>
+<p>因此，当对二叉排序树进行<strong>中序遍历</strong>时，可以得到一个<strong>递增的有序序列</strong></p>
+<p>值得注意的是，在二叉排序树中，要求<strong>任意两个结点值不相同</strong></p>
+<h1 id="【查找】"><a href="#【查找】" class="headerlink" title="【查找】"></a>【查找】</h1><p>二叉排序树的查找，是从根结点开始，沿着某个分支逐渐向下比较的过程</p>
+<p>如果二叉排序树非空，那么先将给定元素 <code>elem</code> 与根结点 <code>root</code> 的值比较，具体过程如下：</p>
+<ul>
+<li>若 <code>elem == root-&gt;data</code>，查找成功</li>
+<li>若 <code>elem &lt; root-&gt;data</code>，在 <code>root</code> 的左子树上进行查找</li>
+<li>若 <code>elem &gt; root-&gt;data</code>，在 <code>root</code> 的右子树上进行查找</li>
+</ul>
+<p>上述过程一直持续到 <code>elem</code> 被找到或者待查找的子树为空，若待查找的子树为空，则查找失败</p>
+<p>值得注意的是，当查找失败时，恰好找到了以 <code>elem</code> 为键值的<strong>新结点在二叉排序树中的插入位置</strong></p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">BSTNode *<span class="title">searchBST</span><span class="params">(BSTree root, <span class="keyword">int</span> elem)</span> </span>&#123; <span class="comment">//查找elem所在结点</span></span><br><span class="line">    <span class="keyword">if</span> (root == <span class="literal">NULL</span>)</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">    <span class="keyword">if</span> (root-&gt;data == elem)</span><br><span class="line">        <span class="keyword">return</span> root;</span><br><span class="line">    <span class="keyword">if</span> (elem &lt; root-&gt;data)</span><br><span class="line">        <span class="keyword">return</span> searchBST(root-&gt;lchild, elem);</span><br><span class="line">    <span class="keyword">if</span> (elem &gt; root-&gt;data)</span><br><span class="line">        <span class="keyword">return</span> searchBST(root-&gt;rchild, elem);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h1 id="【插入】"><a href="#【插入】" class="headerlink" title="【插入】"></a>【插入】</h1><p>二叉排序树是一种动态树表，其树的结构通常不是一次生成的，而是在查找过程中，发现不存在相应结点时，进行插入的</p>
+<p>向二叉排序树中插入一个元素 <code>elem</code> 的过程如下：</p>
+<ul>
+<li>若 <code>root</code> 是空树，则将 <code>elem</code> 作为根节点插入</li>
+<li>若 <code>elem == root-&gt;data</code>，则插入失败</li>
+<li>若 <code>elem &lt; root-&gt;data</code>，则将 <code>elem</code> 插入到 <code>root</code> 的左子树中</li>
+<li>若 <code>elem &gt; root-&gt;data</code>，则将 <code>elem</code> 插入到 <code>root</code> 的右子树中</li>
+</ul>
+<p><img width="500" src="/images/oi-acm/data-structure/10.bst-avl/01.bst/01-1.png"></p>
+<p>如上图，在图中依次插入结点 $28$ 和 $58$，可以看出，插入的结点是作为<strong>叶结点</strong>插入到二叉排序树中的</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">bool</span> <span class="title">insertBST</span><span class="params">(BSTree &amp;root, <span class="keyword">int</span> elem)</span> </span>&#123; <span class="comment">//插入elem</span></span><br><span class="line">    <span class="keyword">if</span> (root == <span class="literal">NULL</span>) &#123;</span><br><span class="line">        root = (BSTree)<span class="built_in">malloc</span>(<span class="keyword">sizeof</span>(BSTNode));</span><br><span class="line">        root-&gt;data = elem;</span><br><span class="line">        root-&gt;lchild = <span class="literal">NULL</span>;</span><br><span class="line">        root-&gt;rchild = <span class="literal">NULL</span>;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (elem == root-&gt;data)</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    <span class="keyword">if</span> (elem &lt; root-&gt;data)</span><br><span class="line">        insertBST(root-&gt;lchild, elem);</span><br><span class="line">    <span class="keyword">if</span> (elem &gt; root-&gt;data)</span><br><span class="line">        insertBST(root-&gt;rchild, elem);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h1 id="【构造】"><a href="#【构造】" class="headerlink" title="【构造】"></a>【构造】</h1><p>从一棵空树出发，依次输入元素，将它们插入二叉排序树中的合适位置，本质上，就是不断将元素插入到二叉排序树中</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">creatBST</span><span class="params">(BSTree &amp;root, <span class="keyword">int</span> elems[], <span class="keyword">int</span> n)</span> </span>&#123; <span class="comment">//构造二叉排序树</span></span><br><span class="line">    root = <span class="literal">NULL</span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; n; i++)</span><br><span class="line">        insertBST(root, elems[i]);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h1 id="【删除】"><a href="#【删除】" class="headerlink" title="【删除】"></a>【删除】</h1><p>在二叉排序中，在删除一个结点时，由于删除的可能是叶结点，也有可能是分支结点，因此在删除时，需要重新修改指针，使得在删除结点后，仍能保持二叉排序树的特性</p>
+<p>对于二叉排序树的删除操作，可以分为以下三种情况来处理：</p>
+<font size="4">1）待删除结点为叶结点</font>
+
+<p>如下图，待删除结点 <code>p</code> 为叶结点，可以直接将结点 <code>p</code> 的父结点的相应指针域改为空即可，即有：<code>f-&gt;lchild</code></p>
+<p><img width="500" src="/images/oi-acm/data-structure/10.bst-avl/01.bst/01-2.png"></p>
+<font size="4">2）待删除结点只有一棵左子树或右子树</font>
+
+<p>如下图，待删除结点 <code>p</code> 只有一棵左子树 <code>pl</code> 或右子树 <code>pr</code> 时，将子树替换为待删除结点 <code>p</code> 的父结点 <code>f</code> 的子树即可，即有：<code>f-&gt;lchild = p-&gt;lchild</code> 或 <code>f-&gt;rchild = p-rchild</code></p>
+<p><img width="500" src="/images/oi-acm/data-structure/10.bst-avl/01.bst/01-3.png"></p>
+<font size="4">3）待删除结点既有左子树又有右子树</font>
+
+<p>如下图，待删除结点 <code>p</code> 既有左子树 <code>pl</code> 又有右子树 <code>pr</code>，那么就寻找该二叉排序树的中序序列中 <code>p</code> 的<strong>直接后继</strong>或<strong>直接前驱</strong>来替换结点 <code>p</code></p>
+<p>然后再从树中删除这个被替换的结点，从而将删除情况转换成了情况 1）或情况 2）</p>
+<p><img width="500" src="/images/oi-acm/data-structure/10.bst-avl/01.bst/01-4.png"></p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">deleteBST</span><span class="params">(BSTree p, BSTree f)</span> </span>&#123; <span class="comment">//删除结点p</span></span><br><span class="line">    <span class="keyword">if</span> (p-&gt;lchild == <span class="literal">NULL</span> &amp;&amp; p-&gt;rchild == <span class="literal">NULL</span>) &#123; <span class="comment">// p是叶结点</span></span><br><span class="line">        <span class="keyword">if</span> (f-&gt;lchild == p) <span class="comment">// p是f的左孩子</span></span><br><span class="line">            f-&gt;lchild = <span class="literal">NULL</span>;</span><br><span class="line">        <span class="keyword">else</span> <span class="comment">// p是f的右孩子</span></span><br><span class="line">            f-&gt;rchild = <span class="literal">NULL</span>;</span><br><span class="line">        <span class="built_in">free</span>(p);</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (p-&gt;rchild == <span class="literal">NULL</span>) &#123; <span class="comment">// p只有左子树</span></span><br><span class="line">        <span class="keyword">if</span> (f-&gt;lchild == p)  <span class="comment">// p是f的左孩子</span></span><br><span class="line">            f-&gt;lchild = p-&gt;lchild;</span><br><span class="line">        <span class="keyword">else</span>  <span class="comment">// p是f的右孩子</span></span><br><span class="line">            f-&gt;rchild = p-&gt;lchild;</span><br><span class="line">        <span class="built_in">free</span>(p);</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (p-&gt;lchild == <span class="literal">NULL</span>) &#123; <span class="comment">// p只有右子树</span></span><br><span class="line">        <span class="keyword">if</span> (f-&gt;lchild == p)  <span class="comment">// p是f的左孩子</span></span><br><span class="line">            f-&gt;lchild=p-&gt;rchild;</span><br><span class="line">        <span class="keyword">else</span>  <span class="comment">// p是f的右孩子</span></span><br><span class="line">            f-&gt;rchild=p-&gt;rchild;</span><br><span class="line">        <span class="built_in">free</span>(p);</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (p-&gt;lchild != <span class="literal">NULL</span> &amp;&amp; p-&gt;rchild != <span class="literal">NULL</span>) &#123; <span class="comment">//p左右子树均不空</span></span><br><span class="line">        f=p;</span><br><span class="line">        BSTNode *s=p-&gt;rchild;</span><br><span class="line">        <span class="keyword">while</span> (s-&gt;lchild != <span class="literal">NULL</span>) &#123; <span class="comment">//查找最左下结点</span></span><br><span class="line">            f=s;</span><br><span class="line">            s=s-&gt;lchild;</span><br><span class="line">        &#125;</span><br><span class="line">        p-&gt;data=s-&gt;data;</span><br><span class="line">        <span class="keyword">if</span> (f == p) <span class="comment">//特殊情况</span></span><br><span class="line">            p-&gt;rchild=s-&gt;rchild;</span><br><span class="line">        <span class="keyword">else</span> <span class="comment">//一般情况</span></span><br><span class="line">            f-&gt;lchild=s-&gt;rchild;</span><br><span class="line">        <span class="built_in">free</span>(p);</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h1 id="【判定】"><a href="#【判定】" class="headerlink" title="【判定】"></a>【判定】</h1><p>对于二叉排序树来说，其中序遍历序列为一<strong>递增有序序列</strong></p>
+<p>因此，对于给定的二叉树进行中序遍历，若其始终能保持前一个值比后一个值小，则说明该二叉树为一个二叉排序树</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//调用时，pre初值为-0x3f3f3f3f</span></span><br><span class="line"><span class="function"><span class="keyword">bool</span> <span class="title">judge</span><span class="params">(BSTree root, <span class="keyword">int</span> pre)</span> </span>&#123; <span class="comment">//二叉排序树判定</span></span><br><span class="line">    <span class="keyword">if</span> (root == <span class="literal">NULL</span>)</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">    <span class="keyword">bool</span> lflag = judge(root-&gt;lchild, pre); <span class="comment">//判左子树</span></span><br><span class="line">    <span class="keyword">if</span> (!lflag)                            <span class="comment">//左子树不是</span></span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    <span class="keyword">if</span> (root-&gt;data &lt;= pre) <span class="comment">//当前结点小于其前驱</span></span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    pre = root-&gt;data;</span><br><span class="line">    <span class="keyword">bool</span> rflag = judge(root-&gt;rchild, pre); <span class="comment">//判右子树</span></span><br><span class="line">    <span class="keyword">return</span> rflag;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h1 id="【最大最小关键字】"><a href="#【最大最小关键字】" class="headerlink" title="【最大最小关键字】"></a>【最大最小关键字】</h1><h2 id="最大关键字"><a href="#最大关键字" class="headerlink" title="最大关键字"></a>最大关键字</h2><p>在一棵二叉排序树中，<strong>最右下结点</strong>即为关键字最大的结点</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">getMaxKey</span><span class="params">(BSTree root)</span> </span>&#123; <span class="comment">//求最大关键字</span></span><br><span class="line">    <span class="keyword">if</span> (root == <span class="literal">NULL</span>)</span><br><span class="line">        <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">    <span class="keyword">while</span> (root-&gt;rchild != <span class="literal">NULL</span>)</span><br><span class="line">        root = root-&gt;rchild;</span><br><span class="line">    <span class="keyword">return</span> root-&gt;data;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="最小关键字"><a href="#最小关键字" class="headerlink" title="最小关键字"></a>最小关键字</h2><p>在一棵二叉排序树中，<strong>最左下结点</strong>即为关键字最小的结点</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">getMinKey</span><span class="params">(BSTree root)</span> </span>&#123; <span class="comment">//求最小关键字</span></span><br><span class="line">    <span class="keyword">if</span> (root == <span class="literal">NULL</span>)</span><br><span class="line">        <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">    <span class="keyword">while</span> (root-&gt;lchild != <span class="literal">NULL</span>)</span><br><span class="line">        root = root-&gt;lchild;</span><br><span class="line">    <span class="keyword">return</span> root-&gt;data;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h1 id="【查找效率分析】"><a href="#【查找效率分析】" class="headerlink" title="【查找效率分析】"></a>【查找效率分析】</h1><h2 id="时间复杂度"><a href="#时间复杂度" class="headerlink" title="时间复杂度"></a>时间复杂度</h2><p>二叉排序树的查找效率与二叉排序树的高度有关</p>
+<p>在最坏情况下，构造二叉排序树的输入序列是有序的，会形成一个<strong>斜树</strong>，此时树的高度为 $n$，时间复杂度为 $O(n)$</p>
+<p>从查找过程来看，二叉排序树的查找与二分查找类似，但二分查找判定树唯一，则二叉排序树不唯一，这是因为相同关键字插入顺序的不同，可能会生成不同的二叉排序树</p>
+<p>就维护表的有序性而言，二叉排序树无须移动结点，仅需修改指针即可完成插入与删除操作，时间复杂度为 $O(log_2n)$</p>
+<h2 id="平均查找长度"><a href="#平均查找长度" class="headerlink" title="平均查找长度"></a>平均查找长度</h2><p>对于二叉排序树，其查找成功的 $ASL$ 为第 $i$ 个结点的层数和除以结点总个数</p>
+<p><img width="300" src="/images/oi-acm/data-structure/10.bst-avl/01.bst/01-5.png"></p>
+<p>如上图，由序列 ${3, 1, 2, 5, 4}$ 构造的二叉排序树，有：</p>
+<script type="math/tex; mode=display">
+ASL_{成功}=\frac{1+2+2+3+3}{5}=2.2</script>
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>感谢您对我的支持，让我继续努力分享有用的技术与知识点！</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/wechatpay.jpg" alt="Alex_McAvoy 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/alipay.jpg" alt="Alex_McAvoy 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Alex_McAvoy
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://alex-mcavoy.github.io/oi-acm/data-structure/bst-avl/bst/317052a9.html" title="二叉排序树 BST">https://alex-mcavoy.github.io/oi-acm/data-structure/bst-avl/bst/317052a9.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/cpp/" rel="tag"># C++</a>
+              <a href="/tags/oi-acm/" rel="tag"># OI&ACM</a>
+              <a href="/tags/data-structure/" rel="tag"># 数据结构</a>
+              <a href="/tags/bst-avl/" rel="tag"># 二叉排序树&平衡树</a>
+              <a href="/tags/bst/" rel="tag"># 二叉排序树</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/oi-acm/basic/theory/d96fe4f4.html" rel="prev" title="图的存储结构">
+      <i class="fa fa-chevron-left"></i> 图的存储结构
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/python/matplotlib/abc6f27a.html" rel="next" title="Matplotlib——概述">
+      Matplotlib——概述 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【结构】"><span class="nav-number">1.</span> <span class="nav-text">【结构】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【查找】"><span class="nav-number">2.</span> <span class="nav-text">【查找】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【插入】"><span class="nav-number">3.</span> <span class="nav-text">【插入】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【构造】"><span class="nav-number">4.</span> <span class="nav-text">【构造】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【删除】"><span class="nav-number">5.</span> <span class="nav-text">【删除】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【判定】"><span class="nav-number">6.</span> <span class="nav-text">【判定】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【最大最小关键字】"><span class="nav-number">7.</span> <span class="nav-text">【最大最小关键字】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#最大关键字"><span class="nav-number">7.1.</span> <span class="nav-text">最大关键字</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#最小关键字"><span class="nav-number">7.2.</span> <span class="nav-text">最小关键字</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【查找效率分析】"><span class="nav-number">8.</span> <span class="nav-text">【查找效率分析】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#时间复杂度"><span class="nav-number">8.1.</span> <span class="nav-text">时间复杂度</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#平均查找长度"><span class="nav-number">8.2.</span> <span class="nav-text">平均查找长度</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">  
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Alex_McAvoy"
+      src="/assets/img/head.jpg">
+  <p class="site-author-name" itemprop="name">Alex_McAvoy</p>
+  <div class="site-description" itemprop="description">想要成为渔夫的猎手</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">541</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">56</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">61</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Alex-McAvoy" title="GitHub → https://github.com/Alex-McAvoy" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/u011815404" title="CSDN → https://blog.csdn.net/u011815404" rel="noopener" target="_blank"><i class="fas fa-copyright fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+<!-- 访客地图 -->
+<script type="text/javascript" src="//rf.revolvermaps.com/0/0/5.js?i=50n58yo58ow&amp;m=0&amp;c=ff0000&amp;cr1=ffffff&amp;s=140" async="async"></script>
+
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdz20172133" title="https://blog.csdn.net/sdz20172133" rel="noopener" target="_blank">神仙队友</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://pxlsdz.gitee.io/" title="https://pxlsdz.gitee.io/" rel="noopener" target="_blank">神仙队友的另一个博客</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://bycore.net" title="https://bycore.net" rel="noopener" target="_blank">凉了的某饼同学</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://kris-cn.github.io/" title="http://kris-cn.github.io/" rel="noopener" target="_blank">翟孙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://deng.fun/" title="http://deng.fun/" rel="noopener" target="_blank">芙蓉姐姐</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdau_fangshifeng" title="https://blog.csdn.net/sdau_fangshifeng" rel="noopener" target="_blank">一个头很酷的家伙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/wentong_Xu" title="https://blog.csdn.net/wentong_Xu" rel="noopener" target="_blank">小黑贱胖子</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.yuheng.tech/" title="https://www.yuheng.tech/" rel="noopener" target="_blank">咸于</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/lanshan1111" title="https://blog.csdn.net/lanshan1111" rel="noopener" target="_blank">肥硕硕</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdauguanweihong" title="https://blog.csdn.net/sdauguanweihong" rel="noopener" target="_blank">管少</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_41661919" title="https://blog.csdn.net/qq_41661919" rel="noopener" target="_blank">俊杰</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_40859951" title="https://blog.csdn.net/qq_40859951" rel="noopener" target="_blank">峰哥</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/LSD20164388" title="https://blog.csdn.net/LSD20164388" rel="noopener" target="_blank">狗冬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37748451" title="https://blog.csdn.net/qq_37748451" rel="noopener" target="_blank">胖亚亚</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37868325" title="https://blog.csdn.net/qq_37868325" rel="noopener" target="_blank">妍大佬</a>
+        </li>
+    </ul>
+  </div>
+
+		
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+  
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Alex_McAvoy</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+</br>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script><script src="/js/bookmark.js"></script>
+
+
+
+  
+
+
+
+
+  <script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '48fd73a538d3fa927f65',
+      clientSecret: '56618aefeee90bac3c20de8d51bb0b985d67252d',
+      repo        : 'Gitalk-Comment',
+      owner       : 'Alex-McAvoy',
+      admin       : ['Alex-McAvoy'],
+      id          : '4ccc9672e6c980ad18a5693e7c3d48ec',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+  
+  <!-- 鼠标单击粒子特效 -->
+  <script type="text/javascript" src="/js/cursor-effects.js"></script>
+  <!-- 多级目录 -->
+  <script type="text/javascript" src="/js/category.js"></script>
+  
+</body>
+</html>

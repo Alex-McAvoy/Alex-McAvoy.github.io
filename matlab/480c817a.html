@@ -1,0 +1,995 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.9.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/img/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/assets/img/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/pace-js@1/themes/blue/pace-theme-minimal.css">
+  <script src="//cdn.jsdelivr.net/npm/pace-js@1/pace.min.js"></script>
+
+
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"alex-mcavoy.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":16,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":true,"color":"#ff0000","save":"manual"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":true},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.json"};
+  </script>
+
+  <meta name="description" content="【随机变量的产生】matlab 中产生随机数的函数有很多，除了 特殊矩阵 中提到的用于生成测试矩阵的函数外，还有一些可生成常见分布的随机数产生函数 对于常用的二项分布的随机数据的产生，有：">
+<meta name="keywords" content="Matlab">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Matlab——概率统计">
+<meta property="og:url" content="https://alex-mcavoy.github.io/matlab/480c817a.html">
+<meta property="og:site_name" content="Alex_McAvoy">
+<meta property="og:description" content="【随机变量的产生】matlab 中产生随机数的函数有很多，除了 特殊矩阵 中提到的用于生成测试矩阵的函数外，还有一些可生成常见分布的随机数产生函数 对于常用的二项分布的随机数据的产生，有：">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/matlab/21-1.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/matlab/21-2.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/matlab/21-3.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/matlab/21-4.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/matlab/21-5.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/matlab/21-6.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/matlab/21-7.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/matlab/21-8.png">
+<meta property="og:updated_time" content="2021-08-24T01:43:10.649Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Matlab——概率统计">
+<meta name="twitter:description" content="【随机变量的产生】matlab 中产生随机数的函数有很多，除了 特殊矩阵 中提到的用于生成测试矩阵的函数外，还有一些可生成常见分布的随机数产生函数 对于常用的二项分布的随机数据的产生，有：">
+<meta name="twitter:image" content="https://alex-mcavoy.github.io/images/matlab/21-1.png">
+
+<link rel="canonical" href="https://alex-mcavoy.github.io/matlab/480c817a.html">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Matlab——概率统计 | Alex_McAvoy</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Alex_McAvoy</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">想要成为渔夫的猎手</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+
+	
+	
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/matlab/480c817a.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/assets/img/head.jpg">
+      <meta itemprop="name" content="Alex_McAvoy">
+      <meta itemprop="description" content="想要成为渔夫的猎手">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Alex_McAvoy">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Matlab——概率统计
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-04-30 15:40:00" itemprop="dateCreated datePublished" datetime="2020-04-30T15:40:00+08:00">2020-04-30</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/matlab/" itemprop="url" rel="index"><span itemprop="name">Matlab</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>4.2k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>4 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="【随机变量的产生】"><a href="#【随机变量的产生】" class="headerlink" title="【随机变量的产生】"></a>【随机变量的产生】</h1><p>matlab 中产生随机数的函数有很多，除了 <a href="https://alex-mcavoy.github.io/matlab/aa01d998.html">特殊矩阵</a> 中提到的用于生成测试矩阵的函数外，还有一些可生成常见分布的随机数产生函数</p>
+<p>对于常用的二项分布的随机数据的产生，有：</p>
+<ul>
+<li><code>binornd(N,P)</code>：产生服从 N、P 的二项分布随机数</li>
+<li><code>binornd(N,P,m,n)</code>：产生服从 N、P 的二项分布随机数 R，m、n 用于指定 R 的行数和列数</li>
+<li><code>binornd(N,P,[m,n])</code>：产生服从 N、P 的二项分布随机数 R，m、n 用于指定 R 的行数和列数</li>
+</ul>
+<figure class="highlight matlab"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt; n=<span class="number">10</span>:<span class="number">10</span>:<span class="number">50</span>;</span><br><span class="line">&gt;&gt; p=<span class="number">1.</span>/n;</span><br><span class="line">&gt;&gt; binornd(n,p)</span><br><span class="line"><span class="built_in">ans</span> = <span class="number">3</span>     <span class="number">2</span>     <span class="number">2</span>     <span class="number">0</span>     <span class="number">2</span></span><br><span class="line">&gt;&gt; binornd([n;n],[p;p])</span><br><span class="line"><span class="built_in">ans</span> =</span><br><span class="line">     <span class="number">1</span>     <span class="number">1</span>     <span class="number">0</span>     <span class="number">0</span>     <span class="number">0</span></span><br><span class="line">     <span class="number">0</span>     <span class="number">1</span>     <span class="number">0</span>     <span class="number">1</span>     <span class="number">3</span></span><br><span class="line">&gt;&gt; binornd(<span class="number">10</span>,<span class="number">100</span>,<span class="number">2</span>,<span class="number">5</span>)</span><br><span class="line"><span class="built_in">ans</span> =</span><br><span class="line">   NaN   NaN   NaN   NaN   NaN</span><br><span class="line">   NaN   NaN   NaN   NaN   NaN</span><br></pre></td></tr></table></figure>
+<p>除二项分布外，常见随机数产生函数表如下，他们的用法均于上述的二项分布的随机数据的产生相同：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>函数</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>binornd</td>
+<td>产生服从 N、P 的二项分布随机数</td>
+</tr>
+<tr>
+<td>normrnd</td>
+<td>产生服从 mu、sigma 的正态分布随机数</td>
+</tr>
+<tr>
+<td>unifrnd</td>
+<td>产生 [a,b] 上均匀分布且连续的随机数</td>
+</tr>
+<tr>
+<td>unidrnd</td>
+<td>产生均匀分布且离散的随机数</td>
+</tr>
+<tr>
+<td>exprnd</td>
+<td>产生服从 Lambda 的指数分布随机数</td>
+</tr>
+<tr>
+<td>poissrnd</td>
+<td>产生服从 Lambda 的泊松分布随机数</td>
+</tr>
+<tr>
+<td>chi2rnd</td>
+<td>产生自由度为 n 的卡方分布随机数</td>
+</tr>
+<tr>
+<td>trnd</td>
+<td>产生自由度为 n 的 t 分布随机数</td>
+</tr>
+<tr>
+<td>frnd</td>
+<td>产生第一自由度为 N1，第二自由度为 N2 的 F 分布随机数</td>
+</tr>
+<tr>
+<td>gamrnd</td>
+<td>产生参数为 a、b 的伽马分布随机数</td>
+</tr>
+<tr>
+<td>betarnd</td>
+<td>产生参数为 a、b 的贝塔分布随机数</td>
+</tr>
+<tr>
+<td>lognrnd</td>
+<td>产生参数为 mu、sigma 的对数正态分布随机数</td>
+</tr>
+<tr>
+<td>nbinrnd</td>
+<td>产生参数为 r、p 的负二项式分布随机数</td>
+</tr>
+<tr>
+<td>ncfrnd</td>
+<td>产生参数为 n1、n2、delta 的非中心 F 分布随机数</td>
+</tr>
+<tr>
+<td>nctrnd</td>
+<td>产生参数为 n、delta 的非中心 t 分布随机数</td>
+</tr>
+<tr>
+<td>ncx2rnd</td>
+<td>产生参数为 n、delta 的非中心 t 卡方分布随机数</td>
+</tr>
+<tr>
+<td>raylrnd</td>
+<td>产生参数为 b 的瑞利分布随机数</td>
+</tr>
+<tr>
+<td>weibrnd</td>
+<td>产生参数为 a、b 的韦伯分布随机数</td>
+</tr>
+<tr>
+<td>geornd</td>
+<td>产生参数为 p 的几何分布随机数</td>
+</tr>
+<tr>
+<td>hygernd</td>
+<td>产生参数为 M、K、N 的超几何分布随机数</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h1 id="【概率密度】"><a href="#【概率密度】" class="headerlink" title="【概率密度】"></a>【概率密度】</h1><h2 id="通用函数概率密度"><a href="#通用函数概率密度" class="headerlink" title="通用函数概率密度"></a>通用函数概率密度</h2><ul>
+<li><code>pdf(name,X,A)</code>：返回 x=X 处，参数为 A 的概率密度值</li>
+<li><code>pdf(name,X,A,B)</code>：返回 x=X 处，参数为 A、B 的概率密度值</li>
+<li><code>pdf(name,X,A,B,C)</code>：返回 x=X 处，参数为 A、B、C 的概率密度值</li>
+</ul>
+<p>注：</p>
+<ol>
+<li>关于参数 A、B、C：根据不同的分布，参数个数不同</li>
+<li>关于 name：用于指定是何种分布，常见取值见下表</li>
+</ol>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:center">取值</th>
+<th style="text-align:center">说明</th>
+<th style="text-align:center">取值</th>
+<th style="text-align:center">说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">beta</td>
+<td style="text-align:center">beta分布</td>
+<td style="text-align:center">bino</td>
+<td style="text-align:center">二项分布</td>
+</tr>
+<tr>
+<td style="text-align:center">chi2</td>
+<td style="text-align:center">卡方分布</td>
+<td style="text-align:center">exp</td>
+<td style="text-align:center">指数分布</td>
+</tr>
+<tr>
+<td style="text-align:center">f</td>
+<td style="text-align:center">F分布</td>
+<td style="text-align:center">gam</td>
+<td style="text-align:center">伽马分布</td>
+</tr>
+<tr>
+<td style="text-align:center">geo</td>
+<td style="text-align:center">几何分布</td>
+<td style="text-align:center">hyge</td>
+<td style="text-align:center">超几何分布</td>
+</tr>
+<tr>
+<td style="text-align:center">logn</td>
+<td style="text-align:center">对数分布</td>
+<td style="text-align:center">norm</td>
+<td style="text-align:center">正态分布</td>
+</tr>
+<tr>
+<td style="text-align:center">poiss</td>
+<td style="text-align:center">泊松分布</td>
+<td style="text-align:center">rayl</td>
+<td style="text-align:center">瑞利分布</td>
+</tr>
+<tr>
+<td style="text-align:center">t</td>
+<td style="text-align:center">t分布</td>
+<td style="text-align:center">unif</td>
+<td style="text-align:center">均匀分布</td>
+</tr>
+<tr>
+<td style="text-align:center">unid</td>
+<td style="text-align:center">离散均匀分布</td>
+<td style="text-align:center"></td>
+</tr>
+</tbody>
+</table>
+</div>
+<figure class="highlight matlab"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt; pdf(<span class="string">'normal'</span>,<span class="number">-5</span>:<span class="number">5</span>,<span class="number">0</span>,<span class="number">1</span>)</span><br><span class="line"><span class="built_in">ans</span> =</span><br><span class="line">    <span class="number">0.0000</span>    <span class="number">0.0001</span>    <span class="number">0.0044</span>    <span class="number">0.0540</span>    <span class="number">0.2420</span>    <span class="number">0.3989</span>    <span class="number">0.2420</span>    <span class="number">0.0540</span>    <span class="number">0.0044</span>    <span class="number">0.0001</span>    <span class="number">0.0000</span></span><br></pre></td></tr></table></figure>
+<p>此外，通用函数计算概率密度可以推广到任意函数、数据的情况</p>
+<ul>
+<li><code>[f,Xi]=ksdensity(x)</code>：对于待统计的向量 x，计算概率密度的点 Xi 与概率密度 f</li>
+<li><code>f=ksdensity(x,Xi)</code>：对于待统计的向量 x 和概率密度的点 Xi，计算概率密度 f</li>
+</ul>
+<figure class="highlight matlab"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt; x=<span class="built_in">randn</span>(<span class="number">10000</span>,<span class="number">1</span>);</span><br><span class="line">&gt;&gt; fx=<span class="built_in">sin</span>(x*<span class="built_in">pi</span>);</span><br><span class="line">&gt;&gt; [f,Xi]=ksdensity(fx);</span><br><span class="line">&gt;&gt; <span class="built_in">figure</span></span><br><span class="line">&gt;&gt; <span class="built_in">plot</span>(Xi,f)</span><br><span class="line">&gt;&gt; axis tight</span><br></pre></td></tr></table></figure>
+<p><img width="300" src="/images/matlab/21-1.png"></p>
+<h2 id="专用函数概率密度"><a href="#专用函数概率密度" class="headerlink" title="专用函数概率密度"></a>专用函数概率密度</h2><p>专用函数概率密度，是 matlab 中封装好的用于计算特定分布的概率密度的函数</p>
+<p>以计算二项分布的概率密度函数为例，其余的函数调用方法与之类似：</p>
+<ul>
+<li><code>binopdf(X,n,p)</code>：计算实验次数为 n，每次实验中事件发生概率为 p 在 x=X 处的概率密度值</li>
+</ul>
+<p>专用函数概率密度函数表如下：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>调用格式</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>unifpdf(x,a,b)</td>
+<td>计算[a,b]上连续概率密度在X=x处的概率密度函数值</td>
+</tr>
+<tr>
+<td>unidpdf(x,n)</td>
+<td>计算离散概率密度函数值</td>
+</tr>
+<tr>
+<td>exppdf(x,lambda)</td>
+<td>计算参数为 lambda 的指数分布概率密度函数值</td>
+</tr>
+<tr>
+<td>normpdf(x,mu,sigma)</td>
+<td>计算参数为 mu、simga 的正态分布概率密度函数值</td>
+</tr>
+<tr>
+<td>chi2pdf(x,n)</td>
+<td>计算自由度为 n 的卡方分布概率密度函数值</td>
+</tr>
+<tr>
+<td>tpdf(x,n)</td>
+<td>计算自由度为 n 的 t 分布概率密度函数值</td>
+</tr>
+<tr>
+<td>fpdf(x,n1,n2)</td>
+<td>计算第一自由度为 n1，第二自由度为 n2 的 F 分布概率密度函数值</td>
+</tr>
+<tr>
+<td>gampdf(x,a,b)</td>
+<td>计算参数为 a、b 的伽马分布概率密度函数值</td>
+</tr>
+<tr>
+<td>betapdf(x,a,b)</td>
+<td>计算参数为 a、b 的贝塔分布概率密度函数值</td>
+</tr>
+<tr>
+<td>lognpdf(x,mu,sigma)</td>
+<td>计算参数为 mu、sigma 的对数正态分布概率密度函数值</td>
+</tr>
+<tr>
+<td>ralypdf(x,b)</td>
+<td>计算参数为 b 的瑞利分布概率密度函数值</td>
+</tr>
+<tr>
+<td>geopdf(x,p)</td>
+<td>计算参数为 p 的几何分布概率密度函数值</td>
+</tr>
+<tr>
+<td>hygepdf(x,m,k,n)</td>
+<td>计算参数为 p 的超几何分布概率密度函数值</td>
+</tr>
+<tr>
+<td>poisspdf(x,lambda)</td>
+<td>计算参数为 lambda 的泊松分布概率密度函数值</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>实例：正态分布函数概率密度的计算</p>
+<figure class="highlight matlab"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt; mu=[<span class="number">0</span>:<span class="number">0.1</span>:<span class="number">5</span>];</span><br><span class="line">&gt;&gt; [y,<span class="built_in">i</span>]=<span class="built_in">max</span>(normpdf(<span class="number">1.5</span>,mu,<span class="number">1</span>));</span><br><span class="line">&gt;&gt; mle=mu(<span class="built_in">i</span>)</span><br><span class="line">mle = <span class="number">1.5000</span></span><br></pre></td></tr></table></figure>
+<h1 id="【累计概率分布】"><a href="#【累计概率分布】" class="headerlink" title="【累计概率分布】"></a>【累计概率分布】</h1><h2 id="通用函数累计概率"><a href="#通用函数累计概率" class="headerlink" title="通用函数累计概率"></a>通用函数累计概率</h2><p>使用 <code>cdf()</code> 可以计算随机变量 $x\leq X$ 的概率之和</p>
+<ul>
+<li><code>cdf(name,X,A)</code>：返回 x=X 处，参数为 A 的累计概率</li>
+<li><code>cdf(name,X,A,B)</code>：返回 x=X 处，参数为 A、B 的累计概率</li>
+<li><code>cdf(name,X,A,B,C)</code>：返回 x=X 处，参数为 A、B、C 的累计概率</li>
+</ul>
+<p>注：</p>
+<ol>
+<li>关于参数 A、B、C：根据不同的分布，参数个数不同</li>
+<li>关于 name：用于指定是何种分布，常见取值见上表</li>
+</ol>
+<h2 id="专用函数累计概率"><a href="#专用函数累计概率" class="headerlink" title="专用函数累计概率"></a>专用函数累计概率</h2><p>专用函数累计概率的写法，与上表写法基本相同，不同的是将 <code>pdf</code> 换为了 <code>cdf</code></p>
+<p>例如：<code>poisscdf(x,lambda)</code></p>
+<p>由于用法相同，只是返回结果不同，故不再赘述</p>
+<h1 id="【统计特征】"><a href="#【统计特征】" class="headerlink" title="【统计特征】"></a>【统计特征】</h1><ul>
+<li><code>mean(A)</code>：求 A 的平均值</li>
+<li><code>median(A)</code>：求 A 的中位数</li>
+<li><code>nanmedian(A)</code>：忽略 NaN 求 A 的中位数</li>
+<li><code>geomean(A)</code>：求 A 的几何平均值</li>
+<li><code>harmmean(A)</code>：求 A 的调和平均值</li>
+<li><code>var(A)</code>：求 A 的方差</li>
+<li><code>std(A)</code>：求 A 的标准差</li>
+<li><code>skewness(A)</code>：求 A 的三阶统计量斜度</li>
+<li><code>cov(A,B)</code>：求 A 和 B 的协方差</li>
+<li><code>corrcoef(A,B)</code>：求 A 和 B 的皮尔逊相关系数</li>
+</ul>
+<h1 id="【统计作图】"><a href="#【统计作图】" class="headerlink" title="【统计作图】"></a>【统计作图】</h1><h2 id="正整数频率表"><a href="#正整数频率表" class="headerlink" title="正整数频率表"></a>正整数频率表</h2><p><code>tabulate(A)</code>：求 A 的正整数频率表</p>
+<figure class="highlight matlab"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt; a=<span class="built_in">ceil</span>(<span class="built_in">randn</span>(<span class="number">1</span>,<span class="number">5</span>));</span><br><span class="line">&gt;&gt; tabulate(a)</span><br><span class="line">  Value    Count   Percent</span><br><span class="line">     <span class="number">-2</span>        <span class="number">1</span>     <span class="number">20.00</span><span class="comment">%</span></span><br><span class="line">      <span class="number">1</span>        <span class="number">3</span>     <span class="number">60.00</span><span class="comment">%</span></span><br><span class="line">      <span class="number">2</span>        <span class="number">1</span>     <span class="number">20.00</span><span class="comment">%</span></span><br></pre></td></tr></table></figure>
+<h2 id="累积分布函数图形"><a href="#累积分布函数图形" class="headerlink" title="累积分布函数图形"></a>累积分布函数图形</h2><p><code>cdfplot(a)</code>：画出向量 a 的累积分布图形</p>
+<figure class="highlight matlab"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt; x=<span class="number">0</span>:<span class="number">0.05</span>:<span class="number">5</span>;</span><br><span class="line">&gt;&gt; <span class="built_in">figure</span></span><br><span class="line">&gt;&gt; cdfplot(x)</span><br></pre></td></tr></table></figure>
+<p><img width="300" src="/images/matlab/21-2.png"></p>
+<h2 id="最小二乘拟合曲线"><a href="#最小二乘拟合曲线" class="headerlink" title="最小二乘拟合曲线"></a>最小二乘拟合曲线</h2><p><code>h=lsline</code>：画出最小二乘拟合曲线</p>
+<figure class="highlight matlab"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt; x=<span class="number">1</span>:<span class="number">10</span>;</span><br><span class="line">&gt;&gt; y=x+<span class="built_in">randn</span>(<span class="number">1</span>,<span class="number">10</span>);</span><br><span class="line">&gt;&gt; <span class="built_in">figure</span></span><br><span class="line">&gt;&gt; <span class="built_in">scatter</span>(x,y)</span><br><span class="line">&gt;&gt; lsline</span><br><span class="line">&gt;&gt; h=lsline</span><br><span class="line">h = </span><br><span class="line">  Line (lsline) (具有属性):</span><br><span class="line">              Color: [<span class="number">0.7500</span> <span class="number">0.7500</span> <span class="number">0.7500</span>]</span><br><span class="line">          LineStyle: <span class="string">'-'</span></span><br><span class="line">          LineWidth: <span class="number">0.5000</span></span><br><span class="line">             Marker: <span class="string">'none'</span></span><br><span class="line">         MarkerSize: <span class="number">6</span></span><br><span class="line">    MarkerFaceColor: <span class="string">'none'</span></span><br><span class="line">              XData: [<span class="number">1</span> <span class="number">10</span>]</span><br><span class="line">              YData: [<span class="number">1.2620</span> <span class="number">11.1478</span>]</span><br><span class="line">              ZData: [<span class="number">1</span>x0 double]</span><br></pre></td></tr></table></figure>
+<p><img width="300" src="/images/matlab/21-3.png"></p>
+<h2 id="正态分布概率图形"><a href="#正态分布概率图形" class="headerlink" title="正态分布概率图形"></a>正态分布概率图形</h2><p><code>h=normplot(X)</code>：绘制 X 的正态分布概率图形，若 X 为向量，则直接显示；若 X 为矩阵，则显示每一列的图形</p>
+<figure class="highlight matlab"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt; x=<span class="number">1</span>:<span class="number">10</span>;</span><br><span class="line">&gt;&gt; y=x+<span class="built_in">randn</span>(<span class="number">1</span>,<span class="number">10</span>);</span><br><span class="line">&gt;&gt; subplot(<span class="number">2</span>,<span class="number">1</span>,<span class="number">1</span>)</span><br><span class="line">&gt;&gt; normplot(y)</span><br><span class="line">&gt;&gt; subplot(<span class="number">2</span>,<span class="number">1</span>,<span class="number">2</span>)</span><br><span class="line">&gt;&gt; x=<span class="built_in">magic</span>(<span class="number">3</span>);</span><br><span class="line">&gt;&gt; normplot(x)</span><br></pre></td></tr></table></figure>
+<p><img width="300" src="/images/matlab/21-4.png"></p>
+<h2 id="箱线图"><a href="#箱线图" class="headerlink" title="箱线图"></a>箱线图</h2><ul>
+<li><code>boxplot(X)</code>：绘制 X 的箱线图</li>
+<li><code>boxplot(X,Y)</code>：绘制变量为 X，附加群为 Y 的箱线图</li>
+</ul>
+<figure class="highlight matlab"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt; x=<span class="number">1</span>:<span class="number">10</span>;</span><br><span class="line">&gt;&gt; subplot(<span class="number">2</span>,<span class="number">1</span>,<span class="number">1</span>)</span><br><span class="line">&gt;&gt; boxplot(x)</span><br><span class="line"></span><br><span class="line">&gt;&gt; subplot(<span class="number">2</span>,<span class="number">1</span>,<span class="number">2</span>)</span><br><span class="line">&gt;&gt; boxplot(x,<span class="number">1</span>)</span><br></pre></td></tr></table></figure>
+<p><img width="300" src="/images/matlab/21-5.png"></p>
+<h2 id="参考线"><a href="#参考线" class="headerlink" title="参考线"></a>参考线</h2><ul>
+<li><code>refline(k,b)</code>：绘制斜率为 k，截距为 b 的参考直线</li>
+<li><code>refcurve(p)</code>：绘制参数为多项式系数的参考曲线</li>
+</ul>
+<figure class="highlight matlab"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt; subplot(<span class="number">2</span>,<span class="number">1</span>,<span class="number">1</span>)</span><br><span class="line">&gt;&gt; x=<span class="number">0</span>:<span class="number">0.5</span>:<span class="number">5</span>;</span><br><span class="line">&gt;&gt; y=<span class="built_in">log</span>(x);</span><br><span class="line">&gt;&gt; <span class="built_in">plot</span>(x,y)</span><br><span class="line">&gt;&gt; refline(<span class="number">1</span>,<span class="number">1</span>)</span><br><span class="line"></span><br><span class="line">&gt;&gt; subplot(<span class="number">2</span>,<span class="number">1</span>,<span class="number">2</span>)</span><br><span class="line">&gt;&gt; <span class="built_in">plot</span>(x,y)</span><br><span class="line">&gt;&gt; refcurve([<span class="number">3</span> <span class="number">2</span> <span class="number">1</span> <span class="number">0</span>])</span><br></pre></td></tr></table></figure>
+<p><img width="300" src="/images/matlab/21-6.png"></p>
+<h2 id="样本概率图形"><a href="#样本概率图形" class="headerlink" title="样本概率图形"></a>样本概率图形</h2><p> <code>p=capaplot(X,[a,b])</code>：绘制参数为 X，范围为 [a,b] 的样本概率图形，并返回在范围内的概率</p>
+<figure class="highlight matlab"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt; X=normrnd(<span class="number">1</span>,<span class="number">0.05</span>,<span class="number">300</span>,<span class="number">1</span>);</span><br><span class="line">&gt;&gt; capaplot(X,[<span class="number">0.5</span>,<span class="number">1.5</span>])</span><br><span class="line"><span class="built_in">ans</span> = <span class="number">1</span></span><br></pre></td></tr></table></figure>
+<p><img width="300" src="/images/matlab/21-7.png"></p>
+<h2 id="正态拟合曲线图"><a href="#正态拟合曲线图" class="headerlink" title="正态拟合曲线图"></a>正态拟合曲线图</h2><ul>
+<li><code>histfit(X)</code>：画出 X 的正态拟合曲线图</li>
+<li><code>histfit(X,num)</code>：画出 X 的正态拟合曲线图，num 指定柱状图个数</li>
+</ul>
+<figure class="highlight matlab"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt; X=normrnd(<span class="number">1</span>,<span class="number">0.05</span>,<span class="number">300</span>,<span class="number">1</span>);</span><br><span class="line">&gt;&gt; subplot(<span class="number">2</span>,<span class="number">1</span>,<span class="number">1</span>)</span><br><span class="line">&gt;&gt; histfit(X)</span><br><span class="line"></span><br><span class="line">&gt;&gt; subplot(<span class="number">2</span>,<span class="number">1</span>,<span class="number">2</span>)</span><br><span class="line">&gt;&gt; histfit(X,<span class="number">5</span>)</span><br></pre></td></tr></table></figure>
+<p><img width="300" src="/images/matlab/21-8.png"></p>
+
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>感谢您对我的支持，让我继续努力分享有用的技术与知识点！</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/wechatpay.jpg" alt="Alex_McAvoy 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/alipay.jpg" alt="Alex_McAvoy 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Alex_McAvoy
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://alex-mcavoy.github.io/matlab/480c817a.html" title="Matlab——概率统计">https://alex-mcavoy.github.io/matlab/480c817a.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/matlab/" rel="tag"># Matlab</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/essay/ego/97dca775.html" rel="prev" title="关于孤独">
+      <i class="fa fa-chevron-left"></i> 关于孤独
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/matlab/8dc8eb69.html" rel="next" title="Matlab——IO操作">
+      Matlab——IO操作 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【随机变量的产生】"><span class="nav-number">1.</span> <span class="nav-text">【随机变量的产生】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【概率密度】"><span class="nav-number">2.</span> <span class="nav-text">【概率密度】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#通用函数概率密度"><span class="nav-number">2.1.</span> <span class="nav-text">通用函数概率密度</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#专用函数概率密度"><span class="nav-number">2.2.</span> <span class="nav-text">专用函数概率密度</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【累计概率分布】"><span class="nav-number">3.</span> <span class="nav-text">【累计概率分布】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#通用函数累计概率"><span class="nav-number">3.1.</span> <span class="nav-text">通用函数累计概率</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#专用函数累计概率"><span class="nav-number">3.2.</span> <span class="nav-text">专用函数累计概率</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【统计特征】"><span class="nav-number">4.</span> <span class="nav-text">【统计特征】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【统计作图】"><span class="nav-number">5.</span> <span class="nav-text">【统计作图】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#正整数频率表"><span class="nav-number">5.1.</span> <span class="nav-text">正整数频率表</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#累积分布函数图形"><span class="nav-number">5.2.</span> <span class="nav-text">累积分布函数图形</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#最小二乘拟合曲线"><span class="nav-number">5.3.</span> <span class="nav-text">最小二乘拟合曲线</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#正态分布概率图形"><span class="nav-number">5.4.</span> <span class="nav-text">正态分布概率图形</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#箱线图"><span class="nav-number">5.5.</span> <span class="nav-text">箱线图</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考线"><span class="nav-number">5.6.</span> <span class="nav-text">参考线</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#样本概率图形"><span class="nav-number">5.7.</span> <span class="nav-text">样本概率图形</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#正态拟合曲线图"><span class="nav-number">5.8.</span> <span class="nav-text">正态拟合曲线图</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">  
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Alex_McAvoy"
+      src="/assets/img/head.jpg">
+  <p class="site-author-name" itemprop="name">Alex_McAvoy</p>
+  <div class="site-description" itemprop="description">想要成为渔夫的猎手</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">541</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">56</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">61</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Alex-McAvoy" title="GitHub → https://github.com/Alex-McAvoy" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/u011815404" title="CSDN → https://blog.csdn.net/u011815404" rel="noopener" target="_blank"><i class="fas fa-copyright fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+<!-- 访客地图 -->
+<script type="text/javascript" src="//rf.revolvermaps.com/0/0/5.js?i=50n58yo58ow&amp;m=0&amp;c=ff0000&amp;cr1=ffffff&amp;s=140" async="async"></script>
+
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdz20172133" title="https://blog.csdn.net/sdz20172133" rel="noopener" target="_blank">神仙队友</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://pxlsdz.gitee.io/" title="https://pxlsdz.gitee.io/" rel="noopener" target="_blank">神仙队友的另一个博客</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://bycore.net" title="https://bycore.net" rel="noopener" target="_blank">凉了的某饼同学</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://kris-cn.github.io/" title="http://kris-cn.github.io/" rel="noopener" target="_blank">翟孙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://deng.fun/" title="http://deng.fun/" rel="noopener" target="_blank">芙蓉姐姐</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdau_fangshifeng" title="https://blog.csdn.net/sdau_fangshifeng" rel="noopener" target="_blank">一个头很酷的家伙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/wentong_Xu" title="https://blog.csdn.net/wentong_Xu" rel="noopener" target="_blank">小黑贱胖子</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.yuheng.tech/" title="https://www.yuheng.tech/" rel="noopener" target="_blank">咸于</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/lanshan1111" title="https://blog.csdn.net/lanshan1111" rel="noopener" target="_blank">肥硕硕</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdauguanweihong" title="https://blog.csdn.net/sdauguanweihong" rel="noopener" target="_blank">管少</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_41661919" title="https://blog.csdn.net/qq_41661919" rel="noopener" target="_blank">俊杰</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_40859951" title="https://blog.csdn.net/qq_40859951" rel="noopener" target="_blank">峰哥</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/LSD20164388" title="https://blog.csdn.net/LSD20164388" rel="noopener" target="_blank">狗冬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37748451" title="https://blog.csdn.net/qq_37748451" rel="noopener" target="_blank">胖亚亚</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37868325" title="https://blog.csdn.net/qq_37868325" rel="noopener" target="_blank">妍大佬</a>
+        </li>
+    </ul>
+  </div>
+
+		
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+  
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Alex_McAvoy</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+</br>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script><script src="/js/bookmark.js"></script>
+
+
+
+  
+
+
+
+
+  <script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '48fd73a538d3fa927f65',
+      clientSecret: '56618aefeee90bac3c20de8d51bb0b985d67252d',
+      repo        : 'Gitalk-Comment',
+      owner       : 'Alex-McAvoy',
+      admin       : ['Alex-McAvoy'],
+      id          : '5bb7f8ca986af1123ec37ae8e4cc0082',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+  
+  <!-- 鼠标单击粒子特效 -->
+  <script type="text/javascript" src="/js/cursor-effects.js"></script>
+  <!-- 多级目录 -->
+  <script type="text/javascript" src="/js/category.js"></script>
+  
+</body>
+</html>

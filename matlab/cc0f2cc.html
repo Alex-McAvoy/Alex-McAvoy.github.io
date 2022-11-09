@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.9.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/img/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/assets/img/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/pace-js@1/themes/blue/pace-theme-minimal.css">
+  <script src="//cdn.jsdelivr.net/npm/pace-js@1/pace.min.js"></script>
+
+
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"alex-mcavoy.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":16,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":true,"color":"#ff0000","save":"manual"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":true},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.json"};
+  </script>
+
+  <meta name="description" content="【多项式】多项式：$P(x)=a_0x^n+a_1x^{n-1}+a_2x^{n-2}+…+a_nx^0$ 用系数来表示：$a_0a_1a_2…a_n$">
+<meta name="keywords" content="Matlab">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Matlab——多项式">
+<meta property="og:url" content="https://alex-mcavoy.github.io/matlab/cc0f2cc.html">
+<meta property="og:site_name" content="Alex_McAvoy">
+<meta property="og:description" content="【多项式】多项式：$P(x)=a_0x^n+a_1x^{n-1}+a_2x^{n-2}+…+a_nx^0$ 用系数来表示：$a_0a_1a_2…a_n$">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2021-08-24T01:41:46.764Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Matlab——多项式">
+<meta name="twitter:description" content="【多项式】多项式：$P(x)=a_0x^n+a_1x^{n-1}+a_2x^{n-2}+…+a_nx^0$ 用系数来表示：$a_0a_1a_2…a_n$">
+
+<link rel="canonical" href="https://alex-mcavoy.github.io/matlab/cc0f2cc.html">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Matlab——多项式 | Alex_McAvoy</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Alex_McAvoy</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">想要成为渔夫的猎手</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+
+	
+	
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/matlab/cc0f2cc.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/assets/img/head.jpg">
+      <meta itemprop="name" content="Alex_McAvoy">
+      <meta itemprop="description" content="想要成为渔夫的猎手">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Alex_McAvoy">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Matlab——多项式
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-04-24 15:34:00" itemprop="dateCreated datePublished" datetime="2020-04-24T15:34:00+08:00">2020-04-24</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/matlab/" itemprop="url" rel="index"><span itemprop="name">Matlab</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>2.8k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>3 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="【多项式】"><a href="#【多项式】" class="headerlink" title="【多项式】"></a>【多项式】</h1><p>多项式：$P(x)=a_0x^n+a_1x^{n-1}+a_2x^{n-2}+…+a_nx^0$</p>
+<p>用系数来表示：$a_0a_1a_2…a_n$</p>
+<p>例如：$2x^4+3x^2+x+1$</p>
+<figure class="highlight matlab"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">p=[<span class="number">2</span> <span class="number">0</span> <span class="number">3</span> <span class="number">1</span> <span class="number">1</span>]</span><br></pre></td></tr></table></figure>
+<p><code>poly2sym(A)</code>：A是一个行向量，代表一个多项式的系数，利用该行向量构建一个符号类型的多项式</p>
+<figure class="highlight matlab"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt; p=[<span class="number">2</span> <span class="number">0</span> <span class="number">3</span> <span class="number">1</span> <span class="number">1</span>];</span><br><span class="line">&gt;&gt; poly2sym(p)</span><br><span class="line"><span class="built_in">ans</span> =</span><br><span class="line">    <span class="number">2</span>*x^<span class="number">4</span> + <span class="number">3</span>*x^<span class="number">2</span> + x + <span class="number">1</span></span><br></pre></td></tr></table></figure>
+<h1 id="【多项式的根】"><a href="#【多项式的根】" class="headerlink" title="【多项式的根】"></a>【多项式的根】</h1><p><code>roots(A)</code>：A 是一个行向量，代表一个多项式的系数，用于求解该多项式的根</p>
+<figure class="highlight matlab"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt; p=[<span class="number">2</span> <span class="number">0</span> <span class="number">3</span> <span class="number">1</span> <span class="number">1</span>];</span><br><span class="line">&gt;&gt; roots(p)</span><br><span class="line"><span class="built_in">ans</span> =</span><br><span class="line">   <span class="number">0.2459</span> + <span class="number">1.1484</span><span class="built_in">i</span></span><br><span class="line">   <span class="number">0.2459</span> - <span class="number">1.1484</span><span class="built_in">i</span></span><br><span class="line">  <span class="number">-0.2459</span> + <span class="number">0.5496</span><span class="built_in">i</span></span><br><span class="line">  <span class="number">-0.2459</span> - <span class="number">0.5496</span><span class="built_in">i</span></span><br></pre></td></tr></table></figure>
+<p><code>poly(A)</code>：A 是一个行向量，代表一个多项式的根，利用根求出该多项式的系数</p>
+<figure class="highlight matlab"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt; r=[<span class="number">1</span> <span class="number">-2</span> <span class="number">3</span>]</span><br><span class="line">&gt;&gt; poly(r)</span><br><span class="line"><span class="built_in">ans</span> =</span><br><span class="line">     <span class="number">1</span>    <span class="number">-2</span>    <span class="number">-5</span>     <span class="number">6</span></span><br></pre></td></tr></table></figure>
+<h1 id="【多项式运算】"><a href="#【多项式运算】" class="headerlink" title="【多项式运算】"></a>【多项式运算】</h1><p>加减法：</p>
+<ul>
+<li>两个多项式阶次相同时，与数组元素加减法相同</li>
+<li>两个多项式阶次不同时，低阶的多项式用首 0 填补，使其与高阶多项式有同样的阶次</li>
+</ul>
+<figure class="highlight matlab"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">res</span>=<span class="title">add_and_sub</span><span class="params">(a,b)</span></span></span><br><span class="line"><span class="keyword">if</span> nargin~=<span class="number">2</span></span><br><span class="line">    error(<span class="string">'参数个数错误'</span>)</span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"></span><br><span class="line">a=a(:).';</span><br><span class="line">b=b(:).';</span><br><span class="line">len_a=<span class="built_in">length</span>(a);</span><br><span class="line">len_b=<span class="built_in">length</span>(b);</span><br><span class="line">res=[<span class="built_in">zeros</span>(<span class="number">1</span>,len_b-len_a) a]+[<span class="built_in">zeros</span>(<span class="number">1</span>,len_a-len_b) b];</span><br></pre></td></tr></table></figure>
+<p>乘法：</p>
+<ul>
+<li><code>conv(A,B)</code>：执行 A,B 两向量的卷积运算</li>
+<li><code>conv(a,b,&#39;shape&#39;)</code>：按形参 <code>‘shape’</code> 返回卷积运算，取值如下：<ul>
+<li><code>full</code>：返回完整的卷积，默认值</li>
+<li><code>same</code>：返回部分卷积，其大小与向量 A 大小相同</li>
+<li><code>valid</code>：只返回无填充 0 部分的卷积，此时输出向量 c 的最大值为 max(length(a) - max(0,length(b) - 1),0)</li>
+</ul>
+</li>
+</ul>
+<figure class="highlight matlab"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt; A=[<span class="number">1</span> <span class="number">1</span>];</span><br><span class="line">&gt;&gt; B=[<span class="number">2</span> <span class="number">0</span>];</span><br><span class="line">&gt;&gt; conv(A,B)</span><br><span class="line"><span class="built_in">ans</span> =</span><br><span class="line">     <span class="number">2</span>     <span class="number">2</span>     <span class="number">0</span></span><br></pre></td></tr></table></figure>
+<p>除法：<code>[q,r] = deconv(A,B)</code>：求多项式 A,B 的除法运算，其中 q 为返回多项式 B 除以 A 的商式，r 为返回 B 除以 A 的余式，即：B*q+r=A</p>
+<figure class="highlight matlab"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt; A=[<span class="number">1</span> <span class="number">2</span> <span class="number">3</span> <span class="number">4</span> <span class="number">5</span>]</span><br><span class="line">A =</span><br><span class="line">     <span class="number">1</span>     <span class="number">2</span>     <span class="number">3</span>     <span class="number">4</span>     <span class="number">5</span></span><br><span class="line">&gt;&gt; B=[<span class="number">1</span> <span class="number">2</span> <span class="number">3</span>]</span><br><span class="line">B =</span><br><span class="line">     <span class="number">1</span>     <span class="number">2</span>     <span class="number">3</span></span><br><span class="line">&gt;&gt; [q,r]=deconv(A,B)</span><br><span class="line">q =</span><br><span class="line">     <span class="number">1</span>     <span class="number">0</span>     <span class="number">0</span></span><br><span class="line">r =</span><br><span class="line">     <span class="number">0</span>     <span class="number">0</span>     <span class="number">0</span>     <span class="number">4</span>     <span class="number">5</span></span><br></pre></td></tr></table></figure>
+<h1 id="【多项式导数】"><a href="#【多项式导数】" class="headerlink" title="【多项式导数】"></a>【多项式导数】</h1><ul>
+<li><code>polyder(A)</code>：求多项式 A 的导函数多项式</li>
+<li><code>polyder(A,B)</code>：求多项式 A 与多项式 B 乘积的导函数多项式</li>
+<li><code>[q,d] = polyder(b,a)</code>：求多项式 B 与多项式 A 相除的导函数，导函数的分子存入q，分母存入 d</li>
+</ul>
+<figure class="highlight matlab"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt; a = [<span class="number">3</span> <span class="number">6</span> <span class="number">9</span>];</span><br><span class="line">&gt;&gt; b = [<span class="number">1</span> <span class="number">2</span> <span class="number">0</span>];</span><br><span class="line">&gt;&gt; k = polyder(a,b)</span><br><span class="line">k =</span><br><span class="line">    <span class="number">12</span>    <span class="number">36</span>    <span class="number">42</span>    <span class="number">18</span></span><br><span class="line">&gt;&gt; K = poly2str(k,<span class="string">'x'</span>)</span><br><span class="line">K =</span><br><span class="line">   <span class="number">12</span> x^<span class="number">3</span> + <span class="number">36</span> x^<span class="number">2</span> + <span class="number">42</span> x + <span class="number">18</span></span><br><span class="line">&gt;&gt; [q,d] = polyder(b,a)</span><br><span class="line">q =</span><br><span class="line">    <span class="number">18</span>    <span class="number">18</span></span><br><span class="line">d =</span><br><span class="line">     <span class="number">9</span>    <span class="number">36</span>    <span class="number">90</span>   <span class="number">108</span>    <span class="number">81</span></span><br></pre></td></tr></table></figure>
+<h1 id="【多项式的积分】"><a href="#【多项式的积分】" class="headerlink" title="【多项式的积分】"></a>【多项式的积分】</h1><p><code>polyint(p,k)</code>：返回以向量 p 为系数的多项式积分，积分的常数项为 k，k 默认为 0</p>
+<p>例如：多项式为 $x^2-x+2$，常数项为 $\frac{1}{2}$</p>
+<p>有：$\frac{1}{3}x^3-\frac{1}{2}x^2+2x+\frac{1}{2}$</p>
+<figure class="highlight matlab"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt; p = [<span class="number">1</span> <span class="number">-1</span> <span class="number">2</span>];</span><br><span class="line">&gt;&gt; k = <span class="number">1</span>/<span class="number">2</span>;</span><br><span class="line">&gt;&gt; F = polyint(p,k)</span><br><span class="line">F =</span><br><span class="line">    <span class="number">0.3333</span>   <span class="number">-0.5000</span>    <span class="number">2.0000</span>    <span class="number">0.5000</span></span><br><span class="line">&gt;&gt; df = poly2sym(F)</span><br><span class="line">df =</span><br><span class="line">    x^<span class="number">3</span>/<span class="number">3</span> - x^<span class="number">2</span>/<span class="number">2</span> + <span class="number">2</span>*x + <span class="number">1</span>/<span class="number">2</span></span><br></pre></td></tr></table></figure>
+<h1 id="【多项式估值】"><a href="#【多项式估值】" class="headerlink" title="【多项式估值】"></a>【多项式估值】</h1><p><code>y = polyval(p,x)</code>：p 为多项式的系数向量，x 为矩阵，按数组运算规则来求多项式的值</p>
+<figure class="highlight matlab"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt; x=[<span class="number">0</span>:<span class="number">0.1</span>:<span class="number">1</span>]</span><br><span class="line">x =</span><br><span class="line">  <span class="number">1</span> 至 <span class="number">9</span> 列</span><br><span class="line">    <span class="number">0</span>    <span class="number">0.1000</span>    <span class="number">0.2000</span>    <span class="number">0.3000</span>    <span class="number">0.4000</span>    <span class="number">0.5000</span>    <span class="number">0.6000</span>    <span class="number">0.7000</span>    <span class="number">0.8000</span></span><br><span class="line">         </span><br><span class="line">  <span class="number">10</span> 至 <span class="number">11</span> 列</span><br><span class="line">    <span class="number">0.9000</span>    <span class="number">1.0000</span></span><br><span class="line"></span><br><span class="line">&gt;&gt; f=[<span class="number">1</span> <span class="number">2</span> <span class="number">3</span> <span class="number">4</span> <span class="number">5</span>]</span><br><span class="line">f =</span><br><span class="line">     <span class="number">1</span>     <span class="number">2</span>     <span class="number">3</span>     <span class="number">4</span>     <span class="number">5</span></span><br><span class="line">&gt;&gt; polyval(f,x)</span><br><span class="line"><span class="built_in">ans</span> =</span><br><span class="line">  <span class="number">1</span> 至 <span class="number">9</span> 列</span><br><span class="line">    <span class="number">5.0000</span>    <span class="number">5.4321</span>    <span class="number">5.9376</span>    <span class="number">6.5321</span>    <span class="number">7.2336</span>    <span class="number">8.0625</span>    <span class="number">9.0416</span>   <span class="number">10.1961</span>   <span class="number">11.5536</span></span><br><span class="line"></span><br><span class="line">  <span class="number">10</span> 至 <span class="number">11</span> 列</span><br><span class="line">   <span class="number">13.1441</span>   <span class="number">15.0000</span></span><br></pre></td></tr></table></figure>
+<h1 id="【有理多项式】"><a href="#【有理多项式】" class="headerlink" title="【有理多项式】"></a>【有理多项式】</h1><p>matlab 中，有理多项式由它们的分子多项式和分母多项式表示。</p>
+<h2 id="有理多项式展开"><a href="#有理多项式展开" class="headerlink" title="有理多项式展开"></a>有理多项式展开</h2><p><code>[r,p,k]=redidue(a,b)</code>：对有理多项式 $\frac{a}{b}$ 进行分式展开，r 为留数行向量，p 为极点行向量，k 为直项行向量，a 为分子多项式，b 为分母多项式</p>
+<p>例如：$P(x)=\frac{x^3+2x^2+3x+4}{4x^3+5x^2+6x+7}$</p>
+<p>分子项：<code>a=[1 2 3 4]</code>，分母项：<code>b=[4 5 6 7]</code></p>
+<p>进行 <code>redidue(a,b)</code>后有：</p>
+<figure class="highlight matlab"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt; a=[<span class="number">1</span> <span class="number">2</span> <span class="number">3</span> <span class="number">4</span>];</span><br><span class="line">&gt;&gt; b=[<span class="number">4</span> <span class="number">5</span> <span class="number">6</span> <span class="number">7</span>];</span><br><span class="line">&gt;&gt; [r,p,k]=residue(a,b)</span><br><span class="line">r =</span><br><span class="line">   <span class="number">0.1341</span> + <span class="number">0.0000</span><span class="built_in">i</span></span><br><span class="line">   <span class="number">0.0267</span> - <span class="number">0.1262</span><span class="built_in">i</span></span><br><span class="line">   <span class="number">0.0267</span> + <span class="number">0.1262</span><span class="built_in">i</span></span><br><span class="line">p =</span><br><span class="line">  <span class="number">-1.2078</span> + <span class="number">0.0000</span><span class="built_in">i</span></span><br><span class="line">  <span class="number">-0.0211</span> + <span class="number">1.2035</span><span class="built_in">i</span></span><br><span class="line">  <span class="number">-0.0211</span> - <span class="number">1.2035</span><span class="built_in">i</span></span><br><span class="line">k =</span><br><span class="line">    <span class="number">0.2500</span></span><br></pre></td></tr></table></figure>
+<p>那么，$P(x)$可表达为：$P(x)=\frac{r1}{x+p1}+\frac{r2}{x+p2}+\frac{r3}{x+p3}+k$</p>
+<p>即：$P(x)=\frac{0.1341}{x-1.2078}+\frac{0.0267 - 0.1262i}{x-0.0211 + 1.2035i}+\frac{0.0267 + 0.1262i}{x-0.0211 - 1.2035i}+0.25$</p>
+<h2 id="有理多项式展开的逆运算"><a href="#有理多项式展开的逆运算" class="headerlink" title="有理多项式展开的逆运算"></a>有理多项式展开的逆运算</h2><p><code>[b,a] = residue(r,p,k)</code>：根据 r 留数行向量，p 极点行向量，k 直项行向量，进行展开的逆运算，得到 a 分子多项式，b 分母多项式</p>
+<figure class="highlight matlab"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt; r =[<span class="number">0.1341</span>, <span class="number">0.0267</span> - <span class="number">0.1262</span><span class="built_in">i</span>, <span class="number">0.0267</span> + <span class="number">0.1262</span><span class="built_in">i</span>];</span><br><span class="line">&gt;&gt; p =[<span class="number">-1.2078</span>, <span class="number">-0.0211</span> + <span class="number">1.2035</span><span class="built_in">i</span>, <span class="number">-0.0211</span> - <span class="number">1.2035</span><span class="built_in">i</span>];</span><br><span class="line">&gt;&gt; k = <span class="number">0.25</span>;</span><br><span class="line">&gt;&gt; [a b]=residue(r,p,k)</span><br><span class="line">a =</span><br><span class="line">    <span class="number">0.2500</span>    <span class="number">0.5000</span>    <span class="number">0.7500</span>    <span class="number">1.0000</span></span><br><span class="line">b =</span><br><span class="line">    <span class="number">1.0000</span>    <span class="number">1.2500</span>    <span class="number">1.5000</span>    <span class="number">1.7500</span></span><br></pre></td></tr></table></figure>
+
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>感谢您对我的支持，让我继续努力分享有用的技术与知识点！</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/wechatpay.jpg" alt="Alex_McAvoy 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/alipay.jpg" alt="Alex_McAvoy 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Alex_McAvoy
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://alex-mcavoy.github.io/matlab/cc0f2cc.html" title="Matlab——多项式">https://alex-mcavoy.github.io/matlab/cc0f2cc.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/matlab/" rel="tag"># Matlab</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/hexo/79d5219b.html" rel="prev" title="Hexo 的 LaTeX 渲染">
+      <i class="fa fa-chevron-left"></i> Hexo 的 LaTeX 渲染
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/matlab/3fad1240.html" rel="next" title="Matlab——数值积分">
+      Matlab——数值积分 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【多项式】"><span class="nav-number">1.</span> <span class="nav-text">【多项式】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【多项式的根】"><span class="nav-number">2.</span> <span class="nav-text">【多项式的根】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【多项式运算】"><span class="nav-number">3.</span> <span class="nav-text">【多项式运算】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【多项式导数】"><span class="nav-number">4.</span> <span class="nav-text">【多项式导数】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【多项式的积分】"><span class="nav-number">5.</span> <span class="nav-text">【多项式的积分】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【多项式估值】"><span class="nav-number">6.</span> <span class="nav-text">【多项式估值】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【有理多项式】"><span class="nav-number">7.</span> <span class="nav-text">【有理多项式】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#有理多项式展开"><span class="nav-number">7.1.</span> <span class="nav-text">有理多项式展开</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#有理多项式展开的逆运算"><span class="nav-number">7.2.</span> <span class="nav-text">有理多项式展开的逆运算</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">  
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Alex_McAvoy"
+      src="/assets/img/head.jpg">
+  <p class="site-author-name" itemprop="name">Alex_McAvoy</p>
+  <div class="site-description" itemprop="description">想要成为渔夫的猎手</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">541</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">56</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">61</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Alex-McAvoy" title="GitHub → https://github.com/Alex-McAvoy" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/u011815404" title="CSDN → https://blog.csdn.net/u011815404" rel="noopener" target="_blank"><i class="fas fa-copyright fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+<!-- 访客地图 -->
+<script type="text/javascript" src="//rf.revolvermaps.com/0/0/5.js?i=50n58yo58ow&amp;m=0&amp;c=ff0000&amp;cr1=ffffff&amp;s=140" async="async"></script>
+
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdz20172133" title="https://blog.csdn.net/sdz20172133" rel="noopener" target="_blank">神仙队友</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://pxlsdz.gitee.io/" title="https://pxlsdz.gitee.io/" rel="noopener" target="_blank">神仙队友的另一个博客</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://bycore.net" title="https://bycore.net" rel="noopener" target="_blank">凉了的某饼同学</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://kris-cn.github.io/" title="http://kris-cn.github.io/" rel="noopener" target="_blank">翟孙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://deng.fun/" title="http://deng.fun/" rel="noopener" target="_blank">芙蓉姐姐</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdau_fangshifeng" title="https://blog.csdn.net/sdau_fangshifeng" rel="noopener" target="_blank">一个头很酷的家伙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/wentong_Xu" title="https://blog.csdn.net/wentong_Xu" rel="noopener" target="_blank">小黑贱胖子</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.yuheng.tech/" title="https://www.yuheng.tech/" rel="noopener" target="_blank">咸于</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/lanshan1111" title="https://blog.csdn.net/lanshan1111" rel="noopener" target="_blank">肥硕硕</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdauguanweihong" title="https://blog.csdn.net/sdauguanweihong" rel="noopener" target="_blank">管少</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_41661919" title="https://blog.csdn.net/qq_41661919" rel="noopener" target="_blank">俊杰</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_40859951" title="https://blog.csdn.net/qq_40859951" rel="noopener" target="_blank">峰哥</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/LSD20164388" title="https://blog.csdn.net/LSD20164388" rel="noopener" target="_blank">狗冬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37748451" title="https://blog.csdn.net/qq_37748451" rel="noopener" target="_blank">胖亚亚</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37868325" title="https://blog.csdn.net/qq_37868325" rel="noopener" target="_blank">妍大佬</a>
+        </li>
+    </ul>
+  </div>
+
+		
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+  
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Alex_McAvoy</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+</br>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script><script src="/js/bookmark.js"></script>
+
+
+
+  
+
+
+
+
+  <script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '48fd73a538d3fa927f65',
+      clientSecret: '56618aefeee90bac3c20de8d51bb0b985d67252d',
+      repo        : 'Gitalk-Comment',
+      owner       : 'Alex-McAvoy',
+      admin       : ['Alex-McAvoy'],
+      id          : '16f86992e5fe7964c1d7af919c439e28',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+  
+  <!-- 鼠标单击粒子特效 -->
+  <script type="text/javascript" src="/js/cursor-effects.js"></script>
+  <!-- 多级目录 -->
+  <script type="text/javascript" src="/js/category.js"></script>
+  
+</body>
+</html>

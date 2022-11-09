@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.9.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/img/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/assets/img/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/pace-js@1/themes/blue/pace-theme-minimal.css">
+  <script src="//cdn.jsdelivr.net/npm/pace-js@1/pace.min.js"></script>
+
+
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"alex-mcavoy.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":16,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":true,"color":"#ff0000","save":"manual"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":true},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.json"};
+  </script>
+
+  <meta name="description" content="Reference  回归评价指标MSE、RMSE、MAE、R-Squared R方的理解与用法 Wikipedia entry on the Coefficient of determination 统计学——线性回归决定系数R2 mse、rmse、mae、r2指标的总结以及局限性 可决系数   【概述】在 回归问题的评价指标（一） 中，介绍了回归问题考虑经验风险 $R_{emp}(f)$ 时">
+<meta name="keywords" content="机器学习">
+<meta property="og:type" content="article">
+<meta property="og:title" content="回归问题的评价指标（二）">
+<meta property="og:url" content="https://alex-mcavoy.github.io/ml/2559e399.html">
+<meta property="og:site_name" content="Alex_McAvoy">
+<meta property="og:description" content="Reference  回归评价指标MSE、RMSE、MAE、R-Squared R方的理解与用法 Wikipedia entry on the Coefficient of determination 统计学——线性回归决定系数R2 mse、rmse、mae、r2指标的总结以及局限性 可决系数   【概述】在 回归问题的评价指标（一） 中，介绍了回归问题考虑经验风险 $R_{emp}(f)$ 时">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/08-1.png">
+<meta property="og:updated_time" content="2022-08-09T01:47:47.043Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="回归问题的评价指标（二）">
+<meta name="twitter:description" content="Reference  回归评价指标MSE、RMSE、MAE、R-Squared R方的理解与用法 Wikipedia entry on the Coefficient of determination 统计学——线性回归决定系数R2 mse、rmse、mae、r2指标的总结以及局限性 可决系数   【概述】在 回归问题的评价指标（一） 中，介绍了回归问题考虑经验风险 $R_{emp}(f)$ 时">
+<meta name="twitter:image" content="https://alex-mcavoy.github.io/images/ml/08-1.png">
+
+<link rel="canonical" href="https://alex-mcavoy.github.io/ml/2559e399.html">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>回归问题的评价指标（二） | Alex_McAvoy</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Alex_McAvoy</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">想要成为渔夫的猎手</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+
+	
+	
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/ml/2559e399.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/assets/img/head.jpg">
+      <meta itemprop="name" content="Alex_McAvoy">
+      <meta itemprop="description" content="想要成为渔夫的猎手">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Alex_McAvoy">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          回归问题的评价指标（二）
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-06-11 14:59:00" itemprop="dateCreated datePublished" datetime="2019-06-11T14:59:00+08:00">2019-06-11</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/ml/" itemprop="url" rel="index"><span itemprop="name">机器学习</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>3.9k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>4 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <blockquote>
+<p>Reference</p>
+<ul>
+<li><a href="https://www.jianshu.com/p/9ee85fdad150" target="_blank" rel="noopener">回归评价指标MSE、RMSE、MAE、R-Squared</a></li>
+<li><a href="https://zhuanlan.zhihu.com/p/143132259" target="_blank" rel="noopener">R方的理解与用法</a></li>
+<li><a href="https://en.wikipedia.org/wiki/Coefficient_of_determination" target="_blank" rel="noopener">Wikipedia entry on the Coefficient of determination</a></li>
+<li><a href="https://blog.csdn.net/snowdroptulip/article/details/79022532" target="_blank" rel="noopener">统计学——线性回归决定系数R2</a></li>
+<li><a href="https://zhuanlan.zhihu.com/p/66890032" target="_blank" rel="noopener">mse、rmse、mae、r2指标的总结以及局限性</a></li>
+<li><a href="https://baike.baidu.com/item/%E5%8F%AF%E5%86%B3%E7%B3%BB%E6%95%B0/8020809#2" target="_blank" rel="noopener">可决系数</a></li>
+</ul>
+</blockquote>
+<h1 id="【概述】"><a href="#【概述】" class="headerlink" title="【概述】"></a>【概述】</h1><p>在 <a href="https://alex-mcavoy.github.io/ml/3b881afd.html">回归问题的评价指标（一）</a> 中，介绍了回归问题考虑经验风险 $R_{emp}(f)$ 时的评价指标 MSE、RMSE、MAE</p>
+<p>但除这三个外，在回归问题中，进行拟合时，常采用<strong>相关系数（Correlation Coefficient）</strong>来研究变量间线性相关程度的量，在统计学中，三大相关系数是：皮尔森相关系数（Pearson Correlation Coefficient）、斯皮尔曼相关系数（Spearman Correlation Coefficient）和肯德尔相关系数.（Kendall Correlation Coefficient）</p>
+<p>在机器学习中，常采用可决系数（Coefficient of Determination）来估量回归方程拟合 $y$ 对 $x$ 的协变关系效果的量数</p>
+<p>本文仅介绍皮尔森相关系数（Pearson Correlation Coefficient）与可决系数（Coefficient of Determination）</p>
+<h1 id="【皮尔逊相关系数-PCCs】"><a href="#【皮尔逊相关系数-PCCs】" class="headerlink" title="【皮尔逊相关系数 PCCs】"></a>【皮尔逊相关系数 PCCs】</h1><p><strong>皮尔逊相关系数（Pearson Correlation Coefficient，PCCs）</strong>是<strong>衡量随机变量 X 与 Y 的相关程度</strong>的一种指标，其取值范围为 $[-1,1]$，相关系数的绝对值越大，则表明 $X$ 与 $Y$ 相关度越高</p>
+<p>当 $X$ 与 $Y$ 线性正相关时，相关系数取值为 $1$；当 $X$ 与 $Y$ 线性负相关时，相关系数取值为 $-1$</p>
+<p>对于两个随机变量 $X$、$Y$，他们的皮尔逊相关系数定义为 $X$ 与 $Y$ 间的协方差 $cov(X,Y)$ 和标准差 $\sigma_X,\sigma_Y$ 的商，即：</p>
+<script type="math/tex; mode=display">
+\begin{align*}\rho_{X,Y}
+ &= \frac{cov(X,Y)}{\sigma_X\sigma _Y} \notag \\ 
+ &= \frac{E[(X-\mu_X)(Y-\mu_Y)]}{\sigma_X\sigma_Y} \notag \\ 
+ &= \frac{E(XY)-E(X)E(Y)}{\sqrt{E(X^2)-E^2(X)}\sqrt{E(Y^2)-E^2(Y)}} \notag
+\end{align*}</script><h1 id="【可决系数-R-2-】"><a href="#【可决系数-R-2-】" class="headerlink" title="【可决系数 $R^2$】"></a>【可决系数 $R^2$】</h1><h2 id="总离差、可解释离差、不可解释离差"><a href="#总离差、可解释离差、不可解释离差" class="headerlink" title="总离差、可解释离差、不可解释离差"></a>总离差、可解释离差、不可解释离差</h2><p>统计学中，一个特定数值对其平均值的偏离，被称为<strong>离差（Deviation）</strong></p>
+<p>在回归问题下，因变量 $y$ 的离差 $y-\overline{y}$ 被称为<strong>总离差（Total Dispersion）</strong>，其可看作是由两部分合成的：一部分是因变量 $y$ 的回归拟合值 $\hat{y}$ 对均值 $\overline{y}$ 的离差 $ \hat{y}-\overline{y}$，另一部分是因变量 $y$ 对回归拟合值 $\hat{y}$ 的离差 $y-\hat{y}$</p>
+<p><img width="500" src="/images/ml/08-1.png"></p>
+<p>当 $x=\overline{x}$ 时，有 $\hat{y}-\overline{y} = 0$，可以发现，自变量 $x$ 的取值越偏离 $\overline{x}$，第一部分的离差就越大，即存在如下的函数关系：</p>
+<script type="math/tex; mode=display">
+\hat{y}-\overline{y}=a+b(x-\overline{x})</script><p>可以发现，第一部分的离差 $ \hat{y}-\overline{y}$ 完全是由因变量 $y$ 倚自变量 $x$ 的回归关系决定的，被称为<strong>可解释离差（Explained Deviation）</strong></p>
+<p>而第二部分的离差 $y-\hat{y}$ 是呈随机变化的，与回归关系无关，被称为<strong>不可解释离差（Unexplained Deviation）</strong></p>
+<p>那么，总离差、可解释离差、不可解释离差三者的关系如下：</p>
+<script type="math/tex; mode=display">
+y-\overline{y}=(\hat{y}-\overline{y}) - (y-\hat{y})</script><h2 id="总平方和、回归平方和、残差平方和"><a href="#总平方和、回归平方和、残差平方和" class="headerlink" title="总平方和、回归平方和、残差平方和"></a>总平方和、回归平方和、残差平方和</h2><p>一个变量的各数值对其平均值的偏离，被称为<strong>变异（Variation）</strong>，通常用<strong>离差平方和（Sum of Squares of Deviations）</strong>来描述变异程度</p>
+<p>对于样本数量为 $N$ 的测试集，总离差的平方和被称为<strong>总平方和（Sum of Squares for Total，SST）</strong>，即：</p>
+<script type="math/tex; mode=display">
+SST=\sum_{i=1}^N (y_i-\overline{y})^2</script><p>可解释离差的平方和被称为<strong>回归平方和（Sum of Squares for Regression，SSR）</strong>，又称<strong>解释平方和（ Explained Sum of Squares，ESS）</strong>，即：</p>
+<script type="math/tex; mode=display">
+SSR=\sum_{i=1}^N(\hat{y_i}-\overline{y})^2</script><p>不可解释离差的平方和被称为<strong>残差平方和（Sum of Squares for Error，SSE）</strong>或<strong>（Residual Sum of Squares，RSS）</strong>，即：</p>
+<script type="math/tex; mode=display">
+SSE=\sum_{i=1}^N(y_i-\hat{y_i})^2</script><p>易得：</p>
+<script type="math/tex; mode=display">
+SST=SSR+SSE</script><h2 id="样本可决系数"><a href="#样本可决系数" class="headerlink" title="样本可决系数"></a>样本可决系数</h2><p>对于 $SST=SSR+SSE$，将两边同时都除以 $SST$，可得：</p>
+<script type="math/tex; mode=display">
+\frac{\sum\limits_{i=1}^N(\hat{y_i}-\overline{y})^2}{\sum\limits_{i=1}^N(y_i-\overline{y})^2} 
++ \frac{\sum\limits_{i=1}^N(y_i-\hat{y_i})^2}{\sum\limits_{i=1}^N(y_i-\overline{y})^2}
+= 1</script><p>这样就把在绝对数意义上对总离差的分割，改换成在相对数意义上对总离差的分割</p>
+<p>其中，$\frac{\sum\limits<em>{i=1}^N(\hat{y_i}-\overline{y})^2}{\sum\limits</em>{i=1}^N(y<em>i-\overline{y_i})^2} $ 表示的是回归关系已经解释的 $y_i$ 值变异在其总变异中所占的比率，$\frac{\sum\limits</em>{i=1}^N(y<em>i-\hat{y_i})^2}{\sum\limits</em>{i=1}^N(y_i-\overline{y})^2}$ 表示的是回归关系不能解释的 $y_i$ 值变异在总变异中所占的比率</p>
+<p>前者正是要寻求的用于估量回归方程拟合 $y$ 对 $x$ 的协变关系效果的量数，称为<strong>可决系数（Coefficient of Determination）</strong>，其是由样本数据产生的，也被称为<strong>样本可决系数</strong>，用 $R^2$ 表示，即：</p>
+<script type="math/tex; mode=display">
+R^2 = 1 - \frac{\sum\limits_{i=1}^N(y_i-\hat{y_i})^2}{\sum\limits_{i=1}^N(y_i-\overline{y})^2}</script><p>$R^2$ 的含义是预测值 $\hat{y_i}$ 解释了真实值 $y_i$ 变量的方差的多大比例，衡量的是预测值 $\hat{y_i}$ 对于真实值 $y_i$ 的拟合程度</p>
+<p>简单来说，假定 $y_i$ 的方差为 $1$ 个单位，那么 $R^2$ 表示使用该模型后，$y_i$ 的残差的方差减少了多少，假设 $R^2=0.8$，那么使用该模型后，残差的方差为真实值 $y_i$ 方差的 $20\%$</p>
+<ul>
+<li>$R^2=1$：是最理想的情况，此时所有预测值 $\hat{y_i}$ 等于真实值 $y_i$</li>
+<li>$R^2=0$：最可能的情况是所有预测值 $\hat{y_i}$ 等于平均值 $\overline{y}$</li>
+<li>$R^2&lt;0$：模型的预测能力差，说明学习到的模型还不如基准模型，可能是数据中不存在线性关系</li>
+</ul>
+<p>需要注意的是 $R^2$ 的最小值没有下限，因为预测可能出现任意程度的差，因此 $R^2$ 的取值范围是 $(-\infty,1]$</p>
+<h2 id="总体可决系数"><a href="#总体可决系数" class="headerlink" title="总体可决系数"></a>总体可决系数</h2><p>总体可决系数是在总体中关于 $Y$ 总变异中总体回归方程 $\hat{Y}=\alpha + \beta{X}$ 已解释的变异所占比重的描述量数，其表示为：</p>
+<script type="math/tex; mode=display">
+\rho^2=1-\frac{\sigma^2_{y\cdot x}}{\sigma^2_{y}}</script><p>其中，$\sigma^2<em>{y\cdot x}$ 是围绕总体回归直线的方差，$\sigma^2</em>{y}$ 是围绕总体平均数的方差</p>
+<p>$\rho^2$ 作为总体参数，通常视为未知的，需要用样本统计量去估计，将 $\sigma^2<em>{y\cdot x}$ 与 $\sigma^2</em>{y}$ 的无偏估计量分别代入上式，即可得 $\rho^2$ 的估计量的公式 </p>
+<script type="math/tex; mode=display">
+\begin{align}
+R_c^2
+&= 1 - \frac{S^2_{y\cdot x}}{S^2_{y}} \notag \\
+&= 1 - \frac{\frac{1}{n-2}\sum\limits_{i=1}^N(y_i-\hat{y_i})^2 }{\frac{1}{n-1}\sum\limits_{i=1}^N(y_i-\overline{y})^2} \notag
+\end{align}</script><p>不难发现 $R^2$ 与 $R_c^2$ 的形式略有不同，前者采用的是平方和比率的形式，而后者采用的是均方和比率的形式</p>
+<p>$R^2_c$ 被称为<strong>经调整样本拟合系数（Adjusted Coefficient of Determination）</strong>，常用于对总体可决系数进行点估计，其平抑了方程中自变量数目的对解释作用的夸大</p>
+<p>需要注意的是，在多元回归分析中，因为对同一样本 $m$ 个自变量的回归方程总比 $m-1$ 个自变量的回归方程求得已解释变差小，$R^2_c$ 在 $m$ 个自变量的方程中已解释离差除以 $(n-m-1)$，而在 $(m-1)$ 个自变量的方程中则除以 $(n-m-2)$</p>
+
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>感谢您对我的支持，让我继续努力分享有用的技术与知识点！</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/wechatpay.jpg" alt="Alex_McAvoy 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/alipay.jpg" alt="Alex_McAvoy 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Alex_McAvoy
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://alex-mcavoy.github.io/ml/2559e399.html" title="回归问题的评价指标（二）">https://alex-mcavoy.github.io/ml/2559e399.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/ml/" rel="tag"># 机器学习</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/ml/3b881afd.html" rel="prev" title="回归问题的评价指标（一）">
+      <i class="fa fa-chevron-left"></i> 回归问题的评价指标（一）
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/ml/82ea5b3f.html" rel="next" title="分类问题的评价指标（一）">
+      分类问题的评价指标（一） <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【概述】"><span class="nav-number">1.</span> <span class="nav-text">【概述】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【皮尔逊相关系数-PCCs】"><span class="nav-number">2.</span> <span class="nav-text">【皮尔逊相关系数 PCCs】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【可决系数-R-2-】"><span class="nav-number">3.</span> <span class="nav-text">【可决系数 $R^2$】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#总离差、可解释离差、不可解释离差"><span class="nav-number">3.1.</span> <span class="nav-text">总离差、可解释离差、不可解释离差</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总平方和、回归平方和、残差平方和"><span class="nav-number">3.2.</span> <span class="nav-text">总平方和、回归平方和、残差平方和</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#样本可决系数"><span class="nav-number">3.3.</span> <span class="nav-text">样本可决系数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总体可决系数"><span class="nav-number">3.4.</span> <span class="nav-text">总体可决系数</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">  
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Alex_McAvoy"
+      src="/assets/img/head.jpg">
+  <p class="site-author-name" itemprop="name">Alex_McAvoy</p>
+  <div class="site-description" itemprop="description">想要成为渔夫的猎手</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">541</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">56</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">61</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Alex-McAvoy" title="GitHub → https://github.com/Alex-McAvoy" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/u011815404" title="CSDN → https://blog.csdn.net/u011815404" rel="noopener" target="_blank"><i class="fas fa-copyright fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+<!-- 访客地图 -->
+<script type="text/javascript" src="//rf.revolvermaps.com/0/0/5.js?i=50n58yo58ow&amp;m=0&amp;c=ff0000&amp;cr1=ffffff&amp;s=140" async="async"></script>
+
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdz20172133" title="https://blog.csdn.net/sdz20172133" rel="noopener" target="_blank">神仙队友</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://pxlsdz.gitee.io/" title="https://pxlsdz.gitee.io/" rel="noopener" target="_blank">神仙队友的另一个博客</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://bycore.net" title="https://bycore.net" rel="noopener" target="_blank">凉了的某饼同学</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://kris-cn.github.io/" title="http://kris-cn.github.io/" rel="noopener" target="_blank">翟孙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://deng.fun/" title="http://deng.fun/" rel="noopener" target="_blank">芙蓉姐姐</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdau_fangshifeng" title="https://blog.csdn.net/sdau_fangshifeng" rel="noopener" target="_blank">一个头很酷的家伙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/wentong_Xu" title="https://blog.csdn.net/wentong_Xu" rel="noopener" target="_blank">小黑贱胖子</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.yuheng.tech/" title="https://www.yuheng.tech/" rel="noopener" target="_blank">咸于</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/lanshan1111" title="https://blog.csdn.net/lanshan1111" rel="noopener" target="_blank">肥硕硕</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdauguanweihong" title="https://blog.csdn.net/sdauguanweihong" rel="noopener" target="_blank">管少</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_41661919" title="https://blog.csdn.net/qq_41661919" rel="noopener" target="_blank">俊杰</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_40859951" title="https://blog.csdn.net/qq_40859951" rel="noopener" target="_blank">峰哥</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/LSD20164388" title="https://blog.csdn.net/LSD20164388" rel="noopener" target="_blank">狗冬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37748451" title="https://blog.csdn.net/qq_37748451" rel="noopener" target="_blank">胖亚亚</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37868325" title="https://blog.csdn.net/qq_37868325" rel="noopener" target="_blank">妍大佬</a>
+        </li>
+    </ul>
+  </div>
+
+		
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+  
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Alex_McAvoy</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+</br>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script><script src="/js/bookmark.js"></script>
+
+
+
+  
+
+
+
+
+  <script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '48fd73a538d3fa927f65',
+      clientSecret: '56618aefeee90bac3c20de8d51bb0b985d67252d',
+      repo        : 'Gitalk-Comment',
+      owner       : 'Alex-McAvoy',
+      admin       : ['Alex-McAvoy'],
+      id          : '1208c3e48cb9cae8cc34da36301e5c50',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+  
+  <!-- 鼠标单击粒子特效 -->
+  <script type="text/javascript" src="/js/cursor-effects.js"></script>
+  <!-- 多级目录 -->
+  <script type="text/javascript" src="/js/category.js"></script>
+  
+</body>
+</html>

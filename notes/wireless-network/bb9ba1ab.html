@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.9.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/img/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/assets/img/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/pace-js@1/themes/blue/pace-theme-minimal.css">
+  <script src="//cdn.jsdelivr.net/npm/pace-js@1/pace.min.js"></script>
+
+
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"alex-mcavoy.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":16,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":true,"color":"#ff0000","save":"manual"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":true},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.json"};
+  </script>
+
+  <meta name="description" content="【传感器网络】传感器网络（Sensor Network，SN）是由大量广泛分布的小型轻量无线节点组成，这些节点通过测量诸如温度、压力和相对湿度等物理参数来监控环境或系统 传感器网络有两种类型：">
+<meta name="keywords" content="学习笔记,网络相关,无线网络">
+<meta property="og:type" content="article">
+<meta property="og:title" content="无线传感网络概述">
+<meta property="og:url" content="https://alex-mcavoy.github.io/notes/wireless-network/bb9ba1ab.html">
+<meta property="og:site_name" content="Alex_McAvoy">
+<meta property="og:description" content="【传感器网络】传感器网络（Sensor Network，SN）是由大量广泛分布的小型轻量无线节点组成，这些节点通过测量诸如温度、压力和相对湿度等物理参数来监控环境或系统 传感器网络有两种类型：">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/wireless-network/16-1.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/wireless-network/16-2.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/wireless-network/16-3.png">
+<meta property="og:updated_time" content="2021-11-07T11:34:00.666Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="无线传感网络概述">
+<meta name="twitter:description" content="【传感器网络】传感器网络（Sensor Network，SN）是由大量广泛分布的小型轻量无线节点组成，这些节点通过测量诸如温度、压力和相对湿度等物理参数来监控环境或系统 传感器网络有两种类型：">
+<meta name="twitter:image" content="https://alex-mcavoy.github.io/images/notes/wireless-network/16-1.png">
+
+<link rel="canonical" href="https://alex-mcavoy.github.io/notes/wireless-network/bb9ba1ab.html">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>无线传感网络概述 | Alex_McAvoy</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Alex_McAvoy</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">想要成为渔夫的猎手</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+
+	
+	
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/notes/wireless-network/bb9ba1ab.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/assets/img/head.jpg">
+      <meta itemprop="name" content="Alex_McAvoy">
+      <meta itemprop="description" content="想要成为渔夫的猎手">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Alex_McAvoy">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          无线传感网络概述
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-05-12 20:28:00" itemprop="dateCreated datePublished" datetime="2020-05-12T20:28:00+08:00">2020-05-12</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/notes/" itemprop="url" rel="index"><span itemprop="name">学习笔记</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/notes/wireless-network/" itemprop="url" rel="index"><span itemprop="name">无线网络</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>2.1k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>2 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="【传感器网络】"><a href="#【传感器网络】" class="headerlink" title="【传感器网络】"></a>【传感器网络】</h1><p><strong>传感器网络（Sensor Network，SN）</strong>是由大量广泛分布的小型轻量无线节点组成，这些节点通过测量诸如温度、压力和相对湿度等物理参数来监控环境或系统</p>
+<p>传感器网络有两种类型：</p>
+<ul>
+<li><strong>先应式网络</strong>：连续操作模式，节点定期打开传感器和发送器感测环境，并将感性需的数据发送出去，用于需要定期监测数据的应用 </li>
+<li><strong>反应式网络</strong>：查询-响应模式，节点根据操作员发来查询命令给予立即响应，此外，节点还会根据网络某些属性值发生的激烈变化立即予以响应</li>
+</ul>
+<p>传感网络的查询分类有三种：</p>
+<ul>
+<li><strong>历史查询</strong>：用来分析存在基站上的历史数据</li>
+<li><strong>一次查询</strong>：获得网络的瞬间视图</li>
+<li><strong>持续查询</strong>：监控某段时间内的一些物理参数</li>
+</ul>
+<h1 id="【无线传感器网络】"><a href="#【无线传感器网络】" class="headerlink" title="【无线传感器网络】"></a>【无线传感器网络】</h1><h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p><strong>无线传感器网络（Wireless Sensor Network，WSN）</strong>是由部署在检测区域内大量的廉价卫星传感器节点组成，通过无线通信方式形成的一个多跳的自组织的网络系统，目的是协作地感知、采集和处理网络覆盖区域中感知的对象信息，并发送给观察者</p>
+<p>构成 WSN 有三个要素：<strong>传感器</strong>、<strong>感知对象</strong>、<strong>观察者</strong>，其中最核心的是传感器，其由三部分组成：</p>
+<ul>
+<li><strong>传感子系统</strong>：负责感测环境</li>
+<li><strong>处理子系统</strong>：负责对感测数据进行本地处理</li>
+<li><strong>通信子系统</strong>：负责与邻近节点交换消息</li>
+</ul>
+<h2 id="特性"><a href="#特性" class="headerlink" title="特性"></a>特性</h2><p>无线传感器网络具有如下特性：</p>
+<p><strong><font size="4">1.数据聚合</font></strong></p>
+<p>在无线传感器网络中，临近的传感器结点具有相似的数据</p>
+<p>这就使得不需要每个节点发送数据，但要求节点具备数据聚合的能力</p>
+<p><strong><font size="4">2.位置感知</font></strong></p>
+<p>在无线传感器网络中，多数数据搜集是基于位置的节点，需要了解自己的位置</p>
+<p>同时，要求节点应对环境的激烈变化作出立即反应，通过有效利用有限无线信道带宽和电池能量以最小延迟，以及令端用户感知猛烈的异常情况</p>
+<p><strong><font size="4">3.查询控制</font></strong></p>
+<p>无线传感器网络具备查询控制能力，即用户手持设备向基站或者附近的传感节点查询数据</p>
+<p>这必须有可靠的机制确保查询命令到达恰当的节点和节点逆向回答到手持设备用户</p>
+<h2 id="影响因素"><a href="#影响因素" class="headerlink" title="影响因素"></a>影响因素</h2><p>影响传感器网络的因素有：</p>
+<ul>
+<li>容错：传感网络在出现节点失效而无人干涉下继续工作的能力，容错能力的大小取决于传感器网络的应用</li>
+<li>能耗：感测事件、通信、数据处理时的能量消耗</li>
+<li>网络拓扑：分为先期部署、后期部署、重新部署额外节点三个阶段</li>
+<li>节点位置：当传感节点移动时，节点位置的检测</li>
+<li>可达性：节点之间的可达性是保证网络连通的基本条件</li>
+<li>制造成本：单个节点的成本是衡量整个网络成本的关键</li>
+<li>传输介质：选择的传输介质必须是全球可用的，例如无线电、红外线、其他光波等</li>
+<li>传感器的环境：要适用于各种复杂的环境，包括但不限于海底、大型机器内部、生物/化学污染区域、战场、居家、动物等</li>
+</ul>
+<h1 id="【体系结构与协议栈】"><a href="#【体系结构与协议栈】" class="headerlink" title="【体系结构与协议栈】"></a>【体系结构与协议栈】</h1><h2 id="体系结构"><a href="#体系结构" class="headerlink" title="体系结构"></a>体系结构</h2><p>WSN 的体系结构有两种，一种是<strong>层次结构</strong>，另一种是<strong>集群结构</strong></p>
+<p>层次结构由一个强大的<strong>基站（BS）</strong>和围绕着它的一系列分层传感节点组成，与 BS 跳计数相同的节点位于同一层次</p>
+<p><img width="200" src="/images/notes/wireless-network/16-1.png"></p>
+<p>集群结构将传感节点组成一个个<strong>簇（Cluster）</strong>，每个簇由一个<strong>簇头（Cluster Head）</strong>控制，每个节点与各自的簇头交换信息，簇头与与 BS 交换信息，BS 与有线网络连接</p>
+<p><img width="200" src="/images/notes/wireless-network/16-2.png"></p>
+<h2 id="协议栈"><a href="#协议栈" class="headerlink" title="协议栈"></a>协议栈</h2><p><img width="300" src="/images/notes/wireless-network/16-3.png"></p>
+<p><strong><font size="4">1.应用层</font></strong></p>
+<p>应用层令底层硬件和软件对传感应用是透明的，常用的有三个协议：</p>
+<ul>
+<li>传感器管理协议（Sensor Management Protocol，SMP）</li>
+<li>任务分配和数据通告协议（Task Assignment and Data Advertisement Protocol，TADAP）</li>
+<li>传感器查询和数据分发协议（Sensor Query and Data Dissemination Protocol，SQDDP）</li>
+</ul>
+<p><strong><font size="4">2.传输层</font></strong></p>
+<p>当传感系统需要被 Internet 或者其他外部网络访问时，传输层至关重要，但至今未有实质性的工作</p>
+<p><strong><font size="4">3.网络层</font></strong></p>
+<p>传感网络多数是以数据为中心的，数据聚合不能影响传感节点的协同，理想的传感器网络基于属性寻址并能感知位置，因此，在 WSN 的网络层，最重要任务就是路由协议的设计</p>
+<p>在传统网络中，路由协议要寻找延迟小的优化路径，以提高网络利用率和公平性，同时还要避免通信拥塞和均衡网络流量；而在无线传感器网络中，由于能量消耗影响网络生存期，节点只有局部信息，因此要以数据为中心，同时考虑应用相关性</p>
+<p>故而，无线传感器网络的路由协议有以下特点：</p>
+<ul>
+<li>能量优先</li>
+<li>基于局部拓扑信息</li>
+<li>以数据为中心</li>
+<li>应用相关</li>
+</ul>
+<p>同时，信息传输模式有以下四种：</p>
+<ul>
+<li><strong>事件触发</strong>：节点采集信息后判断，若超过一定的阈值，则认为发生了某种事件，立即上报 sink</li>
+<li><strong>周期上报</strong>：节点定期把采集到的信息报告给 sink</li>
+<li><strong>基于查询</strong>：节点不主动向 sink 上报采集到的信息，而是等待用户查询，根据用户需要反馈信息</li>
+<li><strong>混合模式</strong>：前三种模式的综合</li>
+</ul>
+<p><strong><font size="4">4.数据链路层</font></strong></p>
+<p>数据链路层主要是确保通信网络中的点-点、点-多点连接，同时负责介质访问控制（创建网络架构、传感节点间公平有效共享通信资源）和差错控制（前向纠错、自动重发检错）</p>
+<p>此外，由于在 WSN 中，造成网络能量浪费有以下原因：</p>
+<ul>
+<li>节点间的数据碰撞导致重传</li>
+<li>节点接收并处理不必要的数据</li>
+<li>节点无数据发送时侦听信道</li>
+<li>控制消息过多</li>
+</ul>
+<p>因此，在设计 WSN 的 MAC 协议时，要考虑节省能量、可扩展性、网络效率这三个方面</p>
+<p><strong><font size="4">5.物理层</font></strong></p>
+<p>WSN 的物理层主要负责频率选择、频率产生、信号检测、调制解调、数据加密</p>
+
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>感谢您对我的支持，让我继续努力分享有用的技术与知识点！</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/wechatpay.jpg" alt="Alex_McAvoy 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/alipay.jpg" alt="Alex_McAvoy 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Alex_McAvoy
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://alex-mcavoy.github.io/notes/wireless-network/bb9ba1ab.html" title="无线传感网络概述">https://alex-mcavoy.github.io/notes/wireless-network/bb9ba1ab.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/notes/" rel="tag"># 学习笔记</a>
+              <a href="/tags/network/" rel="tag"># 网络相关</a>
+              <a href="/tags/wireless-network/" rel="tag"># 无线网络</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/notes/software-engineering/77aee074.html" rel="prev" title="软件测试方法">
+      <i class="fa fa-chevron-left"></i> 软件测试方法
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/essay/daily/911832f8.html" rel="next" title="GXR">
+      GXR <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【传感器网络】"><span class="nav-number">1.</span> <span class="nav-text">【传感器网络】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【无线传感器网络】"><span class="nav-number">2.</span> <span class="nav-text">【无线传感器网络】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#概述"><span class="nav-number">2.1.</span> <span class="nav-text">概述</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#特性"><span class="nav-number">2.2.</span> <span class="nav-text">特性</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#影响因素"><span class="nav-number">2.3.</span> <span class="nav-text">影响因素</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【体系结构与协议栈】"><span class="nav-number">3.</span> <span class="nav-text">【体系结构与协议栈】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#体系结构"><span class="nav-number">3.1.</span> <span class="nav-text">体系结构</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#协议栈"><span class="nav-number">3.2.</span> <span class="nav-text">协议栈</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">  
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Alex_McAvoy"
+      src="/assets/img/head.jpg">
+  <p class="site-author-name" itemprop="name">Alex_McAvoy</p>
+  <div class="site-description" itemprop="description">想要成为渔夫的猎手</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">541</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">56</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">61</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Alex-McAvoy" title="GitHub → https://github.com/Alex-McAvoy" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/u011815404" title="CSDN → https://blog.csdn.net/u011815404" rel="noopener" target="_blank"><i class="fas fa-copyright fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+<!-- 访客地图 -->
+<script type="text/javascript" src="//rf.revolvermaps.com/0/0/5.js?i=50n58yo58ow&amp;m=0&amp;c=ff0000&amp;cr1=ffffff&amp;s=140" async="async"></script>
+
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdz20172133" title="https://blog.csdn.net/sdz20172133" rel="noopener" target="_blank">神仙队友</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://pxlsdz.gitee.io/" title="https://pxlsdz.gitee.io/" rel="noopener" target="_blank">神仙队友的另一个博客</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://bycore.net" title="https://bycore.net" rel="noopener" target="_blank">凉了的某饼同学</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://kris-cn.github.io/" title="http://kris-cn.github.io/" rel="noopener" target="_blank">翟孙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://deng.fun/" title="http://deng.fun/" rel="noopener" target="_blank">芙蓉姐姐</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdau_fangshifeng" title="https://blog.csdn.net/sdau_fangshifeng" rel="noopener" target="_blank">一个头很酷的家伙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/wentong_Xu" title="https://blog.csdn.net/wentong_Xu" rel="noopener" target="_blank">小黑贱胖子</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.yuheng.tech/" title="https://www.yuheng.tech/" rel="noopener" target="_blank">咸于</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/lanshan1111" title="https://blog.csdn.net/lanshan1111" rel="noopener" target="_blank">肥硕硕</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdauguanweihong" title="https://blog.csdn.net/sdauguanweihong" rel="noopener" target="_blank">管少</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_41661919" title="https://blog.csdn.net/qq_41661919" rel="noopener" target="_blank">俊杰</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_40859951" title="https://blog.csdn.net/qq_40859951" rel="noopener" target="_blank">峰哥</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/LSD20164388" title="https://blog.csdn.net/LSD20164388" rel="noopener" target="_blank">狗冬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37748451" title="https://blog.csdn.net/qq_37748451" rel="noopener" target="_blank">胖亚亚</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37868325" title="https://blog.csdn.net/qq_37868325" rel="noopener" target="_blank">妍大佬</a>
+        </li>
+    </ul>
+  </div>
+
+		
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+  
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Alex_McAvoy</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+</br>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script><script src="/js/bookmark.js"></script>
+
+
+
+  
+
+
+
+
+  <script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '48fd73a538d3fa927f65',
+      clientSecret: '56618aefeee90bac3c20de8d51bb0b985d67252d',
+      repo        : 'Gitalk-Comment',
+      owner       : 'Alex-McAvoy',
+      admin       : ['Alex-McAvoy'],
+      id          : 'ce8e4676e3587ebd6f35e2b7dac37062',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+  
+  <!-- 鼠标单击粒子特效 -->
+  <script type="text/javascript" src="/js/cursor-effects.js"></script>
+  <!-- 多级目录 -->
+  <script type="text/javascript" src="/js/category.js"></script>
+  
+</body>
+</html>

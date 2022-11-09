@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.9.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/img/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/assets/img/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/pace-js@1/themes/blue/pace-theme-minimal.css">
+  <script src="//cdn.jsdelivr.net/npm/pace-js@1/pace.min.js"></script>
+
+
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"alex-mcavoy.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":16,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":true,"color":"#ff0000","save":"manual"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":true},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.json"};
+  </script>
+
+  <meta name="description" content="【计算机网络的层次结构】体系结构计算机网络各层及其协议的集合称为计算机网络的体系结构（Architecture），其是计算机网络中层次、各层协议、各层接口的集合，是网络及其所完成功能的精确定义">
+<meta name="keywords" content="学习笔记,网络相关,计算机网络">
+<meta property="og:type" content="article">
+<meta property="og:title" content="计算机网络体系结构">
+<meta property="og:url" content="https://alex-mcavoy.github.io/notes/computer-networks/507ba1e8.html">
+<meta property="og:site_name" content="Alex_McAvoy">
+<meta property="og:description" content="【计算机网络的层次结构】体系结构计算机网络各层及其协议的集合称为计算机网络的体系结构（Architecture），其是计算机网络中层次、各层协议、各层接口的集合，是网络及其所完成功能的精确定义">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/computer-networks/04-1.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/computer-networks/04-2.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/computer-networks/04-3.png">
+<meta property="og:updated_time" content="2021-08-23T12:43:22.855Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="计算机网络体系结构">
+<meta name="twitter:description" content="【计算机网络的层次结构】体系结构计算机网络各层及其协议的集合称为计算机网络的体系结构（Architecture），其是计算机网络中层次、各层协议、各层接口的集合，是网络及其所完成功能的精确定义">
+<meta name="twitter:image" content="https://alex-mcavoy.github.io/images/notes/computer-networks/04-1.png">
+
+<link rel="canonical" href="https://alex-mcavoy.github.io/notes/computer-networks/507ba1e8.html">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>计算机网络体系结构 | Alex_McAvoy</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Alex_McAvoy</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">想要成为渔夫的猎手</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+
+	
+	
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/notes/computer-networks/507ba1e8.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/assets/img/head.jpg">
+      <meta itemprop="name" content="Alex_McAvoy">
+      <meta itemprop="description" content="想要成为渔夫的猎手">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Alex_McAvoy">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          计算机网络体系结构
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-09-06 21:48:00" itemprop="dateCreated datePublished" datetime="2019-09-06T21:48:00+08:00">2019-09-06</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/notes/" itemprop="url" rel="index"><span itemprop="name">学习笔记</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/notes/computer-networks/" itemprop="url" rel="index"><span itemprop="name">计算机网络</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>2.3k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>2 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="【计算机网络的层次结构】"><a href="#【计算机网络的层次结构】" class="headerlink" title="【计算机网络的层次结构】"></a>【计算机网络的层次结构】</h1><h2 id="体系结构"><a href="#体系结构" class="headerlink" title="体系结构"></a>体系结构</h2><p>计算机网络<strong>各层及其协议的集合</strong>称为计算机网络的<strong>体系结构（Architecture）</strong>，其是计算机网络中层次、各层协议、各层接口的集合，是网络及其所完成功能的精确定义</p>
+<p>网络体系结构是用何种硬件、软件所实现，是一个遵循这种体系结构的实现问题，也就是说，体系结构是抽象的，实现是具体的</p>
+<h2 id="分层原则"><a href="#分层原则" class="headerlink" title="分层原则"></a>分层原则</h2><p>计算机网络的体系结构具有可分层的特性，其将复杂的大系统分为若干较易实现的层次，分层的基本原则如下：</p>
+<ul>
+<li>各层相互独立，每层均实现一种相对独立的功能，以降低整个大系统的复杂度</li>
+<li>各层之间界面清晰，易于理解，彼此交互尽可能的少</li>
+<li>各层功能的精确定义独立于具体的实现方法，每层选用合适的技术实现</li>
+<li>下层对上层有独立性，即上层单向使用下层所提供的服务</li>
+<li>整个分层结构能够促进标准化工作</li>
+</ul>
+<h2 id="层次结构"><a href="#层次结构" class="headerlink" title="层次结构"></a>层次结构</h2><p>在计算机网络的分层结构中，第 $n$ 层中的活动元素称为 <strong>$n$ 层实体</strong>，其是任何可发送或接收信息的硬件或软件进程，不同机器上的同一层称为<strong>对等层</strong>，对等层的实体称为<strong>对等实体</strong></p>
+<p>对于 $n$ 层实体上所实现的服务，被 $n+1$ 层所利用，在这种情况下，$n$ 层被称为<strong>服务提供者</strong>，$n+1$ 层称为<strong>服务使用者</strong></p>
+<p>具体来说，层次结构具有以下含义：</p>
+<ul>
+<li>第 $n$ 层实体使用第 $n-1$ 层的服务来实现自身所定义的功能，同时向第 $n+1$ 层提供本层的服务，该服务是第 $n$ 层及下面各层提供的服务总和</li>
+<li>最底层仅提供服务，是整个层次结构基础；中间各层既是下一层的服务使用者，又是上一层的服务使用者；最高层面向用户提供服务</li>
+<li>上层只能通过相邻层的接口来使用下一层的服务，无法调用其他层的服务，同时，下层所提供服务的实现细节对上层透明</li>
+<li>两台主机通信时，对等层在逻辑上有一条直接信道，其表现为不经过下层就把信息传给对方</li>
+</ul>
+<h2 id="数据单位"><a href="#数据单位" class="headerlink" title="数据单位"></a>数据单位</h2><p>在计算机网络的分层结构中，每层有着自己的传输数据单位，其名称、大小、含义均不同</p>
+<p>在整个体系结构的各个层次中，每个报文分为两部分：<code>SDU</code>、<code>PCI</code>，两者共同组成 <code>PDU</code></p>
+<ul>
+<li><strong>服务数据单元 SDU</strong>：报文的<strong>数据部分</strong>，是为了完成用户所要求的功能而应传送的数据，第 $n$ 层的服务数据单元记为 <code>n-SDU</code></li>
+<li><strong>协议控制信息 PCI</strong>：报文的<strong>控制信息部分</strong>，是控制协议操作的信息，第 $n$ 层的协议控制信息记为 <code>n-PCI</code></li>
+<li><strong>协议数据单元 PDU</strong>：对等层次传送的数据单元，第 $n$ 层的协议数据单元记为 <code>n-PDU</code></li>
+</ul>
+<p>在实际的网络中，每层协议数据单元都有一个通俗的名称，在物理层中，称为<strong>比特</strong>；在链路层中，称为<strong>帧</strong>；在网络层中，称为<strong>分组</strong>；在传输层中，称为<strong>报文</strong></p>
+<p>在各层间传输数据时，对于发送方，会将第 $n+1$ 层收到的 <code>PDU</code> 作为第 $n$ 层的 <code>SDU</code>，再加上第 $n$ 层的 <code>PCI</code>，就构成了第 $n$ 层的 <code>PDU</code>，之后交给第 $n-1$ 层后作为 $SDU$ 发送，而接受方则进行相反的处理</p>
+<p>综上，三者的关系如下：</p>
+<script type="math/tex; mode=display">
+\begin{align}
+n-PDU &= n-SDU+n-PCI\\
+&=(n-1)-SDU
+\end{align}</script><p><img width="500" src="/images/notes/computer-networks/04-1.png"></p>
+<h1 id="【协议、接口、服务】"><a href="#【协议、接口、服务】" class="headerlink" title="【协议、接口、服务】"></a>【协议、接口、服务】</h1><h2 id="协议"><a href="#协议" class="headerlink" title="协议"></a>协议</h2><p><strong>网络协议（Network Protocol）</strong>，是为网络中数据交换而建立的规则、标准、约定，其是控制两个<strong>对等实体</strong>进行通信的规则集合</p>
+<p>网络协议是<strong>水平</strong>上的概念，也就是说，不对等实体之间是不存在协议的</p>
+<p>协议由语法、语义、同步三个要素组成：</p>
+<ul>
+<li><strong>语法</strong>：规定了传输数据的格式</li>
+<li><strong>语义</strong>：规定了要完成的功能，即发出何种控制信息、完成何种动作、做出何种应答</li>
+<li><strong>同步</strong>：规定了执行各种操作的条件、时序关系</li>
+</ul>
+<h2 id="接口"><a href="#接口" class="headerlink" title="接口"></a>接口</h2><p><strong>接口（Interface）</strong>，是同一结点内相邻两层间交换信息的连接点，是一个系统内部的规定，每层只能为紧邻的层次定义接口</p>
+<p>在典型的接口中，同一结点相邻两层的实体通过<strong>服务访问点（Service Access Point，SAP）</strong>进行交互，服务通过 <code>SAP</code> 提供给上层使用，第 $n$ 层的 <code>SAP</code> 就是第 $n+1$ 层可以访问第 $n$ 层服务的位置</p>
+<p>每个 <code>SAP</code> 都有一个能够标识的地址，但其实是一个抽象的逻辑接口</p>
+<h2 id="服务"><a href="#服务" class="headerlink" title="服务"></a>服务</h2><p><strong>服务（Service）</strong>，是下层为紧邻的上层所提供的功能调用</p>
+<p>服务是<strong>垂直</strong>的概念，对等实体在协议的控制下，能够令本层为上层提供服务，同时要实现本层协议还要使用下层的服务</p>
+<p>上层在使用下层所提供的服务时，必须要与下层进行命令交换，这些命令被称为<strong>服务原语</strong>，其划分为以下四类：</p>
+<ul>
+<li><strong>请求（Request）</strong>：由服务用户发往服务提供者，请求完成某项工作</li>
+<li><strong>证实（Confirmation）</strong>：由服务提供者发往服务用户，作为对请求的证实</li>
+<li><strong>指示（Indication）</strong>：由服务提供者发往服务用户，指示用户进行某项工作</li>
+<li><strong>响应（Response）</strong>：由服务用户发往服务提供者，作为对指示的响应</li>
+</ul>
+<p>这 4 类服务原语的关系如下图所示</p>
+<p><img width="500" src="/images/notes/computer-networks/04-2.png"></p>
+<h2 id="协议、服务、接口关系"><a href="#协议、服务、接口关系" class="headerlink" title="协议、服务、接口关系"></a>协议、服务、接口关系</h2><p>协议、服务、接口之间的关系如下图所示</p>
+<p><img width="500" src="/images/notes/computer-networks/04-3.png"></p>
+<h1 id="【服务类型】"><a href="#【服务类型】" class="headerlink" title="【服务类型】"></a>【服务类型】</h1><p>计算机网络提供的服务，可以按照以下三种方式进行分类：</p>
+<font size="3">1.面向连接服务与无连接服务</font>
+
+<ul>
+<li><strong>面向连接服务</strong>：通信前双方需建立连接，分配相应资源，通信完成后释放连接与所占用的资源</li>
+<li><strong>无连接服务</strong>：通信双方在需要发送数据时可直接发送，由系统选定线路进行传输，是一种不可靠服务，无法保证通信的可靠性</li>
+</ul>
+<font size="3">2.可靠服务与不可靠服务</font>
+
+<ul>
+<li><strong>可靠服务</strong>：网络具有纠错、检错、应答机制，能够保证数据正确、可靠地传送到目的地</li>
+<li><strong>不可靠服务</strong>：网络只是尽量正确、可靠的传送，无法保证数据正确、可靠地传送到目的地，是一种尽最大可能交付的服务</li>
+</ul>
+<p>对于不可靠服务来说，若想保证数据的正确性，应由用户或应用来进行保障，例如在收到信息后判断信息的正确性，根据正确性来对发送方进行反馈</p>
+<font size="3">3.有应答服务与无应答服务</font>
+
+<ul>
+<li><p><strong>有应答服务</strong>：是指接收方在收到数据后向发送方作出相应的应答，该应答由传输系统内部自动实现</p>
+</li>
+<li><p><strong>无应答服务</strong>：是值接收方收到数据后不自动给出应答，若需要应答，则由高层实现</p>
+</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>感谢您对我的支持，让我继续努力分享有用的技术与知识点！</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/wechatpay.jpg" alt="Alex_McAvoy 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/alipay.jpg" alt="Alex_McAvoy 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Alex_McAvoy
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://alex-mcavoy.github.io/notes/computer-networks/507ba1e8.html" title="计算机网络体系结构">https://alex-mcavoy.github.io/notes/computer-networks/507ba1e8.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/notes/" rel="tag"># 学习笔记</a>
+              <a href="/tags/network/" rel="tag"># 网络相关</a>
+              <a href="/tags/computer-networks/" rel="tag"># 计算机网络</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/notes/computer-networks/d8e88f84.html" rel="prev" title="计算机网络性能指标">
+      <i class="fa fa-chevron-left"></i> 计算机网络性能指标
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/notes/computer-networks/a578908.html" rel="next" title="ISO/OSI 参考模型">
+      ISO/OSI 参考模型 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【计算机网络的层次结构】"><span class="nav-number">1.</span> <span class="nav-text">【计算机网络的层次结构】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#体系结构"><span class="nav-number">1.1.</span> <span class="nav-text">体系结构</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#分层原则"><span class="nav-number">1.2.</span> <span class="nav-text">分层原则</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#层次结构"><span class="nav-number">1.3.</span> <span class="nav-text">层次结构</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#数据单位"><span class="nav-number">1.4.</span> <span class="nav-text">数据单位</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【协议、接口、服务】"><span class="nav-number">2.</span> <span class="nav-text">【协议、接口、服务】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#协议"><span class="nav-number">2.1.</span> <span class="nav-text">协议</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#接口"><span class="nav-number">2.2.</span> <span class="nav-text">接口</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#服务"><span class="nav-number">2.3.</span> <span class="nav-text">服务</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#协议、服务、接口关系"><span class="nav-number">2.4.</span> <span class="nav-text">协议、服务、接口关系</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【服务类型】"><span class="nav-number">3.</span> <span class="nav-text">【服务类型】</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">  
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Alex_McAvoy"
+      src="/assets/img/head.jpg">
+  <p class="site-author-name" itemprop="name">Alex_McAvoy</p>
+  <div class="site-description" itemprop="description">想要成为渔夫的猎手</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">541</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">56</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">61</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Alex-McAvoy" title="GitHub → https://github.com/Alex-McAvoy" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/u011815404" title="CSDN → https://blog.csdn.net/u011815404" rel="noopener" target="_blank"><i class="fas fa-copyright fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+<!-- 访客地图 -->
+<script type="text/javascript" src="//rf.revolvermaps.com/0/0/5.js?i=50n58yo58ow&amp;m=0&amp;c=ff0000&amp;cr1=ffffff&amp;s=140" async="async"></script>
+
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdz20172133" title="https://blog.csdn.net/sdz20172133" rel="noopener" target="_blank">神仙队友</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://pxlsdz.gitee.io/" title="https://pxlsdz.gitee.io/" rel="noopener" target="_blank">神仙队友的另一个博客</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://bycore.net" title="https://bycore.net" rel="noopener" target="_blank">凉了的某饼同学</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://kris-cn.github.io/" title="http://kris-cn.github.io/" rel="noopener" target="_blank">翟孙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://deng.fun/" title="http://deng.fun/" rel="noopener" target="_blank">芙蓉姐姐</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdau_fangshifeng" title="https://blog.csdn.net/sdau_fangshifeng" rel="noopener" target="_blank">一个头很酷的家伙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/wentong_Xu" title="https://blog.csdn.net/wentong_Xu" rel="noopener" target="_blank">小黑贱胖子</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.yuheng.tech/" title="https://www.yuheng.tech/" rel="noopener" target="_blank">咸于</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/lanshan1111" title="https://blog.csdn.net/lanshan1111" rel="noopener" target="_blank">肥硕硕</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdauguanweihong" title="https://blog.csdn.net/sdauguanweihong" rel="noopener" target="_blank">管少</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_41661919" title="https://blog.csdn.net/qq_41661919" rel="noopener" target="_blank">俊杰</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_40859951" title="https://blog.csdn.net/qq_40859951" rel="noopener" target="_blank">峰哥</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/LSD20164388" title="https://blog.csdn.net/LSD20164388" rel="noopener" target="_blank">狗冬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37748451" title="https://blog.csdn.net/qq_37748451" rel="noopener" target="_blank">胖亚亚</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37868325" title="https://blog.csdn.net/qq_37868325" rel="noopener" target="_blank">妍大佬</a>
+        </li>
+    </ul>
+  </div>
+
+		
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+  
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Alex_McAvoy</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+</br>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script><script src="/js/bookmark.js"></script>
+
+
+
+  
+
+
+
+
+  <script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '48fd73a538d3fa927f65',
+      clientSecret: '56618aefeee90bac3c20de8d51bb0b985d67252d',
+      repo        : 'Gitalk-Comment',
+      owner       : 'Alex-McAvoy',
+      admin       : ['Alex-McAvoy'],
+      id          : '73d2638c1979c77da231d996fc564cde',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+  
+  <!-- 鼠标单击粒子特效 -->
+  <script type="text/javascript" src="/js/cursor-effects.js"></script>
+  <!-- 多级目录 -->
+  <script type="text/javascript" src="/js/category.js"></script>
+  
+</body>
+</html>

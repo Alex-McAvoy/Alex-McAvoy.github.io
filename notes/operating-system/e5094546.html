@@ -1,0 +1,1001 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.9.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/img/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/assets/img/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/pace-js@1/themes/blue/pace-theme-minimal.css">
+  <script src="//cdn.jsdelivr.net/npm/pace-js@1/pace.min.js"></script>
+
+
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"alex-mcavoy.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":16,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":true,"color":"#ff0000","save":"manual"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":true},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.json"};
+  </script>
+
+  <meta name="description" content="【死锁预防】预防死锁的方法是通过破坏死锁的四个必要条件中的一个或几个，以避免发生死锁 由于互斥条件是非共享设备所必须的，不仅不能改变，还要加以保证，因此主要是破坏产生死锁的后三个条件">
+<meta name="keywords" content="学习笔记,操作系统">
+<meta property="og:type" content="article">
+<meta property="og:title" content="死锁预防与死锁避免">
+<meta property="og:url" content="https://alex-mcavoy.github.io/notes/operating-system/e5094546.html">
+<meta property="og:site_name" content="Alex_McAvoy">
+<meta property="og:description" content="【死锁预防】预防死锁的方法是通过破坏死锁的四个必要条件中的一个或几个，以避免发生死锁 由于互斥条件是非共享设备所必须的，不仅不能改变，还要加以保证，因此主要是破坏产生死锁的后三个条件">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2021-10-21T13:56:11.708Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="死锁预防与死锁避免">
+<meta name="twitter:description" content="【死锁预防】预防死锁的方法是通过破坏死锁的四个必要条件中的一个或几个，以避免发生死锁 由于互斥条件是非共享设备所必须的，不仅不能改变，还要加以保证，因此主要是破坏产生死锁的后三个条件">
+
+<link rel="canonical" href="https://alex-mcavoy.github.io/notes/operating-system/e5094546.html">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>死锁预防与死锁避免 | Alex_McAvoy</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Alex_McAvoy</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">想要成为渔夫的猎手</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+
+	
+	
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/notes/operating-system/e5094546.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/assets/img/head.jpg">
+      <meta itemprop="name" content="Alex_McAvoy">
+      <meta itemprop="description" content="想要成为渔夫的猎手">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Alex_McAvoy">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          死锁预防与死锁避免
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-11-25 19:23:25" itemprop="dateCreated datePublished" datetime="2019-11-25T19:23:25+08:00">2019-11-25</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/notes/" itemprop="url" rel="index"><span itemprop="name">学习笔记</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/notes/operating-system/" itemprop="url" rel="index"><span itemprop="name">操作系统</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>5.2k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>5 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="【死锁预防】"><a href="#【死锁预防】" class="headerlink" title="【死锁预防】"></a>【死锁预防】</h1><p>预防死锁的方法是通过破坏死锁的四个必要条件中的一个或几个，以避免发生死锁</p>
+<p>由于互斥条件是非共享设备所必须的，不仅不能改变，还要加以保证，因此主要是破坏产生死锁的后三个条件</p>
+<ul>
+<li><strong>破坏请求与保持条件</strong>：系统必须做到当一个进程在请求资源时，其不能持有不可抢占资源，因此一般利用 <strong>AND 信号量机制</strong>，在进程开始前，一次性地为进程申请所需的全部资源</li>
+<li><strong>破坏不可抢占条件</strong>：允许进程先运行，但<strong>当提出的新要求不被满足时，必须释放其已保持的所有资源</strong>，待以后需要时再重新申请</li>
+<li><strong>破坏环路等待条件</strong>：将所有资源按类型进行线性排队，赋予不同序号，所有<strong>进程对资源的请求必须严格按照资源序号递增的次序提出</strong>，从而保证在形成的资源分配图中不会出现环路</li>
+</ul>
+<p>可以看出，破坏请求与保持条件，算法简单，易于实现且十分安全，但资源浪费严重，且进程可能会延迟运行；破坏不可抢占条件实现复杂，可能会造成反复申请与释放的情况；破坏环路等待条件较前两者有了极大改善，资源利用率与系统吞吐量有了明显提高，但存在资源编号限制新设备的增加、应用中的使用设备顺序与规定顺序不协调等情况</p>
+<h1 id="【死锁避免】"><a href="#【死锁避免】" class="headerlink" title="【死锁避免】"></a>【死锁避免】</h1><p>预防死锁的限制条件都太强，造成一定程度上的应用不变，因此在实际应用中，常采用避免死锁的方法，避免死锁只施加较弱的限制条件，但获得了令人满意的系统性能</p>
+<h2 id="安全状态与安全序列"><a href="#安全状态与安全序列" class="headerlink" title="安全状态与安全序列"></a>安全状态与安全序列</h2><p>在避免死锁方法中，将系统的状态分为安全状态与不安全状态，当系统处于安全状态时，可避免发生死锁，当系统处于不安全状态时，可能进入死锁：</p>
+<ul>
+<li><strong>安全状态</strong>：系统能按某种进程顺序为每个进程分配所需资源，直至满足每个进程对资源的最大需求，并能顺利完成</li>
+<li><strong>不安全状态</strong>：系统无法找到一种使多个进程能够顺利分配资源执行完的<strong>安全序列</strong></li>
+</ul>
+<p>而<strong>安全序列</strong>，就是指系统按此进程序列进行分配资源，就能使每个进程都顺利完成</p>
+<hr>
+<p>假定系统中有三个进程 $P_1,P_2,P_3$，共有 $12$ 个资源，三个进程分别要求 $10$ 个、$4$ 个、$9$ 个资源，假设在 $T_0$ 时刻，进程 $P_1,P_2,P_3$ 已获得 $5$ 个、$2$ 个、$2$ 个资源，尚有 $3$ 个资源未分配，那么有：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:center">进程</th>
+<th style="text-align:center">最大需求</th>
+<th style="text-align:center">已分配</th>
+<th style="text-align:center">可用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">$P_1$</td>
+<td style="text-align:center">$10$</td>
+<td style="text-align:center">$5$</td>
+<td style="text-align:center">$3$</td>
+</tr>
+<tr>
+<td style="text-align:center">$P_2$</td>
+<td style="text-align:center">$4$</td>
+<td style="text-align:center">$2$</td>
+<td style="text-align:center"></td>
+</tr>
+<tr>
+<td style="text-align:center">$P_3$</td>
+<td style="text-align:center">$9$</td>
+<td style="text-align:center">$2$</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>经过分析可知，由于存在一个安全序列 $P_2,P_1,P_3$，那么系统处于安全状态</p>
+<p>即将剩余的 $3$ 个资源取出 $2$ 个分配给进程 $P_2$，使其继续运行，待执行完毕后即可释放出 $4$ 个资源，此时有：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:center">进程</th>
+<th style="text-align:center">最大需求</th>
+<th style="text-align:center">已分配</th>
+<th style="text-align:center">可用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">$P_1$</td>
+<td style="text-align:center">$10$</td>
+<td style="text-align:center">$5$</td>
+<td style="text-align:center">$5$</td>
+</tr>
+<tr>
+<td style="text-align:center">$P_2$</td>
+<td style="text-align:center">$0$</td>
+<td style="text-align:center">$0$</td>
+<td style="text-align:center"></td>
+</tr>
+<tr>
+<td style="text-align:center">$P_3$</td>
+<td style="text-align:center">$9$</td>
+<td style="text-align:center">$2$</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>此时可用资源达到了 $5$ 个，那么再将这 $5$ 个资源分配给进程 $P_1$，使其继续运行，待运行完毕后，即可释放出 $10$ 个资源，此时有：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>进程</th>
+<th>最大需求</th>
+<th>已分配</th>
+<th>可用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$P_1$</td>
+<td>$0$</td>
+<td>$0$</td>
+<td>$10$</td>
+</tr>
+<tr>
+<td>$P_2$</td>
+<td>$0$</td>
+<td>$0$</td>
+<td></td>
+</tr>
+<tr>
+<td>$P_3$</td>
+<td>$9$</td>
+<td>$2$</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>这时进程 $P_3$ 就有足够的资源，从而使得每个进程都能顺利完成</p>
+<p>每次资源分配时，都应按照上述实例来分析资源分配图，看该次操作后是否有安全序列，若不存在安全序列，说明该操作会使系统进入不安全状态</p>
+<p>需要注意的是，<strong>只要使系统始终处于安全状态，便可避免发生死锁，但不是所有的不安全状态都是死锁状态</strong>。</p>
+<h2 id="银行家算法与安全性算法"><a href="#银行家算法与安全性算法" class="headerlink" title="银行家算法与安全性算法"></a>银行家算法与安全性算法</h2><h3 id="基本思路"><a href="#基本思路" class="headerlink" title="基本思路"></a>基本思路</h3><p>银行家算法是最有代表性的避免死锁的算法，其有 Dijkstra 提出，该算法因能用于银行系统现金贷款的发放而得名</p>
+<p>该算法随时对系统中的所有资源信息进行统计，包括每种资源的数量、已分配给各进程的数量等，每当进程提出某种资源请求时，会判断该请求分配后是否安全，如果安全才分配</p>
+<p>也就是说，对每个资源请求的处理都要保证系统始终从一个安全状态到另一个安全状态</p>
+<h3 id="数据结构"><a href="#数据结构" class="headerlink" title="数据结构"></a>数据结构</h3><p><strong><font size="4">1.进程请求资源的数量</font></strong></p>
+<p>进程请求某类型资源的数量 <code>Request[i][j]</code>：代表进程 $P_i$ 请求 $j$ 类型资源的数量</p>
+<p>例如：$Request[i][j]=k$ 表示进程 $P_i$ 需要 $k$ 个 $j$ 类型的资源</p>
+<p><strong><font size="4">2.各类可利用资源的数量</font></strong></p>
+<p>各类可利用资源的数量 <code>Available[m]</code>：包含 $m$ 个元素，每个元素代表一类可利用的资源数目，初始值是系统配置的该类资源的全部数目，值随着资源的分配与回收而动态改变</p>
+<p>例如：$Available[j]=k$ 表示系统中 $j$ 类资源现有可用资源 $k$ 个</p>
+<p><strong><font size="4">3.每个进程对每类资源的最大需求</font></strong></p>
+<p>每个进程对每类资源的最大需求 <code>Max[n][m]</code>：系统 $n$ 个进程中每个进程分别对 $m$ 类资源的最大需求，初始值是进程的需要资源数</p>
+<p>例如：$Max[i][j]=k$ 表示进程 $i$ 需要 $j$ 类资源的最大数目为 $k$</p>
+<p><strong><font size="4">4.每个进程对每类资源的已分配矩阵</font></strong></p>
+<p>每个进程对每类资源的已分配矩阵 <code>Allocation[n][m]​</code>：系统 $n$ 个进程中每个进程分别对 $m$ 类资源已获得的资源数量</p>
+<p>例如：$Allocation[i][j]=k$ 表示进程 $i$ 当前已获得 $j$ 类资源的数量为 $k$</p>
+<p><strong><font size="4">5.每个进程对每类资源的需求矩阵</font></strong></p>
+<p>每个进程对每类资源的需求矩阵 <code>Need[n][m]​</code>：系统 $n$ 个进程中每个进程分别对 $m$ 类资源还需要的资源数量</p>
+<p>例如：$Need[i][j]=k$ 表示进程 $i$ 还需要 $j$ 类资源 $k$ 个</p>
+<p>需要注意的是，上述的三个矩阵存在如下关系：</p>
+<script type="math/tex; mode=display">
+Max[i][j]=Allocation[i][j]+Need[i][j]</script><h3 id="安全性算法"><a href="#安全性算法" class="headerlink" title="安全性算法"></a>安全性算法</h3><p>安全性算法用于检查系统是否处于安全状态，其工作流程如下：</p>
+<p><strong><font size="4">1.设置工作向量与标记向量</font></strong></p>
+<p>工作向量 <code>Work[m]</code>：表示系统可提供给进程继续运行所需的各类资源数目，其初始值与 <code>Available[m]</code> 向量相同</p>
+<p>例如：$Work[j]=k$ 表示系统中 $j$ 类资源可提供给进程 $k$ 个</p>
+<p>标记向量 <code>Finish[n]</code>：表示系统是否有足够的资源分配给进程，初始值为 <code>false</code>，当有足够资源分配给进程 $P_i$ 时，有 <code>Finish[i]=true</code></p>
+<p><strong><font size="4">2.在进程集合中寻找进程</font></strong></p>
+<p>在进程集合中找到一个满足下述条件的进程 $P_i$：</p>
+<script type="math/tex; mode=display">
+\begin{cases}
+Finish[i]=false\\
+Need[i][j] \leq Work[j]
+\end{cases}</script><p>若能找到，执行步骤 3，否则，执行步骤 4</p>
+<p><strong><font size="4">3.分配资源</font></strong></p>
+<p>当进程 $P_i$ 获得资源后，可顺利执行，直至完成，并释放出分配给他的资源，因此执行：</p>
+<script type="math/tex; mode=display">
+\begin{cases}
+Work[j]=Work[j]+Allocation[i][j]\\
+Finish[i]=true
+\end{cases}</script><p>然后转到步骤 2，寻找下一个满足条件的进程</p>
+<p><strong><font size="4">4.判断安全状态</font></strong></p>
+<p>若所有进程的 $Finish[i]=true$ 均满足，则表示系统处于安全状态，否则，系统处于不安全状态</p>
+<h3 id="银行家算法"><a href="#银行家算法" class="headerlink" title="银行家算法"></a>银行家算法</h3><p>银行家算法是一种资源分配策略，在经过安全性算法确定系统安全状态后，若处于安全状态，则执行该算法分配资源</p>
+<p>当进程 $P_i$ 发出资源请求后，系统按下述步骤进行检查：</p>
+<ol>
+<li>若 $Request_i[j] \leq Need[i][j]$，转向步骤 2，否则认为出错，即所需资源数已超过宣布的最大值</li>
+<li>若 $Request_i[j] \leq Available[j]$，转向步骤 3，否则表示尚无所需资源，进程 $P_i$ 需等待</li>
+<li>系统试探着将资源分配给进行 $P_i$，并修改下面数据结构中的值：<script type="math/tex; mode=display">
+\begin{cases}
+Available[j] = Available[j]-Request_i[j]\\
+Allocation[i][j]=Allocation[i][j]+Request_i[j]\\
+Need[i][j]=Need[i][j]-Request_i[j]
+\end{cases}</script></li>
+<li>系统执行<strong>安全性算法</strong>，检查此次资源分配后系统是否处于安全状态，若安全，则将资源正式分配给进程 $P_i$，以完成本次分配，否则，本次的试探分配作废，恢复原来的分配状态，让进程 $P_i$ 等待</li>
+</ol>
+<h2 id="实例"><a href="#实例" class="headerlink" title="实例"></a>实例</h2><h3 id="安全性算法-1"><a href="#安全性算法-1" class="headerlink" title="安全性算法"></a>安全性算法</h3><p>设系统有 $5$ 个进程 ${P_0,P_1,P_2,P_3,P_4}$，$3$ 类资源 ${R_1,R_2,R_3}$，数量分别为 $10,5,7$，在 $T_0$ 时刻，可分配资源 <code>Available</code> 为 $(3,3,2)$，同时资源分配表如下：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:center">进程</th>
+<th style="text-align:center"><code>Max</code></th>
+<th style="text-align:center"><code>Allocation</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">$P_1$</td>
+<td style="text-align:center">$(7,5,3)$</td>
+<td style="text-align:center">$(0,1,0)$</td>
+</tr>
+<tr>
+<td style="text-align:center">$P_2$</td>
+<td style="text-align:center">$(3,2,2)$</td>
+<td style="text-align:center">$(2,0,0)$</td>
+</tr>
+<tr>
+<td style="text-align:center">$P_3$</td>
+<td style="text-align:center">$(9,0,2)$</td>
+<td style="text-align:center">$(3,0,2)$</td>
+</tr>
+<tr>
+<td style="text-align:center">$P_4$</td>
+<td style="text-align:center">$(2,2,2)$</td>
+<td style="text-align:center">$(2,1,1)$</td>
+</tr>
+<tr>
+<td style="text-align:center">$P_5$</td>
+<td style="text-align:center">$(4,3,3)$</td>
+<td style="text-align:center">$(0,0,2)$</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>首先，求 <code>Need​</code> 矩阵，有：</p>
+<script type="math/tex; mode=display">
+\begin{align}
+Need &= Max-Allocation \notag \\
+&= \begin{bmatrix}
+7 & 5 & 3\\
+3 & 2 & 2\\
+9 & 0 & 2\\
+2 & 2 & 2\\
+4 & 3 & 3\\
+\end{bmatrix} 
+- \begin{bmatrix}
+0 & 1 & 0\\
+2 & 0 & 0\\
+3 & 0 & 2\\
+2 & 1 & 1\\
+0 & 0 & 2\\
+\end{bmatrix} \notag \\
+&= \begin{bmatrix}
+7 & 4 & 3\\
+1 & 2 & 2\\
+6 & 0 & 0\\
+0 & 1 & 1\\
+4 & 3 & 1\\
+\end{bmatrix} \notag 
+\end{align}</script><p>之后，将 <code>Work</code> 向量和 <code>Need</code> 矩阵各行比较，找出比 <code>Work</code> 小的行，初始时，有：</p>
+<script type="math/tex; mode=display">
+\begin{align}
+P_1:(3,3,2)>(1,2,2)\rightarrow Need_1=(3,2,2),Allocation_1=(2,0,0) \notag \\
+P_3:(3,3,2)>(0,1,1)\rightarrow Need_1=(2,2,2),Allocation_1=(2,1,1) \notag  \\
+\end{align}</script><p>将 $P_1,P_3$ 依次加入安全序列，然后释放资源</p>
+<script type="math/tex; mode=display">
+Work=(3,3,2)+(2,0,0)+(2,1,1)=(7,4,3)</script><p>此时，<code>Need</code> 矩阵更新为：</p>
+<script type="math/tex; mode=display">
+Need=\begin{bmatrix}
+7 & 4 & 3\\
+6 & 0 & 0\\
+4 & 3 & 1\\
+\end{bmatrix}</script><p>最后，重复上述步骤，即可得到一个安全序列：</p>
+<script type="math/tex; mode=display">
+\{P_1,P_3,P_4,P_2,P_0\}</script><h3 id="银行家算法-1"><a href="#银行家算法-1" class="headerlink" title="银行家算法"></a>银行家算法</h3><p>设系统有 $5$ 个进程 ${P_0,P_1,P_2,P_3,P_4}$，$3$ 类资源 ${R_1,R_2,R_3}$，数量分别为 $10,5,7$，在 $T_0$ 时刻，可分配资源 <code>Available</code> 为 $(3,3,2)$，同时资源分配表如下：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:center">进程</th>
+<th style="text-align:center"><code>Max​</code></th>
+<th style="text-align:center"><code>Allocation​</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">$P_1$</td>
+<td style="text-align:center">$(7,5,3)$</td>
+<td style="text-align:center">$(0,1,0)$</td>
+</tr>
+<tr>
+<td style="text-align:center">$P_2$</td>
+<td style="text-align:center">$(3,2,2)$</td>
+<td style="text-align:center">$(2,0,0)$</td>
+</tr>
+<tr>
+<td style="text-align:center">$P_3$</td>
+<td style="text-align:center">$(9,0,2)$</td>
+<td style="text-align:center">$(3,0,2)$</td>
+</tr>
+<tr>
+<td style="text-align:center">$P_4$</td>
+<td style="text-align:center">$(2,2,2)$</td>
+<td style="text-align:center">$(2,1,1)$</td>
+</tr>
+<tr>
+<td style="text-align:center">$P_5$</td>
+<td style="text-align:center">$(4,3,3)$</td>
+<td style="text-align:center">$(0,0,2)$</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>下面给出银行家算法中可能出现的三种情况的实例：</p>
+<p><strong><font size="4">1.分配成功</font></strong></p>
+<p>初始时，$P_2$ 请求资源 $Request_2=(1,0,2)$，此时，有：</p>
+<script type="math/tex; mode=display">
+\begin{align}
+Request_2=(1,0,2)\leq Need_1=(1,2,2) \notag  \\
+Request_2=(1,0,2)\leq Available=(3,3,2) \notag 
+\end{align}</script><p>假定可为 $P_2$ 分配资源，则：</p>
+<script type="math/tex; mode=display">
+\begin{cases}
+Available=(2,3,0) \notag  \\
+Allocation_2=(3,0,2) \notag \\
+Need_2=(0,2,0) \notag 
+\end{cases}</script><p>令向量 $Work=Available=(2,3,0)$，然后执行安全性算法检查，可得安全序列：</p>
+<script type="math/tex; mode=display">
+\{P_1,P_3,P_4,P_2,P_0\}</script><p>此时，可为 $P_2$ 分配资源</p>
+<p><strong><font size="4">2.需要等待</font></strong></p>
+<p>初始时，$P_5$ 申请资源 $Request_5=(3,3,0)$，此时，有：</p>
+<script type="math/tex; mode=display">
+\begin{align}
+Request_5=(3,3,0)\leq Need_5=(4,3,1) \notag \\
+Request_5=(3,3,0)\geq Available=(2,3,0) \notag 
+\end{align}</script><p>可分配的资源不足，$P_4$ 需要等待</p>
+<p><strong><font size="4">3.拒绝分配</font></strong></p>
+<p>初始时，$P_1$ 申请资源 $Request_1=(0,2,0)$，此时，有：</p>
+<script type="math/tex; mode=display">
+\begin{align}
+Request_1=(0,2,0)\leq Need_2=(7,4,3) \notag  \\
+Request_1=(0,2,0)\geq Available=(2,3,0) \notag 
+\end{align}</script><p>假定为 $P_1$ 分配资源，则：</p>
+<script type="math/tex; mode=display">
+\begin{cases}
+Available=(2,1,0) \notag  \\
+Allocation_1=(0,3,0) \notag  \\
+Need_1=(7,2,3) \notag 
+\end{cases}</script><p>令向量 $Work=Available=(2,1,0)$，然后执行安全性算法检查，此时无法满足任何进程的需要，进入不安全状态，因此拒绝为 $P_1$ 分配资源</p>
+
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>感谢您对我的支持，让我继续努力分享有用的技术与知识点！</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/wechatpay.jpg" alt="Alex_McAvoy 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/alipay.jpg" alt="Alex_McAvoy 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Alex_McAvoy
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://alex-mcavoy.github.io/notes/operating-system/e5094546.html" title="死锁预防与死锁避免">https://alex-mcavoy.github.io/notes/operating-system/e5094546.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/notes/" rel="tag"># 学习笔记</a>
+              <a href="/tags/operating-system/" rel="tag"># 操作系统</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/notes/operating-system/c4f16f83.html" rel="prev" title="死锁的基本概念">
+      <i class="fa fa-chevron-left"></i> 死锁的基本概念
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/notes/operating-system/f1df5f02.html" rel="next" title="死锁检测与死锁解除">
+      死锁检测与死锁解除 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【死锁预防】"><span class="nav-number">1.</span> <span class="nav-text">【死锁预防】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【死锁避免】"><span class="nav-number">2.</span> <span class="nav-text">【死锁避免】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#安全状态与安全序列"><span class="nav-number">2.1.</span> <span class="nav-text">安全状态与安全序列</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#银行家算法与安全性算法"><span class="nav-number">2.2.</span> <span class="nav-text">银行家算法与安全性算法</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#基本思路"><span class="nav-number">2.2.1.</span> <span class="nav-text">基本思路</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#数据结构"><span class="nav-number">2.2.2.</span> <span class="nav-text">数据结构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#安全性算法"><span class="nav-number">2.2.3.</span> <span class="nav-text">安全性算法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#银行家算法"><span class="nav-number">2.2.4.</span> <span class="nav-text">银行家算法</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#实例"><span class="nav-number">2.3.</span> <span class="nav-text">实例</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#安全性算法-1"><span class="nav-number">2.3.1.</span> <span class="nav-text">安全性算法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#银行家算法-1"><span class="nav-number">2.3.2.</span> <span class="nav-text">银行家算法</span></a></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">  
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Alex_McAvoy"
+      src="/assets/img/head.jpg">
+  <p class="site-author-name" itemprop="name">Alex_McAvoy</p>
+  <div class="site-description" itemprop="description">想要成为渔夫的猎手</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">541</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">56</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">61</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Alex-McAvoy" title="GitHub → https://github.com/Alex-McAvoy" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/u011815404" title="CSDN → https://blog.csdn.net/u011815404" rel="noopener" target="_blank"><i class="fas fa-copyright fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+<!-- 访客地图 -->
+<script type="text/javascript" src="//rf.revolvermaps.com/0/0/5.js?i=50n58yo58ow&amp;m=0&amp;c=ff0000&amp;cr1=ffffff&amp;s=140" async="async"></script>
+
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdz20172133" title="https://blog.csdn.net/sdz20172133" rel="noopener" target="_blank">神仙队友</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://pxlsdz.gitee.io/" title="https://pxlsdz.gitee.io/" rel="noopener" target="_blank">神仙队友的另一个博客</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://bycore.net" title="https://bycore.net" rel="noopener" target="_blank">凉了的某饼同学</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://kris-cn.github.io/" title="http://kris-cn.github.io/" rel="noopener" target="_blank">翟孙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://deng.fun/" title="http://deng.fun/" rel="noopener" target="_blank">芙蓉姐姐</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdau_fangshifeng" title="https://blog.csdn.net/sdau_fangshifeng" rel="noopener" target="_blank">一个头很酷的家伙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/wentong_Xu" title="https://blog.csdn.net/wentong_Xu" rel="noopener" target="_blank">小黑贱胖子</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.yuheng.tech/" title="https://www.yuheng.tech/" rel="noopener" target="_blank">咸于</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/lanshan1111" title="https://blog.csdn.net/lanshan1111" rel="noopener" target="_blank">肥硕硕</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdauguanweihong" title="https://blog.csdn.net/sdauguanweihong" rel="noopener" target="_blank">管少</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_41661919" title="https://blog.csdn.net/qq_41661919" rel="noopener" target="_blank">俊杰</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_40859951" title="https://blog.csdn.net/qq_40859951" rel="noopener" target="_blank">峰哥</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/LSD20164388" title="https://blog.csdn.net/LSD20164388" rel="noopener" target="_blank">狗冬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37748451" title="https://blog.csdn.net/qq_37748451" rel="noopener" target="_blank">胖亚亚</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37868325" title="https://blog.csdn.net/qq_37868325" rel="noopener" target="_blank">妍大佬</a>
+        </li>
+    </ul>
+  </div>
+
+		
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+  
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Alex_McAvoy</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+</br>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script><script src="/js/bookmark.js"></script>
+
+
+
+  
+
+
+
+
+  <script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '48fd73a538d3fa927f65',
+      clientSecret: '56618aefeee90bac3c20de8d51bb0b985d67252d',
+      repo        : 'Gitalk-Comment',
+      owner       : 'Alex-McAvoy',
+      admin       : ['Alex-McAvoy'],
+      id          : 'b0d211b0bdfdb47c70177378a2802072',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+  
+  <!-- 鼠标单击粒子特效 -->
+  <script type="text/javascript" src="/js/cursor-effects.js"></script>
+  <!-- 多级目录 -->
+  <script type="text/javascript" src="/js/category.js"></script>
+  
+</body>
+</html>

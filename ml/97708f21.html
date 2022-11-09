@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.9.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/img/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/assets/img/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/pace-js@1/themes/blue/pace-theme-minimal.css">
+  <script src="//cdn.jsdelivr.net/npm/pace-js@1/pace.min.js"></script>
+
+
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"alex-mcavoy.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":16,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":true,"color":"#ff0000","save":"manual"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":true},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.json"};
+  </script>
+
+  <meta name="description" content="Reference  统计学习方法（一）：泛化误差上界  关于Hoeffding不等式及泛化误差上界 偏差方差分解 偏置方差分解Bias-variance Decomposition 机器学习中的方差和偏差   【训练误差与测试误差】在 机器学习三要素 中，介绍了损失函数，而对于任何一个模型来说，具体采用的损失函数，未必是评估模型时所用的损失函数">
+<meta name="keywords" content="机器学习">
+<meta property="og:type" content="article">
+<meta property="og:title" content="机器学习的模型评估">
+<meta property="og:url" content="https://alex-mcavoy.github.io/ml/97708f21.html">
+<meta property="og:site_name" content="Alex_McAvoy">
+<meta property="og:description" content="Reference  统计学习方法（一）：泛化误差上界  关于Hoeffding不等式及泛化误差上界 偏差方差分解 偏置方差分解Bias-variance Decomposition 机器学习中的方差和偏差   【训练误差与测试误差】在 机器学习三要素 中，介绍了损失函数，而对于任何一个模型来说，具体采用的损失函数，未必是评估模型时所用的损失函数">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/05-1.png">
+<meta property="og:updated_time" content="2022-07-27T10:06:48.815Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="机器学习的模型评估">
+<meta name="twitter:description" content="Reference  统计学习方法（一）：泛化误差上界  关于Hoeffding不等式及泛化误差上界 偏差方差分解 偏置方差分解Bias-variance Decomposition 机器学习中的方差和偏差   【训练误差与测试误差】在 机器学习三要素 中，介绍了损失函数，而对于任何一个模型来说，具体采用的损失函数，未必是评估模型时所用的损失函数">
+<meta name="twitter:image" content="https://alex-mcavoy.github.io/images/ml/05-1.png">
+
+<link rel="canonical" href="https://alex-mcavoy.github.io/ml/97708f21.html">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>机器学习的模型评估 | Alex_McAvoy</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Alex_McAvoy</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">想要成为渔夫的猎手</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+
+	
+	
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/ml/97708f21.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/assets/img/head.jpg">
+      <meta itemprop="name" content="Alex_McAvoy">
+      <meta itemprop="description" content="想要成为渔夫的猎手">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Alex_McAvoy">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          机器学习的模型评估
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-06-07 11:15:00" itemprop="dateCreated datePublished" datetime="2019-06-07T11:15:00+08:00">2019-06-07</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/ml/" itemprop="url" rel="index"><span itemprop="name">机器学习</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>6.4k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>6 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <blockquote>
+<p>Reference</p>
+<ul>
+<li><a href="https://www.cnblogs.com/aichemistar/p/13720564.html" target="_blank" rel="noopener">统计学习方法（一）：泛化误差上界 </a></li>
+<li><a href="https://blog.csdn.net/u013745804/article/details/79522209" target="_blank" rel="noopener">关于Hoeffding不等式及泛化误差上界</a></li>
+<li><a href="https://www.cnblogs.com/makefile/p/bias-var.html" target="_blank" rel="noopener">偏差方差分解</a></li>
+<li><a href="https://blog.csdn.net/pipisorry/article/details/50638749" target="_blank" rel="noopener">偏置方差分解Bias-variance Decomposition</a></li>
+<li><a href="https://www.cnblogs.com/daguankele/p/6561419.html" target="_blank" rel="noopener">机器学习中的方差和偏差</a></li>
+</ul>
+</blockquote>
+<h1 id="【训练误差与测试误差】"><a href="#【训练误差与测试误差】" class="headerlink" title="【训练误差与测试误差】"></a>【训练误差与测试误差】</h1><p>在 <a href="https://alex-mcavoy.github.io/ml/d6bfa51b.html">机器学习三要素</a> 中，介绍了损失函数，而对于任何一个模型来说，具体采用的损失函数，未必是评估模型时所用的损失函数</p>
+<p>当损失函数给定时，基于损失函数的<strong>训练误差（Training Error）</strong>和<strong>测试误差（Test Error）</strong>就成为了评估标准</p>
+<p>所谓<strong>误差</strong>，是指学习器的实际预测输出与样本的真实输出间的差值，训练误差常用于判定给定的问题是否为一个容易学习的问题，测试误差则反映了学习方法对未知的测试集的预测能力</p>
+<p>假设学习到的模型是 $Y=f(X;\boldsymbol{\theta})$，<strong>训练误差</strong>是与模型相关的含有 $N$ 个样本的<strong>训练集</strong>的平均损失，即：</p>
+<script type="math/tex; mode=display">
+R_{emp}(f)=\frac{1}{N}\sum_{i=1}^N L(\mathbf{y_i},f(\mathbf{x_i};\boldsymbol{\theta}))</script><p><strong>测试误差</strong>是与模型相关的含有 $N’$ 个样本的<strong>测试集</strong>的平均损失，即：</p>
+<script type="math/tex; mode=display">
+e_{test}=\frac{1}{N'}\sum_{i=1}^{N'} L(\mathbf{y_i},f(\mathbf{x_i};\boldsymbol{\theta}))</script><p>由于模型是针对一个问题设计的，这个问题会有一个数据总体，包含了所有可能的情况，模型都是先在训练集上进行训练，再在测试集上进行测试，但总体数据量往往很大，不可能用到所有的数据，一般都是在总体中进行<strong>抽样</strong></p>
+<p>也就是说，模型在训练数据上进行训练，得到的误差为<strong>训练误差</strong>；在测试数据上进行测试，得到的误差即<strong>测试误差</strong></p>
+<h1 id="【泛化能力】"><a href="#【泛化能力】" class="headerlink" title="【泛化能力】"></a>【泛化能力】</h1><p>学习方法的<strong>泛化能力（Generalization Ability）</strong>是指由该学习方法学习到的模型对未知数据的预测能力</p>
+<h2 id="泛化误差"><a href="#泛化误差" class="headerlink" title="泛化误差"></a>泛化误差</h2><p>我们真正想要的是模型在总体上的误差，即模型在未知记录上的期望误差，也即<strong>泛化误差</strong></p>
+<p>在实际应用中，如果在样本集划分时，得到的训练集与测试集数据没有交集，可以将测试误差<strong>近似等同</strong>于泛化误差</p>
+<p>具体来说，泛化误差是学习到的模型的<strong>期望风险</strong>，其反映了<strong>理论上的</strong>学习方法的泛化能力</p>
+<p>假设学习到的模型为 $Y=f(X;\boldsymbol{\theta})$，用这个模型对未知数据预测的泛化误差为：</p>
+<script type="math/tex; mode=display">
+R_{exp}(f)=E_P\big[L(Y,f(X;\boldsymbol{\theta})\big]=\int_{\mathcal{X}\times\mathcal{Y}}L(Y,f(X;\boldsymbol{\theta}))P(X,Y)dXdY</script><p>简单来说，训练误差即经验风险 $R<em>{emp}(f)$，测试误差可近似等同于泛化误差，泛化误差即期望风险 $R</em>{exp}(f)$</p>
+<h2 id="泛化误差上界"><a href="#泛化误差上界" class="headerlink" title="泛化误差上界"></a>泛化误差上界</h2><p>由于实际应用中使用的测试误差与泛化误差之间存在一定的误差，因此对于学习方法的泛化能力分析是通过研究泛化误差的概率上界进行的，即<strong>泛化误差上界（Generalization Error Bound）</strong>，两种学习方法的优劣，通常通过他们的泛化误差上界来进行比较</p>
+<p>泛化误差上界具有以下性质：</p>
+<ul>
+<li>样本容量的函数：当样本容量增加时，泛化误差上界趋于 $0$</li>
+<li>假设空间容量的函数：容量越大模型越难以学习，泛化误差上界就越大</li>
+</ul>
+<h2 id="二分类问题的泛化误差上界"><a href="#二分类问题的泛化误差上界" class="headerlink" title="二分类问题的泛化误差上界"></a>二分类问题的泛化误差上界</h2><p>以简单的二分类问题为例，已知训练数据集 $T={(\mathbf{x_1},y_1),(\mathbf{x_2},y_2),…,(\mathbf{x_N},y_N)}$ 是由联合分布概率 $P(X,Y)$ 独立同分布产生的，且 $X\in \mathbb{R}^n$，$Y\in{-1,+1}$，假设空间为 $d$ 个函数 $f$ 的有限集合 $\mathcal{F}={f_1,f_2,…,f_d}$，采用的损失函数为 0-1 损失函数，其取值为 ${0,1}$</p>
+<p>关于 $f$ 的<strong>训练误差</strong>，即经验风险 $R_{emp}(f)$ 为：</p>
+<script type="math/tex; mode=display">
+R_{emp}(f) = \frac{1}{N} \sum\limits_{i=1}^N L(y_i,f(\mathbf{x_i};\boldsymbol{\theta}))</script><p>关于 $f$ 的<strong>泛化误差</strong>，即期望风险 $R_{exp}(f)$ 为：</p>
+<script type="math/tex; mode=display">
+R_{exp}(f)=E\big[L(Y,f(X;\boldsymbol{\theta}))\big]</script><hidden id="back1">
+
+<p>那么，对任意 $f\in\mathcal{F}$，至少以 $1-\delta$ 的概率，使得下式成立：</p>
+<script type="math/tex; mode=display">
+R_{exp}(f)\leq R_{emp}(f)+\varepsilon(d,N,\delta)</script><p>不等式右端的 $R_{emp}(f)+\varepsilon(d,N,\delta)$ 即为泛化误差上界</p>
+<p>其中，$\varepsilon(d,N,\delta)$ 为样本数量 $N$ 的单调递减函数，即：</p>
+<script type="math/tex; mode=display">
+\varepsilon(d,N,\delta)=\sqrt{\frac{1}{2N}(log\:d+log\:\frac{1}{\delta})}</script><p>当 $N$ 趋于无穷时其趋于 $0$，同时也是 $\sqrt{log\:d}$ 阶的函数，假设空间 $\mathcal{F}$ 包含的函数越多，其值越大</p>
+<p>假设找到了经验风险最小化的函数：</p>
+<script type="math/tex; mode=display">
+f_N=arg\:\min_{f\in\mathcal{F}}R_{emp}(f)</script><p>那么根据上述不等式，只要加上 $\varepsilon(d,N,\delta)$ 项，即可控制住测试集上的期望风险 $R_{exp}(f)$</p>
+<p>换句话来说，随着样本数量 $N$ 的增大，训练误差和泛化误差会越来越接近</p>
+<p>关于该部分的详细证明见：<a href="#anchor1">证明1</a></p>
+<h1 id="【偏差-方差分解】"><a href="#【偏差-方差分解】" class="headerlink" title="【偏差-方差分解】"></a>【偏差-方差分解】</h1><h2 id="方差、噪声、偏差"><a href="#方差、噪声、偏差" class="headerlink" title="方差、噪声、偏差"></a>方差、噪声、偏差</h2><p><strong>偏差（bias）</strong>是独立于训练样本的误差，度量了模型的期望预测与真实结果的偏差程度，刻画了模型本身拟合行为的准确性与质量，偏差越高，拟合程度越差</p>
+<p><strong>噪声（noise）</strong>是当前任务上任何模型能达到的期望泛化误差下界，是任何方法都无法克服的误差，刻画了学习问题本身的难度</p>
+<p><strong>方差（variance）</strong>度量了面对同样规模的不同训练集时，样本变动导致的模型的学习性能的变化，是相关于观测样本的误差，刻画了一个学习算法在数据扰动时的精确性、特定性，方差越大，越不稳定</p>
+<hr>
+<p>以最简单的一元线性回归问题为例</p>
+<p>对于在训练数据集 $T={(x_1,y_1),(x_2,y_2),…,(x_N,y_N)}$ 上习得的模型 $f_T$，当给定测试样本 $(x,y)$ 时，$x$ 为测试样本的输入，$y$ 为测试样本的输出，记 $\hat{y}$ 为实际测试时得到的输出，$f_T(x;\theta)$ 为对测试样本的输入 $x$ 的预测输出</p>
+<p>采用<strong>平方损失函数</strong>：</p>
+<script type="math/tex; mode=display">
+L(Y,f(X;\theta))=(Y-f(X;\theta))^2</script><p>则学习算法的<strong>泛化误差</strong>为：</p>
+<script type="math/tex; mode=display">
+\begin{align}
+R_{exp}(f) 
+&= E_P\big[ L(Y,f(X;\theta)) \big] \notag \\
+&= E_P\big[(y-\hat{y})^2\big] \notag \\
+&= E_P\big[(y-f_T(x;\theta))^2\big] \notag 
+\end{align}</script><p>针对与数据集 $T$ 具有相同样本数的不同数据集所训练的模型 $f$ 对测试样本 $x$ 的预测值的期望，即<strong>平均预测值（average predicted）</strong>为：</p>
+<script type="math/tex; mode=display">
+\overline{f}_T(x;\theta)=E_P\big[f_T(x;\theta)\big]</script><p>依据<strong>离散型方差计算公式</strong>：</p>
+<script type="math/tex; mode=display">
+D(X)=E\big[(X-E(X))^2\big]</script><p>此时，使用样本数相同的不同训练集产生的<strong>方差（variance）</strong>为：</p>
+<script type="math/tex; mode=display">
+D(x)=E_P\big[(f(x;\theta)-\overline{f}(x;\theta))^2\big]</script><p>由于样本可能出现标记错误等情况，此时模型 $f_T$ 预测到的数据 $\hat{y}$ 可能与数据集中的样本输出 $y$ 不相符，两者间的差异即<strong>噪声（noise）</strong>，即：</p>
+<script type="math/tex; mode=display">
+\varepsilon^2=E_P\big[(\hat{y}-y)^2\big]</script><p>而对于期望预测 $\overline{f}(x;\theta)$ 与预测输出 $y$ 的误差，称之为<strong>偏差（bias）</strong>，为方便起见，直接取偏差的平方，即：</p>
+<script type="math/tex; mode=display">
+bias^2(x)=(\overline{f}(x;\theta)-\hat{y})^2</script><h2 id="偏差-方差分解"><a href="#偏差-方差分解" class="headerlink" title="偏差-方差分解"></a>偏差-方差分解</h2><p><strong>偏差-方差分解（Bias-Variance Decomposition）</strong>是机器学习用于解释学习算法的泛化能力的分析技术，对于给定学习目标和训练集，其可以将一种学习算法的泛化误差分解为<strong>噪声（noise）</strong>、<strong>偏差（bias）</strong>和<strong>方差（variance）</strong></p>
+<hidden id="back2">
+
+<p>为便于讨论，假定噪声期望为 $0$，即：$E_P(y-\hat{y})=0$</p>
+<p>接上例，对学习算法的泛化误差 $R_{exp}(f)$ 进行分解：</p>
+<script type="math/tex; mode=display">
+\begin{align}
+R_{exp}(f) 
+&= E_P \big[ (y-f_T(x;\theta))^2 \big] \notag \\
+&= bias^2(x) + \varepsilon^2 + D(x)  \notag
+\end{align}</script><p>关于该部分的详细证明见：<a href="#anchor2">证明2</a></p>
+<p>偏差-方差分解说明，泛化性能是由<strong>学习算法的能力</strong>、<strong>数据的充分性</strong>、<strong>学习任务本身的难度</strong>所共同决定的</p>
+<h2 id="偏差-方差窘境"><a href="#偏差-方差窘境" class="headerlink" title="偏差-方差窘境"></a>偏差-方差窘境</h2><p>对于给定的学习任务，若为了得到泛化性能好的模型，需要使偏差较小，以充分拟合数据，同时要使方差较小，使得数据扰动产生的影响小，但偏差与方差在一定程度上是有冲突的，即<strong>偏差-方差窘境（bias-variance dilemma）</strong></p>
+<p>如下图，在模型训练不足时，拟合能力不够强，训练数据的扰动不足以使得学习器产生显著的变化，此时<strong>偏差主导泛化误差</strong>，即<strong>欠拟合现象</strong>；当随着训练程度加深，模型的拟合能力增强，训练数据的扰动慢慢使得<strong>方差主导泛化误差</strong>；当训练充足时，模型的拟合能力非常强，数据轻微变化都能导致模型发生变化，如果过分学习训练数据的特点，则会发生<strong>过拟合现象</strong></p>
+<p><img width="500" src="/images/ml/05-1.png"></p>
+<p>随着模型复杂度的提升，偏差逐渐减小，方差逐渐增大，最佳的模型复杂度是在泛化误差 $R_{exp}(f)$ 最小的时候，此时该点导数为 $0$</p>
+<p>由于 $R_{exp}(f)= bias^2(x)+\varepsilon^2+D(x)$，因此，在拐点处有：</p>
+<script type="math/tex; mode=display">
+\frac{d\:bias}{d\:complexity}=\frac{d\:D}{d\:complexity}</script><p>其中，$complexity$ 代表模型复杂度</p>
+<p>若模型复杂度大于平衡点，则模型的方差会偏高，模型倾向于过拟合；若模型复杂度小于平衡点，则模型的偏差会偏高，模型倾向于欠拟合</p>
+<h1 id="【附：证明】"><a href="#【附：证明】" class="headerlink" title="【附：证明】"></a>【附：证明】</h1><hidden id="anchor1">
+
+<h2 id="证明1"><a href="#证明1" class="headerlink" title="证明1"></a>证明1</h2><blockquote>
+<p>霍夫丁不等式（Hoeffding’s inequality）给出了随机变量的均值与期望值的偏差的概率上限：</p>
+<p>设 $\overline{X}=\frac{1}{N}\sum\limits_{i=1}^nX_i$ 是独立随机变量 $X_1,X_2,…,X_n$ 的经验均值，$X_i\in[a_i,b_i]$，则对任意的 $t&gt;0$，以下两不等式成立：</p>
+<script type="math/tex; mode=display">
+\left\{\begin{array}{rl}
+P(\overline{X}-E({\overline{X}}) \geq t) &  \leq & exp \biggl(\frac{-2N^2t^2}{\sum\limits_{i=1}^N(b_i-a_i)^2} \biggr ) 
+\\P(E(\overline{X})-{\overline{X}} \geq t) & \leq & exp \biggl(\frac{-2N^2t^2}{\sum\limits_{i=1}^N(b_i-a_i)^2} \biggr )
+\end{array} \right.</script></blockquote>
+<p>已知训练数据集 $T={(\mathbf{x_1},y_1),(\mathbf{x_2},y_2),…,(\mathbf{x_N},y_N)}$ 是由联合分布概率 $P(X,Y)$ 独立同分布产生的，且 $X\in \mathbb{R}^n$，$Y\in{-1,+1}$，假设空间为 $d$ 个函数 $f$ 的有限集合 $\mathcal{F}={f_1,f_2,…,f_d}$，采用的损失函数 $L(y_i,f(\mathbf{x_i};\boldsymbol{\theta}))$ 为 0-1 损失函数，其取值为 ${0,1}$</p>
+<p>损失函数的均值为：</p>
+<script type="math/tex; mode=display">
+\overline{X} = \frac{1}{N} \sum\limits_{i=1}^N L(y_i,f(\mathbf{x_i};\boldsymbol{\theta}))</script><p>损失函数的期望为：</p>
+<script type="math/tex; mode=display">
+\begin{align}
+E(\overline{X}) 
+&= E\bigg[\frac{1}{N} \sum\limits_{i=1}^N L(y_i,f(\mathbf{x_i};\boldsymbol{\theta}))\bigg] \notag \\
+&= \frac{1}{N} \sum\limits_{i=1}^N E\bigg[L(y_i,f(\mathbf{x_i};\boldsymbol{\theta}))\bigg] \notag \\
+&= E\big[L(Y,f(X;\boldsymbol{\theta}))\big]\notag 
+\end{align}</script><p>易知：</p>
+<script type="math/tex; mode=display">
+\left\{\begin{array}{rl}
+\overline{X} &=& R_{emp}(f) \\
+E(\overline{X}) &=& R_{exp}(f)
+\end{array} \right.</script><p>根据霍夫丁不等式：</p>
+<script type="math/tex; mode=display">
+P(E({\overline{X}})-\overline{X} \geq t)   \leq  \exp \bigl(\frac{-2N^2t^2}{\sum\limits_{i=1}^N(b_i-a_i)^2} \bigr )</script><p>将 $\overline{X}=R<em>{emp}(f)$，$E(\overline{X})=R</em>{exp}(f)$ 代入，并取 $t=\varepsilon &gt;0$</p>
+<p>同时，由于是二分类问题，故有 $a_i,b_i\in{0,1}$，也就是说，对于 $a_i$ 与 $b_i$，当其中一个取值为 $1$ 时，另一个取值一定为 $0$</p>
+<p>故有：</p>
+<script type="math/tex; mode=display">
+P(R_{exp}(f)-R_{emp}(f) \geq \varepsilon)  \leq  \exp(\frac{-2N^2\varepsilon^2}{\sum\limits_{i=1}^N 1}),\quad \varepsilon>0</script><p>也就是说，对于假设空间 $\mathcal{F}$，其中的<strong>任意</strong>一个函数 $f$ 作为模型时，其泛化误差的概率上限满足以下的不等式：</p>
+<script type="math/tex; mode=display">
+P(R_{exp}(f)-R_{emp}(f) \geq \varepsilon) \leq exp(-2N\varepsilon^2),\quad \varepsilon>0</script><p>而假设空间 $\mathcal{F}$ 是一个有限集合，如果要求 $\mathcal{F}$ 中<strong>存在</strong>某个函数 $f$ 作为模型时，根据<strong>概率的加和规则</strong>，其泛化误差的概率上限满足以下不等式：</p>
+<script type="math/tex; mode=display">
+\begin{align}
+P(\exists f \in \mathcal{F}: R_{exp}(f)-R_{emp}(f)\geq \varepsilon) & = P(\cup_{f\in\mathcal{F}}\{R_{exp}(f)-R_{emp}(f)\geq \varepsilon \}) \notag \\
+& \leq \sum_{f\in\mathcal{F}}P(R_{exp}(f)-R_{emp}(f) \geq \varepsilon) \notag \\
+& \leq d\cdot  exp(-2N\varepsilon^2) \notag 
+\end{align}</script><p>其中，$d$ 为假设空间 $\mathcal{F}$ 中函数 $f$ 的个数</p>
+<p>相应地，对任意 $f\in \mathcal{F}$，有：</p>
+<script type="math/tex; mode=display">
+P(R_{exp}(f)-R_{emp}(f)<\varepsilon)\geq 1-d\cdot exp(-2N\varepsilon^2)</script><p>取 $\delta = d \cdot exp(-2N\varepsilon^2)$，进行变量替换，有：</p>
+<script type="math/tex; mode=display">
+P(R_{exp}(f)<R_{emp}(f)+\varepsilon)\geq 1-\delta</script><p>即至少以 $1-\delta$ 的概率，使得 $R<em>{exp}(f)&lt;R</em>{emp}(f)+\varepsilon$ 成立</p>
+<p>其中，$\varepsilon$ 是由 $\delta = d \cdot exp(-2N\varepsilon^2)$ 得到，即：</p>
+<script type="math/tex; mode=display">
+\varepsilon(d,N,\delta)=\sqrt{\frac{1}{2N}(log\:d+log\:\frac{1}{\delta})}</script><p><a href="#back1">点击返回</a></p>
+<hidden id="anchor2">
+
+<h2 id="证明2"><a href="#证明2" class="headerlink" title="证明2"></a>证明2</h2><p>对一元线性回归问题的学习算法的泛化误差 $R_{exp}(f)=E_P \big[ (y-f_T(x;\theta))^2 \big]$ 进行拆项，有：</p>
+<script type="math/tex; mode=display">
+E_P \big[ (y-f_T(x;\theta))^2 \big] 
+= E_P  \Big[ \big[ (y - \overline{f}(x;\theta)) + (\overline{f}(x;\theta) - f(x;\theta)) \big]^2 \Big]</script><p>根据期望公式：</p>
+<script type="math/tex; mode=display">
+E\big[(X-Y)^2\big] = E(X^2)-2E(XY)+E(Y^2)</script><p>易得：</p>
+<script type="math/tex; mode=display">
+\begin{align}
+R_{exp}(f)
+&= E_P \Big[ \big( y - \overline{f}(x;\theta) \big)^2 \Big] \notag \\
+&\quad + 2E_p \big[ (y - \overline{f}(x;\theta)) \cdot (\overline{f}(x;\theta) - f(x;\theta)) \big] \notag \notag \\
+&\quad+ E_P \Big[ \big( \overline{f}(x;\theta) - f(x;\theta) \big)^2 \Big] \notag \\
+\end{align}</script><p>由于<strong>方差</strong>为：</p>
+<script type="math/tex; mode=display">
+D(x)=E_P\big[(f(x;\theta)-\overline{f}(x;\theta))^2\big]</script><p>故有：</p>
+<script type="math/tex; mode=display">
+\begin{align}
+R_{exp}(f)
+&= E_P \Big[ \big( y - \overline{f}(x;\theta) \big)^2 \Big] \notag \\
+&\quad + 2E_p \big[ (y - \overline{f}(x;\theta)) \cdot (\overline{f}(x;\theta) - f(x;\theta)) \big] \notag \notag \\
+&\quad+ D(x) \notag \\
+\end{align}</script><p>对于第二项，有：</p>
+<script type="math/tex; mode=display">
+\begin{align}
+&E_P\bigl[ (y-\overline{f}(x;\theta)) \cdot (\overline{f}(x;\theta)-f(x;\theta)) \bigr] \notag \\
+&= E_P\bigl[ y\cdot\overline{f}(x;\theta) - y\cdot f(x;\theta) - \overline{f}(x;\theta)\overline{f}(x;\theta) + \overline{f}(x;\theta)f(x;\theta) \bigr] \notag \\
+&= E_P\bigl[ y\cdot(\overline{f}(x;\theta)-f(x;\theta)) \bigr] - E_P\bigl[ \overline{f}(x;\theta)(\overline{f}(x;\theta)-f(x;\theta)) \bigr] \notag 
+\end{align}</script><p>而对于上式中的前半部分，有：</p>
+<script type="math/tex; mode=display">
+\begin{align}
+& E_P\big[ y\cdot(\overline{f}(x;\theta) - f(x;\theta)) \big] \notag \\
+&= \iint y\cdot(\overline{f}(x;\theta) - f(x;\theta))\cdot p(x,y)dxdy \notag \\
+&= \iint (\overline{f}(x;\theta)-f(x;\theta)) \cdot y\cdot p(y|x)\cdot p(x)dxdy \notag \\
+&= \int (\overline{f}(x;\theta)-f(x;\theta)) \cdot E_P(y|x) \cdot p(x)dx \notag \\
+&= E_P \big[ E_P(y|x) \cdot (\overline{f}(x;\theta)-f(x;\theta)) \big] \notag \\
+&= E_P \big[ \overline{f}(x;\theta)\cdot(\overline{f}(x;\theta)-f(x;\theta)) \big] \notag
+\end{align}</script><p>显然与式子中的后半部分相同，两者相减为 $0$，故有：</p>
+<script type="math/tex; mode=display">
+R_{exp}(f)
+= E_P \Big[ \big( y - \overline{f}(x;\theta) \big)^2 \Big]
++ D(x)</script><p>对于 $E_P \Big[ \big( y - \overline{f}(x;\theta) \big)^2 \Big]$，同样进行拆项，有：</p>
+<script type="math/tex; mode=display">
+E_P \Big[ \big( y - \overline{f}(x;\theta) \big)^2 \Big]
+= E_P  \Big[ \big[ (y - \hat{y}) + (\hat{y} - \overline{f}(x;\theta)) \big]^2 \Big]</script><p>同样利用期望公式，有：</p>
+<script type="math/tex; mode=display">
+\begin{align}
+R_{exp}(f)
+&= E_P \big[ ( y - \hat{y} )^2 \big] \notag \\
+&\quad + 2E_P(y - \hat{y}) \cdot E_P \big[ \hat{y} - \overline{f}(x;\theta)  \big] \notag \\
+&\quad+ E_P \Big[ \big( \hat{y} - \overline{f}(x;\theta) \big)^2 \Big] \notag \\
+&\quad+ D(x) \notag 
+\end{align}</script><p>由于噪声的期望为 $0$，即 $E_P(y-\hat{y})=0$，故有：</p>
+<script type="math/tex; mode=display">
+R_{exp}(f)
+= E_P \big[ ( y - \hat{y} )^2 \big]
++ E_P \Big[ \big( \hat{y} - \overline{f}(x;\theta) \big)^2 \Big]
++ D(x)</script><p>又因为<strong>噪声</strong>为：</p>
+<script type="math/tex; mode=display">
+\varepsilon^2=E_P\big[(\hat{y}-y)^2\big]</script><p>故有：</p>
+<script type="math/tex; mode=display">
+R_{exp}(f)
+= \varepsilon^2
++ E_P \Big[ \big( \hat{y} - \overline{f}(x;\theta) \big)^2 \Big]
++ D(x)</script><p>而<strong>偏差</strong>的平方为：</p>
+<script type="math/tex; mode=display">
+bias^2(x)=(\overline{f}(x;\theta)-\hat{y})^2</script><p>则有：</p>
+<script type="math/tex; mode=display">
+R_{exp}(f) = bias^2(x) + \varepsilon^2 + D(x)</script><p><a href="#back2">点击返回</a></p>
+</hidden></hidden></hidden></hidden>
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>感谢您对我的支持，让我继续努力分享有用的技术与知识点！</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/wechatpay.jpg" alt="Alex_McAvoy 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/alipay.jpg" alt="Alex_McAvoy 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Alex_McAvoy
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://alex-mcavoy.github.io/ml/97708f21.html" title="机器学习的模型评估">https://alex-mcavoy.github.io/ml/97708f21.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/ml/" rel="tag"># 机器学习</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/ml/4a4b5c97.html" rel="prev" title="机器学习中常见的损失函数">
+      <i class="fa fa-chevron-left"></i> 机器学习中常见的损失函数
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/ml/d9259ca2.html" rel="next" title="机器学习的模型选择">
+      机器学习的模型选择 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【训练误差与测试误差】"><span class="nav-number">1.</span> <span class="nav-text">【训练误差与测试误差】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【泛化能力】"><span class="nav-number">2.</span> <span class="nav-text">【泛化能力】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#泛化误差"><span class="nav-number">2.1.</span> <span class="nav-text">泛化误差</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#泛化误差上界"><span class="nav-number">2.2.</span> <span class="nav-text">泛化误差上界</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二分类问题的泛化误差上界"><span class="nav-number">2.3.</span> <span class="nav-text">二分类问题的泛化误差上界</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【偏差-方差分解】"><span class="nav-number">3.</span> <span class="nav-text">【偏差-方差分解】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#方差、噪声、偏差"><span class="nav-number">3.1.</span> <span class="nav-text">方差、噪声、偏差</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#偏差-方差分解"><span class="nav-number">3.2.</span> <span class="nav-text">偏差-方差分解</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#偏差-方差窘境"><span class="nav-number">3.3.</span> <span class="nav-text">偏差-方差窘境</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【附：证明】"><span class="nav-number">4.</span> <span class="nav-text">【附：证明】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#证明1"><span class="nav-number">4.1.</span> <span class="nav-text">证明1</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#证明2"><span class="nav-number">4.2.</span> <span class="nav-text">证明2</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">  
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Alex_McAvoy"
+      src="/assets/img/head.jpg">
+  <p class="site-author-name" itemprop="name">Alex_McAvoy</p>
+  <div class="site-description" itemprop="description">想要成为渔夫的猎手</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">541</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">56</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">61</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Alex-McAvoy" title="GitHub → https://github.com/Alex-McAvoy" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/u011815404" title="CSDN → https://blog.csdn.net/u011815404" rel="noopener" target="_blank"><i class="fas fa-copyright fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+<!-- 访客地图 -->
+<script type="text/javascript" src="//rf.revolvermaps.com/0/0/5.js?i=50n58yo58ow&amp;m=0&amp;c=ff0000&amp;cr1=ffffff&amp;s=140" async="async"></script>
+
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdz20172133" title="https://blog.csdn.net/sdz20172133" rel="noopener" target="_blank">神仙队友</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://pxlsdz.gitee.io/" title="https://pxlsdz.gitee.io/" rel="noopener" target="_blank">神仙队友的另一个博客</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://bycore.net" title="https://bycore.net" rel="noopener" target="_blank">凉了的某饼同学</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://kris-cn.github.io/" title="http://kris-cn.github.io/" rel="noopener" target="_blank">翟孙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://deng.fun/" title="http://deng.fun/" rel="noopener" target="_blank">芙蓉姐姐</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdau_fangshifeng" title="https://blog.csdn.net/sdau_fangshifeng" rel="noopener" target="_blank">一个头很酷的家伙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/wentong_Xu" title="https://blog.csdn.net/wentong_Xu" rel="noopener" target="_blank">小黑贱胖子</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.yuheng.tech/" title="https://www.yuheng.tech/" rel="noopener" target="_blank">咸于</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/lanshan1111" title="https://blog.csdn.net/lanshan1111" rel="noopener" target="_blank">肥硕硕</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdauguanweihong" title="https://blog.csdn.net/sdauguanweihong" rel="noopener" target="_blank">管少</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_41661919" title="https://blog.csdn.net/qq_41661919" rel="noopener" target="_blank">俊杰</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_40859951" title="https://blog.csdn.net/qq_40859951" rel="noopener" target="_blank">峰哥</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/LSD20164388" title="https://blog.csdn.net/LSD20164388" rel="noopener" target="_blank">狗冬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37748451" title="https://blog.csdn.net/qq_37748451" rel="noopener" target="_blank">胖亚亚</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37868325" title="https://blog.csdn.net/qq_37868325" rel="noopener" target="_blank">妍大佬</a>
+        </li>
+    </ul>
+  </div>
+
+		
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+  
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Alex_McAvoy</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+</br>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script><script src="/js/bookmark.js"></script>
+
+
+
+  
+
+
+
+
+  <script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '48fd73a538d3fa927f65',
+      clientSecret: '56618aefeee90bac3c20de8d51bb0b985d67252d',
+      repo        : 'Gitalk-Comment',
+      owner       : 'Alex-McAvoy',
+      admin       : ['Alex-McAvoy'],
+      id          : '7a3f60a1c56533978b5675a42c1d3264',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+  
+  <!-- 鼠标单击粒子特效 -->
+  <script type="text/javascript" src="/js/cursor-effects.js"></script>
+  <!-- 多级目录 -->
+  <script type="text/javascript" src="/js/category.js"></script>
+  
+</body>
+</html>

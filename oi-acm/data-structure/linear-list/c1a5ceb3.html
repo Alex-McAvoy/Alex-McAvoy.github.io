@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.9.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/img/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/assets/img/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/pace-js@1/themes/blue/pace-theme-minimal.css">
+  <script src="//cdn.jsdelivr.net/npm/pace-js@1/pace.min.js"></script>
+
+
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"alex-mcavoy.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":16,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":true,"color":"#ff0000","save":"manual"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":true},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.json"};
+  </script>
+
+  <meta name="description" content="【双链表】双链表是在单链表的基础上在每个结点中多加入了前驱指针 prior，其指向当前结点的前驱结点 123456template &amp;lt;typename T&amp;gt; struct DNode &amp;#123;       //双链表结点    T data;          //数据域    DNode&amp;lt;T&amp;gt; *prior; //前驱指针    DNode&amp;lt;T&amp;gt; *nex">
+<meta name="keywords" content="C++,OI&amp;ACM,数据结构,线性表">
+<meta property="og:type" content="article">
+<meta property="og:title" content="双链表">
+<meta property="og:url" content="https://alex-mcavoy.github.io/oi-acm/data-structure/linear-list/c1a5ceb3.html">
+<meta property="og:site_name" content="Alex_McAvoy">
+<meta property="og:description" content="【双链表】双链表是在单链表的基础上在每个结点中多加入了前驱指针 prior，其指向当前结点的前驱结点 123456template &amp;lt;typename T&amp;gt; struct DNode &amp;#123;       //双链表结点    T data;          //数据域    DNode&amp;lt;T&amp;gt; *prior; //前驱指针    DNode&amp;lt;T&amp;gt; *nex">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2021-08-31T09:26:36.248Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="双链表">
+<meta name="twitter:description" content="【双链表】双链表是在单链表的基础上在每个结点中多加入了前驱指针 prior，其指向当前结点的前驱结点 123456template &amp;lt;typename T&amp;gt; struct DNode &amp;#123;       //双链表结点    T data;          //数据域    DNode&amp;lt;T&amp;gt; *prior; //前驱指针    DNode&amp;lt;T&amp;gt; *nex">
+
+<link rel="canonical" href="https://alex-mcavoy.github.io/oi-acm/data-structure/linear-list/c1a5ceb3.html">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>双链表 | Alex_McAvoy</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Alex_McAvoy</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">想要成为渔夫的猎手</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+
+	
+	
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/oi-acm/data-structure/linear-list/c1a5ceb3.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/assets/img/head.jpg">
+      <meta itemprop="name" content="Alex_McAvoy">
+      <meta itemprop="description" content="想要成为渔夫的猎手">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Alex_McAvoy">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          双链表
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2018-09-13 11:52:00" itemprop="dateCreated datePublished" datetime="2018-09-13T11:52:00+08:00">2018-09-13</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/oi-acm/" itemprop="url" rel="index"><span itemprop="name">OI&ACM</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/oi-acm/data-structure/" itemprop="url" rel="index"><span itemprop="name">数据结构</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/oi-acm/data-structure/linear-list/" itemprop="url" rel="index"><span itemprop="name">线性表</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>6k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>5 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="【双链表】"><a href="#【双链表】" class="headerlink" title="【双链表】"></a>【双链表】</h1><p><strong>双链表</strong>是在单链表的基础上在每个结点中多加入了<strong>前驱指针 <code>prior</code></strong>，其指向当前结点的前驱结点</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt; </span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">DNode</span> &#123;</span>       <span class="comment">//双链表结点</span></span><br><span class="line">    T data;          <span class="comment">//数据域</span></span><br><span class="line">    DNode&lt;T&gt; *prior; <span class="comment">//前驱指针</span></span><br><span class="line">    DNode&lt;T&gt; *next;  <span class="comment">//后继指针</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>在单链表中，在进行插入与删除时，若仅知道待操作结点，是无法取得其前驱结点的，而由于双链表引入了前驱指针，这就使得双链表在插入与删除时，当仅知道待操作结点时，能够快速得知其前驱结点</p>
+<p>此外，对于最基本的 CRUD 操作，<strong>除非已经给出待操作结点（此时双链表插入与删除为 $O(1)$ ）</strong>，否则单链表与双链表都需要从头到尾按序遍历，时间复杂度都是 $O(n)$</p>
+<p>双链表的结构优势在于可以<strong>在 $O(1)$ 的时间内找到前驱结点</strong>，若算法需要对待操作结点的前驱结点大量处理，则双链表比单链表更有优势，但若从工程角度考量，双链表的维护性和可读性都更低</p>
+<p>为提高维护性与可读性，<strong>双链表一般采取带头结点的实现</strong>，其实现类如下：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt; </span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">DoubleLinkList</span> &#123;</span></span><br><span class="line">  <span class="keyword">public</span>:</span><br><span class="line">    DoubleLinkList();                              <span class="comment">//无参构造函数，初始化表</span></span><br><span class="line">    DoubleLinkList(T data[], <span class="keyword">int</span> len);             <span class="comment">//有参构造函数，链表建立</span></span><br><span class="line">    ~DoubleLinkList();                             <span class="comment">//析构函数，链表销毁</span></span><br><span class="line">    <span class="function"><span class="keyword">int</span> <span class="title">getLen</span><span class="params">()</span></span>;                                  <span class="comment">//求表长</span></span><br><span class="line">    <span class="function"><span class="keyword">bool</span> <span class="title">empty</span><span class="params">()</span></span>;                                  <span class="comment">//判空</span></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">print</span><span class="params">()</span></span>;                                  <span class="comment">//输出</span></span><br><span class="line">    DNode&lt;T&gt; *getNodeByValue(T elem);              <span class="comment">//按值查找</span></span><br><span class="line">    DNode&lt;T&gt; *getNodeByLocate(<span class="keyword">int</span> pos);            <span class="comment">//按位查找</span></span><br><span class="line">    <span class="function"><span class="keyword">bool</span> <span class="title">insertNextNode</span><span class="params">(DNode&lt;T&gt; *p, T elem)</span></span>;      <span class="comment">//后插，用于按位插入</span></span><br><span class="line">    <span class="function"><span class="keyword">bool</span> <span class="title">insertPreNode</span><span class="params">(DNode&lt;T&gt; *p, T elem)</span></span>;       <span class="comment">//前插，用于按位插入</span></span><br><span class="line">    <span class="function"><span class="keyword">bool</span> <span class="title">insertNode</span><span class="params">(<span class="keyword">int</span> pos, T elem)</span></span>;              <span class="comment">//按位插入</span></span><br><span class="line">    <span class="function"><span class="keyword">bool</span> <span class="title">deleteNodeByLocate</span><span class="params">(DNode&lt;T&gt; *p, T &amp;elem)</span></span>; <span class="comment">//删除指定结点p</span></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">headInsert</span><span class="params">(T data[], <span class="keyword">int</span> len)</span></span>;            <span class="comment">//头插法</span></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">tailInsert</span><span class="params">(T data[], <span class="keyword">int</span> len)</span></span>;            <span class="comment">//尾插法</span></span><br><span class="line">  <span class="keyword">private</span>:</span><br><span class="line">    DNode&lt;T&gt; *first;                               <span class="comment">//头指针</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>需要说明的是，对于单链表和双链表来说，除了两者的插入与删除操作不同外，其余操作均相同</p>
+<h1 id="【初始化表与销毁表】"><a href="#【初始化表与销毁表】" class="headerlink" title="【初始化表与销毁表】"></a>【初始化表与销毁表】</h1><h2 id="初始化与双链表的建立"><a href="#初始化与双链表的建立" class="headerlink" title="初始化与双链表的建立"></a>初始化与双链表的建立</h2><p>对于双链表来说，其与单链表相似，在初始化完毕后，即可对于给定的数据序列 <code>data[]</code> 来建立双链表，建立双链表的两种方式与单链表的类似，同样一种是<strong>头插法</strong>，另一种是<strong>尾插法</strong></p>
+<p>在进行初始化时，需要为头指针 <code>first</code> 建立一个头结点，并使头结点的前驱指针 <code>prior</code> 永远指向 <code>NULL</code>，代表无前驱；令头结点的后继指针 <code>next</code> 暂时指向 <code>NULL</code>，代表目前是空表</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt;</span><br><span class="line">DoubleLinkList&lt;T&gt;::DoubleLinkList() &#123;             <span class="comment">//无参构造函数，初始化</span></span><br><span class="line">    first = (DNode&lt;T&gt; *)<span class="built_in">malloc</span>(<span class="keyword">sizeof</span>(DNode&lt;T&gt;)); <span class="comment">//分配一头结点</span></span><br><span class="line">    first-&gt;prior = <span class="literal">NULL</span>;                          <span class="comment">//头结点的前驱永远指向NULL</span></span><br><span class="line">    first-&gt;next = <span class="literal">NULL</span>;                           <span class="comment">//空表</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt;</span><br><span class="line">DoubleLinkList&lt;T&gt;::DoubleLinkList(T data[], <span class="keyword">int</span> len) &#123; <span class="comment">//有参构造函数，链表建立</span></span><br><span class="line">    first = (DNode&lt;T&gt; *)<span class="built_in">malloc</span>(<span class="keyword">sizeof</span>(DNode&lt;T&gt;));      <span class="comment">//分配一头结点</span></span><br><span class="line">    first-&gt;prior = <span class="literal">NULL</span>;                               <span class="comment">//头结点的前驱永远指向NULL</span></span><br><span class="line">    first-&gt;next = <span class="literal">NULL</span>;                                <span class="comment">//空表</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">this</span>-&gt;headInsert(data, len);                       <span class="comment">//头插法</span></span><br><span class="line">    <span class="comment">// this-&gt;tailInsert(data, len);                    //尾插法</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="双链表的销毁"><a href="#双链表的销毁" class="headerlink" title="双链表的销毁"></a>双链表的销毁</h2><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt;</span><br><span class="line">DoubleLinkList&lt;T&gt;::~DoubleLinkList() &#123; <span class="comment">//析构函数，链表销毁</span></span><br><span class="line">    <span class="keyword">while</span> (first != <span class="literal">NULL</span>) &#123;</span><br><span class="line">        DNode&lt;T&gt; *p = first;           <span class="comment">//暂存要被释放的结点</span></span><br><span class="line">        first = first-&gt;next;           <span class="comment">//头指针指向要被释放的结点的下一个结点</span></span><br><span class="line">        <span class="built_in">free</span>(p);                       <span class="comment">//释放空间</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h1 id="【基本操作】"><a href="#【基本操作】" class="headerlink" title="【基本操作】"></a>【基本操作】</h1><h2 id="求表长"><a href="#求表长" class="headerlink" title="求表长"></a>求表长</h2><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt; </span><br><span class="line"><span class="keyword">int</span> DoubleLinkList&lt;T&gt;::getLen() &#123; <span class="comment">//求表长</span></span><br><span class="line">    <span class="keyword">int</span> len = <span class="number">0</span>;</span><br><span class="line">    DNode&lt;T&gt; *p = first;          <span class="comment">//为保证头指针指向不变，建立临时指针变量进行枚举</span></span><br><span class="line">    <span class="keyword">while</span> (p-&gt;next != <span class="literal">NULL</span>) &#123;     <span class="comment">//判断下一结点是否为 NULL</span></span><br><span class="line">        p = p-&gt;next;</span><br><span class="line">        len++;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> len;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="判空"><a href="#判空" class="headerlink" title="判空"></a>判空</h2><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt; </span><br><span class="line"><span class="keyword">bool</span> DoubleLinkList&lt;T&gt;::empty() &#123; <span class="comment">//判空</span></span><br><span class="line">    <span class="keyword">if</span> (first-&gt;next == <span class="literal">NULL</span>)</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="输出"><a href="#输出" class="headerlink" title="输出"></a>输出</h2><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt; </span><br><span class="line"><span class="keyword">void</span> DoubleLinkList&lt;T&gt;::print() &#123; <span class="comment">//输出</span></span><br><span class="line">    DNode&lt;T&gt; *p = first-&gt;next;    <span class="comment">//指向第1个结点</span></span><br><span class="line">    <span class="keyword">while</span> (p != <span class="literal">NULL</span>) &#123;</span><br><span class="line">        <span class="built_in">cout</span> &lt;&lt; p-&gt;data &lt;&lt; <span class="string">" "</span>;</span><br><span class="line">        p = p-&gt;next;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h1 id="【查找】"><a href="#【查找】" class="headerlink" title="【查找】"></a>【查找】</h1><h2 id="按值查找"><a href="#按值查找" class="headerlink" title="按值查找"></a>按值查找</h2><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt;</span><br><span class="line">DNode&lt;T&gt; *DoubleLinkList&lt;T&gt;::getNodeByValue(T elem) &#123; <span class="comment">//按值查找</span></span><br><span class="line">    DNode&lt;T&gt; *p = first-&gt;next;                        <span class="comment">//从头结点开始</span></span><br><span class="line">    <span class="keyword">while</span> (p != <span class="literal">NULL</span> &amp;&amp; p-&gt;data != elem)</span><br><span class="line">        p = p-&gt;next;</span><br><span class="line">    <span class="keyword">return</span> p;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="按位查找"><a href="#按位查找" class="headerlink" title="按位查找"></a>按位查找</h2><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt;</span><br><span class="line">DNode&lt;T&gt; *DoubleLinkList&lt;T&gt;::getNodeByLocate(<span class="keyword">int</span> pos) &#123; <span class="comment">//按位查找</span></span><br><span class="line">    <span class="keyword">if</span> (pos &lt; <span class="number">0</span>)                                        <span class="comment">//越界判断</span></span><br><span class="line">        <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">    <span class="keyword">if</span> (pos == <span class="number">0</span>)                                       <span class="comment">//返回头结点</span></span><br><span class="line">        <span class="keyword">return</span> first;</span><br><span class="line"></span><br><span class="line">    DNode&lt;T&gt; *p;     <span class="comment">//扫描器，当前扫描到的工作结点</span></span><br><span class="line">    p = first;       <span class="comment">//扫描器从头结点开始，头结点是第0个结点</span></span><br><span class="line">    <span class="keyword">int</span> now_pos = <span class="number">0</span>; <span class="comment">//累加器，记录p指向的第几个结点</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">while</span> (p != <span class="literal">NULL</span> &amp;&amp; now_pos &lt; pos) &#123; <span class="comment">//查找第pos个结点</span></span><br><span class="line">        p = p-&gt;next;</span><br><span class="line">        now_pos++;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> p;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h1 id="【插入】"><a href="#【插入】" class="headerlink" title="【插入】"></a>【插入】</h1><h2 id="后插"><a href="#后插" class="headerlink" title="后插"></a>后插</h2><p>后插，是指在给定 <code>p</code> 结点后插入元素 <code>elem</code>，<strong>一般用于按位插入，不单独使用</strong></p>
+<p>由于对指针的操作顺序有很多，但由于双向链表实质上可看作两条反向的单链表，所以插入操作的核心是：<strong>先处理每个方向的远端指针，再处理近端指针</strong></p>
+<p>原则上，插入一个结点需要连接 4 个指针，但考虑插入时的特殊情况，即在空表或表尾插入一个结点时，新结点的右指针指向为空，此时只需连接 3 个指针</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt;</span><br><span class="line"><span class="keyword">bool</span> DoubleLinkList&lt;T&gt;::insertNextNode(DNode&lt;T&gt; *p, T elem) &#123; <span class="comment">//后插，用于按位插入</span></span><br><span class="line">    <span class="keyword">if</span> (p == <span class="literal">NULL</span>)</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line"></span><br><span class="line">    DNode&lt;T&gt; *s = (DNode&lt;T&gt; *)<span class="built_in">malloc</span>(<span class="keyword">sizeof</span>(DNode&lt;T&gt;)); <span class="comment">//申请新结点</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">//对新结点s操作</span></span><br><span class="line">    s-&gt;data = elem;         <span class="comment">//存数据</span></span><br><span class="line">    s-&gt;next = p-&gt;next;      <span class="comment">//新结点s的后继指针指向p的后继</span></span><br><span class="line">    s-&gt;prior = p;           <span class="comment">//新结点s的前驱指针指向p</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">//对工作结点p操作</span></span><br><span class="line">    p-&gt;next = s;            <span class="comment">//工作结点p的后继指针指向新结点</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">//对新结点s的后继结点操作</span></span><br><span class="line">    <span class="keyword">if</span> (s-&gt;next != <span class="literal">NULL</span>)    <span class="comment">//如果新结点s的后继结点存在</span></span><br><span class="line">        s-&gt;next-&gt;prior = s; <span class="comment">//新节点s的后继结点的前驱指针指向新结点s</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="前插"><a href="#前插" class="headerlink" title="前插"></a>前插</h2><p>前插与后插一样，<strong>一般用于按位插入，不单独使用</strong></p>
+<p>由于对指针的操作顺序有很多，但由于双向链表实质上可看作两条反向的单链表，所以插入操作的核心是：<strong>先处理每个方向的远端指针，再处理近端指针</strong></p>
+<p>原则上，插入一个结点需要连接 4 个指针，但考虑插入时的特殊情况，即在空表或表尾插入一个结点时，新结点的右指针指向为空，此时只需连接 3 个指针</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt;</span><br><span class="line"><span class="keyword">bool</span> DoubleLinkList&lt;T&gt;::insertPreNode(DNode&lt;T&gt; *p, T elem) &#123; <span class="comment">//前插，用于按位插入</span></span><br><span class="line">    <span class="keyword">if</span> (p == <span class="literal">NULL</span>)</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line"></span><br><span class="line">    DNode&lt;T&gt; *s = (DNode&lt;T&gt; *)<span class="built_in">malloc</span>(<span class="keyword">sizeof</span>(DNode&lt;T&gt;)); <span class="comment">//申请新结点</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">//对新结点s操作</span></span><br><span class="line">    s-&gt;data = elem;         <span class="comment">//存数据</span></span><br><span class="line">    s-&gt;prior = p-&gt;prior;    <span class="comment">//新结点s的前驱指向p的前驱</span></span><br><span class="line">    s-&gt;next = p;            <span class="comment">//新结点s的后继指针指向p</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">//对新结点s的前驱结点操作</span></span><br><span class="line">    s-&gt;prior-&gt;next = s; <span class="comment">//新节点s的前驱结点的后继指针指向新结点s</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">//对工作结点p操作</span></span><br><span class="line">    p-&gt;prior = s;            <span class="comment">//工作结点p的后继指针指向新结点</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="按位插入"><a href="#按位插入" class="headerlink" title="按位插入"></a>按位插入</h2><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt; </span><br><span class="line"><span class="keyword">bool</span> DoubleLinkList&lt;T&gt;::insertNode(<span class="keyword">int</span> pos, T elem) &#123; <span class="comment">//按位插入</span></span><br><span class="line">    <span class="keyword">if</span> (pos &lt; <span class="number">1</span>)                                <span class="comment">//越界判断</span></span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//后插</span></span><br><span class="line">    DNode&lt;T&gt; *p = getNodeByLocate(pos - <span class="number">1</span>);     <span class="comment">//找到第pos-1个位置</span></span><br><span class="line">    <span class="keyword">if</span> (p == <span class="literal">NULL</span>)                              <span class="comment">//插入位置异常</span></span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    <span class="keyword">return</span> insertNextNode(p, elem);             <span class="comment">//在pos-1个位置后插入元素</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">//前插</span></span><br><span class="line">    <span class="comment">// DNode&lt;T&gt; *p = getNodeByLocate(pos);      //找到第pos个位置</span></span><br><span class="line">    <span class="comment">// if (p == NULL)                           //插入位置异常</span></span><br><span class="line">    <span class="comment">//     return false;</span></span><br><span class="line">    <span class="comment">// return insertPreNode(p, elem);           //在pos个位置前插入元素</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h1 id="【删除】"><a href="#【删除】" class="headerlink" title="【删除】"></a>【删除】</h1><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt;</span><br><span class="line"><span class="keyword">bool</span> DoubleLinkList&lt;T&gt;::deleteNodeByLocate(DNode&lt;T&gt; *p, T &amp;elem) &#123; <span class="comment">//删除指定结点p</span></span><br><span class="line">    <span class="keyword">if</span> (p == <span class="literal">NULL</span>)</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    elem = p-&gt;data;                <span class="comment">//存储数据</span></span><br><span class="line">    <span class="keyword">if</span> (p-&gt;next == <span class="literal">NULL</span>)           <span class="comment">//p为表尾元素</span></span><br><span class="line">        p-&gt;prior-&gt;next = <span class="literal">NULL</span>;     <span class="comment">//p的前驱结点的后继指针指向NULL</span></span><br><span class="line">    <span class="keyword">else</span> &#123;                         <span class="comment">//p为非表尾元素</span></span><br><span class="line">        p-&gt;next-&gt;prior = p-&gt;prior; <span class="comment">//p的后继结点的前驱指针指向p的前驱结点</span></span><br><span class="line">        p-&gt;prior-&gt;next = p-&gt;next;  <span class="comment">//p的前驱结点的后继指针指向p的后继结点</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">free</span>(p);</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h1 id="【头插法与尾插法】"><a href="#【头插法与尾插法】" class="headerlink" title="【头插法与尾插法】"></a>【头插法与尾插法】</h1><h2 id="头插法"><a href="#头插法" class="headerlink" title="头插法"></a>头插法</h2><p>对于双链表的头插法，每次插入都是对头结点进行<strong>后插</strong>操作</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt; </span><br><span class="line"><span class="keyword">void</span> DoubleLinkList&lt;T&gt;::headInsert(T data[], <span class="keyword">int</span> len) &#123; <span class="comment">//头插法</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; len; i++)                       <span class="comment">//每一次对头结点进行后插操作</span></span><br><span class="line">        insertNextNode(first, data[i]);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="尾插法"><a href="#尾插法" class="headerlink" title="尾插法"></a>尾插法</h2><p>对于双链表的尾插法，不断地申请新结点，填充数据域，并通过尾指针 <code>tail</code> 来建立后继关系与前驱关系</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt; </span><br><span class="line"><span class="keyword">void</span> DoubleLinkList&lt;T&gt;::tailInsert(T data[], <span class="keyword">int</span> len) &#123; <span class="comment">//尾插法</span></span><br><span class="line">    DNode&lt;T&gt; *tail = first;                             <span class="comment">//尾指针</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; len; i++) &#123;</span><br><span class="line">        DNode&lt;T&gt; *p = (DNode&lt;T&gt; *)<span class="built_in">malloc</span>(<span class="keyword">sizeof</span>(DNode&lt;T&gt;)); <span class="comment">//申请新结点</span></span><br><span class="line">        p-&gt;data = data[i];                                  <span class="comment">//填充数据域</span></span><br><span class="line">        tail-&gt;next = p;                                     <span class="comment">//建立后继关系</span></span><br><span class="line">        p-&gt;prior = tail;                                    <span class="comment">//建立前驱关系</span></span><br><span class="line">        tail = p;                                           <span class="comment">//更改尾指针为新结点p地址</span></span><br><span class="line">    &#125;</span><br><span class="line">    tail-&gt;next = <span class="literal">NULL</span>;                                      <span class="comment">//建立完毕，尾指针指针域置空</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>感谢您对我的支持，让我继续努力分享有用的技术与知识点！</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/wechatpay.jpg" alt="Alex_McAvoy 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/alipay.jpg" alt="Alex_McAvoy 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Alex_McAvoy
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://alex-mcavoy.github.io/oi-acm/data-structure/linear-list/c1a5ceb3.html" title="双链表">https://alex-mcavoy.github.io/oi-acm/data-structure/linear-list/c1a5ceb3.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/cpp/" rel="tag"># C++</a>
+              <a href="/tags/oi-acm/" rel="tag"># OI&ACM</a>
+              <a href="/tags/data-structure/" rel="tag"># 数据结构</a>
+              <a href="/tags/linear-list/" rel="tag"># 线性表</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/oi-acm/data-structure/linear-list/71c610d3.html" rel="prev" title="单链表">
+      <i class="fa fa-chevron-left"></i> 单链表
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/oi-acm/data-structure/linear-list/23c1ac0e.html" rel="next" title="循环链表">
+      循环链表 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【双链表】"><span class="nav-number">1.</span> <span class="nav-text">【双链表】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【初始化表与销毁表】"><span class="nav-number">2.</span> <span class="nav-text">【初始化表与销毁表】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#初始化与双链表的建立"><span class="nav-number">2.1.</span> <span class="nav-text">初始化与双链表的建立</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#双链表的销毁"><span class="nav-number">2.2.</span> <span class="nav-text">双链表的销毁</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【基本操作】"><span class="nav-number">3.</span> <span class="nav-text">【基本操作】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#求表长"><span class="nav-number">3.1.</span> <span class="nav-text">求表长</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#判空"><span class="nav-number">3.2.</span> <span class="nav-text">判空</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#输出"><span class="nav-number">3.3.</span> <span class="nav-text">输出</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【查找】"><span class="nav-number">4.</span> <span class="nav-text">【查找】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#按值查找"><span class="nav-number">4.1.</span> <span class="nav-text">按值查找</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#按位查找"><span class="nav-number">4.2.</span> <span class="nav-text">按位查找</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【插入】"><span class="nav-number">5.</span> <span class="nav-text">【插入】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#后插"><span class="nav-number">5.1.</span> <span class="nav-text">后插</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#前插"><span class="nav-number">5.2.</span> <span class="nav-text">前插</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#按位插入"><span class="nav-number">5.3.</span> <span class="nav-text">按位插入</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【删除】"><span class="nav-number">6.</span> <span class="nav-text">【删除】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【头插法与尾插法】"><span class="nav-number">7.</span> <span class="nav-text">【头插法与尾插法】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#头插法"><span class="nav-number">7.1.</span> <span class="nav-text">头插法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#尾插法"><span class="nav-number">7.2.</span> <span class="nav-text">尾插法</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">  
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Alex_McAvoy"
+      src="/assets/img/head.jpg">
+  <p class="site-author-name" itemprop="name">Alex_McAvoy</p>
+  <div class="site-description" itemprop="description">想要成为渔夫的猎手</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">541</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">56</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">61</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Alex-McAvoy" title="GitHub → https://github.com/Alex-McAvoy" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/u011815404" title="CSDN → https://blog.csdn.net/u011815404" rel="noopener" target="_blank"><i class="fas fa-copyright fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+<!-- 访客地图 -->
+<script type="text/javascript" src="//rf.revolvermaps.com/0/0/5.js?i=50n58yo58ow&amp;m=0&amp;c=ff0000&amp;cr1=ffffff&amp;s=140" async="async"></script>
+
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdz20172133" title="https://blog.csdn.net/sdz20172133" rel="noopener" target="_blank">神仙队友</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://pxlsdz.gitee.io/" title="https://pxlsdz.gitee.io/" rel="noopener" target="_blank">神仙队友的另一个博客</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://bycore.net" title="https://bycore.net" rel="noopener" target="_blank">凉了的某饼同学</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://kris-cn.github.io/" title="http://kris-cn.github.io/" rel="noopener" target="_blank">翟孙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://deng.fun/" title="http://deng.fun/" rel="noopener" target="_blank">芙蓉姐姐</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdau_fangshifeng" title="https://blog.csdn.net/sdau_fangshifeng" rel="noopener" target="_blank">一个头很酷的家伙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/wentong_Xu" title="https://blog.csdn.net/wentong_Xu" rel="noopener" target="_blank">小黑贱胖子</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.yuheng.tech/" title="https://www.yuheng.tech/" rel="noopener" target="_blank">咸于</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/lanshan1111" title="https://blog.csdn.net/lanshan1111" rel="noopener" target="_blank">肥硕硕</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdauguanweihong" title="https://blog.csdn.net/sdauguanweihong" rel="noopener" target="_blank">管少</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_41661919" title="https://blog.csdn.net/qq_41661919" rel="noopener" target="_blank">俊杰</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_40859951" title="https://blog.csdn.net/qq_40859951" rel="noopener" target="_blank">峰哥</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/LSD20164388" title="https://blog.csdn.net/LSD20164388" rel="noopener" target="_blank">狗冬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37748451" title="https://blog.csdn.net/qq_37748451" rel="noopener" target="_blank">胖亚亚</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37868325" title="https://blog.csdn.net/qq_37868325" rel="noopener" target="_blank">妍大佬</a>
+        </li>
+    </ul>
+  </div>
+
+		
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+  
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Alex_McAvoy</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+</br>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script><script src="/js/bookmark.js"></script>
+
+
+
+  
+
+
+
+
+  <script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '48fd73a538d3fa927f65',
+      clientSecret: '56618aefeee90bac3c20de8d51bb0b985d67252d',
+      repo        : 'Gitalk-Comment',
+      owner       : 'Alex-McAvoy',
+      admin       : ['Alex-McAvoy'],
+      id          : 'e0e41603c81c832f76f3b26870d811b5',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+  
+  <!-- 鼠标单击粒子特效 -->
+  <script type="text/javascript" src="/js/cursor-effects.js"></script>
+  <!-- 多级目录 -->
+  <script type="text/javascript" src="/js/category.js"></script>
+  
+</body>
+</html>

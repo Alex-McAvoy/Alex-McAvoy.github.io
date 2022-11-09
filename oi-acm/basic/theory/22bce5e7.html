@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.9.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/img/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/assets/img/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/pace-js@1/themes/blue/pace-theme-minimal.css">
+  <script src="//cdn.jsdelivr.net/npm/pace-js@1/pace.min.js"></script>
+
+
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"alex-mcavoy.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":16,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":true,"color":"#ff0000","save":"manual"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":true},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.json"};
+  </script>
+
+  <meta name="description" content="【图】图（Graph）是由顶点的有穷非空集合和顶点之间边的集合组成，通常表示为：$G=(V,E)$，其中 $V$ 是非空有限集合，代表顶点，$E$ 是可以为空的有限集合，代表边 若顶点 $v_i$ 和 $ v_j$  间的边没有方向，则称这条边为无向边，用无序偶对 $(v_i,v_j)$  表示；若顶点 $v_i$  和 $v_j$  间的边有方向，则称这条边为有向边（弧），用有序偶对 $&amp;lt;">
+<meta name="keywords" content="OI&amp;ACM,图论,算法基础,基础理论">
+<meta property="og:type" content="article">
+<meta property="og:title" content="图的基本概念">
+<meta property="og:url" content="https://alex-mcavoy.github.io/oi-acm/basic/theory/22bce5e7.html">
+<meta property="og:site_name" content="Alex_McAvoy">
+<meta property="og:description" content="【图】图（Graph）是由顶点的有穷非空集合和顶点之间边的集合组成，通常表示为：$G=(V,E)$，其中 $V$ 是非空有限集合，代表顶点，$E$ 是可以为空的有限集合，代表边 若顶点 $v_i$ 和 $ v_j$  间的边没有方向，则称这条边为无向边，用无序偶对 $(v_i,v_j)$  表示；若顶点 $v_i$  和 $v_j$  间的边有方向，则称这条边为有向边（弧），用有序偶对 $&amp;lt;">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2021-09-25T08:37:55.708Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="图的基本概念">
+<meta name="twitter:description" content="【图】图（Graph）是由顶点的有穷非空集合和顶点之间边的集合组成，通常表示为：$G=(V,E)$，其中 $V$ 是非空有限集合，代表顶点，$E$ 是可以为空的有限集合，代表边 若顶点 $v_i$ 和 $ v_j$  间的边没有方向，则称这条边为无向边，用无序偶对 $(v_i,v_j)$  表示；若顶点 $v_i$  和 $v_j$  间的边有方向，则称这条边为有向边（弧），用有序偶对 $&amp;lt;">
+
+<link rel="canonical" href="https://alex-mcavoy.github.io/oi-acm/basic/theory/22bce5e7.html">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>图的基本概念 | Alex_McAvoy</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Alex_McAvoy</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">想要成为渔夫的猎手</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+
+	
+	
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/oi-acm/basic/theory/22bce5e7.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/assets/img/head.jpg">
+      <meta itemprop="name" content="Alex_McAvoy">
+      <meta itemprop="description" content="想要成为渔夫的猎手">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Alex_McAvoy">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          图的基本概念
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2018-11-05 09:48:00" itemprop="dateCreated datePublished" datetime="2018-11-05T09:48:00+08:00">2018-11-05</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/oi-acm/" itemprop="url" rel="index"><span itemprop="name">OI&ACM</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/oi-acm/basic/" itemprop="url" rel="index"><span itemprop="name">算法基础</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/oi-acm/basic/theory/" itemprop="url" rel="index"><span itemprop="name">基础理论</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>2k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>2 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="【图】"><a href="#【图】" class="headerlink" title="【图】"></a>【图】</h1><p><strong>图（Graph）</strong>是由顶点的有穷非空集合和顶点之间边的集合组成，通常表示为：$G=(V,E)$，其中 $V$ 是非空有限集合，代表顶点，$E$ 是可以为空的有限集合，代表边</p>
+<p>若顶点 $v_i$ 和 $ v_j$  间的边没有方向，则称这条边为<strong>无向边</strong>，用无序偶对 $(v_i,v_j)$  表示；若顶点 $v_i$  和 $v_j$  间的边有方向，则称这条边为<strong>有向边（弧）</strong>，用有序偶对 $&lt; v_i,v_j &gt;$  表示，其中 $v_i$  称为<strong>弧头</strong>，$v_j$ 称为<strong>弧尾</strong></p>
+<p>在一个无向图中，对于任意两个顶点 $v_i$ 和顶点 $v_j$，若存在边 $(v_i,v_j)$，则称<strong>顶点 $v_i$ 和顶点 $v_j$ 互为邻接点</strong>，同时称边 $(v_i,v_j)$ 依附于顶点 $v_i$ 和顶点 $v_j$</p>
+<p>在一个有向图中，对于任意两个顶点 $v_i$ 和顶点 $v_j$，若存在弧 $&lt; v_i,v_j &gt;$，则称<strong>顶点 $v_i$ 邻接到顶点 $v_j$，顶点 $v_j$ 邻接自顶点 $v_i$</strong>，同时称弧 $&lt; v_i,v_j &gt;$ 依附于顶点 $v_i$ 和顶点 $v_j$</p>
+<p>若图的任意两个顶点之间的边都是无向边，则称该图为<strong>无向图</strong>；若图的任意两个顶点之间的边都是有向边，则称该图为<strong>有向图</strong></p>
+<h1 id="【基本术语】"><a href="#【基本术语】" class="headerlink" title="【基本术语】"></a>【基本术语】</h1><h2 id="度"><a href="#度" class="headerlink" title="度"></a>度</h2><ul>
+<li>在<strong>无向图</strong>中，依附于顶点 $v$ 的边数称为<strong>顶点的度</strong>，记为 $TD(v)$，在 $n$ 个顶点 $m$ 条边的无向图中，所有点的度的和为 $2m$，且有：$TD(v)=ID(v)+OD(v)$</li>
+<li>在<strong>有向图</strong>中，以顶点 $v$ 为弧头的弧的数目称为<strong>顶点的入度</strong>，记为 $ID(v)$，在 $n$ 个顶点 $m$ 条边的有向图中，所有点的入度和为 $m$</li>
+<li>在<strong>有向图</strong>中，以顶点 $v$ 为弧尾的弧的数目称为<strong>顶点的出度</strong>，记为 $OD(v)$，在 $n$ 个顶点 $m$ 条边的有向图中，所有点的出度和为 $m$</li>
+</ul>
+<h2 id="路径与回路"><a href="#路径与回路" class="headerlink" title="路径与回路"></a>路径与回路</h2><ul>
+<li>在无向图 $G=(V,E)$ 中，对于一个满足 $(v<em>{ij-1},v</em>{ij})\in E(1\leq j\leq m)$的顶点序列 ${v<em>p=v</em>{i<em>0},v</em>{i<em>1},v</em>{i<em>2},…, v</em>{i_m}=v_q}$称为<strong>从顶点 $v_p$ 到顶点 $v_q$ 之间的路径</strong>，若 $G$ 是有向图，则 $G$ 的路径是有方向的</li>
+<li>在路径序列中，起点和终点相同的路径称为<strong>回路（环）</strong></li>
+<li>在路径序列中，顶点不重复出现的路径称为<strong>简单路径</strong></li>
+<li>在路径序列中，除起点终点外，其余顶点不重复出现的回路称为<strong>简单回路</strong></li>
+<li>对于一个非带权图，路径上边的个数称为<strong>路径长度</strong>，对于一个带权图，路径上各边权的和称为<strong>路径长度</strong></li>
+</ul>
+<h2 id="连通性"><a href="#连通性" class="headerlink" title="连通性"></a>连通性</h2><ul>
+<li>对于图 $G=(V,E)$ 和 $G’=(V’,E’)$，若 $V’\subseteq V,E’\subseteq E$，则称 $G’$ 为 $G$ 的<strong>子图</strong>，一个图可以有多个子图</li>
+<li>在<strong>无向图</strong>中，如果从一个顶点 $v_i$ 到另一个顶点 $v_j(i≠j)$ 有路径，则称<strong>顶点 $v_i$ 和 $v_j$ 是连通的</strong>，如果图中任意两个顶点都是连通的，则称该图是<strong>连通图</strong></li>
+<li>对于<strong>无向图</strong>来说，非连通图的<strong>极大连通子图</strong>称为<strong>连通分量</strong>，其中，<strong>极大</strong>是指包括所有连通的顶点及这些顶点相关联的所有边</li>
+<li>在<strong>有向图</strong>中，对图中任意一对顶点 $v_i$ 和 $v_j(i≠j)$，若从顶点 $v_i$ 到顶点 $v_j$ 和从顶点 $v_j$ 到顶点 $v_i$ 均有路径，则称该有向图是<strong>强连通图</strong></li>
+<li>对于有向图来说，非强连通图的<strong>极大强连通子图</strong>称为<strong>强连通分量</strong>，其中，<strong>极大</strong>是指包括所有连通的顶点及这些顶点相关联的所有边</li>
+<li>对于一个具有 $n$ 个顶点的<strong>连通图</strong> $G$ ，包含 $G$ 中全部顶点的一个<strong>极小连通子图</strong>称为<strong>生成树</strong>，其中，<strong>极小</strong>是指子图中只有一个入度为 $0$ 的点且其他点的入度均为 $1$，一个连通图的生成树可以有多个</li>
+<li>在非连通图中，由每个连通分量都可以得到一棵<strong>生成树</strong>，这些连通分量的生成树就组成了一个非连通图的<strong>生成森林</strong></li>
+</ul>
+<hr>
+<p>对于 $n$ 个点的无向图 $G(V,E)$ 来说，要保证在任何情况下都是连通的，在最极端的情况下，$n-1$ 个顶点构成一个完全无向图，剩下一个点再加一条边后必然与该图构成一个连通图，即最少需要的边数为：</p>
+<script type="math/tex; mode=display">
+\frac{(n-1)(n-2)}{2}+1</script><p>对于 $m$ 条边的非连通无向图 $G(V,E)$ 来说，最极端的情况下，由 $n$ 个顶点构成的完全图与一个独立的顶点构成，假设最少要 $n$ 个点，那么边数 $m$ 满足：</p>
+<script type="math/tex; mode=display">
+m=\frac{(n-1)(n-2)}{2}</script><h1 id="【特殊形态的图】"><a href="#【特殊形态的图】" class="headerlink" title="【特殊形态的图】"></a>【特殊形态的图】</h1><ul>
+<li>在一个图中，<strong>不存在顶点到其自身的边</strong>，且同一条<strong>边不重复</strong>，则称图为<strong>简单图</strong></li>
+<li>在一个无向图中，如果任意两个顶点之间都存在边，则称该图为<strong>无向完全图</strong>，其有 $\frac{n*(n-1)}{2}$ 条边</li>
+<li>在一个有向图中，如果任意两个顶点之间都存在方向相反的两条弧，则称该图为<strong>有向完全图</strong>，其有 $n*(n-1)$ 条边。</li>
+<li>一个边数接近完全图的图称为<strong>稠密图</strong>，一个边数远远少于完全图的图称为<strong>稀疏图</strong></li>
+<li>对边赋予的有意义的数值量称为<strong>权（权值）</strong>，边上带权的图，称为<strong>网（带权图）</strong>，根据图是无向图或有向图，分为<strong>有向网图</strong>、<strong>无向网图</strong></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>感谢您对我的支持，让我继续努力分享有用的技术与知识点！</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/wechatpay.jpg" alt="Alex_McAvoy 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/alipay.jpg" alt="Alex_McAvoy 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Alex_McAvoy
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://alex-mcavoy.github.io/oi-acm/basic/theory/22bce5e7.html" title="图的基本概念">https://alex-mcavoy.github.io/oi-acm/basic/theory/22bce5e7.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/oi-acm/" rel="tag"># OI&ACM</a>
+              <a href="/tags/graph/" rel="tag"># 图论</a>
+              <a href="/tags/basic/" rel="tag"># 算法基础</a>
+              <a href="/tags/theory/" rel="tag"># 基础理论</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/oi-acm/graph/aov-topological-order/d0fe14af.html" rel="prev" title="AOV 网与拓扑排序">
+      <i class="fa fa-chevron-left"></i> AOV 网与拓扑排序
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/oi-acm/data-structure/bst-avl/avl/4263f441.html" rel="next" title="平衡二叉树 AVL">
+      平衡二叉树 AVL <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【图】"><span class="nav-number">1.</span> <span class="nav-text">【图】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【基本术语】"><span class="nav-number">2.</span> <span class="nav-text">【基本术语】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#度"><span class="nav-number">2.1.</span> <span class="nav-text">度</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#路径与回路"><span class="nav-number">2.2.</span> <span class="nav-text">路径与回路</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#连通性"><span class="nav-number">2.3.</span> <span class="nav-text">连通性</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【特殊形态的图】"><span class="nav-number">3.</span> <span class="nav-text">【特殊形态的图】</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">  
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Alex_McAvoy"
+      src="/assets/img/head.jpg">
+  <p class="site-author-name" itemprop="name">Alex_McAvoy</p>
+  <div class="site-description" itemprop="description">想要成为渔夫的猎手</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">541</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">56</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">61</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Alex-McAvoy" title="GitHub → https://github.com/Alex-McAvoy" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/u011815404" title="CSDN → https://blog.csdn.net/u011815404" rel="noopener" target="_blank"><i class="fas fa-copyright fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+<!-- 访客地图 -->
+<script type="text/javascript" src="//rf.revolvermaps.com/0/0/5.js?i=50n58yo58ow&amp;m=0&amp;c=ff0000&amp;cr1=ffffff&amp;s=140" async="async"></script>
+
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdz20172133" title="https://blog.csdn.net/sdz20172133" rel="noopener" target="_blank">神仙队友</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://pxlsdz.gitee.io/" title="https://pxlsdz.gitee.io/" rel="noopener" target="_blank">神仙队友的另一个博客</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://bycore.net" title="https://bycore.net" rel="noopener" target="_blank">凉了的某饼同学</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://kris-cn.github.io/" title="http://kris-cn.github.io/" rel="noopener" target="_blank">翟孙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://deng.fun/" title="http://deng.fun/" rel="noopener" target="_blank">芙蓉姐姐</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdau_fangshifeng" title="https://blog.csdn.net/sdau_fangshifeng" rel="noopener" target="_blank">一个头很酷的家伙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/wentong_Xu" title="https://blog.csdn.net/wentong_Xu" rel="noopener" target="_blank">小黑贱胖子</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.yuheng.tech/" title="https://www.yuheng.tech/" rel="noopener" target="_blank">咸于</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/lanshan1111" title="https://blog.csdn.net/lanshan1111" rel="noopener" target="_blank">肥硕硕</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdauguanweihong" title="https://blog.csdn.net/sdauguanweihong" rel="noopener" target="_blank">管少</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_41661919" title="https://blog.csdn.net/qq_41661919" rel="noopener" target="_blank">俊杰</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_40859951" title="https://blog.csdn.net/qq_40859951" rel="noopener" target="_blank">峰哥</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/LSD20164388" title="https://blog.csdn.net/LSD20164388" rel="noopener" target="_blank">狗冬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37748451" title="https://blog.csdn.net/qq_37748451" rel="noopener" target="_blank">胖亚亚</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37868325" title="https://blog.csdn.net/qq_37868325" rel="noopener" target="_blank">妍大佬</a>
+        </li>
+    </ul>
+  </div>
+
+		
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+  
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Alex_McAvoy</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+</br>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script><script src="/js/bookmark.js"></script>
+
+
+
+  
+
+
+
+
+  <script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '48fd73a538d3fa927f65',
+      clientSecret: '56618aefeee90bac3c20de8d51bb0b985d67252d',
+      repo        : 'Gitalk-Comment',
+      owner       : 'Alex-McAvoy',
+      admin       : ['Alex-McAvoy'],
+      id          : '589a52bbfd11bfa61c0ee289a9d1355d',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+  
+  <!-- 鼠标单击粒子特效 -->
+  <script type="text/javascript" src="/js/cursor-effects.js"></script>
+  <!-- 多级目录 -->
+  <script type="text/javascript" src="/js/category.js"></script>
+  
+</body>
+</html>

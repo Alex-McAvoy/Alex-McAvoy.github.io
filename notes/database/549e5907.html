@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.9.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/img/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/assets/img/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/pace-js@1/themes/blue/pace-theme-minimal.css">
+  <script src="//cdn.jsdelivr.net/npm/pace-js@1/pace.min.js"></script>
+
+
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"alex-mcavoy.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":16,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":true,"color":"#ff0000","save":"manual"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":true},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.json"};
+  </script>
+
+  <meta name="description" content="【关系数据结构的形式化定义】关系模型的数据结构十分简单，在用户角度来看关系模型中数据的逻辑结构只是一张二维表，虽然简单，但却能表示现实世界中实体以及实体间的各种联系，在 数据库关系模型 中，已经介绍了关系模型与其基本概念，但关系模型实质上是建立在集合代数基础上的，这里从集合论角度，给出关系数据结构的形式化定义 域">
+<meta name="keywords" content="学习笔记,数据库系统">
+<meta property="og:type" content="article">
+<meta property="og:title" content="关系数据结构">
+<meta property="og:url" content="https://alex-mcavoy.github.io/notes/database/549e5907.html">
+<meta property="og:site_name" content="Alex_McAvoy">
+<meta property="og:description" content="【关系数据结构的形式化定义】关系模型的数据结构十分简单，在用户角度来看关系模型中数据的逻辑结构只是一张二维表，虽然简单，但却能表示现实世界中实体以及实体间的各种联系，在 数据库关系模型 中，已经介绍了关系模型与其基本概念，但关系模型实质上是建立在集合代数基础上的，这里从集合论角度，给出关系数据结构的形式化定义 域">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2021-08-23T13:40:37.045Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="关系数据结构">
+<meta name="twitter:description" content="【关系数据结构的形式化定义】关系模型的数据结构十分简单，在用户角度来看关系模型中数据的逻辑结构只是一张二维表，虽然简单，但却能表示现实世界中实体以及实体间的各种联系，在 数据库关系模型 中，已经介绍了关系模型与其基本概念，但关系模型实质上是建立在集合代数基础上的，这里从集合论角度，给出关系数据结构的形式化定义 域">
+
+<link rel="canonical" href="https://alex-mcavoy.github.io/notes/database/549e5907.html">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>关系数据结构 | Alex_McAvoy</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Alex_McAvoy</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">想要成为渔夫的猎手</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+
+	
+	
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/notes/database/549e5907.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/assets/img/head.jpg">
+      <meta itemprop="name" content="Alex_McAvoy">
+      <meta itemprop="description" content="想要成为渔夫的猎手">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Alex_McAvoy">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          关系数据结构
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2018-10-02 11:25:00" itemprop="dateCreated datePublished" datetime="2018-10-02T11:25:00+08:00">2018-10-02</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/notes/" itemprop="url" rel="index"><span itemprop="name">学习笔记</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/notes/database/" itemprop="url" rel="index"><span itemprop="name">数据库系统</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>2.9k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>3 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="【关系数据结构的形式化定义】"><a href="#【关系数据结构的形式化定义】" class="headerlink" title="【关系数据结构的形式化定义】"></a>【关系数据结构的形式化定义】</h1><p>关系模型的数据结构十分简单，在<strong>用户角度</strong>来看关系模型中数据的逻辑结构只是一张<strong>二维表</strong>，虽然简单，但却能表示现实世界中实体以及实体间的各种联系，在 <a href="https://alex-mcavoy.github.io/notes/database/f1fb41ab.html">数据库关系模型</a> 中，已经介绍了关系模型与其基本概念，但关系模型实质上是建立在<strong>集合代数基础</strong>上的，这里从<strong>集合论角度</strong>，给出关系数据结构的形式化定义</p>
+<h2 id="域"><a href="#域" class="headerlink" title="域"></a>域</h2><p><strong>域（Domain）</strong>是一组具有相同数据类型的值的集合，例如整数、实数、某个取值范围内的数等等，都是一个域</p>
+<p>一个域允许的不同取值个数称为这个域的<strong>基数</strong>，对于一个域 $D$，其基数记为 $m$</p>
+<p>例如，某个域 <code>D = {1, 2, 4, 8}</code>，其基数 <code>m = 4</code></p>
+<h2 id="笛卡尔积"><a href="#笛卡尔积" class="headerlink" title="笛卡尔积"></a>笛卡尔积</h2><p><strong>笛卡尔积（Cartesian Product）</strong>是域上的一种<strong>集合运算</strong>，是<strong>所有域的所有取值的不可重复的组合</strong></p>
+<p>其数学定义如下：</p>
+<p>给定一组域 $D_1,D_2,…,D_n$，并允许这些域中某些域是相同的，则这些域的笛卡尔积为</p>
+<script type="math/tex; mode=display">D_1 \times D_2 \times ... \times D_n = \{(d_1,d_2,...,d_n) | d_i \in D_i,i=1,2,...,n \}</script><p>其中，笛卡尔积的每一个元素 $(d_1,d_2,…,d_n)$ 称为一个 <strong>n 元组（n-tuple）</strong>，元组 $(d_1,d_2,…,d_n)$ 中的每一个值 $d_i$ 称为一个<strong>分量</strong></p>
+<p>若 $D_i$ 为有限集，其基数为 $m_i$，则<strong>笛卡尔积的基数</strong>为</p>
+<script type="math/tex; mode=display">M=\prod_{i=1}^n m_i</script><p>举例来说，假如给出三个域：教师集合 <code>THACHER={a,b}​</code>，学生集合<code>STUDENTS={1,2,3}</code>，专业集合 <code>MAJORS={P,Q}</code></p>
+<p>则 <code>THACHER, STUDENTS, MAJORS</code> 的<strong>笛卡尔积</strong>为</p>
+<script type="math/tex; mode=display">THACHER \times STUDENTS \times MAJORS = \begin{matrix}
+\{(a,1,P), & (a,2,P), & (a,3,P), \\ 
+(a,1,Q), & (a,2,Q), & (a,3,Q), \\ 
+(b,1,P), & (b,2,P), & (b,3,P), \\ 
+(b,1,Q), & (b,2,Q), & (b,3,Q)\}
+\end{matrix}</script><p>其中，笛卡尔积 <code>THACHER x STUDENTS x MAJORS</code> 中的每一个元素 <code>(a, 1, P)</code>、<code>(a, 2, P)</code> 等，都是一个<strong>元组</strong>；组中的每一个值 <code>a</code>、<code>3</code>、<code>Q</code> 等，都是一个<strong>分量</strong>，该<strong>笛卡尔积的基数</strong>为 <code>M = 2*3*2 = 12</code></p>
+<p>笛卡尔积可表示为一个<strong>二维表</strong>，表中的<strong>每行</strong>对应一个<strong>元组</strong>，表中的<strong>每列</strong>对应一个<strong>域</strong>，上例的笛卡尔积就可表示为下表</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:center">THACHER</th>
+<th style="text-align:center">STUDENTS</th>
+<th style="text-align:center">MAJORS</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">a</td>
+<td style="text-align:center">1</td>
+<td style="text-align:center">P</td>
+</tr>
+<tr>
+<td style="text-align:center">a</td>
+<td style="text-align:center">1</td>
+<td style="text-align:center">Q</td>
+</tr>
+<tr>
+<td style="text-align:center">a</td>
+<td style="text-align:center">2</td>
+<td style="text-align:center">P</td>
+</tr>
+<tr>
+<td style="text-align:center">a</td>
+<td style="text-align:center">2</td>
+<td style="text-align:center">Q</td>
+</tr>
+<tr>
+<td style="text-align:center">a</td>
+<td style="text-align:center">3</td>
+<td style="text-align:center">P</td>
+</tr>
+<tr>
+<td style="text-align:center">a</td>
+<td style="text-align:center">3</td>
+<td style="text-align:center">Q</td>
+</tr>
+<tr>
+<td style="text-align:center">b</td>
+<td style="text-align:center">1</td>
+<td style="text-align:center">P</td>
+</tr>
+<tr>
+<td style="text-align:center">b</td>
+<td style="text-align:center">1</td>
+<td style="text-align:center">Q</td>
+</tr>
+<tr>
+<td style="text-align:center">b</td>
+<td style="text-align:center">2</td>
+<td style="text-align:center">P</td>
+</tr>
+<tr>
+<td style="text-align:center">b</td>
+<td style="text-align:center">2</td>
+<td style="text-align:center">Q</td>
+</tr>
+<tr>
+<td style="text-align:center">b</td>
+<td style="text-align:center">3</td>
+<td style="text-align:center">P</td>
+</tr>
+<tr>
+<td style="text-align:center">b</td>
+<td style="text-align:center">3</td>
+<td style="text-align:center">Q</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h2 id="关系"><a href="#关系" class="headerlink" title="关系"></a>关系</h2><p>笛卡尔积是没有实际意义的，其某个子集才有实际含义，一个子集称为一个<strong>关系（Relation）</strong>，由于关系是笛卡尔积的子集，因此关系也是一张二维表，表中的每行对应一个元组，每列对应一个域，由于域可以相同，为进行区分，对每列起一个名字，称为<strong>属性（Attribute）</strong></p>
+<p>对于笛卡尔积 $D_1 \times D_2 \times … \times D_n$ ，其<strong>子集</strong> $R(D_1,D_2,…,D_n)$ 为该笛卡尔积的关系，其中 $R$ 为<strong>关系名</strong>，$n$ 为关系的<strong>目</strong>或<strong>度（Degree）</strong>，关系中每个元素是<strong>关系中的元组（Tuple）</strong>，常用 $t$ 来表示</p>
+<p>当关系的度 $n=1$ 时，称该关系为<strong>一元关系</strong>，当 $n=2$ 时，称该关系为<strong>二元关系</strong></p>
+<p>根据定义，关系可以是一个无限集合，而且由于组成笛卡尔积的域不满足交换律（$(d_1,d_2) \neq (d_2,d_1)$），因此当关系作为关系模型的数据结构时，需要给予如下的限定与扩充：</p>
+<ul>
+<li>无限关系在数据库系统中无意义，限定关系模型中的<strong>关系必须是有限集合</strong></li>
+<li>通过位关系的每个列附加一个<strong>属性名</strong>将关系属性的<strong>有序性取消</strong></li>
+</ul>
+<p>同时，在引入关系后，有如下定义：</p>
+<ul>
+<li><strong>码（Key）</strong>：又称为键，用于确定关系表中某一元组的</li>
+<li><strong>候选码（Candidate key）</strong>：对于关系中的某一属性组，其值能够唯一标识一个元组，而其子集不能</li>
+<li><strong>主码（Primary key）</strong>：对于候选码，选定其中一个用于唯一标识一个元组<strong>（候选码唯一时该候选码即为主码）</strong></li>
+<li><strong>主属性（Primary attribute）</strong>：候选码的各属性</li>
+<li><strong>非主属性（no-prime attribute）</strong>：不包含在任何候选码中的属性</li>
+<li><strong>全码（All-key）</strong>：<strong>最极端</strong>的情况下，关系模式的所有属性组是这个关系的候选码<strong>（最简单的情况下，候选码仅包含一个属性）</strong></li>
+</ul>
+<p>以上述的三个域教师集合 <code>THACHER={a,b}</code>，学生集合<code>STUDENTS={1,2,3}</code>，专业集合 <code>MAJORS={P,Q}</code> 产生的笛卡尔积为例</p>
+<p>许多元组是没有实际意义的，因为在许多学校的研究生培训制度中，一个教师仅教授一门课，且一个学生只能跟着一个导师学习某个专业，故而其中的某一个子集才是有实际意义的，才能表示清楚某些导师与学生的关系</p>
+<p>如下表所示，将该关系取名为 <code>TSM</code>，表示 <code>老师a</code> 带领 <code>学生1</code> 和 <code>学生2</code> 学习 <code>专业P</code>，<code>老师b</code> 带领 <code>学生3</code> 学习 <code>专业Q</code></p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:center">THACHER</th>
+<th style="text-align:center">STUDENTS</th>
+<th style="text-align:center">MAJORS</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">a</td>
+<td style="text-align:center">1</td>
+<td style="text-align:center">P</td>
+</tr>
+<tr>
+<td style="text-align:center">a</td>
+<td style="text-align:center">2</td>
+<td style="text-align:center">P</td>
+</tr>
+<tr>
+<td style="text-align:center">b</td>
+<td style="text-align:center">3</td>
+<td style="text-align:center">Q</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>如上所示，该<strong>关系</strong>可以表示为 <code>TSM(T, S, C)</code>，<strong>关系名</strong> <code>R = TSC</code>，关系的<strong>度</strong> <code>n = 3</code>，<strong>属性</strong>即为三个域的域名，假设学生姓名不会重复，那么 <code>STUDENTS</code> 属性的每一个值都唯一标识了一个元组，可作为 <code>TSC</code> 关系的<strong>候选码</strong>，同时也为<strong>主码</strong>，此外，<code>STUDENTS</code> 属性为<strong>主属性</strong>，<code>THACHER</code> 属性和 <code>MAJORS</code> 为<strong>非主属性</strong></p>
+<h1 id="【关系类型】"><a href="#【关系类型】" class="headerlink" title="【关系类型】"></a>【关系类型】</h1><p>关系有三种类型：</p>
+<ul>
+<li><strong>基本关系（基本表）</strong>：实际存在的表，其是实际存储数据的逻辑表示</li>
+<li><strong>查询表</strong>：查询结果对应的表，其是根据要求对基本关系进行查询得到的结果</li>
+<li><strong>视图表</strong>：由基本表或其他视图导出的表，是一种虚拟的表，不对应实际存储的数据</li>
+</ul>
+<p>可以发现，在三类关系中，基本关系是最基本也是最核心的关系，其具有以下性质：</p>
+<ul>
+<li>列是<strong>同质的（Homogeneous）</strong>：每列中的分量是同一类型的数据，来自同一域</li>
+<li>不同的列可出自同一域，其中每一列称为一个属性，不同的属性要给予不同的属性名</li>
+<li>列的次序可任意交换（在实际应用中，增加新属性时往往插入到最后一列）</li>
+<li>任意两元组的候选码不能相同，以保证可以唯一标识元组</li>
+<li>行的次序可任意交换</li>
+<li>分量必须取<strong>原子值</strong>：每一分量是不可再分的数据项</li>
+</ul>
+<p>在 <a href="https://alex-mcavoy.github.io/notes/database/f1fb41ab.html">关系模型</a> 中，已经介绍了关系模型要求规范化，规范条件最基本的一条就是<strong>关系的每一分量必须取原子值</strong>，规范化的关系称为<strong>范式（Normal Form，NF）</strong>，详见：<a href="https://alex-mcavoy.github.io/notes/database/29bcc608.html">范式</a></p>
+<h1 id="【关系模式】"><a href="#【关系模式】" class="headerlink" title="【关系模式】"></a>【关系模式】</h1><p>在任何一个数据库中，都要区分型和值，对于关系数据库来说，<strong>型</strong>就是<strong>关系模式</strong>，是对关系数据库的描述，其包括若干域的定义、这些域之上定义的若干关系模式；<strong>值</strong>就是关系模式在某一时刻对应的<strong>关系的集合</strong>，简称为**关系数据库</p>
+<p><strong>关系模式（Relation schema）</strong>包含元组集合的结构（属性构成、属性来自的域、属性与域之间的映象关系）、元组语义及完整性约束条件、属性间的数据依赖关系集合，其可表示为：$R(U,D,DOM,F)$</p>
+<p>其中，$R$ 是<strong>关系名</strong>，$U$ 是组成该关系的<strong>属性名集合</strong>，$D$ 是 $U$ 中属性来自的<strong>域</strong>，$DOM$ 是属性到域的<strong>映射集合</strong>（常常直接说明为属性的类型、长度），$F$ 是属性间数据的<strong>依赖关系集合</strong></p>
+<p>关系模型通常简记为：$R(U)$ 或 $R(A_1,A_2,…,A_n)$，其中 $A_i$ 为第 $i$ 个属性的属性名</p>
+
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>感谢您对我的支持，让我继续努力分享有用的技术与知识点！</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/wechatpay.jpg" alt="Alex_McAvoy 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/alipay.jpg" alt="Alex_McAvoy 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Alex_McAvoy
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://alex-mcavoy.github.io/notes/database/549e5907.html" title="关系数据结构">https://alex-mcavoy.github.io/notes/database/549e5907.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/notes/" rel="tag"># 学习笔记</a>
+              <a href="/tags/database/" rel="tag"># 数据库系统</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/oi-acm/data-structure/queue/f6839f18.html" rel="prev" title="链式队列">
+      <i class="fa fa-chevron-left"></i> 链式队列
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/notes/database/f156402b.html" rel="next" title="关系操作">
+      关系操作 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【关系数据结构的形式化定义】"><span class="nav-number">1.</span> <span class="nav-text">【关系数据结构的形式化定义】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#域"><span class="nav-number">1.1.</span> <span class="nav-text">域</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#笛卡尔积"><span class="nav-number">1.2.</span> <span class="nav-text">笛卡尔积</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#关系"><span class="nav-number">1.3.</span> <span class="nav-text">关系</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【关系类型】"><span class="nav-number">2.</span> <span class="nav-text">【关系类型】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【关系模式】"><span class="nav-number">3.</span> <span class="nav-text">【关系模式】</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">  
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Alex_McAvoy"
+      src="/assets/img/head.jpg">
+  <p class="site-author-name" itemprop="name">Alex_McAvoy</p>
+  <div class="site-description" itemprop="description">想要成为渔夫的猎手</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">541</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">56</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">61</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Alex-McAvoy" title="GitHub → https://github.com/Alex-McAvoy" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/u011815404" title="CSDN → https://blog.csdn.net/u011815404" rel="noopener" target="_blank"><i class="fas fa-copyright fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+<!-- 访客地图 -->
+<script type="text/javascript" src="//rf.revolvermaps.com/0/0/5.js?i=50n58yo58ow&amp;m=0&amp;c=ff0000&amp;cr1=ffffff&amp;s=140" async="async"></script>
+
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdz20172133" title="https://blog.csdn.net/sdz20172133" rel="noopener" target="_blank">神仙队友</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://pxlsdz.gitee.io/" title="https://pxlsdz.gitee.io/" rel="noopener" target="_blank">神仙队友的另一个博客</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://bycore.net" title="https://bycore.net" rel="noopener" target="_blank">凉了的某饼同学</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://kris-cn.github.io/" title="http://kris-cn.github.io/" rel="noopener" target="_blank">翟孙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://deng.fun/" title="http://deng.fun/" rel="noopener" target="_blank">芙蓉姐姐</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdau_fangshifeng" title="https://blog.csdn.net/sdau_fangshifeng" rel="noopener" target="_blank">一个头很酷的家伙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/wentong_Xu" title="https://blog.csdn.net/wentong_Xu" rel="noopener" target="_blank">小黑贱胖子</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.yuheng.tech/" title="https://www.yuheng.tech/" rel="noopener" target="_blank">咸于</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/lanshan1111" title="https://blog.csdn.net/lanshan1111" rel="noopener" target="_blank">肥硕硕</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdauguanweihong" title="https://blog.csdn.net/sdauguanweihong" rel="noopener" target="_blank">管少</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_41661919" title="https://blog.csdn.net/qq_41661919" rel="noopener" target="_blank">俊杰</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_40859951" title="https://blog.csdn.net/qq_40859951" rel="noopener" target="_blank">峰哥</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/LSD20164388" title="https://blog.csdn.net/LSD20164388" rel="noopener" target="_blank">狗冬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37748451" title="https://blog.csdn.net/qq_37748451" rel="noopener" target="_blank">胖亚亚</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37868325" title="https://blog.csdn.net/qq_37868325" rel="noopener" target="_blank">妍大佬</a>
+        </li>
+    </ul>
+  </div>
+
+		
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+  
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Alex_McAvoy</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+</br>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script><script src="/js/bookmark.js"></script>
+
+
+
+  
+
+
+
+
+  <script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '48fd73a538d3fa927f65',
+      clientSecret: '56618aefeee90bac3c20de8d51bb0b985d67252d',
+      repo        : 'Gitalk-Comment',
+      owner       : 'Alex-McAvoy',
+      admin       : ['Alex-McAvoy'],
+      id          : 'dcce03c9caf1a8cdd31318554b690cd1',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+  
+  <!-- 鼠标单击粒子特效 -->
+  <script type="text/javascript" src="/js/cursor-effects.js"></script>
+  <!-- 多级目录 -->
+  <script type="text/javascript" src="/js/category.js"></script>
+  
+</body>
+</html>
