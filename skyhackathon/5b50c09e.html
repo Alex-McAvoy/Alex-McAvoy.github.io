@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.9.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/img/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/assets/img/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/pace-js@1/themes/blue/pace-theme-minimal.css">
+  <script src="//cdn.jsdelivr.net/npm/pace-js@1/pace.min.js"></script>
+
+
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"alex-mcavoy.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":16,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":true,"color":"#ff0000","save":"manual"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":true},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.json"};
+  </script>
+
+  <meta name="description" content="训练环境设置文件地址在使用 Tao 训练模型时，需要设置两套文件地址：">
+<meta name="keywords" content="SkyHackathon">
+<meta property="og:type" content="article">
+<meta property="og:title" content="NVIDIA 7th SkyHackathon（五）图像数据集的处理">
+<meta property="og:url" content="https://alex-mcavoy.github.io/skyhackathon/5b50c09e.html">
+<meta property="og:site_name" content="Alex_McAvoy">
+<meta property="og:description" content="训练环境设置文件地址在使用 Tao 训练模型时，需要设置两套文件地址：">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2022-11-29T09:02:28.524Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="NVIDIA 7th SkyHackathon（五）图像数据集的处理">
+<meta name="twitter:description" content="训练环境设置文件地址在使用 Tao 训练模型时，需要设置两套文件地址：">
+
+<link rel="canonical" href="https://alex-mcavoy.github.io/skyhackathon/5b50c09e.html">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>NVIDIA 7th SkyHackathon（五）图像数据集的处理 | Alex_McAvoy</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Alex_McAvoy</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">想要成为渔夫的猎手</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+
+	
+	
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/skyhackathon/5b50c09e.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/assets/img/head.jpg">
+      <meta itemprop="name" content="Alex_McAvoy">
+      <meta itemprop="description" content="想要成为渔夫的猎手">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Alex_McAvoy">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          NVIDIA 7th SkyHackathon（五）图像数据集的处理
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2022-11-17 16:58:00" itemprop="dateCreated datePublished" datetime="2022-11-17T16:58:00+08:00">2022-11-17</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/skyhackathon/" itemprop="url" rel="index"><span itemprop="name">SkyHackathon</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>7.4k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>7 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="训练环境设置"><a href="#训练环境设置" class="headerlink" title="训练环境设置"></a>训练环境设置</h1><h2 id="文件地址"><a href="#文件地址" class="headerlink" title="文件地址"></a>文件地址</h2><p>在使用 Tao 训练模型时，需要设置两套文件地址：   </p>
+<ul>
+<li>USER_EXPERIMENT_DIR：docker 中的实验文档存放地址</li>
+<li>LOCAL_PROJECT_DIR：系统中的实验文档存放地址  </li>
+</ul>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> os</span><br><span class="line"></span><br><span class="line">%env KEY=<span class="string">"之前在 NGC 官网申请的秘钥"</span></span><br><span class="line">%env GPU_INDEX=<span class="number">0</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># --------------docker地址设置--------------</span></span><br><span class="line"><span class="comment"># docker 地址</span></span><br><span class="line">%env USER_EXPERIMENT_DIR=/home/alex/<span class="number">7</span>th_sky_hackathon</span><br><span class="line"><span class="comment"># docker 数据存放地址</span></span><br><span class="line">%env DATA_DOWNLOAD_DIR=/home/alex/<span class="number">7</span>th_sky_hackathon/data</span><br><span class="line"><span class="comment"># docker 规格说明存放地址</span></span><br><span class="line">%env SPECS_DIR=/home/alex/<span class="number">7</span>th_sky_hackathon/<span class="number">7</span>th/specs</span><br><span class="line"></span><br><span class="line"><span class="comment"># --------------本地地址设置--------------</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 本地项目地址</span></span><br><span class="line">%env LOCAL_PROJECT_DIR=/home/alex/<span class="number">7</span>th_sky_hackathon</span><br><span class="line"></span><br><span class="line"><span class="comment"># 本地数据集存放地址 $LOCAL_DATA_DIR=$LOCAL_PROJECT_DIR/data</span></span><br><span class="line">os.environ[<span class="string">"LOCAL_DATA_DIR"</span>] = os.path.join(os.getenv(<span class="string">"LOCAL_PROJECT_DIR"</span>, os.getcwd()), <span class="string">"data"</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 本地步骤结果地址 $LOCAL_EXPERIMENT_DIR=$LOCAL_PROJECT_DIR/7th</span></span><br><span class="line">os.environ[<span class="string">"LOCAL_EXPERIMENT_DIR"</span>] = os.path.join(os.getenv(<span class="string">"LOCAL_PROJECT_DIR"</span>, os.getcwd()), <span class="string">"7th"</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 本地规格说明文件目录 $LOCAL_SPECS_DIR=$NOTEBOOK_ROOT/specs</span></span><br><span class="line"><span class="comment"># 若未使用 notebook 环境，需定义执行下述命令，以定义 $NOTEBOOK_ROOT</span></span><br><span class="line"><span class="comment"># %env NOTEBOOK_ROOT=/data/tlt-experiments/ssd</span></span><br><span class="line">os.environ[<span class="string">"LOCAL_SPECS_DIR"</span>] = os.path.join(os.getenv(<span class="string">"NOTEBOOK_ROOT"</span>, os.getcwd()), <span class="string">"specs"</span>)</span><br></pre></td></tr></table></figure>
+<h2 id="设置映射关系"><a href="#设置映射关系" class="headerlink" title="设置映射关系"></a>设置映射关系</h2><p>将两套文件地址设置好映射后，只需对系统地址进行管理，docker 系统中的地址将会自动进行管理</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> json</span><br><span class="line"></span><br><span class="line">mounts_file = os.path.expanduser(<span class="string">"~/.tao_mounts.json"</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 定义映射字典</span></span><br><span class="line">drive_map = &#123;</span><br><span class="line">    <span class="string">"Mounts"</span>: [ &#123;</span><br><span class="line">            <span class="string">"source"</span>: os.environ[<span class="string">"LOCAL_PROJECT_DIR"</span>],</span><br><span class="line">            <span class="string">"destination"</span>: <span class="string">"/home/alex/7th_sky_hackathon/"</span></span><br><span class="line">        &#125;, &#123;</span><br><span class="line">            <span class="string">"source"</span>: os.environ[<span class="string">"LOCAL_SPECS_DIR"</span>],</span><br><span class="line">            <span class="string">"destination"</span>: os.environ[<span class="string">"SPECS_DIR"</span>]</span><br><span class="line">        &#125;</span><br><span class="line">    ]</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">with</span> open(mounts_file, <span class="string">"w"</span>) <span class="keyword">as</span> mfile:</span><br><span class="line">    json.dump(drive_map, mfile, indent=<span class="number">4</span>)</span><br></pre></td></tr></table></figure>
+<h1 id="数据集处理"><a href="#数据集处理" class="headerlink" title="数据集处理"></a>数据集处理</h1><h2 id="数据集简介"><a href="#数据集简介" class="headerlink" title="数据集简介"></a>数据集简介</h2><p>本次比赛，官方给出了 Pascal VOC 数据集，一共提供了三个压缩包，具体信息如下表</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:center">压缩包名</th>
+<th style="text-align:center">包含数据</th>
+<th style="text-align:center">数据来源</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">CARDBOARD.v1-cardboard.voc.zip</td>
+<td style="text-align:center">纸箱</td>
+<td style="text-align:center"><a href="https://universe.roboflow.com/object-detection/cardboard-1hdgz" target="_blank" rel="noopener">https://universe.roboflow.com/object-detection/cardboard-1hdgz</a></td>
+</tr>
+<tr>
+<td style="text-align:center">Food Project.v3-fruits-v3.voc.zip</td>
+<td style="text-align:center">果皮</td>
+<td style="text-align:center"><a href="https://universe.roboflow.com/object-detection/food-project" target="_blank" rel="noopener">https://universe.roboflow.com/object-detection/food-project</a></td>
+</tr>
+<tr>
+<td style="text-align:center">trash.v1i.voc.zip</td>
+<td style="text-align:center">瓶子</td>
+<td style="text-align:center"><a href="https://universe.roboflow.com/object-detection/trash-5xwft" target="_blank" rel="noopener">https://universe.roboflow.com/object-detection/trash-5xwft</a></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>每个压缩包中包含相应图片和每张图片打完标签所对应的 XML 文件，每个样例以及相应标签的解释如下：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">annotation</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">folder</span>&gt;</span><span class="tag">&lt;/<span class="name">folder</span>&gt;</span></span><br><span class="line">    <span class="comment">&lt;!-- 文件名 --&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">filename</span>&gt;</span>cardboard1_jpg.rf.751f28e0ab21477466e5b0620fb70dde.jpg<span class="tag">&lt;/<span class="name">filename</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">path</span>&gt;</span>cardboard1_jpg.rf.751f28e0ab21477466e5b0620fb70dde.jpg<span class="tag">&lt;/<span class="name">path</span>&gt;</span></span><br><span class="line">    <span class="comment">&lt;!-- 图片来源信息 --&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">source</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">database</span>&gt;</span>roboflow.ai<span class="tag">&lt;/<span class="name">database</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">source</span>&gt;</span></span><br><span class="line">    <span class="comment">&lt;!-- 图片尺寸 --&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">size</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">width</span>&gt;</span>416<span class="tag">&lt;/<span class="name">width</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">height</span>&gt;</span>416<span class="tag">&lt;/<span class="name">height</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">depth</span>&gt;</span>3<span class="tag">&lt;/<span class="name">depth</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">size</span>&gt;</span></span><br><span class="line">    <span class="comment">&lt;!-- 是否有分割label --&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">segmented</span>&gt;</span>0<span class="tag">&lt;/<span class="name">segmented</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">object</span>&gt;</span></span><br><span class="line">        <span class="comment">&lt;!-- 物体类别 --&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">name</span>&gt;</span>CARDBOARD<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">        <span class="comment">&lt;!-- 物体姿态 --&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">pose</span>&gt;</span>Unspecified<span class="tag">&lt;/<span class="name">pose</span>&gt;</span></span><br><span class="line">        <span class="comment">&lt;!-- 物体是否出现部分遮挡 &gt;15% 的情况 --&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">truncated</span>&gt;</span>0<span class="tag">&lt;/<span class="name">truncated</span>&gt;</span></span><br><span class="line">        <span class="comment">&lt;!-- 物体是否难以辨识，即需要结合背景才能辨识 --&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">difficult</span>&gt;</span>0<span class="tag">&lt;/<span class="name">difficult</span>&gt;</span></span><br><span class="line">        <span class="comment">&lt;!-- 物体的重要部分是否被遮挡 --&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">occluded</span>&gt;</span>0<span class="tag">&lt;/<span class="name">occluded</span>&gt;</span></span><br><span class="line">        <span class="comment">&lt;!-- 物体的 bound box --&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">bndbox</span>&gt;</span></span><br><span class="line">            <span class="comment">&lt;!-- 左 --&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">xmin</span>&gt;</span>29<span class="tag">&lt;/<span class="name">xmin</span>&gt;</span></span><br><span class="line">            <span class="comment">&lt;!-- 上 --&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">xmax</span>&gt;</span>387<span class="tag">&lt;/<span class="name">xmax</span>&gt;</span></span><br><span class="line">            <span class="comment">&lt;!-- 右 --&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">ymin</span>&gt;</span>8<span class="tag">&lt;/<span class="name">ymin</span>&gt;</span></span><br><span class="line">            <span class="comment">&lt;!-- 下 --&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">ymax</span>&gt;</span>338<span class="tag">&lt;/<span class="name">ymax</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">bndbox</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">object</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">annotation</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>需要注意的是，除官方所提供的数据集外，还可以使用自己的数据集，同时，由于官方给出的数据集中部分数据样本有问题，需要进行数据清洗与重复标注，重复标注阶段使用的工具是 labelimg</p>
+<h2 id="数据集要求"><a href="#数据集要求" class="headerlink" title="数据集要求"></a>数据集要求</h2><p>比赛要求将 VOC 标注格式转为 Kitti 标注格式，标注样例如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">banane 0.00 0 0.0 56.00 5.00 338.00 415.00 0.0 0.0 0.0 0.0 0.0 0.0 0.0</span><br></pre></td></tr></table></figure>
+<h2 id="VOC-标注格式转-Kitti-标注格式"><a href="#VOC-标注格式转-Kitti-标注格式" class="headerlink" title="VOC 标注格式转 Kitti 标注格式"></a>VOC 标注格式转 Kitti 标注格式</h2><p>VOC 标注格式转为 Kitti 标注格式转换脚本如下：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> os</span><br><span class="line"><span class="keyword">import</span> xml.etree.ElementTree <span class="keyword">as</span> ET</span><br><span class="line"><span class="keyword">from</span> tqdm <span class="keyword">import</span> tqdm</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">convert</span><span class="params">(xml_dir, kitti_dir, filename)</span>:</span></span><br><span class="line">    <span class="comment"># 打开xml文件</span></span><br><span class="line">    file = open(xml_dir + filename, <span class="string">"rb"</span>)</span><br><span class="line">    <span class="comment"># 获取xml的root结点</span></span><br><span class="line">    root = ET.parse(file).getroot()</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 对 object 进行枚举</span></span><br><span class="line">    <span class="keyword">for</span> obj <span class="keyword">in</span> root.iter(<span class="string">"object"</span>):</span><br><span class="line">        <span class="comment"># 物体类别</span></span><br><span class="line">        clazz = obj.find(<span class="string">"name"</span>).text</span><br><span class="line">        <span class="keyword">if</span> clazz == <span class="string">"bottle"</span>:</span><br><span class="line">            clazz = <span class="string">"bottle"</span></span><br><span class="line">        <span class="keyword">elif</span> clazz == <span class="string">"CARDBOARD"</span>:</span><br><span class="line">            clazz = <span class="string">"cardboard"</span></span><br><span class="line">        <span class="keyword">elif</span> clazz == <span class="string">"banane"</span> <span class="keyword">or</span> clazz == <span class="string">"0"</span>:</span><br><span class="line">            clazz = <span class="string">"banane"</span></span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            clazz = <span class="string">""</span></span><br><span class="line"></span><br><span class="line">        <span class="comment"># 物体的 bound box</span></span><br><span class="line">        bndbox = obj.find(<span class="string">"bndbox"</span>)</span><br><span class="line">        xmin = int(bndbox.find(<span class="string">"xmin"</span>).text)</span><br><span class="line">        xmax = int(bndbox.find(<span class="string">"xmax"</span>).text)</span><br><span class="line">        ymin = int(bndbox.find(<span class="string">"ymin"</span>).text)</span><br><span class="line">        ymax = int(bndbox.find(<span class="string">"ymax"</span>).text)</span><br><span class="line"></span><br><span class="line">        <span class="comment"># 写入</span></span><br><span class="line">        <span class="keyword">if</span> clazz == <span class="string">"bottle"</span> <span class="keyword">or</span> clazz == <span class="string">"cardboard"</span> <span class="keyword">or</span> clazz == <span class="string">"banane"</span>:</span><br><span class="line">            clazz = clazz + <span class="string">" 0.00 0 0.0 "</span> + str(xmin) + <span class="string">" "</span> + str(ymin) + <span class="string">" "</span> + str(xmax) + <span class="string">" "</span> + str(ymax) + <span class="string">" 0.0 0.0 0.0 0.0 0.0 0.0 0.0\n"</span></span><br><span class="line">        <span class="keyword">with</span> open(kitti_dir + filename + <span class="string">".txt"</span>, <span class="string">"w"</span>) <span class="keyword">as</span> f:</span><br><span class="line">            f.write(clazz)</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:</span><br><span class="line">    <span class="comment"># xml路径</span></span><br><span class="line">    xml_dir = <span class="string">"/home/alex/7th_sky_hackathon/data/xml"</span></span><br><span class="line">    <span class="comment"># kitti路径</span></span><br><span class="line">    kitti_dir = <span class="string">"/home/alex/7th_sky_hackathon/data/kitti"</span></span><br><span class="line"></span><br><span class="line">    <span class="comment"># 对xml路径中的每个文件进行转换</span></span><br><span class="line">    xml_list = os.listdir(xml_dir)</span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> tqdm(range(len(xml_list))):</span><br><span class="line">        convert(xml_dir, kitti_dir, xml_list[i])</span><br></pre></td></tr></table></figure>
+<h2 id="生成验证集"><a href="#生成验证集" class="headerlink" title="生成验证集"></a>生成验证集</h2><p>使用官方提供的脚本 <code>generate_val_dataset.py</code> 来生成验证集</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">python3<span class="number">.6</span> generate_val_dataset.py -- input_image_dir=$LOCAL_DATA_DIR/images --input_label_dir=$LOCAL_DATA_DIR/labels --output_dir=$LOCAL_DATA_DIR/val</span><br></pre></td></tr></table></figure>
+<p>脚本内容如下：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># Copyright (c) 2017-2020, NVIDIA CORPORATION.  All rights reserved.</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> __future__ <span class="keyword">import</span> absolute_import</span><br><span class="line"><span class="keyword">from</span> __future__ <span class="keyword">import</span> division</span><br><span class="line"><span class="keyword">from</span> __future__ <span class="keyword">import</span> print_function</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> argparse</span><br><span class="line"><span class="keyword">import</span> os</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">parse_args</span><span class="params">(args=None)</span>:</span></span><br><span class="line">    <span class="comment"># 参数解析</span></span><br><span class="line">    parser = argparse.ArgumentParser(description=<span class="string">'生成验证数据集'</span>)</span><br><span class="line"></span><br><span class="line">    parser.add_argument(</span><br><span class="line">        <span class="string">"--input_image_dir"</span>,</span><br><span class="line">        type=str,</span><br><span class="line">        required=<span class="literal">True</span>,</span><br><span class="line">        help=<span class="string">"Kitti 训练集图像的输入目录"</span></span><br><span class="line">    )</span><br><span class="line"></span><br><span class="line">    parser.add_argument(</span><br><span class="line">        <span class="string">"--input_label_dir"</span>,</span><br><span class="line">        type=str,</span><br><span class="line">        required=<span class="literal">True</span>,</span><br><span class="line">        help=<span class="string">"Kitti 训练集标注的输入目录"</span></span><br><span class="line">    )</span><br><span class="line"></span><br><span class="line">    parser.add_argument(</span><br><span class="line">        <span class="string">"--output_dir"</span>,</span><br><span class="line">        type=str,</span><br><span class="line">        required=<span class="literal">True</span>,</span><br><span class="line">        help=<span class="string">"验证集输出目录"</span></span><br><span class="line">    )</span><br><span class="line"></span><br><span class="line">    parser.add_argument(</span><br><span class="line">        <span class="string">"--val_split"</span>,</span><br><span class="line">        type=int,</span><br><span class="line">        required=<span class="literal">False</span>,</span><br><span class="line">        default=<span class="number">10</span>,</span><br><span class="line">        help=<span class="string">"验证集占训练集的百分比"</span></span><br><span class="line">    )</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> parser.parse_args(args)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">main</span><span class="params">(args=None)</span>:</span></span><br><span class="line"></span><br><span class="line">    <span class="comment"># 参数处理</span></span><br><span class="line">    args = parse_args(args)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 图像文件</span></span><br><span class="line">    img_files = []</span><br><span class="line">    <span class="keyword">for</span> file_name <span class="keyword">in</span> os.listdir(args.input_image_dir):</span><br><span class="line">        <span class="keyword">if</span> file_name.split(<span class="string">"."</span>)[<span class="number">-1</span>] == <span class="string">"jpg"</span>:</span><br><span class="line">            img_files.append(file_name)</span><br><span class="line">    total_cnt = len(img_files)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 划分验证集</span></span><br><span class="line">    val_ratio = float(args.val_split) / <span class="number">100.0</span></span><br><span class="line">    val_cnt = int(total_cnt * val_ratio)</span><br><span class="line">    train_cnt = total_cnt - val_cnt</span><br><span class="line">    val_img_list = img_files[<span class="number">0</span>:val_cnt]</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 输出目录</span></span><br><span class="line">    target_img_path = os.path.join(args.output_dir, <span class="string">"image"</span>)</span><br><span class="line">    target_label_path = os.path.join(args.output_dir, <span class="string">"label"</span>)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> os.path.exists(target_img_path):</span><br><span class="line">        os.makedirs(target_img_path)</span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        print(<span class="string">"图像输出路径已存在"</span>)</span><br><span class="line">        <span class="keyword">return</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> os.path.exists(target_label_path):</span><br><span class="line">        os.makedirs(target_label_path)</span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        print(<span class="string">"标注输出路径已存在"</span>)</span><br><span class="line">        <span class="keyword">return</span></span><br><span class="line"></span><br><span class="line">    <span class="comment"># 输出</span></span><br><span class="line">    print(<span class="string">"总计 &#123;&#125; 个 Kitti 样本"</span>.format(total_cnt))</span><br><span class="line">    print(<span class="string">"划分出 &#123;&#125; 个训练样本，以及 &#123;&#125; 个验证样本"</span>.format(train_cnt, val_cnt))</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> img_name <span class="keyword">in</span> val_img_list:</span><br><span class="line">        label_name = img_name.split(<span class="string">".jpg"</span>)[<span class="number">0</span>] + <span class="string">".txt"</span></span><br><span class="line">        os.rename(os.path.join(args.input_image_dir, img_name),</span><br><span class="line">                  os.path.join(target_img_path, img_name))</span><br><span class="line">        os.rename(os.path.join(args.input_label_dir, label_name),</span><br><span class="line">                  os.path.join(target_label_path, label_name))</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:</span><br><span class="line">    main()</span><br></pre></td></tr></table></figure>
+<h2 id="将-Kitti-格式数据集转为-TFRecords-格式"><a href="#将-Kitti-格式数据集转为-TFRecords-格式" class="headerlink" title="将 Kitti 格式数据集转为 TFRecords 格式"></a>将 Kitti 格式数据集转为 TFRecords 格式</h2><p>根据实际目录配置，修改 <code>specs/ssd_tfrecords_kitti_train.txt</code> 中的内容，其中需要修改的内容如下：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:center">字段</th>
+<th style="text-align:center">含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">root_directory_path</td>
+<td style="text-align:center">docker 环境中的地址</td>
+</tr>
+<tr>
+<td style="text-align:center">image_dir_name</td>
+<td style="text-align:center">保存图片数据的文件夹</td>
+</tr>
+<tr>
+<td style="text-align:center">label_dir_name</td>
+<td style="text-align:center">保存标注文件的文件夹</td>
+</tr>
+<tr>
+<td style="text-align:center">target_class_mapping</td>
+<td style="text-align:center">标注的类别，key 为标注文件中写的类别，value 为 Tao 训练时使用的类别</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>修改后的内容如下：</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">kitti_config &#123;</span><br><span class="line">  root_directory_path: "/home/alex/7th_sky_hackathon/data"</span><br><span class="line">  image_dir_name: "images"</span><br><span class="line">  label_dir_name: "labels"</span><br><span class="line">  image_extension: ".jpg"</span><br><span class="line">  partition_mode: "random"</span><br><span class="line">  num_partitions: 2</span><br><span class="line">  val_split: 0</span><br><span class="line">  num_shards: 10</span><br><span class="line">&#125;</span><br><span class="line">image_directory_path: "/home/alex/7th_sky_hackathon/data"</span><br><span class="line">target_class_mapping &#123;</span><br><span class="line">    key: "cardboard"</span><br><span class="line">    value: "cardboard"</span><br><span class="line">&#125;</span><br><span class="line">target_class_mapping &#123;</span><br><span class="line">    key: "bottle"</span><br><span class="line">    value: "bottle"</span><br><span class="line">&#125;</span><br><span class="line">target_class_mapping &#123;</span><br><span class="line">    key: "banane"</span><br><span class="line">    value: "banane"</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>之后，在 <code>$LOCAL_DATA_DIR</code> 目录下，创建用于保存 tfrecord 格式数据的文件夹 <code>tfrecords</code>，再利用 tao 自带的工具转换数据，将训练集转为 tfrecord 格式</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$LOCAL_DATA_DIR/tfrecords/*</span><br><span class="line">!tao ssd dataset_convert -d home/alex/<span class="number">7</span>th_sky_hackathon/<span class="number">7</span>th/specs/ssd_tfrecords_kitti_train.txt -o /home/alex/<span class="number">7</span>th_sky_hackathon/data/tfrecords/kitti_train</span><br></pre></td></tr></table></figure>
+
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>感谢您对我的支持，让我继续努力分享有用的技术与知识点！</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/wechatpay.jpg" alt="Alex_McAvoy 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/alipay.jpg" alt="Alex_McAvoy 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Alex_McAvoy
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://alex-mcavoy.github.io/skyhackathon/5b50c09e.html" title="NVIDIA 7th SkyHackathon（五）图像数据集的处理">https://alex-mcavoy.github.io/skyhackathon/5b50c09e.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/skyhackathon/" rel="tag"># SkyHackathon</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/skyhackathon/8359dd7a.html" rel="prev" title="NVIDIA 7th SkyHackathon（四）Nemo ASR 模型训练与评估">
+      <i class="fa fa-chevron-left"></i> NVIDIA 7th SkyHackathon（四）Nemo ASR 模型训练与评估
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/skyhackathon/16e68227.html" rel="next" title="NVIDIA 7th SkyHackathon（六）Tao 目标检测模型训练与评估">
+      NVIDIA 7th SkyHackathon（六）Tao 目标检测模型训练与评估 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#训练环境设置"><span class="nav-number">1.</span> <span class="nav-text">训练环境设置</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#文件地址"><span class="nav-number">1.1.</span> <span class="nav-text">文件地址</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#设置映射关系"><span class="nav-number">1.2.</span> <span class="nav-text">设置映射关系</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#数据集处理"><span class="nav-number">2.</span> <span class="nav-text">数据集处理</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#数据集简介"><span class="nav-number">2.1.</span> <span class="nav-text">数据集简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#数据集要求"><span class="nav-number">2.2.</span> <span class="nav-text">数据集要求</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#VOC-标注格式转-Kitti-标注格式"><span class="nav-number">2.3.</span> <span class="nav-text">VOC 标注格式转 Kitti 标注格式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#生成验证集"><span class="nav-number">2.4.</span> <span class="nav-text">生成验证集</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#将-Kitti-格式数据集转为-TFRecords-格式"><span class="nav-number">2.5.</span> <span class="nav-text">将 Kitti 格式数据集转为 TFRecords 格式</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">  
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Alex_McAvoy"
+      src="/assets/img/head.jpg">
+  <p class="site-author-name" itemprop="name">Alex_McAvoy</p>
+  <div class="site-description" itemprop="description">想要成为渔夫的猎手</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">548</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">56</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">61</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Alex-McAvoy" title="GitHub → https://github.com/Alex-McAvoy" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/u011815404" title="CSDN → https://blog.csdn.net/u011815404" rel="noopener" target="_blank"><i class="fas fa-copyright fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+<!-- 访客地图 -->
+<script type="text/javascript" src="//rf.revolvermaps.com/0/0/5.js?i=50n58yo58ow&amp;m=0&amp;c=ff0000&amp;cr1=ffffff&amp;s=140" async="async"></script>
+
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdz20172133" title="https://blog.csdn.net/sdz20172133" rel="noopener" target="_blank">神仙队友</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://pxlsdz.gitee.io/" title="https://pxlsdz.gitee.io/" rel="noopener" target="_blank">神仙队友的另一个博客</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://bycore.net" title="https://bycore.net" rel="noopener" target="_blank">凉了的某饼同学</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://kris-cn.github.io/" title="http://kris-cn.github.io/" rel="noopener" target="_blank">翟孙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://deng.fun/" title="http://deng.fun/" rel="noopener" target="_blank">芙蓉姐姐</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdau_fangshifeng" title="https://blog.csdn.net/sdau_fangshifeng" rel="noopener" target="_blank">一个头很酷的家伙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/wentong_Xu" title="https://blog.csdn.net/wentong_Xu" rel="noopener" target="_blank">小黑贱胖子</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.yuheng.tech/" title="https://www.yuheng.tech/" rel="noopener" target="_blank">咸于</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/lanshan1111" title="https://blog.csdn.net/lanshan1111" rel="noopener" target="_blank">肥硕硕</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdauguanweihong" title="https://blog.csdn.net/sdauguanweihong" rel="noopener" target="_blank">管少</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_41661919" title="https://blog.csdn.net/qq_41661919" rel="noopener" target="_blank">俊杰</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_40859951" title="https://blog.csdn.net/qq_40859951" rel="noopener" target="_blank">峰哥</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/LSD20164388" title="https://blog.csdn.net/LSD20164388" rel="noopener" target="_blank">狗冬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37748451" title="https://blog.csdn.net/qq_37748451" rel="noopener" target="_blank">胖亚亚</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37868325" title="https://blog.csdn.net/qq_37868325" rel="noopener" target="_blank">妍大佬</a>
+        </li>
+    </ul>
+  </div>
+
+		
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+  
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Alex_McAvoy</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+</br>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script><script src="/js/bookmark.js"></script>
+
+
+
+  
+
+
+
+
+  <script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '48fd73a538d3fa927f65',
+      clientSecret: '56618aefeee90bac3c20de8d51bb0b985d67252d',
+      repo        : 'Gitalk-Comment',
+      owner       : 'Alex-McAvoy',
+      admin       : ['Alex-McAvoy'],
+      id          : '9f0bbd08c4098afb9205f7e8ce86e319',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+  
+  <!-- 鼠标单击粒子特效 -->
+  <script type="text/javascript" src="/js/cursor-effects.js"></script>
+  <!-- 多级目录 -->
+  <script type="text/javascript" src="/js/category.js"></script>
+  
+</body>
+</html>
