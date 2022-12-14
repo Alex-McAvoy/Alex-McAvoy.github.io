@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.9.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/img/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/assets/img/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/pace-js@1/themes/blue/pace-theme-minimal.css">
+  <script src="//cdn.jsdelivr.net/npm/pace-js@1/pace.min.js"></script>
+
+
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"alex-mcavoy.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":16,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":true,"color":"#ff0000","save":"manual"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":true},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.json"};
+  </script>
+
+  <meta name="description" content="Reference  概率论学习笔记（二） 几种常见的数学分布 常用分布 几个常见的离散型概率分布 帕斯卡分布 负二项分布 机器学习：Multinoulli分布与多项式分布   【离散分布】伯努利试验">
+<meta name="keywords" content="数学,概率论">
+<meta property="og:type" content="article">
+<meta property="og:title" content="常见分布">
+<meta property="og:url" content="https://alex-mcavoy.github.io/mathematics/probability-theory/2424b658.html">
+<meta property="og:site_name" content="Alex_McAvoy">
+<meta property="og:description" content="Reference  概率论学习笔记（二） 几种常见的数学分布 常用分布 几个常见的离散型概率分布 帕斯卡分布 负二项分布 机器学习：Multinoulli分布与多项式分布   【离散分布】伯努利试验">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/mathematics/probability-theory/04-1.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/mathematics/probability-theory/04-2.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/mathematics/probability-theory/04-3.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/mathematics/probability-theory/04-4.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/mathematics/probability-theory/04-5.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/mathematics/probability-theory/04-6.png">
+<meta property="og:updated_time" content="2022-12-12T12:47:55.394Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="常见分布">
+<meta name="twitter:description" content="Reference  概率论学习笔记（二） 几种常见的数学分布 常用分布 几个常见的离散型概率分布 帕斯卡分布 负二项分布 机器学习：Multinoulli分布与多项式分布   【离散分布】伯努利试验">
+<meta name="twitter:image" content="https://alex-mcavoy.github.io/images/mathematics/probability-theory/04-1.png">
+
+<link rel="canonical" href="https://alex-mcavoy.github.io/mathematics/probability-theory/2424b658.html">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>常见分布 | Alex_McAvoy</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Alex_McAvoy</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">想要成为渔夫的猎手</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+
+	
+	
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/mathematics/probability-theory/2424b658.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/assets/img/head.jpg">
+      <meta itemprop="name" content="Alex_McAvoy">
+      <meta itemprop="description" content="想要成为渔夫的猎手">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Alex_McAvoy">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          常见分布
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2022-12-09 18:05:00" itemprop="dateCreated datePublished" datetime="2022-12-09T18:05:00+08:00">2022-12-09</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/mathematics/" itemprop="url" rel="index"><span itemprop="name">数学</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/mathematics/probability-theory/" itemprop="url" rel="index"><span itemprop="name">概率论</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>4k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>4 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <blockquote>
+<p>Reference</p>
+<ul>
+<li><a href="https://zhuanlan.zhihu.com/p/42950143" target="_blank" rel="noopener">概率论学习笔记（二）</a></li>
+<li><a href="https://www.jianshu.com/p/c675e3f67843" target="_blank" rel="noopener">几种常见的数学分布</a></li>
+<li><a href="https://zhuanlan.zhihu.com/p/94181395" target="_blank" rel="noopener">常用分布</a></li>
+<li><a href="https://www.jianshu.com/p/ee4df77d5896" target="_blank" rel="noopener">几个常见的离散型概率分布</a></li>
+<li><a href="https://baike.baidu.com/item/%E5%B8%95%E6%96%AF%E5%8D%A1%E5%88%86%E5%B8%83/1188907" target="_blank" rel="noopener">帕斯卡分布</a></li>
+<li><a href="https://baike.baidu.com/item/%E8%B4%9F%E4%BA%8C%E9%A1%B9%E5%88%86%E5%B8%83/1580773?fromModule=lemma_inlink" target="_blank" rel="noopener">负二项分布</a></li>
+<li><a href="https://blog.csdn.net/qq_18888869/article/details/83036810" target="_blank" rel="noopener">机器学习：Multinoulli分布与多项式分布</a></li>
+</ul>
+</blockquote>
+<h1 id="【离散分布】"><a href="#【离散分布】" class="headerlink" title="【离散分布】"></a>【离散分布】</h1><h2 id="伯努利试验"><a href="#伯努利试验" class="headerlink" title="伯努利试验"></a>伯努利试验</h2><p>满足以下描述的试验，被称为<strong>伯努利试验（Bernoulli experiment）</strong></p>
+<ol>
+<li>试验只能有互斥的两种结果，发生或不发生，成功或失败</li>
+<li>每次试验中，某种结果发生的概率是 $p$，另一种结果发生的概率是 $1-p$</li>
+<li>试验是互相独立的，且可重复进行 $n$ 次</li>
+</ol>
+<p>伯努利试验，对应的现实场景是<strong>有放回抽样</strong></p>
+<h2 id="伯努利分布"><a href="#伯努利分布" class="headerlink" title="伯努利分布"></a>伯努利分布</h2><p><strong>伯努利分布（Bernoulli Distribution）</strong>又称 0-1 分布、两点分布，用于描述一次伯努利试验中是否成功</p>
+<p>记 $X$ 为一次伯努利试验中事件 $A$ 成功的次数，则 $X=0,1$，假设事件 $A$ 发生的概率为 $p$，那么称 $X$ 服从参数为 $1,p$ 的伯努利分布，记作 $X\sim B(1,p)$</p>
+<p>$X$ 的概率分布为：</p>
+<script type="math/tex; mode=display">
+P(X=x)=p^x(1-p)^{1-x},\quad x=0,1</script><p>即：</p>
+<script type="math/tex; mode=display">
+P(X=1)=p \quad P(X=0)=1-p</script><hr>
+<p>伯努利分布的数学期望和方差分别为：</p>
+<ul>
+<li>$EX=p$</li>
+<li>$DX=p(1-p)$</li>
+</ul>
+<p>伯努利分布的特征函数为：</p>
+<script type="math/tex; mode=display">
+\varphi(t)=pe^{jt}+q</script><h2 id="二项分布"><a href="#二项分布" class="headerlink" title="二项分布"></a>二项分布</h2><p><strong>二项分布（Binomial Distribution）</strong>又称 $n$ 重伯努利分布，用于描述 $n$ 次伯努利试验中成功的次数</p>
+<p>记 $X$ 为 $n$ 重伯努利试验中事件 $A$ 成功的次数，则 $X=0,1,2,\cdots,n$，假设事件 $A$ 发生的概率为 $p$，那么称 $X$ 服从参数为 $n,p$ 的伯努利分布，记作 $X\sim B(n,p)$</p>
+<p>$X$ 的概率分布为：</p>
+<script type="math/tex; mode=display">
+P(X=k)= \left(\begin{array}{c}n\\k\end{array}\right)
+p^k(1-p)^{n-k},\quad k=0,1,\cdots,n</script><p>在独立条件下，二项分布对于其中的参数 $n$ 具有<strong>可加性</strong>，即：$X_1\sim B(n_1,p)$，$X_2\sim B(n_2,p)$，且 $X_1,X_2$ 独立，有 $X_1+X_2\sim B(n_1+n_2,p)$</p>
+<p>进一步，服从 $B(n,p)$ 的随机变量可以看作是 $n$ 个相互独立的服从伯努利分布 $B(1,p)$ 的随机变量之和</p>
+<hr>
+<p>二项分布的数学期望和方差分别为：</p>
+<ul>
+<li>$EX=np$</li>
+<li>$DX=np(1-p)$</li>
+</ul>
+<p>二项分布的特征函数为：</p>
+<script type="math/tex; mode=display">
+\varphi(t)=(pe^{jt}+q)^n</script><h2 id="几何分布"><a href="#几何分布" class="headerlink" title="几何分布"></a>几何分布</h2><p><strong>几何分布（Geometric Distribution）</strong>用于描述伯努利试验序列中，事件 $A$ 首次出现的试验次数</p>
+<p>重复进行伯努利试验，直到事件 $A$ 发生为止才停下，记 $X$ 为若干次伯努利试验中事件 $A$ 进行的次数，则 $X=1,2,\cdots$，假设事件 $A$ 发生的概率为 $p$，那么称 $X$ 服从参数为 $p$ 的几何分布，记作 $X\sim G(p)$</p>
+<p>$X$ 的概率分布为：</p>
+<script type="math/tex; mode=display">
+P(X=k)=(1-p)^{k-1}p,\quad k=1,2,...</script><p>几何分布具有<strong>无记忆性</strong>：若 $X\sim G(p)$，对 $\forall n,m\in Z^+$，有</p>
+<script type="math/tex; mode=display">
+P(X>n+m|X>m)=P(X>n)</script><p>该性质表明，在前 $m$ 次试验中 $A$ 没有出现的条件下，则在接下去的 $n$ 次试验中 $A$ 仍未出现的概率只与 $n$ 有关，而与以前的 $m$ 次试验无关，似乎忘记了前 $m$ 次试验结果</p>
+<hr>
+<p>几何分布的数学期望和方差分别为：</p>
+<ul>
+<li>$EX=\frac{1}{p}$</li>
+<li>$DX=\frac{1-p}{p^2}$</li>
+</ul>
+<p>几何分布的特征函数为：</p>
+<script type="math/tex; mode=display">
+\varphi(t)=\frac{pe^{jt}}{1-qe^{jt}}</script><h2 id="负二项分布与帕斯卡分布"><a href="#负二项分布与帕斯卡分布" class="headerlink" title="负二项分布与帕斯卡分布"></a>负二项分布与帕斯卡分布</h2><p><strong>负二项分布（Negative Binomial Distribution）</strong>用于描述伯努利试验序列中，事件 $A$ 第 $r$ 次出现时的试验次数</p>
+<p>重复进行伯努利试验，直到事件 $A$ 发生第 $r$ 次时才停下，记 $X$ 为若干次伯努利试验中事件 $A$ 进行的次数，则 $X=r,r+1,\cdots$，假设事件 $A$ 发生的概率为 $p$，那么称 $X$ 服从参数为 $r,p$ 的负二项分布，记作 $X\sim NB(r,p)$</p>
+<p>$X$ 的概率分布为：</p>
+<script type="math/tex; mode=display">
+P(X=k)=\left(\begin{array}{c}k-1\\r-1\end{array}\right)
+(1-p)^{k-1}p,\quad k=r,r+1,...</script><p>当 $r$ 为<strong>整数</strong>时，称 $X$ 服从参数为 $r,p$ 的<strong>帕斯卡分布（Pascal Distribution）</strong>，记作 $X\sim Pas(r,p)$</p>
+<p>需要注意的是，尽管很难想象一个非整数的失败次数，但这个分布是通过概率密度函数在形式上严格定义的</p>
+<p>可以发现，当 $r=1$ 时，帕斯卡分布即几何分布，即：$Pas(1,p)=G(p)$</p>
+<p>与二项分布类似，帕斯卡分布对于其中的参数 $r$ 具有<strong>可加性</strong>，即：$X_1\sim Pas(r_1,p)$，$X_2\sim Pas(r_2,p)$，且 $X_1,X_2$ 独立，有 $X_1+X_2\sim Pas(r_1+r_2,p)$</p>
+<p>进一步，服从帕斯卡分布 $Pas(r,p)$ 的随机变量可以看作是 $r$ 个相互独立的服从几何分布 $G(p)$ 的随机变量之和</p>
+<hr>
+<p>负二项分布的数学期望和方差分别为：</p>
+<ul>
+<li>$EX=\frac{r}{p}$</li>
+<li>$DX=\frac{r(1-p)}{p^2}$</li>
+</ul>
+<p>负二项分布的特征函数为：</p>
+<script type="math/tex; mode=display">
+\varphi(t)=(\frac{pe^{jt}}{1-qe^{jt}})^t</script><h2 id="泊松分布"><a href="#泊松分布" class="headerlink" title="泊松分布"></a>泊松分布</h2><p><strong>泊松分布（Poisson Distribution）</strong>常与单位时间、单位面积、单位体积上的计数过程相联系</p>
+<p>记 $X$ 为某个随机事件 $A$ 发生的次数，则 $X=0,1,2,\cdots,n$，假设每次事件 $A$ 是否发生相互独立，且事件 $A$ 平均发生 $\lambda$ 次，那么 $X$ 服从参数为 $\lambda$ 的泊松分布，记为 $X\sim P(\lambda)$</p>
+<p>$X$ 的概率分布为：</p>
+<script type="math/tex; mode=display">
+P(X=k)=\frac{\lambda^k}{k!}e^{-\lambda},\quad k=0,1,2,\cdots</script><p>与二项分布类似，泊松分布在独立条件下对于参数 $\lambda$ 具有可加性，即：$X_1\sim P(\lambda_1)$，$X_2\sim P(\lambda_2)$，且 $X_1,X_2$ 独立，有 $X_1+X_2\sim P(\lambda_1+\lambda_2)$</p>
+<p>事实上，泊松分布本质上是 $n\rightarrow \infty$ 时的二项分布，即若 $\lim\limits_{n\rightarrow \infty} np_n=\lambda,0&lt;p_n&lt;1$，则有：</p>
+<script type="math/tex; mode=display">
+\lim\limits_{n\rightarrow \infty} 
+\left(\begin{array}{c}n\\k\end{array}\right)
+p_n^k(1-p_n)^{n-k} = \frac{\lambda^k}{k!}e^{-\lambda}</script><p>也就是说，当 $n$ 足够大，且此时平均发生的事件数趋于常数 $\lambda$ 时，二项分布 $B(n,p_n)$ 实质上就是泊松分布 $P(\lambda)$</p>
+<hr>
+<p>泊松分布的数学期望和方差分别为：</p>
+<ul>
+<li>$EX=\lambda$</li>
+<li>$DX=\lambda$</li>
+</ul>
+<p>泊松分布的特征函数为：</p>
+<script type="math/tex; mode=display">
+\varphi(t)=e^{\lambda(e^{jt}-1)}</script><h2 id="超几何分布"><a href="#超几何分布" class="headerlink" title="超几何分布"></a>超几何分布</h2><p><strong>超几何分布（Hypergeometric Distribution）</strong>用于描述 $N$ 个产品中<strong>不放回</strong>的随机抽取 $n$ 个的次品数</p>
+<p>设有 $N$ 个产品，其中有 $M(M\leq N)$ 个次品，从中不放回的随机抽取 $n(n\leq N)$ 个，记 $X$ 为这 $n$ 个中的次品数，则 $X=0,1,\cdots,\min{M,n}$，称 $X$ 服从参数为 $n,N,M$ 的超几何分布，记作 $X\sim H(n,M,N)$</p>
+<p>$X$ 的概率分布为：</p>
+<script type="math/tex; mode=display">
+P(X=k) = 
+\frac{ \left(\begin{array}{c}M\\k\end{array}\right)  \left(\begin{array}{c}N-M\\n-k\end{array}\right) }{ \left(\begin{array}{c}N\\n\end{array}\right) },\quad k=0,1,\cdots,\min\{M,n\}</script><p>当次品数 $M$ 只与产品数 $N$ 相关时，且 $\lim\limits_{N\rightarrow\infty}\frac{M}{N}=p\in(0,1)$，则有：</p>
+<script type="math/tex; mode=display">
+\lim_{N\rightarrow\infty} 
+\frac{ \left(\begin{array}{c}M\\k\end{array}\right)  \left(\begin{array}{c}N-M\\n-k\end{array}\right) }{ \left(\begin{array}{c}N\\n\end{array}\right) } =
+\left(\begin{array}{c}M\\k\end{array}\right) p^k(1-p)^{n-k}</script><p>也就是说，当总量 $N$ 足够大时，若次品率 $\frac{M}{N}$ 趋于一个常数 $p$，那么进行无放回抽取（超几何分布）可以近似为有放回抽取（二项分布）</p>
+<hr>
+<p>超几何分布的数学期望和方差分别为：</p>
+<ul>
+<li>$EX=\frac{nM}{N}$</li>
+<li>$DX=\frac{nM(N-m)(N-n)}{N^2(N-1)}$</li>
+</ul>
+<p>超几何分布的特征函数为：</p>
+<script type="math/tex; mode=display">
+f(t) = \sum_{k=0}^{\infty} \frac{t^k}{k!} \binom{n}{k} p^k (1-p)^{n-k}</script><h1 id="【连续分布】"><a href="#【连续分布】" class="headerlink" title="【连续分布】"></a>【连续分布】</h1><h2 id="正态分布"><a href="#正态分布" class="headerlink" title="正态分布"></a>正态分布</h2><p>若随机变量 $X$ 的概率密度函数为：</p>
+<script type="math/tex; mode=display">
+f(x)=\frac{1}{\sqrt{2\pi\sigma^2}}e^{-\frac{(x-\mu)^2}{2\sigma^2}},\quad -\infty<x+\infty</script><p>则称 $X$ 服从参数为 $\mu,\sigma^2$ 的<strong>正态分布</strong>，记作 $X\sim N(\mu,\sigma^2)$，其中 $\mu$ 为位置参数，用于控制曲线在 $x$ 上的位置，$\sigma$ 为尺度参数，用于控制曲线的形状</p>
+<p><img width="500" src="/images/mathematics/probability-theory/04-1.png"></p>
+<p>容易看出，其具备如下性质：</p>
+<ul>
+<li>$f(x)$ 关于 $x=\mu$ 对称</li>
+<li>$f(\mu)$ 为最大值</li>
+<li>$x=\mu\pm\sigma$ 为拐点</li>
+</ul>
+<p>其分布函数为：</p>
+<script type="math/tex; mode=display">
+F(x)=\int_{-\infty}^x\frac{1}{\sqrt{2\pi\sigma^2}}e^{-\frac{(t-\mu)^2}{2\sigma^2}}dt</script><p><img width="500" src="/images/mathematics/probability-theory/04-2.png"></p>
+<p>当 $\mu=0,\sigma^2=1$ 时，有 $X\sim N(0,1)$，此时称正态分布为<strong>标准正态分布</strong>，此时概率密度函数和分布函数分别为：</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+\varphi(x) &= \frac{1}{\sqrt{2\pi}}e^{-\frac{x^2}{2}} \\
+\Phi(x) &= \int_{-\infty}^x \frac{1}{\sqrt{2\pi}}e^{-\frac{t^2}{2}} dt
+\end{align*}</script><p>故有：若 $X~\sim N(\mu,\sigma^2)$，则</p>
+<ul>
+<li>$P(X\leq a) = \Phi(\frac{a-\mu}{\sigma})$</li>
+<li>$P(a\leq X \leq b)=\Phi(\frac{b-\mu}{\sigma})-\Phi(\frac{a-\mu}{\sigma})$</li>
+</ul>
+<p>任何一个正态变量均可通过标准化转换为标准正态分布，即若 $X\sim N(\mu,\sigma^2)$，有：</p>
+<script type="math/tex; mode=display">
+X^* = \frac{X-\mu}{\sigma}\sim N(0,1)</script><p>故有：若 $X\sim N(0,1)$，则</p>
+<ul>
+<li>$\Phi(-a)=1-\Phi(a)$</li>
+<li>$P(X&gt;a)=1-\Phi(a)$</li>
+<li>$P(a&lt;X&lt;b)=\Phi(b)-\Phi(a)$</li>
+<li>$P(|X|&lt;c)=2\Phi(c)-1$</li>
+</ul>
+<hr>
+<p>正态分布的数学期望和方差分别为：</p>
+<ul>
+<li>$EX=\mu$</li>
+<li>$DX=\sigma^2$</li>
+</ul>
+<p>正态分布的特征函数为：</p>
+<script type="math/tex; mode=display">
+\varphi(t) = e^{jt\mu - \frac{1}{2}\sigma^2t^2}</script><h2 id="均匀分布"><a href="#均匀分布" class="headerlink" title="均匀分布"></a>均匀分布</h2><p>若随机变量 $X$ 的概率密度函数为：</p>
+<script type="math/tex; mode=display">
+f(x)=
+\left\{\begin{align*}
+\frac{1}{b-a}, && a<x<b \\
+0,&& 其他
+\end{align*}\right.</script><p>则称 $X$ 服从区间 $(a,b)$ 上的<strong>均匀分布</strong>，记作 $X\sim U(a,b)$</p>
+<p>其分布函数为：</p>
+<script type="math/tex; mode=display">
+F(x)=
+\left\{\begin{align*}
+0,&& x<a \\
+\frac{x-a}{b-a}, && a\leq x<b \\
+1,&& x\geq b
+\end{align*}\right.</script><p><img width="500" src="/images/mathematics/probability-theory/04-3.png"></p>
+<hr>
+<p>均匀分布的数学期望和方差分别为：</p>
+<ul>
+<li>$EX=\frac{a+b}{2}$</li>
+<li>$DX=\frac{(b-a)^2}{12}$</li>
+</ul>
+<p>均匀分布的特征函数为：</p>
+<script type="math/tex; mode=display">
+\varphi(t)=\frac{e^{jtb}-e^{jta}}{jt(b-a)}</script><h2 id="指数分布"><a href="#指数分布" class="headerlink" title="指数分布"></a>指数分布</h2><p>指数分布是一种偏态分布，随机变量只可能取非负实数，常被用作各种寿命分布，譬如电子元器件的寿命、动物的寿命、电话的通话时间、随机服务系统中的服务时间等，其在可靠性与排队论中有着广泛的应用</p>
+<p>若随机变量 $X$ 的概率密度函数为：</p>
+<script type="math/tex; mode=display">
+f(x)=
+\left\{\begin{align*}
+\lambda e^{-\lambda x}, && x\geq 0 \\
+0,&& x<0
+\end{align*}\right.</script><p>则称 $X$ 服从参数为 $\lambda$ 的<strong>指数分布</strong>，记作 $X\sim E(\lambda)$</p>
+<p>其分布函数为：</p>
+<script type="math/tex; mode=display">
+F(x)=
+\left\{\begin{align*}
+1-e^{\lambda x},&& x\geq a \\
+0, && x< 0
+\end{align*}\right.</script><p><img width="300" src="/images/mathematics/probability-theory/04-4.png"></p>
+<p>与几何分布类似，指数分布具有<strong>无记忆性</strong>：若 $X\sim E(\lambda)$，对 $\forall t,s&gt;0$，有</p>
+<script type="math/tex; mode=display">
+P(X>t+s|X>s)=P(X>t)</script><hr>
+<p>指数分布的数学期望和方差分别为：</p>
+<ul>
+<li>$EX=\frac{1}{\lambda}$</li>
+<li>$DX=\frac{1}{\lambda^2}$</li>
+</ul>
+<p>指数分布的特征函数为：</p>
+<script type="math/tex; mode=display">
+\varphi(t) = \frac{\lambda}{\lambda-jt}</script><h2 id="伽马分布"><a href="#伽马分布" class="headerlink" title="伽马分布"></a>伽马分布</h2><p>首先引入伽马函数：</p>
+<script type="math/tex; mode=display">
+\Gamma(\alpha)=\int_{0}^{+\infty} x^{\alpha-1}e^{-x}dx,\quad a>0</script><p>其具有如下性质：</p>
+<ul>
+<li>$\Gamma(1)=1,\Gamma(\frac{1}{2})=\sqrt{\pi}$</li>
+<li>$\Gamma(\alpha+1)=\alpha\Gamma(\alpha)$</li>
+<li>$\Gamma(n+1)=n\Gamma(n)=n!$，其中 $n$ 为自然数</li>
+</ul>
+<p>若随机变量 $X$ 的概率密度函数为：</p>
+<script type="math/tex; mode=display">
+f(x)=
+\left\{\begin{align*}
+\frac{\lambda^\alpha}{\Gamma(\alpha)}x^{\alpha-1} e^{-\lambda x}, && x\geq 0 \\
+0,&& x<0
+\end{align*}\right.</script><p>则称 $X$ 服从参数为 $\alpha,\lambda$ 的<strong>伽马分布</strong>，记作 $X\sim \Gamma(\alpha,\lambda)$，其中 $\alpha&gt;0$ 为形状参数，$\lambda&gt;0$ 为尺度参数</p>
+<p><img width="500" src="/images/mathematics/probability-theory/04-5.png"></p>
+<p>可以发现，当 $\alpha=1$ 时，伽马分布即指数分布，即 $\Gamma(1,\lambda)=E(\lambda)$</p>
+<p>与二项分布类似，伽马分布对于其中的参数 $\alpha$ 具有<strong>可加性</strong>，即：$X_1\sim \Gamma(\alpha_1,\lambda)$，$X_2\sim \Gamma(\alpha_2,\lambda)$，且 $X_1,X_2$ 独立，有 $X_1+X_2\sim \Gamma(\alpha_1+\alpha_2,\lambda)$</p>
+<p>进一步，服从伽马分布 $\Gamma(\alpha,\lambda)$ 的随机变量可以看作是 $\alpha$ 个相互独立的服从指数分布 $E(p)$ 的随机变量之和</p>
+<p>此外，当 $\alpha=\frac{n}{2},\lambda=\frac{1}{2}$ 时，伽马分布 $\Gamma(\frac{n}{2},\frac{1}{2})$ 为自由度为 $n$ 的卡方分布，记作 $\chi^2(n)$</p>
+<hr>
+<p>伽马分布的数学期望和方差分别为：</p>
+<ul>
+<li>$EX=\frac{\alpha}{\lambda}$</li>
+<li>$DX=\frac{\alpha}{\lambda^2}$</li>
+</ul>
+<p>伽马分布的特征函数为：</p>
+<script type="math/tex; mode=display">
+\varphi(t) = \frac{1}{(1 - jt\lambda)^\alpha}</script><h2 id="贝塔分布"><a href="#贝塔分布" class="headerlink" title="贝塔分布"></a>贝塔分布</h2><p>首先引入贝塔函数：</p>
+<script type="math/tex; mode=display">
+B(a,b)=\int_{0}^{1} x^{\alpha-1}(1-x)^{b-1}dx,\quad a,b>0</script><p>其具有如下性质：</p>
+<ul>
+<li>$B(a,b)=B(b,a)$</li>
+<li>$B(a,b)=\frac{\Gamma(a)\Gamma(b)}{\Gamma(a+b)}$</li>
+</ul>
+<p>若随机变量 $X$ 的概率密度函数为：</p>
+<script type="math/tex; mode=display">
+f(x)=
+\left\{\begin{align*}
+\frac{\Gamma(a+b)}{\Gamma(a)\Gamma(b)}x^{a-1} (1-x)^{b-1}, && 0<x<1 \\
+0,&& 其他
+\end{align*}\right.</script><p>则称 $X$ 服从参数为 $a,b$ 的<strong>贝塔分布</strong>，记作 $X\sim Be(a,b)$，其中 $a,b&gt;0$ 均为形状参数</p>
+<p><img width="500" src="/images/mathematics/probability-theory/04-6.png"></p>
+<hr>
+<p>贝塔分布的数学期望和方差分别为：</p>
+<ul>
+<li>$EX=\frac{a}{a+b}$</li>
+<li>$DX=\frac{ab}{(a+b)^2(a+b+1)}$</li>
+</ul>
+<h1 id="【随机向量的分布】"><a href="#【随机向量的分布】" class="headerlink" title="【随机向量的分布】"></a>【随机向量的分布】</h1><h2 id="多项分布"><a href="#多项分布" class="headerlink" title="多项分布"></a>多项分布</h2><p><strong>多项分布（Multinomial Distribution）</strong>是二项分布的推广</p>
+<p>独立进行 $N$ 次伯努利试验，设 $A_1,A_2,\cdots,A_n$ 为完备事件组，用 $X_i$ 表示事件 $A_i$ 发生的次数，若事件 $A_i$ 发生的概率为 $p_i$，那么称 $\mathbf{X}=(X_1,X_2,\cdots,X_n)$ 服从多项分布，记作 $\mathbf{X} \sim PN(N,p_1,p_2,\cdots,p_r)$</p>
+<p>$\mathbf{X}$ 的概率分布为：</p>
+<script type="math/tex; mode=display">
+P(X_1=k_1,\cdots,X_n=k_n) = 
+\left(\begin{array}{ccc} &N& \\k_1 &\cdots &k_n\end{array}\right)p_1^{k_1}\cdots p_r^{k_n}</script><p>其中，$k_i\geq0$，且 $k_1+\cdots+k_n=N$</p>
+<h2 id="二维正态分布"><a href="#二维正态分布" class="headerlink" title="二维正态分布"></a>二维正态分布</h2><p>若随机变量 $(X,Y)$ 的联合概率密度为：</p>
+<script type="math/tex; mode=display">
+f(x,y)=\frac{1}{2\pi\sigma_1\sigma_2\sqrt{1-\rho^2}} 
+e^{\Big[ -\frac{1}{2(1-\rho^2)} \big( \frac{(x-\mu_1)^2}{\sigma_1^2} - \frac{2\rho(x-\mu_1)(y-\mu_2)}{\sigma_1\sigma_2} + \frac{(y-\mu_2)^2}{\sigma_2^2} \big) \Big]}</script><p>其中，$\sigma_1,\sigma_2 &gt;0,-1&lt;\rho&lt;1$</p>
+<p>则称 $(X,Y)$ 服从参数为 $\mu_1,\mu_2,\sigma_1^2,\sigma_2^2,\rho$ 的二维正态分布，记作 $(X,Y)\sim N(\mu_1,\mu_2,\sigma_1^2,\sigma_2^2,\rho)$</p>
+<p>$X,Y$ 的边缘密度均为正态分布，且参数分别来自二维正态分布中的 $\sigma_1,\sigma_2,\mu_1,\mu_2$ ，与 $\rho$ 无关，即：</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+f_X(x) &= \frac{1}{\sqrt{2\pi\sigma_1^2}}e^{-\frac{(x-\mu_1)^2}{2\sigma_1^2}} \\
+f_Y(y) &= \frac{1}{\sqrt{2\pi\sigma_2^2}}e^{-\frac{(y-\mu_2)^2}{2\sigma_2^2}}
+\end{align*}</script><p>故有： $X\sim N(\mu_1,\sigma_1^2),Y\sim N(\mu_2,\sigma_2^2)$</p>
+<p>进一步可得，$X,Y$ 独立的充要条件为：$\rho=0$</p>
+<h2 id="二维均匀分布"><a href="#二维均匀分布" class="headerlink" title="二维均匀分布"></a>二维均匀分布</h2><p>二维均匀分布是均匀分布的推广</p>
+<p>设 $D\in \mathbb{R}^2$，$m(D)$ 为其面积，若 $(X,Y)$ 有联合概率密度：</p>
+<script type="math/tex; mode=display">
+f(x,y)=
+\left\{\begin{align*}
+\frac{1}{m(D)}, && (x,y)\in D \\
+0,&& 其他
+\end{align*}\right.</script><p>则称 $(X,Y)$ 服从 $D$ 上的均匀分布</p>
+
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>感谢您对我的支持，让我继续努力分享有用的技术与知识点！</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/wechatpay.jpg" alt="Alex_McAvoy 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/alipay.jpg" alt="Alex_McAvoy 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Alex_McAvoy
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://alex-mcavoy.github.io/mathematics/probability-theory/2424b658.html" title="常见分布">https://alex-mcavoy.github.io/mathematics/probability-theory/2424b658.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/mathematics/" rel="tag"># 数学</a>
+              <a href="/tags/probability-theory/" rel="tag"># 概率论</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/mathematics/probability-theory/952f3930.html" rel="prev" title="n 维随机向量">
+      <i class="fa fa-chevron-left"></i> n 维随机向量
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/mathematics/probability-theory/17018599.html" rel="next" title="随机变量的数字特征">
+      随机变量的数字特征 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【离散分布】"><span class="nav-number">1.</span> <span class="nav-text">【离散分布】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#伯努利试验"><span class="nav-number">1.1.</span> <span class="nav-text">伯努利试验</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#伯努利分布"><span class="nav-number">1.2.</span> <span class="nav-text">伯努利分布</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二项分布"><span class="nav-number">1.3.</span> <span class="nav-text">二项分布</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#几何分布"><span class="nav-number">1.4.</span> <span class="nav-text">几何分布</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#负二项分布与帕斯卡分布"><span class="nav-number">1.5.</span> <span class="nav-text">负二项分布与帕斯卡分布</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#泊松分布"><span class="nav-number">1.6.</span> <span class="nav-text">泊松分布</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#超几何分布"><span class="nav-number">1.7.</span> <span class="nav-text">超几何分布</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【连续分布】"><span class="nav-number">2.</span> <span class="nav-text">【连续分布】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#正态分布"><span class="nav-number">2.1.</span> <span class="nav-text">正态分布</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#均匀分布"><span class="nav-number">2.2.</span> <span class="nav-text">均匀分布</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#指数分布"><span class="nav-number">2.3.</span> <span class="nav-text">指数分布</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#伽马分布"><span class="nav-number">2.4.</span> <span class="nav-text">伽马分布</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#贝塔分布"><span class="nav-number">2.5.</span> <span class="nav-text">贝塔分布</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【随机向量的分布】"><span class="nav-number">3.</span> <span class="nav-text">【随机向量的分布】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#多项分布"><span class="nav-number">3.1.</span> <span class="nav-text">多项分布</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二维正态分布"><span class="nav-number">3.2.</span> <span class="nav-text">二维正态分布</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二维均匀分布"><span class="nav-number">3.3.</span> <span class="nav-text">二维均匀分布</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">  
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Alex_McAvoy"
+      src="/assets/img/head.jpg">
+  <p class="site-author-name" itemprop="name">Alex_McAvoy</p>
+  <div class="site-description" itemprop="description">想要成为渔夫的猎手</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">558</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">58</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">63</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Alex-McAvoy" title="GitHub → https://github.com/Alex-McAvoy" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/u011815404" title="CSDN → https://blog.csdn.net/u011815404" rel="noopener" target="_blank"><i class="fas fa-copyright fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+<!-- 访客地图 -->
+<script type="text/javascript" src="//rf.revolvermaps.com/0/0/5.js?i=50n58yo58ow&amp;m=0&amp;c=ff0000&amp;cr1=ffffff&amp;s=140" async="async"></script>
+
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdz20172133" title="https://blog.csdn.net/sdz20172133" rel="noopener" target="_blank">神仙队友</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://pxlsdz.gitee.io/" title="https://pxlsdz.gitee.io/" rel="noopener" target="_blank">神仙队友的另一个博客</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://bycore.net" title="https://bycore.net" rel="noopener" target="_blank">凉了的某饼同学</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://kris-cn.github.io/" title="http://kris-cn.github.io/" rel="noopener" target="_blank">翟孙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://deng.fun/" title="http://deng.fun/" rel="noopener" target="_blank">芙蓉姐姐</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdau_fangshifeng" title="https://blog.csdn.net/sdau_fangshifeng" rel="noopener" target="_blank">一个头很酷的家伙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/wentong_Xu" title="https://blog.csdn.net/wentong_Xu" rel="noopener" target="_blank">小黑贱胖子</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.yuheng.tech/" title="https://www.yuheng.tech/" rel="noopener" target="_blank">咸于</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/lanshan1111" title="https://blog.csdn.net/lanshan1111" rel="noopener" target="_blank">肥硕硕</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdauguanweihong" title="https://blog.csdn.net/sdauguanweihong" rel="noopener" target="_blank">管少</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_41661919" title="https://blog.csdn.net/qq_41661919" rel="noopener" target="_blank">俊杰</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_40859951" title="https://blog.csdn.net/qq_40859951" rel="noopener" target="_blank">峰哥</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/LSD20164388" title="https://blog.csdn.net/LSD20164388" rel="noopener" target="_blank">狗冬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37748451" title="https://blog.csdn.net/qq_37748451" rel="noopener" target="_blank">胖亚亚</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37868325" title="https://blog.csdn.net/qq_37868325" rel="noopener" target="_blank">妍大佬</a>
+        </li>
+    </ul>
+  </div>
+
+		
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+  
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Alex_McAvoy</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+</br>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script><script src="/js/bookmark.js"></script>
+
+
+
+  
+
+
+
+
+  <script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '48fd73a538d3fa927f65',
+      clientSecret: '56618aefeee90bac3c20de8d51bb0b985d67252d',
+      repo        : 'Gitalk-Comment',
+      owner       : 'Alex-McAvoy',
+      admin       : ['Alex-McAvoy'],
+      id          : '10bbfb72042ef51cb7f8314e4be49cba',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+  
+  <!-- 鼠标单击粒子特效 -->
+  <script type="text/javascript" src="/js/cursor-effects.js"></script>
+  <!-- 多级目录 -->
+  <script type="text/javascript" src="/js/category.js"></script>
+  
+</body>
+</html>

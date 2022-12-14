@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.9.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/img/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/assets/img/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/pace-js@1/themes/blue/pace-theme-minimal.css">
+  <script src="//cdn.jsdelivr.net/npm/pace-js@1/pace.min.js"></script>
+
+
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"alex-mcavoy.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":16,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":true,"color":"#ff0000","save":"manual"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":true},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.json"};
+  </script>
+
+  <meta name="description" content="Reference  概率论学习笔记（四） 可测函数与积分、Stieltjes积分 在Stieltjes观点下看“级数”与“积分” 初识斯蒂尔杰斯积分（Stieltjes integral）   【引入】Stieltjes 积分">
+<meta name="keywords" content="数学,概率论">
+<meta property="og:type" content="article">
+<meta property="og:title" content="随机变量的数字特征">
+<meta property="og:url" content="https://alex-mcavoy.github.io/mathematics/probability-theory/17018599.html">
+<meta property="og:site_name" content="Alex_McAvoy">
+<meta property="og:description" content="Reference  概率论学习笔记（四） 可测函数与积分、Stieltjes积分 在Stieltjes观点下看“级数”与“积分” 初识斯蒂尔杰斯积分（Stieltjes integral）   【引入】Stieltjes 积分">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2022-12-13T08:22:06.797Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="随机变量的数字特征">
+<meta name="twitter:description" content="Reference  概率论学习笔记（四） 可测函数与积分、Stieltjes积分 在Stieltjes观点下看“级数”与“积分” 初识斯蒂尔杰斯积分（Stieltjes integral）   【引入】Stieltjes 积分">
+
+<link rel="canonical" href="https://alex-mcavoy.github.io/mathematics/probability-theory/17018599.html">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>随机变量的数字特征 | Alex_McAvoy</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Alex_McAvoy</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">想要成为渔夫的猎手</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+
+	
+	
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/mathematics/probability-theory/17018599.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/assets/img/head.jpg">
+      <meta itemprop="name" content="Alex_McAvoy">
+      <meta itemprop="description" content="想要成为渔夫的猎手">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Alex_McAvoy">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          随机变量的数字特征
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2022-12-10 13:30:00" itemprop="dateCreated datePublished" datetime="2022-12-10T13:30:00+08:00">2022-12-10</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/mathematics/" itemprop="url" rel="index"><span itemprop="name">数学</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/mathematics/probability-theory/" itemprop="url" rel="index"><span itemprop="name">概率论</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>139</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>1 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <blockquote>
+<p>Reference</p>
+<ul>
+<li><a href="https://zhuanlan.zhihu.com/p/45720457" target="_blank" rel="noopener">概率论学习笔记（四）</a></li>
+<li><a href="https://zhuanlan.zhihu.com/p/402794921" target="_blank" rel="noopener">可测函数与积分、Stieltjes积分</a></li>
+<li><a href="https://zhuanlan.zhihu.com/p/77561207" target="_blank" rel="noopener">在Stieltjes观点下看“级数”与“积分”</a></li>
+<li><a href="https://blog.csdn.net/Northernland/article/details/83051415" target="_blank" rel="noopener">初识斯蒂尔杰斯积分（Stieltjes integral）</a></li>
+</ul>
+</blockquote>
+<h1 id="【引入】"><a href="#【引入】" class="headerlink" title="【引入】"></a>【引入】</h1><h2 id="Stieltjes-积分"><a href="#Stieltjes-积分" class="headerlink" title="Stieltjes 积分"></a>Stieltjes 积分</h2><p>设 $f(x),g(x)$ 是定义在 $[a,b]$ 上的有界函数，<script type="math/tex">a=x_0<x_1<\cdots<x_n=b</script> 为区间 <script type="math/tex">[a,b]</script> 的任一划分，取 <script type="math/tex">\Delta x_k=x_k-x_{k-1}</script>，<script type="math/tex">\Delta=\max\limits_{1\leq k\leq n} \Delta_k</script>，在每一子区间 <script type="math/tex">[x_{k-1},x_k]</script> 上任取一点 $\xi_k$ 作和式</p>
+<script type="math/tex; mode=display">
+S = \sum_{k=1}^n f(\xi_k)[g(x_k)-g(x_{k-1})]</script><p>若极限</p>
+<script type="math/tex; mode=display">
+\lim_{\Delta\rightarrow0} S = 
+\lim_{\Delta\rightarrow0} \sum_{k=1}^n f(\xi_k)[g(x_k)-g(x_{k-1})]</script><p>存在，且与 $[a,b]$ 的划分方法和 $\xi_k$ 的取法无关，则称该极限为函数 $f(x)$ 对函数 $g(x)$ 在区间 $[a,b]$ 的 <strong>Stieltjes 积分</strong>，简称 S 积分，也称 $f(x)$ 对 $g(x)$ 在 $[a,b]$ 上可积，记为 $\int_a^bf(x)dg(x)$</p>
+<p>进一步，若 $f(x),g(x)$ 是定义在 $(-\infty,+\infty)$ 上的函数，在任意有限区间 $[a,b]$ 上，$f(x)$ 对 $g(x)$ 在 $[a,b]$ 上可积，且极限 </p>
+<script type="math/tex; mode=display">
+\lim_{\begin{align*}a\rightarrow -\infty\\b\rightarrow+\infty\end{align*}} \int_b^a f(x) dg(x)</script><p>存在，则称该极限为 $f(x)$ 对 $g(x)$ 在无穷区间 $(-\infty,+\infty)$ 上的 <strong>Stieltjes 积分</strong>，记为 $\int_{-\infty}^{+\infty}f(x)dg(x)$</p>
+<h2 id="S-积分的转化"><a href="#S-积分的转化" class="headerlink" title="S 积分的转化"></a>S 积分的转化</h2><p>在 S 积分中，当 $g(x)$ 取一些特殊形式时，其可化为级数或黎曼积分</p>
+<p>当 $g(x)=x$ 时，S 积分即黎曼积分，有</p>
+<script type="math/tex; mode=display">
+\int_{-\infty}^{+\infty} f(x) dg(x)=\int_{-\infty}^{+\infty} f(x) dx</script><p>当 $g(x)$ 为可微函数，且其导数为 $g’(x)$ 时，有</p>
+<script type="math/tex; mode=display">
+\int_{-\infty}^{+\infty} f(x) dg(x)=\int_{-\infty}^{+\infty} f(x) g'(x)dx</script><p>当 $g(x)$ 为阶梯函数，且其跳跃点为有限个或无穷可列个时，积分问题转为判别级数是否收敛问题，有</p>
+<script type="math/tex; mode=display">
+\int_{-\infty}^{+\infty} f(x) dg(x)=\sum_kf(x_k)\big[g(x_k+0)-g(x_k-0)\big]</script><h2 id="Fourier-Stieltjes-积分"><a href="#Fourier-Stieltjes-积分" class="headerlink" title="Fourier-Stieltjes 积分"></a>Fourier-Stieltjes 积分</h2><p>当 $f(x)=e^{itx}$ 时，根据欧拉公式，有：</p>
+<script type="math/tex; mode=display">
+e^{itx}=\cos tx+i\sin tx</script><p>若积分</p>
+<script type="math/tex; mode=display">
+\int_{-\infty}^{+\infty} e^{itx} dg(x)=\int_{-\infty}^{+\infty}\cos tx dg(x) + i\int_{-\infty}^{+\infty}\sin tx dg(x)</script><p>存在，则称该积分为 $g(x)$ 的 <strong>Fourier-Stieltjes 积分</strong>，简称 F-S 积分</p>
+<h1 id="【数学期望】"><a href="#【数学期望】" class="headerlink" title="【数学期望】"></a>【数学期望】</h1><h2 id="随机变量"><a href="#随机变量" class="headerlink" title="随机变量"></a>随机变量</h2><p>设 $X$ 为一随机变量，$F(x)$ 为其分布函数，若 $\int_{-\infty}^{+\infty} |x| dF(x) &lt; +\infty$，则称</p>
+<script type="math/tex; mode=display">
+EX\triangleq \int_{-\infty}^{+\infty} x dF(x)</script><p>为随机变量 $X$ 的<strong>数学期望</strong>，描述了 $X$ 平均取值状况特征</p>
+<p>当 $X$ 为<strong>离散型随机变量</strong>时，其分布律为 $P(X=x_i)=p_i$，则：</p>
+<script type="math/tex; mode=display">
+EX=\sum_{i}x_ip_i</script><p>当 $X$ 为<strong>连续型随机变量</strong>时，其概率密度函数为 $f(x)$，则：</p>
+<script type="math/tex; mode=display">
+EX=\int_{-\infty}^{+\infty}xf(x) dx</script><h2 id="随机向量"><a href="#随机向量" class="headerlink" title="随机向量"></a>随机向量</h2><p>若 $y=g(x)$ 为一连续函数，$\int_{-\infty}^{+\infty} g(x) dF(x)$ 存在，则</p>
+<script type="math/tex; mode=display">
+EY=E[g(X)]=\int_{-\infty}^{+\infty} g(x) dF(x)</script><p>推广到 $n$ 维随机向量，设 <script type="math/tex">\mathbf{X}=(X_1,X_2,\cdots,X_n)</script>，其联合分布函数为 <script type="math/tex">F(x_1,x_2,\cdots,x_n)</script>，<script type="math/tex">g(x_1,x_2,\cdots,x_n)</script> 是连续函数，若 <script type="math/tex">\int_{-\infty}^{+\infty}\cdots\int_{-\infty}^{+\infty} g(x_1,\cdots,x_n) dF(x_1,\cdots,x_n)</script> 存在，则</p>
+<script type="math/tex; mode=display">
+E[g(X_1,\cdots,X_n)]=\int_{-\infty}^{+\infty}\cdots\int_{-\infty}^{+\infty} g(x_1,\cdots,x_n) dF(x_1,\cdots,x_n)</script><h2 id="性质"><a href="#性质" class="headerlink" title="性质"></a>性质</h2><p>随机变量的数学期望具有如下性质：</p>
+<ul>
+<li>设 $a,b$ 为任意常数，则 $E(aX+bY)=aEX+bEY$</li>
+<li>若 $X,Y$ 相互独立，则 $EXY=EXEY$</li>
+<li><strong>Schwarz 不等式</strong>：设 $E|X|^2&lt;+\infty,E|Y|^2&lt;+\infty$，则 $(EXY)^2\leq EX^2EY^2$</li>
+</ul>
+<h1 id="【方差】"><a href="#【方差】" class="headerlink" title="【方差】"></a>【方差】</h1><h2 id="方差"><a href="#方差" class="headerlink" title="方差"></a>方差</h2><p>设 $X$ 为一随机变量，$F(x)$ 为其分布函数， $E|X|^2&lt;+\infty$，则称</p>
+<script type="math/tex; mode=display">
+DX\triangleq E(X-EX)^2=\int_{-\infty}^{+\infty}(x-EX)^2 dF(x)</script><p>为随机变量 $X$ 的<strong>方差</strong>，其描述了 $X$ 与其期望值偏离程度</p>
+<p>当 $X$ 为<strong>离散型随机变量</strong>时，其分布律为 $P(X=x_i)=p_i$，则：</p>
+<script type="math/tex; mode=display">
+DX=\sum_{i}(x_i-EX)^2p_i</script><p>若 $X$ 为<strong>连续型随机变量</strong>时，其概率密度函数为 $f(x)$，则：</p>
+<script type="math/tex; mode=display">
+DX=\int_{-\infty}^{+\infty}(x-EX)^2f(x) dx</script><h2 id="性质-1"><a href="#性质-1" class="headerlink" title="性质"></a>性质</h2><p>随机变量的方差具有如下性质：</p>
+<ul>
+<li>设 $c$ 为任意常数，则 $D(c)=0$</li>
+<li>设 $a,b$ 为任意常数，则 $D(aX+b)=a^2DX$</li>
+<li>$D(X\pm Y)=DX+DY\pm 2Cov(X,Y)$</li>
+<li>若 $X,Y$ 相互独立，则 $D(aX+bY)=a^2DX+b^2DY$</li>
+<li>$DX=EX^2-(EX)^2$</li>
+</ul>
+<h1 id="【协方差】"><a href="#【协方差】" class="headerlink" title="【协方差】"></a>【协方差】</h1><h2 id="协方差"><a href="#协方差" class="headerlink" title="协方差"></a>协方差</h2><p>设 $X,Y$ 为随机变量，$F(x,y)$ 为联合分布函数， $E|X|^2&lt;+\infty,E|X|^2&lt;+\infty$，则称</p>
+<script type="math/tex; mode=display">
+cov(X,Y)\triangleq E[(X-EX)(Y-EY)]=\int_{-\infty}^{+\infty}\int_{-\infty}^{+\infty}(x-EX)(y-EY) dF(x,y)</script><p>为随机变量 $X,Y$ 的<strong>协方差</strong>，其描述了 $X,Y$ 间偏差的关联程度</p>
+<p>当 $(X,Y)$ 为<strong>离散型随机变量</strong>时，其联合分布律为 <script type="math/tex">P(X=x_i,Y=y_j)=p_{ij}</script>，则：</p>
+<script type="math/tex; mode=display">
+cov(X,Y)=\sum_{i}\sum_{j}(x_i-EX)(y_j-EY)p_{ij}</script><p>若 $(X,Y)$ 为<strong>连续型随机变量</strong>时，其联合概率密度函数为 $f(x,y)$，则：</p>
+<script type="math/tex; mode=display">
+DX=\int_{-\infty}^{+\infty}\int_{-\infty}^{+\infty}(x-EX)(y-EY)f(x,y) dxdy</script><h2 id="相关系数"><a href="#相关系数" class="headerlink" title="相关系数"></a>相关系数</h2><p>设 $X,Y$ 为随机变量，若 $DX&gt;0,DY&gt;0$，则称</p>
+<script type="math/tex; mode=display">
+\rho_{XY}\triangleq \frac{cov(X,Y)}{\sqrt{DX}\sqrt{DY}}</script><p>为随机变量 $X,Y$ 的相关系数</p>
+<p>若 <script type="math/tex">\rho_{XY}=0</script>，则称 <script type="math/tex">X,Y</script> 不相关，若 <script type="math/tex">\rho_{XY}\neq 0</script>，则称 <script type="math/tex">X,Y</script> 相关</p>
+<p>此外，有：</p>
+<script type="math/tex; mode=display">
+\rho_{XY}=0 \Leftrightarrow Cov(X,Y)=0 \Leftrightarrow EXY=EXEY\Leftrightarrow D(X\pm Y)= DX+DY</script><h2 id="性质-2"><a href="#性质-2" class="headerlink" title="性质"></a>性质</h2><p>随机变量 $X,Y$ 的协方差具有如下性质：</p>
+<ul>
+<li>$Cov(X,Y)=Cov(Y,X)$</li>
+<li>$Cov(X,X)=DX$</li>
+<li>设 $c$ 为任意常数，则 $Cov(X,c)=Cov(c,Y)=0$</li>
+<li>设 $a,b$ 为任意常数，则 $Cov(aX+b,Y)=aCov(X,Y)$</li>
+<li>$Cov(X_1+X_2,Y)=Cov(X_1,Y)+Cov(X_2,Y)$</li>
+</ul>
+<p>随机变量 $X,Y$ 的相关系数具有如下性质：</p>
+<ul>
+<li>$\rho_{XX}=1$</li>
+<li>$|\rho_{XY}|\leq 1$</li>
+<li>若 $Y=aX+b$，则 <script type="math/tex">a>0</script> 时，<script type="math/tex">\rho_{XY}=1</script>，<script type="math/tex">a<0</script> 时，<script type="math/tex">\rho_{XY}=-1</script></li>
+</ul>
+<h1 id="【均值向量与协方差矩阵】"><a href="#【均值向量与协方差矩阵】" class="headerlink" title="【均值向量与协方差矩阵】"></a>【均值向量与协方差矩阵】</h1><p>设 $\mathbf{X}=(X_1,X_2,\cdots,X_n)$ 为一 $n$ 维随机向量，称</p>
+<script type="math/tex; mode=display">
+E\mathbf{X}\triangleq(EX_1,EX_2,\cdots,EX_n)</script><p>为 $n$ 维随机向量 $\mathbf{X}$ 的<strong>均值向量</strong>，称</p>
+<script type="math/tex; mode=display">
+\mathbf{B} \triangleq \begin{bmatrix}
+Cov(X_1,X_1) & Cov(X_1,X_2) & \cdots & Cov(X_1,X_n) \\
+Cov(X_2,X_1) & Cov(X_2,X_2) & \cdots & Cov(X_2,X_n) \\
+\vdots & \vdots & \ddots & \vdots \\
+Cov(X_n,X_1) & Cov(X_n,X_2) & \cdots & Cov(X_n,X_n) \\
+\end{bmatrix}</script><p>为 $n$ 维随机向量 $\mathbf{X}$ 的<strong>协方差矩阵</strong>，其是一个非负定矩阵，且主对角线元素分别为 $X_1,X_2,\cdots,X_n$ 的方差</p>
+
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>感谢您对我的支持，让我继续努力分享有用的技术与知识点！</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/wechatpay.jpg" alt="Alex_McAvoy 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/alipay.jpg" alt="Alex_McAvoy 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Alex_McAvoy
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://alex-mcavoy.github.io/mathematics/probability-theory/17018599.html" title="随机变量的数字特征">https://alex-mcavoy.github.io/mathematics/probability-theory/17018599.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/mathematics/" rel="tag"># 数学</a>
+              <a href="/tags/probability-theory/" rel="tag"># 概率论</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/mathematics/probability-theory/2424b658.html" rel="prev" title="常见分布">
+      <i class="fa fa-chevron-left"></i> 常见分布
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/mathematics/probability-theory/70829920.html" rel="next" title="特征函数、矩母函数与母函数">
+      特征函数、矩母函数与母函数 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【引入】"><span class="nav-number">1.</span> <span class="nav-text">【引入】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Stieltjes-积分"><span class="nav-number">1.1.</span> <span class="nav-text">Stieltjes 积分</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#S-积分的转化"><span class="nav-number">1.2.</span> <span class="nav-text">S 积分的转化</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Fourier-Stieltjes-积分"><span class="nav-number">1.3.</span> <span class="nav-text">Fourier-Stieltjes 积分</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【数学期望】"><span class="nav-number">2.</span> <span class="nav-text">【数学期望】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#随机变量"><span class="nav-number">2.1.</span> <span class="nav-text">随机变量</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#随机向量"><span class="nav-number">2.2.</span> <span class="nav-text">随机向量</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#性质"><span class="nav-number">2.3.</span> <span class="nav-text">性质</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【方差】"><span class="nav-number">3.</span> <span class="nav-text">【方差】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#方差"><span class="nav-number">3.1.</span> <span class="nav-text">方差</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#性质-1"><span class="nav-number">3.2.</span> <span class="nav-text">性质</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【协方差】"><span class="nav-number">4.</span> <span class="nav-text">【协方差】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#协方差"><span class="nav-number">4.1.</span> <span class="nav-text">协方差</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#相关系数"><span class="nav-number">4.2.</span> <span class="nav-text">相关系数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#性质-2"><span class="nav-number">4.3.</span> <span class="nav-text">性质</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【均值向量与协方差矩阵】"><span class="nav-number">5.</span> <span class="nav-text">【均值向量与协方差矩阵】</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">  
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Alex_McAvoy"
+      src="/assets/img/head.jpg">
+  <p class="site-author-name" itemprop="name">Alex_McAvoy</p>
+  <div class="site-description" itemprop="description">想要成为渔夫的猎手</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">558</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">58</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">63</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Alex-McAvoy" title="GitHub → https://github.com/Alex-McAvoy" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/u011815404" title="CSDN → https://blog.csdn.net/u011815404" rel="noopener" target="_blank"><i class="fas fa-copyright fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+<!-- 访客地图 -->
+<script type="text/javascript" src="//rf.revolvermaps.com/0/0/5.js?i=50n58yo58ow&amp;m=0&amp;c=ff0000&amp;cr1=ffffff&amp;s=140" async="async"></script>
+
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdz20172133" title="https://blog.csdn.net/sdz20172133" rel="noopener" target="_blank">神仙队友</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://pxlsdz.gitee.io/" title="https://pxlsdz.gitee.io/" rel="noopener" target="_blank">神仙队友的另一个博客</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://bycore.net" title="https://bycore.net" rel="noopener" target="_blank">凉了的某饼同学</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://kris-cn.github.io/" title="http://kris-cn.github.io/" rel="noopener" target="_blank">翟孙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://deng.fun/" title="http://deng.fun/" rel="noopener" target="_blank">芙蓉姐姐</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdau_fangshifeng" title="https://blog.csdn.net/sdau_fangshifeng" rel="noopener" target="_blank">一个头很酷的家伙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/wentong_Xu" title="https://blog.csdn.net/wentong_Xu" rel="noopener" target="_blank">小黑贱胖子</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.yuheng.tech/" title="https://www.yuheng.tech/" rel="noopener" target="_blank">咸于</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/lanshan1111" title="https://blog.csdn.net/lanshan1111" rel="noopener" target="_blank">肥硕硕</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdauguanweihong" title="https://blog.csdn.net/sdauguanweihong" rel="noopener" target="_blank">管少</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_41661919" title="https://blog.csdn.net/qq_41661919" rel="noopener" target="_blank">俊杰</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_40859951" title="https://blog.csdn.net/qq_40859951" rel="noopener" target="_blank">峰哥</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/LSD20164388" title="https://blog.csdn.net/LSD20164388" rel="noopener" target="_blank">狗冬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37748451" title="https://blog.csdn.net/qq_37748451" rel="noopener" target="_blank">胖亚亚</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37868325" title="https://blog.csdn.net/qq_37868325" rel="noopener" target="_blank">妍大佬</a>
+        </li>
+    </ul>
+  </div>
+
+		
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+  
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Alex_McAvoy</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+</br>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script><script src="/js/bookmark.js"></script>
+
+
+
+  
+
+
+
+
+  <script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '48fd73a538d3fa927f65',
+      clientSecret: '56618aefeee90bac3c20de8d51bb0b985d67252d',
+      repo        : 'Gitalk-Comment',
+      owner       : 'Alex-McAvoy',
+      admin       : ['Alex-McAvoy'],
+      id          : '99a63f8d4a836a0e9a5c60fdaa629b4c',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+  
+  <!-- 鼠标单击粒子特效 -->
+  <script type="text/javascript" src="/js/cursor-effects.js"></script>
+  <!-- 多级目录 -->
+  <script type="text/javascript" src="/js/category.js"></script>
+  
+</body>
+</html>
