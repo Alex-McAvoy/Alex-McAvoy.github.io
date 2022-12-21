@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.9.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/img/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/assets/img/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/pace-js@1/themes/blue/pace-theme-minimal.css">
+  <script src="//cdn.jsdelivr.net/npm/pace-js@1/pace.min.js"></script>
+
+
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"alex-mcavoy.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":16,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":true,"color":"#ff0000","save":"manual"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":true},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.json"};
+  </script>
+
+  <meta name="description" content="【线性变换】设 $V_1,V_2$ 是数域 $F$ 上的两个线性空间，将 $V_1$ 到 $V_2$ 的映射称为变换，线性变换是其中最简单、最基本的一种变换，其与矩阵、线性空间等都有密切的联系 定义变换 $T:V_1\rightarrow V_2$，若满足 $\forall \alpha_1,\alpha_2\in V_1,\lambda\in F$，有">
+<meta name="keywords" content="数学,矩阵论">
+<meta property="og:type" content="article">
+<meta property="og:title" content="线性变换及其矩阵表示">
+<meta property="og:url" content="https://alex-mcavoy.github.io/mathematics/matrix-theory/b2f8c39a.html">
+<meta property="og:site_name" content="Alex_McAvoy">
+<meta property="og:description" content="【线性变换】设 $V_1,V_2$ 是数域 $F$ 上的两个线性空间，将 $V_1$ 到 $V_2$ 的映射称为变换，线性变换是其中最简单、最基本的一种变换，其与矩阵、线性空间等都有密切的联系 定义变换 $T:V_1\rightarrow V_2$，若满足 $\forall \alpha_1,\alpha_2\in V_1,\lambda\in F$，有">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2022-12-21T07:29:16.528Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="线性变换及其矩阵表示">
+<meta name="twitter:description" content="【线性变换】设 $V_1,V_2$ 是数域 $F$ 上的两个线性空间，将 $V_1$ 到 $V_2$ 的映射称为变换，线性变换是其中最简单、最基本的一种变换，其与矩阵、线性空间等都有密切的联系 定义变换 $T:V_1\rightarrow V_2$，若满足 $\forall \alpha_1,\alpha_2\in V_1,\lambda\in F$，有">
+
+<link rel="canonical" href="https://alex-mcavoy.github.io/mathematics/matrix-theory/b2f8c39a.html">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>线性变换及其矩阵表示 | Alex_McAvoy</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Alex_McAvoy</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">想要成为渔夫的猎手</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+
+	
+	
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/mathematics/matrix-theory/b2f8c39a.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/assets/img/head.jpg">
+      <meta itemprop="name" content="Alex_McAvoy">
+      <meta itemprop="description" content="想要成为渔夫的猎手">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Alex_McAvoy">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          线性变换及其矩阵表示
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2022-10-21 20:55:00" itemprop="dateCreated datePublished" datetime="2022-10-21T20:55:00+08:00">2022-10-21</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/mathematics/" itemprop="url" rel="index"><span itemprop="name">数学</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/mathematics/matrix-theory/" itemprop="url" rel="index"><span itemprop="name">矩阵论</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>7.8k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>7 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="【线性变换】"><a href="#【线性变换】" class="headerlink" title="【线性变换】"></a>【线性变换】</h1><p>设 $V_1,V_2$ 是数域 $F$ 上的两个线性空间，将 $V_1$ 到 $V_2$ 的映射称为<strong>变换</strong>，线性变换是其中最简单、最基本的一种变换，其与矩阵、线性空间等都有密切的联系</p>
+<p>定义变换 $T:V_1\rightarrow V_2$，若满足 $\forall \alpha_1,\alpha_2\in V_1,\lambda\in F$，有</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+T(\alpha_1+\alpha_2) &= T\alpha_1+T\alpha_2 \\
+T(\lambda\alpha_1) &=\lambda T\alpha_1 
+\end{align*}</script><p>则称 $T$ 是由 $V_1$ 到 $V_2$ 的<strong>线性变换</strong>，并称 $\alpha_1$ 为 $T\alpha_1$ 的<strong>原像</strong>，$T\alpha_1$ 为 $\alpha_1$ 的<strong>像</strong></p>
+<p>线性变换具有如下性质：</p>
+<ol>
+<li>$T\mathbf{0}=\mathbf{0}$</li>
+<li>对于 <script type="math/tex">\forall k_i</script>，有 <script type="math/tex">T(\sum\limits_{i=1}^r k_i\alpha_i)=\sum\limits_{i=1}^rk_iT\alpha_i</script></li>
+<li>设 <script type="math/tex">\alpha_1,\cdots,\alpha_r\in V_1</script> 且 $\alpha_1,\cdots,\alpha_r$ 线性相关，则 $T\alpha_1,\cdots,T\alpha_r$ 也是线性相关的</li>
+</ol>
+<h1 id="【变换矩阵】"><a href="#【变换矩阵】" class="headerlink" title="【变换矩阵】"></a>【变换矩阵】</h1><p>设 <script type="math/tex">T:V_1\rightarrow V_2</script> 为线性变换，<script type="math/tex">B_{\alpha}=\{T\alpha_1,\cdots,T\alpha_n\}</script> 是 <script type="math/tex">V_1</script> 的一组基，<script type="math/tex">B_{\beta}=\{\beta_1,\cdots,\beta_m\}</script> 是 <script type="math/tex">V_2</script> 的一组基，则</p>
+<script type="math/tex; mode=display">
+T\alpha_{j}=\sum_{i=1}^ma_{ij}\beta_i=
+\begin{bmatrix}
+\beta_1 & \cdots &\beta_m
+\end{bmatrix}\begin{bmatrix}
+a_{1j} \\ \vdots \\ a_{mj}
+\end{bmatrix}, \quad j=1,2,\cdots,n</script><p>将这 $n$ 个关系式用矩阵记号来表示</p>
+<script type="math/tex; mode=display">
+T\begin{bmatrix}
+\alpha_1 &\alpha_2 & \cdots &\alpha_m
+\end{bmatrix}=
+\begin{bmatrix}
+\beta_1 &\beta_2 & \cdots &\beta_m
+\end{bmatrix}\begin{bmatrix}
+a_{11} & a_{12} & \cdots & a_{1n} \\
+a_{21} & a_{22} & \cdots & a_{2n} \\
+\vdots & \vdots & \ddots & \vdots \\
+a_{m1} & a_{m2} & \cdots & a_{mn} \\
+\end{bmatrix}</script><p>称 $m\times n$ 阶矩阵</p>
+<script type="math/tex; mode=display">
+A=\begin{bmatrix}
+a_{11} & a_{12} & \cdots & a_{1n} \\
+a_{21} & a_{22} & \cdots & a_{2n} \\
+\vdots & \vdots & \ddots & \vdots \\
+a_{m1} & a_{m2} & \cdots & a_{mn} \\
+\end{bmatrix}</script><p>为线性变换 $T$ 在基偶 <script type="math/tex">(B_{\alpha},B_{\beta})</script> 下的<strong>变换矩阵</strong>，其描述了 $n$ 维空间到 $m$ 维空间的线性变换的映射关系</p>
+<p>故有</p>
+<script type="math/tex; mode=display">
+TB_{\alpha}=B_{\beta}A</script><p>称为线性变换 $T$ 在基偶 <script type="math/tex">(B_{\alpha},B_{\beta})</script> 下的矩阵表示</p>
+<p>该式表明了，在给定基偶 <script type="math/tex">(B_{\alpha},B_{\beta})</script> 的条件下，线性变换 $T$ 与变换矩阵 $A$ 一一对应，即对线性变换 $T$ 的研究，可转换为对矩阵 $A$ 的研究</p>
+<h1 id="【等价关系与相似关系】"><a href="#【等价关系与相似关系】" class="headerlink" title="【等价关系与相似关系】"></a>【等价关系与相似关系】</h1><p>在给定基偶 <script type="math/tex">(B_{\alpha},B_{\beta})</script> 的条件下，线性变换 $T$ 与变换矩阵 $A$ 一一对应，那么 $T$ 在不同的基偶下，矩阵表示间的关系有最基本的两种，即等价关系和相似关系</p>
+<h2 id="等价关系"><a href="#等价关系" class="headerlink" title="等价关系"></a>等价关系</h2><p>设 <script type="math/tex">(B_{\alpha},B_{\beta})</script> 和 <script type="math/tex">(B_{\alpha'},B_{\beta'})</script> 是 <script type="math/tex">V_1\rightarrow V_2</script> 的两对基偶，<script type="math/tex">T</script> 在这两个基偶下的变换矩阵分别为 <script type="math/tex">A,B</script>，且 <script type="math/tex">P</script> 为 <script type="math/tex">B_{\alpha}</script> 到 <script type="math/tex">B_{\alpha'}</script> 的过渡矩阵，<script type="math/tex">Q</script> 为 <script type="math/tex">B_{\beta}</script> 到 <script type="math/tex">B_{\beta'}</script> 的过渡矩阵，即</p>
+<script type="math/tex; mode=display">
+\begin{matrix}
+B_{\alpha'}=B_{\alpha}P & TB_{\alpha}=B_{\beta}A \\
+B_{\beta'}=B_{\beta}Q & TB_{\alpha'}=B_{\beta'}B
+\end{matrix}</script><p>从而有</p>
+<script type="math/tex; mode=display">
+B_{\beta}AP=TB_{\alpha}P=TB_{\alpha'}=B_{\beta'}B=B_{\beta}QB</script><p>因此</p>
+<script type="math/tex; mode=display">
+B_{\beta}(AP-QB)=O</script><p>由于 $B_{\beta}$ 是基，线性无关，故有</p>
+<script type="math/tex; mode=display">
+AP=QB \Rightarrow B=Q^{-1}AP</script><p>即 $T$ 在不同基偶下的矩阵 $A$ 和 $B$ 是<strong>等价关系</strong>，记为 $A\cong B$</p>
+<p>等价关系可理解为：在 $n$ 维线性空间中选择基矩阵 $P$，在 $m$ 维线性空间中，选择基矩阵 $Q$，在 $P,Q$ 的作用下，通过线性变换 $T$ 的映射，由 $A$ 变为 $B$</p>
+<h2 id="相似关系"><a href="#相似关系" class="headerlink" title="相似关系"></a>相似关系</h2><p>若线性变换 $T$ 是 <script type="math/tex">V_1\rightarrow V_1</script>，那么在上述过程中，有</p>
+<script type="math/tex; mode=display">
+V_2=V_1,B_{\beta}=B_{\alpha},B_{\beta'}=B_{\alpha'},Q=P</script><p>进而可得</p>
+<script type="math/tex; mode=display">
+AP=PB\Rightarrow B=P^{-1}AP</script><p>即 $T$ 在不同基偶下的矩阵 $A$ 和 $B$ 是<strong>相似关系</strong>，记为 $A\sim B$</p>
+<p>相似关系可理解为：在 $n$ 维线性空间中选择基矩阵 $P$，在 $P$ 的作用下，通过线性变换 $T$ 的映射，由 $A$ 变为 $B$</p>
+<h1 id="【不变子空间】"><a href="#【不变子空间】" class="headerlink" title="【不变子空间】"></a>【不变子空间】</h1><p>进一步，讨论线性变换 $T:V\rightarrow V$ 的矩阵表示的简化问题，即 $T$ 在什么样的基下的矩阵表示较简单，这个问题与不变子空间和特征值与特征向量密切相关</p>
+<h2 id="核空间与值域"><a href="#核空间与值域" class="headerlink" title="核空间与值域"></a>核空间与值域</h2><p>在给出不变子空间的定义前，首先给出核空间与值域的概念</p>
+<p>设 $T:V_1\rightarrow V_2$ 为线性变换，分别称</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+N(T) &\triangleq \{\alpha\in V_1 | T\alpha = \mathbf{0} \} \\
+R(T) &\triangleq \{\beta\in V_2 | \beta=T\alpha,\alpha\in V_1 \} \\
+\end{align*}</script><p>为 $T$ 的<strong>核空间</strong>与<strong>值域</strong></p>
+<p>并称 $\text{dim}(N(T))$ 为 $T$ 的<strong>零度</strong>，记为 $\text{null }T$，称 $\text{dim}(R(T))$ 为 $T$ 的<strong>秩</strong>，记为 $\text{rank }T$</p>
+<p>通过基的扩张方法，对于线性变换 $T:V_1\rightarrow V_2$ ，记 $n=\text{dim}V_1$，有</p>
+<script type="math/tex; mode=display">
+\text{null }T+\text{rank } T = n</script><h2 id="不变子空间"><a href="#不变子空间" class="headerlink" title="不变子空间"></a>不变子空间</h2><p>设 $T:V\rightarrow V$ 为线性变换，$W$ 是 $V$ 的子空间，若 $\forall \alpha\in W$，有 $T\alpha\in W$，则称 $W$ 为 $V$ 的<strong>不变子空间</strong></p>
+<p>显然，核空间 $N(T)$ 和值域 $R(T)$ 都是 $T$ 的不变子空间</p>
+<hr>
+<p>利用不变子空间，可以简化线性变换 $T$ 的矩阵表示</p>
+<p>设 $\text{dim} V=n$，$W\subset V$ 是不变子空间，$\text{dim}W=k&lt;n$，取 $W$ 的一组基 <script type="math/tex">\{\alpha_1,\cdots,\alpha_k\}</script>，将其扩张为 $V$ 的基 <script type="math/tex">\{\alpha_1,\cdots,\alpha_k,\alpha_{k+1},\cdots,\alpha_{n}\}</script></p>
+<p>由于 $T(W)\subset W$，故 <script type="math/tex">T\alpha_1,\cdots,T\alpha_k</script> 是 <script type="math/tex">\alpha_1,\cdots,\alpha_k</script> 的线性组合，而 <script type="math/tex">T\alpha_{k+1},\cdots,T\alpha_{n}</script> 是 <script type="math/tex">\alpha_1,\cdots,\alpha_n</script> 的线性组合，即</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+T\alpha_1 &= a_{11}\alpha_{1} + a_{21}\alpha_{2} + \cdots + a_{k1}\alpha_{k} \\
+T\alpha_2 &= a_{12}\alpha_{1} + a_{22}\alpha_{2} + \cdots + a_{k2}\alpha_{k} \\ 
+&\cdots\cdots\\
+T\alpha_k &= a_{1k}\alpha_{1} + a_{2k}\alpha_{2} + \cdots + a_{kk}\alpha_{k} \\
+T\alpha_{k+1} &= a_{1k+1}\alpha_{1} + a_{2k+1}\alpha_{2} + \cdots + a_{kk+1}\alpha_{k}+a_{k+1k+1}\alpha_{k+1}+\cdots+a_{nk+1}\alpha_{n} \\
+&\cdots\cdots\\
+T\alpha_{n} &= a_{1n}\alpha_{1} + a_{2n}\alpha_{2} + \cdots + a_{kn}\alpha_{k}+a_{k+1n}\alpha_{k+1}+\cdots+a_{nn}\alpha_{n} 
+\end{align*}</script><p>故 $T:V\rightarrow V$ 在由不变子空间 $W$ 的基 ${\alpha_1,\cdots,\alpha_k}$ 所扩张成空间 $V$ 的基 ${\alpha_1,\alpha_2,\cdots,\alpha_n}$ 下的矩阵表示为</p>
+<script type="math/tex; mode=display">
+A=\left[\begin{array}{cccc:cccc}
+a_{11} & a_{12} & \cdots & a_{1k} & a_{1k+1} & \cdots & a_{1n} \\
+a_{21} & a_{22} & \cdots & a_{2k} & a_{2k+1} & \cdots & a_{2n} \\
+\vdots & \vdots & \ddots & \vdots & \vdots & \ddots & \vdots \\
+a_{k1} & a_{k2} & \cdots & a_{kk} & a_{kk+1} & \cdots & a_{kn} \\
+\hdashline
+0 & 0 & \cdots & 0 & a_{k+1k+1} & \cdots & a_{k+1n} \\
+\vdots & \vdots & \ddots & \vdots & \vdots & \ddots & \vdots \\
+0 & 0 & \cdots & 0 & a_{nk+1} & \cdots & a_{nn} \\
+\end{array}\right]
+
+\triangleq \begin{bmatrix}
+A_{11} & A_{12} \\
+O & A_{22}
+\end{bmatrix}</script><p>反之，若 $T:V\rightarrow V$ 在某个基 <script type="math/tex">\{\alpha_1,\cdots,\alpha_k,\alpha_{k+1},\cdots,\alpha_{n}\}</script> 下的矩阵具有以上形状，则</p>
+<script type="math/tex; mode=display">
+W\triangleq \text{span}\{\alpha_1,\alpha_2,\cdots,\alpha_k\}</script><p>必是 $T:V\rightarrow V$ 的不变子空间</p>
+<p>更进一步，若 <script type="math/tex">W_1\triangleq \text{span}\{\alpha_{k+1},\cdots,\alpha_n\}</script> 也是 <script type="math/tex">T</script> 的不变子空间，则此时 <script type="math/tex">T:V\rightarrow V</script> 在基 <script type="math/tex">\{\alpha_1,\cdots,\alpha_k,\alpha_{k+1},\cdots,\alpha_{n}\}</script> 下的矩阵表示为对角块阵，即</p>
+<script type="math/tex; mode=display">
+A=\begin{bmatrix}
+A_{11} & O \\
+O & A_{22}
+\end{bmatrix}</script><p>其中，<script type="math/tex">A_{11}</script> 为 <script type="math/tex">W</script> 所对应的过渡矩阵，<script type="math/tex">A_{22}</script> 为 <script type="math/tex">W_1</script> 所对应的过渡矩阵</p>
+<p>一般若 $V$ 为 $T$ 的若干个不变子空间的直和</p>
+<script type="math/tex; mode=display">
+V=W_1\oplus W_2\oplus\cdots\oplus W_s</script><p>在每个 <script type="math/tex">W_i</script> 中取基 <script type="math/tex">\{\alpha_{i1},\cdots,\alpha_{in_i}\}</script>，再将这些基合起来构成 <script type="math/tex">V</script> 的一组基，则 <script type="math/tex">T:V\rightarrow V</script> 在该基下的矩阵表示为对角块阵，即</p>
+<script type="math/tex; mode=display">
+A=\begin{bmatrix}
+A_{11} & & &\\
+& A_{22} & & \\
+& & \ddots & \\
+& & & A_{ss} 
+\end{bmatrix} \triangleq \text{diag}\{A_{11},A_{22},\cdots,A_{ss}\}</script><p>其中，<script type="math/tex">A_{ii}</script> 为 <script type="math/tex">W_i</script> 所对应的过渡矩阵</p>
+<h1 id="【特征值与特征向量】"><a href="#【特征值与特征向量】" class="headerlink" title="【特征值与特征向量】"></a>【特征值与特征向量】</h1><h2 id="引入"><a href="#引入" class="headerlink" title="引入"></a>引入</h2><p>通过利用不变子空间，将线性变换 $T:V\rightarrow V$ 的矩阵表示简化为对角块阵</p>
+<p>而对角阵又是对角块阵中最简单的一种，那么是否在一定条件下 $T:V\rightarrow V$ 的矩阵表示可以简化为对角阵？</p>
+<p>由于 $T:V\rightarrow V$ 在基 <script type="math/tex">B=\{\alpha_1,\alpha_2,\cdots,\alpha_n\}</script> 下的矩阵是对角阵，即</p>
+<script type="math/tex; mode=display">
+A=\begin{bmatrix}
+\lambda_1 & & & \\
+& \lambda_2 & & \\
+& & \ddots & \\
+& & & \lambda_n
+\end{bmatrix}\triangleq \text{diag}\{\lambda_1,\lambda_2,\cdots,\lambda_n\}</script><p>则</p>
+<script type="math/tex; mode=display">
+\begin{bmatrix}
+T\alpha_1 & T\alpha_2 & \cdots & T\alpha_n
+\end{bmatrix}=\begin{bmatrix}
+\alpha_1 & \alpha_2 & \cdots & \alpha_n
+\end{bmatrix}\begin{bmatrix}
+\lambda_1 & & & \\
+& \lambda_2 & & \\
+& & \ddots & \\
+& & & \lambda_n
+\end{bmatrix}</script><p>从而有</p>
+<script type="math/tex; mode=display">
+T\alpha_i=\lambda_i\alpha_i,\quad i=1,2,\cdots,n</script><p>为此，引入线性变换 $T$ 的特征值和特征向量的概念</p>
+<h2 id="特征值与特征向量"><a href="#特征值与特征向量" class="headerlink" title="特征值与特征向量"></a>特征值与特征向量</h2><p>设线性变换 $T:V\rightarrow V$，若 $\exists \lambda_0\in F$ 及非零向量 $\alpha$，使得</p>
+<script type="math/tex; mode=display">
+T\alpha=\lambda_0\alpha</script><p>则称 $\lambda_0$ 是 $T$ 的一个<strong>特征值</strong>，$\alpha$ 是 $T$ 关于 $\lambda_0$ 的<strong>特征向量</strong></p>
+<p>易见，若 $\alpha$ 为 $\lambda_0$ 的特征向量，则 $\forall k\in F$，$k\alpha$ 亦为 $\lambda_0$ 的特征向量，即特征向量不被特征值唯一确定，但特征值由特征向量决定</p>
+<p>对于 $T$ 的任一特征值 $\lambda_0$，$T$ 关于 $\lambda_0$ 的所有特征向量，再加上零向量组成的集合</p>
+<script type="math/tex; mode=display">
+V_{\lambda_0}\triangleq \{\alpha \in V^n|T\alpha=\lambda_0\alpha\}</script><p>是 $V^n$ 的一个子空间，称 <script type="math/tex">V_{\lambda_0}</script> 是 <script type="math/tex">T</script> 关于 <script type="math/tex">\lambda_0</script> 的<strong>特征子空间</strong>，<script type="math/tex">\text{dim}V_{\lambda_0}</script> 是 <script type="math/tex">\lambda_0</script> 的<strong>几何重数</strong></p>
+<p>显然，$V_{\lambda_0}$ 是 $T$ 的不变子空间，且 $\lambda_0$ 的几何重数就是 $T$ 关于 $\lambda_0$ 的线性无关特征向量的最大个数，其反映了特征向量的个数</p>
+<h2 id="特征多项式"><a href="#特征多项式" class="headerlink" title="特征多项式"></a>特征多项式</h2><p>下面给出如何求 $T$ 的特征值 $\lambda_0$ 和对应的特征向量 $\alpha$ 的方法</p>
+<p>设 $n$ 维线性空间 $V$ 的基为 <script type="math/tex">B=\{\alpha_1,\alpha_2,\cdots,\alpha_n\}</script>，$T$ 在 $B$ 下的变换矩阵为 $A$，向量 <script type="math/tex">\alpha=\sum\limits_{i=1}^nx_i\alpha_i=B\mathbf{x}</script>，<script type="math/tex">\mathbf{x}=[x_1,x_2,\cdots,x_n]^T</script>，则</p>
+<script type="math/tex; mode=display">
+T\alpha=T(B\mathbf{x})=(TB)\mathbf{x}=B(A\mathbf{x})</script><p>即 $T\alpha$ 在基 $B$ 下的坐标为 $A\mathbf{x}$</p>
+<p>又因 <script type="math/tex">T\alpha=\lambda_0\alpha</script>，则 $B(A\mathbf{x})=B(\lambda_0\mathbf{x})$，即 <script type="math/tex">B(\lambda_0\mathbf{x}-A\mathbf{x})=\mathbf{0}</script>，因为 $B$ 为基，故</p>
+<script type="math/tex; mode=display">
+A\mathbf{x}=\lambda_0\mathbf{x}</script><p>即 $\lambda_0$ 是矩阵 $A$ 的特征值</p>
+<p>反过来，若 $\lambda_0$ 是矩阵 $A$ 的特征值，则方程组</p>
+<script type="math/tex; mode=display">
+(\lambda_0I-A)\mathbf{x}=0</script><p>有非零解 <script type="math/tex">\mathbf{x}=[x_1,x_2,\cdots,x_n]^T</script>，从而</p>
+<script type="math/tex; mode=display">
+\alpha=\sum_{i=1}^n x_i\alpha_i</script><p>是 $\lambda_0$ 的特征向量</p>
+<p>由于相似阵具有相同的特征多项式，故将 $A$ 的特征多项式</p>
+<script type="math/tex; mode=display">
+f(\lambda)\triangleq |\lambda I-A|=\lambda^n+b_1\lambda^{n-1}+\cdots+b_n</script><p>称为线性变换 $T$ 的<strong>特征多项式</strong>，$T$ 的特征值即该特征多项式的根</p>
+<hr>
+<p>我们知道，如果 <script type="math/tex">\lambda_1,\lambda_2,\cdots,\lambda_s</script> 是 $T$ 的所有不同的特征值，那么 $T$ 的特征多项式可写为</p>
+<script type="math/tex; mode=display">
+f(\lambda)=(\lambda-\lambda_1)^{n_1}(\lambda-\lambda_2)^{n_2}\cdots(\lambda-\lambda_s)^{n_s}</script><p>且 <script type="math/tex">n_1+n_2+\cdots+n_s=n</script>，称 $n_i$ 为特征值 $\lambda_i$ 的<strong>代数重数</strong>，其反映了特征向量重复的次数</p>
+<p>关于特征值 $\lambda_i$ 的代数重数和几何重数有如下定理：设  <script type="math/tex">\lambda_1,\lambda_2,\cdots,\lambda_s</script> 是 $T$ 的所有不同的特征值，则对任一 $\lambda_i$ 都有</p>
+<script type="math/tex; mode=display">
+\text{dim} V_{\lambda_i}\leq n_i</script><p>即任何特征值的几何重数不大于其代数重数</p>
+<h1 id="【线性变换对角化】"><a href="#【线性变换对角化】" class="headerlink" title="【线性变换对角化】"></a>【线性变换对角化】</h1><p>在有了特征值与特征向量、几何重数与代数重数的概念后，继续讨论线性变换 $T:V\rightarrow V$ 的矩阵表示的简化问题，由于最简单的矩阵表示是对角矩阵，那么在什么条件下 $T:V\rightarrow V$ 的矩阵表示为对角矩阵？</p>
+<p>给出<strong>线性变换可对角化</strong>的定义：若存在 $V$ 的基，使 $T:V\rightarrow V$ 在 $B$ 下的矩阵是对角阵，则称线性变换 $T:V\rightarrow V$ 是可对角化的</p>
+<p>线性变换 $T:V\rightarrow V$ 是可对角化的充要条件是下列等价条件之一成立：</p>
+<ol>
+<li>$T$ 有 $n$ 个线性无关的特征向量</li>
+<li>$V^n$ 可直和分解为所有特征值 <script type="math/tex">\lambda_i</script> 对应的特征子空间，即 <script type="math/tex">V_{\lambda_1}\oplus V_{\lambda_2}\oplus\cdots\oplus V_{\lambda_s}=V^n</script></li>
+<li>任一特征值的几何重数等于代数重数，即 <script type="math/tex">\text{dim}V_{\lambda_i}=n_i</script></li>
+</ol>
+<p>也就是说，当线性变换 $T:V\rightarrow V$ 满足上述的条件之一时，其矩阵表示为对角矩阵</p>
+
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>感谢您对我的支持，让我继续努力分享有用的技术与知识点！</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/wechatpay.jpg" alt="Alex_McAvoy 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/alipay.jpg" alt="Alex_McAvoy 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Alex_McAvoy
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://alex-mcavoy.github.io/mathematics/matrix-theory/b2f8c39a.html" title="线性变换及其矩阵表示">https://alex-mcavoy.github.io/mathematics/matrix-theory/b2f8c39a.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/mathematics/" rel="tag"># 数学</a>
+              <a href="/tags/matrix-theory/" rel="tag"># 矩阵论</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/mathematics/matrix-theory/4d9cb2a4.html" rel="prev" title="线性空间">
+      <i class="fa fa-chevron-left"></i> 线性空间
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/mathematics/matrix-theory/2b21d67a.html" rel="next" title="内积空间">
+      内积空间 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【线性变换】"><span class="nav-number">1.</span> <span class="nav-text">【线性变换】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【变换矩阵】"><span class="nav-number">2.</span> <span class="nav-text">【变换矩阵】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【等价关系与相似关系】"><span class="nav-number">3.</span> <span class="nav-text">【等价关系与相似关系】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#等价关系"><span class="nav-number">3.1.</span> <span class="nav-text">等价关系</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#相似关系"><span class="nav-number">3.2.</span> <span class="nav-text">相似关系</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【不变子空间】"><span class="nav-number">4.</span> <span class="nav-text">【不变子空间】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#核空间与值域"><span class="nav-number">4.1.</span> <span class="nav-text">核空间与值域</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#不变子空间"><span class="nav-number">4.2.</span> <span class="nav-text">不变子空间</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【特征值与特征向量】"><span class="nav-number">5.</span> <span class="nav-text">【特征值与特征向量】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#引入"><span class="nav-number">5.1.</span> <span class="nav-text">引入</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#特征值与特征向量"><span class="nav-number">5.2.</span> <span class="nav-text">特征值与特征向量</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#特征多项式"><span class="nav-number">5.3.</span> <span class="nav-text">特征多项式</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【线性变换对角化】"><span class="nav-number">6.</span> <span class="nav-text">【线性变换对角化】</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">  
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Alex_McAvoy"
+      src="/assets/img/head.jpg">
+  <p class="site-author-name" itemprop="name">Alex_McAvoy</p>
+  <div class="site-description" itemprop="description">想要成为渔夫的猎手</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">577</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">56</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">61</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Alex-McAvoy" title="GitHub → https://github.com/Alex-McAvoy" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/u011815404" title="CSDN → https://blog.csdn.net/u011815404" rel="noopener" target="_blank"><i class="fas fa-copyright fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+<!-- 访客地图 -->
+<script type="text/javascript" src="//rf.revolvermaps.com/0/0/5.js?i=50n58yo58ow&amp;m=0&amp;c=ff0000&amp;cr1=ffffff&amp;s=140" async="async"></script>
+
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdz20172133" title="https://blog.csdn.net/sdz20172133" rel="noopener" target="_blank">神仙队友</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://pxlsdz.gitee.io/" title="https://pxlsdz.gitee.io/" rel="noopener" target="_blank">神仙队友的另一个博客</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://bycore.net" title="https://bycore.net" rel="noopener" target="_blank">凉了的某饼同学</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://kris-cn.github.io/" title="http://kris-cn.github.io/" rel="noopener" target="_blank">翟孙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://deng.fun/" title="http://deng.fun/" rel="noopener" target="_blank">芙蓉姐姐</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdau_fangshifeng" title="https://blog.csdn.net/sdau_fangshifeng" rel="noopener" target="_blank">一个头很酷的家伙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/wentong_Xu" title="https://blog.csdn.net/wentong_Xu" rel="noopener" target="_blank">小黑贱胖子</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.yuheng.tech/" title="https://www.yuheng.tech/" rel="noopener" target="_blank">咸于</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/lanshan1111" title="https://blog.csdn.net/lanshan1111" rel="noopener" target="_blank">肥硕硕</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdauguanweihong" title="https://blog.csdn.net/sdauguanweihong" rel="noopener" target="_blank">管少</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_41661919" title="https://blog.csdn.net/qq_41661919" rel="noopener" target="_blank">俊杰</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_40859951" title="https://blog.csdn.net/qq_40859951" rel="noopener" target="_blank">峰哥</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/LSD20164388" title="https://blog.csdn.net/LSD20164388" rel="noopener" target="_blank">狗冬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37748451" title="https://blog.csdn.net/qq_37748451" rel="noopener" target="_blank">胖亚亚</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37868325" title="https://blog.csdn.net/qq_37868325" rel="noopener" target="_blank">妍大佬</a>
+        </li>
+    </ul>
+  </div>
+
+		
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+  
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Alex_McAvoy</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+</br>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script><script src="/js/bookmark.js"></script>
+
+
+
+  
+
+
+
+
+  <script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '48fd73a538d3fa927f65',
+      clientSecret: '56618aefeee90bac3c20de8d51bb0b985d67252d',
+      repo        : 'Gitalk-Comment',
+      owner       : 'Alex-McAvoy',
+      admin       : ['Alex-McAvoy'],
+      id          : '0f481baee435f8af8f84a86a443dbb4b',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+  
+  <!-- 鼠标单击粒子特效 -->
+  <script type="text/javascript" src="/js/cursor-effects.js"></script>
+  <!-- 多级目录 -->
+  <script type="text/javascript" src="/js/category.js"></script>
+  
+</body>
+</html>

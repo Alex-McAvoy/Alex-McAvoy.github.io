@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.9.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/img/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/assets/img/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/pace-js@1/themes/blue/pace-theme-minimal.css">
+  <script src="//cdn.jsdelivr.net/npm/pace-js@1/pace.min.js"></script>
+
+
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"alex-mcavoy.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":16,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":true,"color":"#ff0000","save":"manual"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":true},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.json"};
+  </script>
+
+  <meta name="description" content="【方阵多项式】设复多项式  g(\lambda)=a_0\lambda^m+a_1\lambda^{m-1}+\cdots+a_{m-1}\lambda+a_m为 $m$ 次多项式，其中，$\lambda$ 为复变量，$m$ 为整数，$a_0\neq0,a_1,\cdots,a_m$ 均为复系数">
+<meta name="keywords" content="数学,矩阵论">
+<meta property="og:type" content="article">
+<meta property="og:title" content="凯莱-哈密顿定理与最小多项式">
+<meta property="og:url" content="https://alex-mcavoy.github.io/mathematics/matrix-theory/c480a3d8.html">
+<meta property="og:site_name" content="Alex_McAvoy">
+<meta property="og:description" content="【方阵多项式】设复多项式  g(\lambda)=a_0\lambda^m+a_1\lambda^{m-1}+\cdots+a_{m-1}\lambda+a_m为 $m$ 次多项式，其中，$\lambda$ 为复变量，$m$ 为整数，$a_0\neq0,a_1,\cdots,a_m$ 均为复系数">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2022-12-18T10:42:02.559Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="凯莱-哈密顿定理与最小多项式">
+<meta name="twitter:description" content="【方阵多项式】设复多项式  g(\lambda)=a_0\lambda^m+a_1\lambda^{m-1}+\cdots+a_{m-1}\lambda+a_m为 $m$ 次多项式，其中，$\lambda$ 为复变量，$m$ 为整数，$a_0\neq0,a_1,\cdots,a_m$ 均为复系数">
+
+<link rel="canonical" href="https://alex-mcavoy.github.io/mathematics/matrix-theory/c480a3d8.html">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>凯莱-哈密顿定理与最小多项式 | Alex_McAvoy</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Alex_McAvoy</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">想要成为渔夫的猎手</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+
+	
+	
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/mathematics/matrix-theory/c480a3d8.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/assets/img/head.jpg">
+      <meta itemprop="name" content="Alex_McAvoy">
+      <meta itemprop="description" content="想要成为渔夫的猎手">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Alex_McAvoy">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          凯莱-哈密顿定理与最小多项式
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2022-11-11 10:41:00" itemprop="dateCreated datePublished" datetime="2022-11-11T10:41:00+08:00">2022-11-11</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/mathematics/" itemprop="url" rel="index"><span itemprop="name">数学</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/mathematics/matrix-theory/" itemprop="url" rel="index"><span itemprop="name">矩阵论</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>2.6k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>2 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="【方阵多项式】"><a href="#【方阵多项式】" class="headerlink" title="【方阵多项式】"></a>【方阵多项式】</h1><p>设复多项式</p>
+<script type="math/tex; mode=display">
+g(\lambda)=a_0\lambda^m+a_1\lambda^{m-1}+\cdots+a_{m-1}\lambda+a_m</script><p>为 $m$ 次多项式，其中，$\lambda$ 为复变量，$m$ 为整数，$a_0\neq0,a_1,\cdots,a_m$ 均为复系数</p>
+<p>对 $\forall A\in \mathbb{C}^{n\times n}$，将上式中的 $\lambda$ 换为方阵 $A$，则</p>
+<script type="math/tex; mode=display">
+g(A)=a_0A^m+a_{1}A^{m-1}+\cdots+a_{m-1}A+a_mI_n</script><p>仍为一 $n$ 阶方阵，称上式为<strong>方阵多项式</strong></p>
+<p>相应地，对于一个方阵多项式，也可转为对应同次数的复多项式</p>
+<h1 id="【零化多项式】"><a href="#【零化多项式】" class="headerlink" title="【零化多项式】"></a>【零化多项式】</h1><p>设 $A$ 为 $n$ 阶方阵，$g(\lambda)$ 为 $m$ 次多项式，若</p>
+<script type="math/tex; mode=display">
+g(A)=O</script><p>则称 $g(\lambda)$ 为方阵 $A$ 的<strong>零化多项式</strong></p>
+<h1 id="【凯莱-哈密顿定理】"><a href="#【凯莱-哈密顿定理】" class="headerlink" title="【凯莱-哈密顿定理】"></a>【凯莱-哈密顿定理】</h1><p><strong>凯莱-哈密顿（Cayley-Hamilton）定理</strong>，简称 CH 定理，其提供了一个寻找任何方阵零化多项式的有效方法，即：$n$ 阶方阵 $A$ 的特征多项式 $f_A(\lambda)$ 是 $A$ 的零化多项式</p>
+<p>从形式上看，若</p>
+<script type="math/tex; mode=display">
+f_A(\lambda)=|\lambda I_n-A|=\lambda^n+a_1\lambda^{n-1}+\cdots+a_{n-1}\lambda+a_n</script><p>则</p>
+<script type="math/tex; mode=display">
+f_A(A)=A^n+a_1A^{n-1}+\cdots+a_{n-1}A+a_nI_n=O</script><p>CH 定理的重要意义在于：</p>
+<ol>
+<li>指出任何 $n$ 阶方阵 $A$ 都具有次数不超过 $n$ 的零化多项式 $f_A(\lambda)$</li>
+<li>当 $m\geq n$ 时，任何 $n$ 阶方阵 $A$ 的方幂 $A^m$，均可表为 $A^{n-1},\cdots,A,A^0$ 的线性组合，从而 $A$ 的任何 $m$ 次方阵多项式都可表为次数不超过 $n-1$ 次的方阵多项式</li>
+</ol>
+<hr>
+<p>例如：</p>
+<p>设 </p>
+<script type="math/tex; mode=display">
+A=\begin{bmatrix}
+1&2&0 \\
+0&-1&1 \\
+0&1&0
+\end{bmatrix}</script><p>求：$g(A)=2A^8-3A^5+A^4+A^2-4I_3$</p>
+<p>易得，$A$ 的特征多项式为</p>
+<script type="math/tex; mode=display">
+f_A(\lambda)=|\lambda I_3-A|=\lambda^3-2\lambda+1</script><p>取 $g(A)$ 对应的复多项式</p>
+<script type="math/tex; mode=display">
+g(\lambda)=2\lambda^8-3\lambda^5+\lambda^4+\lambda^2-4</script><p>用 $f_A(\lambda)$ 去除 $g(\lambda)$，得</p>
+<script type="math/tex; mode=display">
+g(\lambda)=(2\lambda^5+4\lambda^3-5\lambda^2+9\lambda-14)f_A(\lambda)+\varphi(\lambda)</script><p>其中，余式 $\varphi(\lambda)=24\lambda^2-37\lambda+10$</p>
+<p>根据 CH 定理，$f_A(A)=0$，故</p>
+<script type="math/tex; mode=display">
+g(A)=\varphi(A)=24A^2-37A+10I_3
+=\begin{bmatrix}
+-3&-74&48\\
+0&95&-61\\
+0&-61&34
+\end{bmatrix}</script><h1 id="【最小多项式】"><a href="#【最小多项式】" class="headerlink" title="【最小多项式】"></a>【最小多项式】</h1><h2 id="定义"><a href="#定义" class="headerlink" title="定义"></a>定义</h2><p>任何一个 $n$ 方阵 $A$，都有无穷多个零化多项式 $g(\lambda)$，在这诸多的零化多项式中称 $A$ 的首项系数为 $1$ 且次数最小的零化多项式，为 $A$ 的<strong>最小多项式</strong>，记为 $m_A(\lambda)$</p>
+<p>其具有如下性质：</p>
+<ol>
+<li>$A$ 的任何零化多项式 $g(\lambda)$ 都能被 $m_A(\lambda)$ 整除</li>
+<li>$A$ 的最小多项式 $m_A(\lambda)$ 是唯一的</li>
+<li>$\lambda_0$ 为 $A$ 的特征值的充要条件是 $m_A(\lambda_0)=0$</li>
+</ol>
+<p>通过如上性质，可以得到一个推论：若 $A$ 的特征值都是单根，则 $A$ 的特征多项式就是最小多项式</p>
+<h2 id="最小多项式形式"><a href="#最小多项式形式" class="headerlink" title="最小多项式形式"></a>最小多项式形式</h2><p>设 $n$ 阶方阵 $A$ 的特征多项式为</p>
+<script type="math/tex; mode=display">
+f_A(\lambda)=(\lambda-\lambda_1)^{n_1}(\lambda-\lambda_2)^{n_2}\cdots(\lambda-\lambda_s)^{n_s}</script><p>其中，$\lambda_1,\lambda_2,\cdots,\lambda_s$ 是 $s$ 个全部互异的特征值，$n_1,n_2,\cdots,n_s$ 是相应的代数重数</p>
+<p>则 $A$ 的最小多项式必须具备如下形式</p>
+<script type="math/tex; mode=display">
+m_A(\lambda)=(\lambda-\lambda_1)^{m_1}(\lambda-\lambda_2)^{m_2}\cdots(\lambda-\lambda_s)^{m_s}</script><p>其中，$1\leq m_i\leq n_i$</p>
+<hr>
+<p>例如：</p>
+<script type="math/tex; mode=display">
+A=\begin{bmatrix}
+2&-1&-1 \\
+0&5&3 \\
+0&-4&-2
+\end{bmatrix}</script><p>则 $A$ 的特征多项式为</p>
+<script type="math/tex; mode=display">
+f_A(\lambda)=|\lambda I_3-A|=(\lambda-1)(\lambda-2)^2</script><p>根据最小多项式 $m_A(\lambda)$ 的形式，$m_A(\lambda)$ 只可能是 $(\lambda-1)(\lambda-2)$ 或 $(\lambda-1)(\lambda-2)^2$</p>
+<p>分别计算</p>
+<script type="math/tex; mode=display">
+(A-I_3)(A-2I_3)\overset{?}=O \quad (A-I_3)(A-2I_3)^2\overset{?}=O</script><p>解得 $(A-I_3)(A-2I_3)=O$，故最小多项式为</p>
+<script type="math/tex; mode=display">
+m_A(\lambda)=(\lambda-1)(\lambda-2)</script><h2 id="分块对角阵的最小多项式"><a href="#分块对角阵的最小多项式" class="headerlink" title="分块对角阵的最小多项式"></a>分块对角阵的最小多项式</h2><p>设方阵 $A_1,A_2,\cdots,A_s$ 的特征多项式分别为 $f_1(\lambda),f_2(\lambda),\cdots,f_s(\lambda)$，最小多项式分别为 $m_1(\lambda),m_2(\lambda),\cdots,m_s(\lambda)$</p>
+<p>那么对角阵</p>
+<script type="math/tex; mode=display">
+A=\begin{bmatrix}
+A_1&&&\\
+&A_2&&\\
+&&\ddots&\\
+&&& A_s
+\end{bmatrix}</script><p>的特征多项式为</p>
+<script type="math/tex; mode=display">
+f_A(\lambda)=f_1(\lambda)f_2(\lambda)\cdots f_s(\lambda)</script><p>$A$ 的最小多项式 $m_A(\lambda)$ 为$m_1(\lambda),m_2(\lambda),\cdots,m_s(\lambda)$ 的<strong>最小公倍式</strong></p>
+
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>感谢您对我的支持，让我继续努力分享有用的技术与知识点！</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/wechatpay.jpg" alt="Alex_McAvoy 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/alipay.jpg" alt="Alex_McAvoy 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Alex_McAvoy
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://alex-mcavoy.github.io/mathematics/matrix-theory/c480a3d8.html" title="凯莱-哈密顿定理与最小多项式">https://alex-mcavoy.github.io/mathematics/matrix-theory/c480a3d8.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/mathematics/" rel="tag"># 数学</a>
+              <a href="/tags/matrix-theory/" rel="tag"># 矩阵论</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/skyhackathon/bbb8d9ae.html" rel="prev" title="NVIDIA 7th SkyHackathon（一）比赛开发环境部署">
+      <i class="fa fa-chevron-left"></i> NVIDIA 7th SkyHackathon（一）比赛开发环境部署
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/mathematics/matrix-theory/13c0cc0d.html" rel="next" title="向量范数与矩阵范数">
+      向量范数与矩阵范数 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【方阵多项式】"><span class="nav-number">1.</span> <span class="nav-text">【方阵多项式】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【零化多项式】"><span class="nav-number">2.</span> <span class="nav-text">【零化多项式】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【凯莱-哈密顿定理】"><span class="nav-number">3.</span> <span class="nav-text">【凯莱-哈密顿定理】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【最小多项式】"><span class="nav-number">4.</span> <span class="nav-text">【最小多项式】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#定义"><span class="nav-number">4.1.</span> <span class="nav-text">定义</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#最小多项式形式"><span class="nav-number">4.2.</span> <span class="nav-text">最小多项式形式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#分块对角阵的最小多项式"><span class="nav-number">4.3.</span> <span class="nav-text">分块对角阵的最小多项式</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">  
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Alex_McAvoy"
+      src="/assets/img/head.jpg">
+  <p class="site-author-name" itemprop="name">Alex_McAvoy</p>
+  <div class="site-description" itemprop="description">想要成为渔夫的猎手</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">577</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">56</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">61</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Alex-McAvoy" title="GitHub → https://github.com/Alex-McAvoy" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/u011815404" title="CSDN → https://blog.csdn.net/u011815404" rel="noopener" target="_blank"><i class="fas fa-copyright fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+<!-- 访客地图 -->
+<script type="text/javascript" src="//rf.revolvermaps.com/0/0/5.js?i=50n58yo58ow&amp;m=0&amp;c=ff0000&amp;cr1=ffffff&amp;s=140" async="async"></script>
+
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdz20172133" title="https://blog.csdn.net/sdz20172133" rel="noopener" target="_blank">神仙队友</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://pxlsdz.gitee.io/" title="https://pxlsdz.gitee.io/" rel="noopener" target="_blank">神仙队友的另一个博客</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://bycore.net" title="https://bycore.net" rel="noopener" target="_blank">凉了的某饼同学</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://kris-cn.github.io/" title="http://kris-cn.github.io/" rel="noopener" target="_blank">翟孙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://deng.fun/" title="http://deng.fun/" rel="noopener" target="_blank">芙蓉姐姐</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdau_fangshifeng" title="https://blog.csdn.net/sdau_fangshifeng" rel="noopener" target="_blank">一个头很酷的家伙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/wentong_Xu" title="https://blog.csdn.net/wentong_Xu" rel="noopener" target="_blank">小黑贱胖子</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.yuheng.tech/" title="https://www.yuheng.tech/" rel="noopener" target="_blank">咸于</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/lanshan1111" title="https://blog.csdn.net/lanshan1111" rel="noopener" target="_blank">肥硕硕</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdauguanweihong" title="https://blog.csdn.net/sdauguanweihong" rel="noopener" target="_blank">管少</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_41661919" title="https://blog.csdn.net/qq_41661919" rel="noopener" target="_blank">俊杰</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_40859951" title="https://blog.csdn.net/qq_40859951" rel="noopener" target="_blank">峰哥</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/LSD20164388" title="https://blog.csdn.net/LSD20164388" rel="noopener" target="_blank">狗冬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37748451" title="https://blog.csdn.net/qq_37748451" rel="noopener" target="_blank">胖亚亚</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37868325" title="https://blog.csdn.net/qq_37868325" rel="noopener" target="_blank">妍大佬</a>
+        </li>
+    </ul>
+  </div>
+
+		
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+  
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Alex_McAvoy</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+</br>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script><script src="/js/bookmark.js"></script>
+
+
+
+  
+
+
+
+
+  <script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '48fd73a538d3fa927f65',
+      clientSecret: '56618aefeee90bac3c20de8d51bb0b985d67252d',
+      repo        : 'Gitalk-Comment',
+      owner       : 'Alex-McAvoy',
+      admin       : ['Alex-McAvoy'],
+      id          : 'b4edd8a6b62d18b7af002d025c59bedc',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+  
+  <!-- 鼠标单击粒子特效 -->
+  <script type="text/javascript" src="/js/cursor-effects.js"></script>
+  <!-- 多级目录 -->
+  <script type="text/javascript" src="/js/category.js"></script>
+  
+</body>
+</html>

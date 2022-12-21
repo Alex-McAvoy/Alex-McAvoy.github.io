@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.9.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/img/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/assets/img/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/pace-js@1/themes/blue/pace-theme-minimal.css">
+  <script src="//cdn.jsdelivr.net/npm/pace-js@1/pace.min.js"></script>
+
+
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"alex-mcavoy.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":16,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":true,"color":"#ff0000","save":"manual"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":true},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.json"};
+  </script>
+
+  <meta name="description" content="【向量范数】定义在内积空间中，可以通过向量的内积来定义向量的长度 $|\alpha|=\sqrt{&amp;lt;\alpha,\alpha&amp;gt;}$，那么对于一般的线性空间，也可以引入一个类似长度的概念，即范数">
+<meta name="keywords" content="数学,矩阵论">
+<meta property="og:type" content="article">
+<meta property="og:title" content="向量范数与矩阵范数">
+<meta property="og:url" content="https://alex-mcavoy.github.io/mathematics/matrix-theory/13c0cc0d.html">
+<meta property="og:site_name" content="Alex_McAvoy">
+<meta property="og:description" content="【向量范数】定义在内积空间中，可以通过向量的内积来定义向量的长度 $|\alpha|=\sqrt{&amp;lt;\alpha,\alpha&amp;gt;}$，那么对于一般的线性空间，也可以引入一个类似长度的概念，即范数">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/mathematics/matrix-theory/06-1.png">
+<meta property="og:updated_time" content="2022-12-19T16:59:51.326Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="向量范数与矩阵范数">
+<meta name="twitter:description" content="【向量范数】定义在内积空间中，可以通过向量的内积来定义向量的长度 $|\alpha|=\sqrt{&amp;lt;\alpha,\alpha&amp;gt;}$，那么对于一般的线性空间，也可以引入一个类似长度的概念，即范数">
+<meta name="twitter:image" content="https://alex-mcavoy.github.io/images/mathematics/matrix-theory/06-1.png">
+
+<link rel="canonical" href="https://alex-mcavoy.github.io/mathematics/matrix-theory/13c0cc0d.html">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>向量范数与矩阵范数 | Alex_McAvoy</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Alex_McAvoy</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">想要成为渔夫的猎手</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+
+	
+	
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/mathematics/matrix-theory/13c0cc0d.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/assets/img/head.jpg">
+      <meta itemprop="name" content="Alex_McAvoy">
+      <meta itemprop="description" content="想要成为渔夫的猎手">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Alex_McAvoy">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          向量范数与矩阵范数
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2022-11-11 13:26:00" itemprop="dateCreated datePublished" datetime="2022-11-11T13:26:00+08:00">2022-11-11</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/mathematics/" itemprop="url" rel="index"><span itemprop="name">数学</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/mathematics/matrix-theory/" itemprop="url" rel="index"><span itemprop="name">矩阵论</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>3.9k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>4 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="【向量范数】"><a href="#【向量范数】" class="headerlink" title="【向量范数】"></a>【向量范数】</h1><h2 id="定义"><a href="#定义" class="headerlink" title="定义"></a>定义</h2><p>在内积空间中，可以通过向量的内积来定义向量的长度 $|\alpha|=\sqrt{&lt;\alpha,\alpha&gt;}$，那么对于一般的线性空间，也可以引入一个类似长度的概念，即范数</p>
+<p>设 $V$ 是数域 $F$ 上的线性空间，若 $\forall \alpha \in V$，都有一个实数 $||\alpha||$ 与之对应，且满足条件：</p>
+<ol>
+<li>正定性：$||\alpha||&gt;0$ 且 $||\alpha||=0\Leftrightarrow \alpha=0$</li>
+<li>齐次性：$||k\alpha||=|k|\cdot||\alpha||,k\in F$</li>
+<li>三角不等式：$||\alpha+\beta||\leq ||\alpha||+||\beta||$</li>
+</ol>
+<p>则称 $||\alpha||$ 为线性空间 $V$ 中<strong>向量的范数</strong>，定义了范数的线性空间称为<strong>线性赋范数空间</strong>，记为 $(V,||\cdot||)$</p>
+<p>根据范数的定义可知，线性空间中范数的定义不是唯一的，在 $C^n$ 上可以找到无穷多种范数</p>
+<h2 id="等价性"><a href="#等价性" class="headerlink" title="等价性"></a>等价性</h2><p>设 $||\cdot||_{a}$ 和 $||\cdot||_b$ 是 $n$ 维线性空间 $V^n$ 中的任意两种范数，若存在常数 $M\geq m&gt;0$，使得 $\forall \alpha\in V$，有</p>
+<script type="math/tex; mode=display">
+m||\alpha||_b\leq ||\alpha||_a\leq M||\alpha||_b</script><p>则称范数 $||\cdot||_a$ 与 $||\cdot||_b$ <strong>等价</strong>，记为 $||\cdot||_a \sim ||\cdot||_b$</p>
+<p>易知 $\sim$ 满足等价关系的三定律：</p>
+<ol>
+<li>自反律：$||\cdot||_a\sim||\cdot||_a$</li>
+<li>对称律：若 $||\cdot||_a\sim||\cdot||_b$，则 $||\cdot||_b\sim||\cdot||_a$</li>
+<li>传递律：若 $||\cdot||_a\sim||\cdot||_b,||\cdot||_a\sim||\cdot||_c$，则 $||\cdot||_a\sim||\cdot||_c$</li>
+</ol>
+<h2 id="常用范数"><a href="#常用范数" class="headerlink" title="常用范数"></a>常用范数</h2><p>向量范数 $||\alpha||$ 可视为按照一定规律与向量 $\alpha$ 对应的非负实值函数，对 $\forall \mathbf{x}=[x_1,x_2,\cdots,x_n]^T\in C^n$，有</p>
+<p>1）<strong>p 范数</strong>：常用于导出其他范数，当 $p$ 分别取 $0,1,2,\infty$ 时，有 0 范数、1 范数、2 范数、无穷范数</p>
+<script type="math/tex; mode=display">
+||\mathbf{x}||_p=\big({\sum_{i=1}^n|x_i|^p}\big)^{\frac{1}{p}}</script><p><img width="400" src="/images/mathematics/matrix-theory/06-1.png"></p>
+<p>2）<strong>0 范数</strong>：向量 $\mathbf{x}$ 中非 $0$ 元素的个数，通常用于表示稀疏程度，$0$ 范数越小，表示 $0$ 元素就多，也就越稀疏</p>
+<script type="math/tex; mode=display">
+||\mathbf{x}||_0=\lim_{p\rightarrow0}\sum_{i=1}^n |x_i|^p=\#\{i:x_i\neq0\}</script><p>3）<strong>1 范数</strong>：表示向量 $\mathbf{x}$ 中所有元素的绝对值的和</p>
+<script type="math/tex; mode=display">
+||\mathbf{x}||_1=\sum_{i=1}^n|x_i|</script><p>4）<strong>2 范数</strong>：表示向量 $\mathbf{x}$ 中所有元素的均方根</p>
+<script type="math/tex; mode=display">
+||\mathbf{x}||_2=\sqrt{\sum_{i=1}^nx_i^2}</script><p>当线性空间 $V$ 为欧氏空间时，2 范数即为向量的长度 $||\mathbf{x}||=\sqrt{&lt;\mathbf{x},\mathbf{x}&gt;}$，被称为<strong>欧氏范数</strong></p>
+<p>5）<strong>无穷范数</strong>：表示向量 $\mathbf{x}$ 中各元素的绝对值的最大值</p>
+<script type="math/tex; mode=display">
+||\mathbf{x}||_\infty=\max{|x_i|}</script><h1 id="【矩阵范数】"><a href="#【矩阵范数】" class="headerlink" title="【矩阵范数】"></a>【矩阵范数】</h1><h2 id="相容与协调"><a href="#相容与协调" class="headerlink" title="相容与协调"></a>相容与协调</h2><p>矩阵 $A$ 可视为 $C^{n}\rightarrow C^{m}$ 上的线性变换，那么矩阵范数 $||A||$ 与向量范数  <script type="math/tex">||\mathbf{x}||_{\alpha},||\mathbf{y}||_{\beta}</script> 存在一定关系，为此给出如下定义</p>
+<p>设 <script type="math/tex">||\cdot||_{\alpha}</script>，<script type="math/tex">||\cdot||_{\beta}</script> 和 <script type="math/tex">||\cdot||_{\gamma}</script> 是线性空间 $C^{m\times n}$、$C^{n\times p}$、$C^{m\times p}$ 中满足范数公理的矩阵范数，若 $\forall A\in C^{m\times n},B\in C^{n\times p}$ 有不等式</p>
+<script type="math/tex; mode=display">
+||AB||_{\gamma}\leq ||A||_{\alpha}\cdot||B||_{\beta}</script><p>成立，则称这三种矩阵范数 <script type="math/tex">||\cdot||_{\alpha}</script>，<script type="math/tex">||\cdot||_{\beta}</script> 和 <script type="math/tex">||\cdot||_{\gamma}</script> 是<strong>相容的</strong></p>
+<p>当 $p=1$ 时，有 $\forall \mathbf{x}\in C^n,A\mathbf{x}\in C^m$</p>
+<script type="math/tex; mode=display">
+||A\mathbf{x}||_{\gamma}\leq ||A||\cdot||\mathbf{x}||_{\beta}</script><p>此时称矩阵范数 $||\cdot||$ 和向量范数 <script type="math/tex">||\cdot||_{\beta},||\cdot||_{\gamma}</script> 是<strong>协调的</strong></p>
+<h2 id="等价性-1"><a href="#等价性-1" class="headerlink" title="等价性"></a>等价性</h2><p>与向量范数类似，对一般的矩阵范数，有如下性质：</p>
+<p>1）设 <script type="math/tex">A=[a_{ij}]\in C^{m\times n}</script>，则 $A$ 的任一种矩阵范数 $||A||$ 都是 $A$ 的 $m\times n$ 个元素的连续函数</p>
+<p>2）矩阵空间 $C^{m\times n}$ 上的任意两种矩阵范数 <script type="math/tex">||\cdot||_a,||\cdot||_b</script> 都是等价的，即存在常数 $M\geq m\geq 0$，使得 $\forall A\in C^{m\times n}$ 有</p>
+<script type="math/tex; mode=display">
+m||A||_b\leq ||A||_a\leq M||A||_b</script><h2 id="F-范数"><a href="#F-范数" class="headerlink" title="F 范数"></a>F 范数</h2><p>设 <script type="math/tex">||\cdot||_{\alpha}</script>，<script type="math/tex">||\cdot||_{\beta}</script> 和 <script type="math/tex">||\cdot||_{\gamma}</script> 是线性空间 $C^{m\times n}$、$C^{n\times p}$、$C^{m\times p}$ 中满足范数公理的矩阵范数，当 $p=2$ 时，记由向量的 2 范数直接定义的矩阵范数为 $||A||_2$ 为</p>
+<script type="math/tex; mode=display">
+||A||_F=||A||_2=(\sum_{i=1}^m\sum_{j=1}^n|a_{ij}|^2)^{\frac{1}{2}}=\sqrt{tr(A^HA)}</script><p>称 $||A||_F$ 为 <strong>Frobenius 范数</strong>，简称 <strong>F 范数</strong></p>
+<p>其具有如下性质：</p>
+<p>1）酉变换不影响 F 范数的值：设 $A\in C^{m\times n}$，对酉矩阵 $U\in C^{m\times m},V\in C^{n\times n}$，恒有</p>
+<script type="math/tex; mode=display">
+||A||_F=||UA||_F=||AV||_F=||UAV||_F</script><p>2）F 范数相容性：对 $\forall A\in C^{m\times n},B\in C^{n\times p}$，有</p>
+<script type="math/tex; mode=display">
+||AB||_F\leq ||A||_F\cdot ||B||_F</script><p>3）2 范数与 F 范数相容性：设 $A\in C^{m\times n}$，则 $||A||_F$ 与 $C^{m\times n},C^{n}$ 上的 2 范数 $||\cdot||_2$ 是相容的，即 $\forall \mathbf{x}\in C^{n}$ 有</p>
+<script type="math/tex; mode=display">
+||A\mathbf{x}||_2\leq ||A||_F\cdot ||\mathbf{x}||_2</script><h2 id="诱导范数"><a href="#诱导范数" class="headerlink" title="诱导范数"></a>诱导范数</h2><p>与向量范数相容的最常用的矩阵范数是<strong>算子范数</strong>，其是利用向量范数是向量坐标的连续函数的性质诱导出来的，故也称为<strong>诱导范数</strong></p>
+<p>设 $A\in C^{m\times n}$，<script type="math/tex">\mathbf{x}=[x_1,x_2,\cdots,x_n]^T\in C^{n}</script>，$||\mathbf{x}||$ 和 $||A\mathbf{x}||$ 分别是 $C^{n}$ 和 $C^m$ 中的范数，则 $||A\mathbf{x}||$ 是 <script type="math/tex">(x_1,x_2,\cdots,x_n)</script> 的连续函数，从而 $||A\mathbf{x}||$ 在有界闭集 <script type="math/tex">S=\{\mathbf{x}\in C^n|\:||\mathbf{x}||=1\}</script> 上取极大值，则</p>
+<script type="math/tex; mode=display">
+||A||=\max_{||\mathbf{x}||=1}||A\mathbf{x}||=||A\mathbf{x}_0||,\quad x_0\in C^{n}</script><p>为一种相容的矩阵范数，其是由向量范数所诱导出来的一种矩阵范数，称为<strong>诱导范数</strong></p>
+<p>可以发现，求矩阵的诱导范数，相当于求函数 $||A\mathbf{x}||$ 在约束 $||\mathbf{x}||=1$ 下的条件极值</p>
+<hr>
+<p>对于一般的向量范数而言，当向量范数分别取 1 范数、2 范数、无穷范数时，对应的矩阵的诱导范数分别称为矩阵的列范数、谱范数、行范数</p>
+<p>设 $A=[a_{ij}]\in C^{m\times n}$，则</p>
+<ul>
+<li><strong>列范数</strong>：<script type="math/tex">||A||_1=\max\limits_{1\leq j\leq n} \sum\limits_{i=1}^m |a_{ij}|</script></li>
+<li><strong>行范数</strong>：<script type="math/tex">||A||_{\infty}=\max\limits_{1\leq i\leq m} \sum\limits_{j=1}^n |a_{ij}|</script></li>
+<li><strong>谱范数</strong>：<script type="math/tex">||A||_2=\sqrt{\max \lambda(A^HA)}</script>，其中 $\lambda(A^HA)$ 代表 $A^HA$ 的特征值</li>
+</ul>
+<h2 id="谱半径"><a href="#谱半径" class="headerlink" title="谱半径"></a>谱半径</h2><p>设 $A\in C^{n\times n}$，称</p>
+<script type="math/tex; mode=display">
+S_p(A)=\{\lambda|\lambda 为 A 的特征值\}</script><p>为 $A$ 的<strong>谱</strong>，称</p>
+<script type="math/tex; mode=display">
+\rho(A)=\max|S_p(A)|</script><p>为 $A$ 的<strong>谱半径</strong></p>
+<p>按照定义，有</p>
+<script type="math/tex; mode=display">
+||A||_2=\sqrt{\rho(A^HA)}</script><p>特别地，当 $A$ 是 Hermite 矩阵时，有</p>
+<script type="math/tex; mode=display">
+||A||_2=\rho(A)</script><p>当 $A\in C^{n\times n}$，$||A||$ 是 $A$ 的任意一种诱导范数时，有</p>
+<script type="math/tex; mode=display">
+\rho(A)\leq ||A||</script>
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>感谢您对我的支持，让我继续努力分享有用的技术与知识点！</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/wechatpay.jpg" alt="Alex_McAvoy 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/alipay.jpg" alt="Alex_McAvoy 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Alex_McAvoy
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://alex-mcavoy.github.io/mathematics/matrix-theory/13c0cc0d.html" title="向量范数与矩阵范数">https://alex-mcavoy.github.io/mathematics/matrix-theory/13c0cc0d.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/mathematics/" rel="tag"># 数学</a>
+              <a href="/tags/matrix-theory/" rel="tag"># 矩阵论</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/mathematics/matrix-theory/c480a3d8.html" rel="prev" title="凯莱-哈密顿定理与最小多项式">
+      <i class="fa fa-chevron-left"></i> 凯莱-哈密顿定理与最小多项式
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/skyhackathon/dda5ea58.html" rel="next" title="NVIDIA 7th SkyHackathon（二）开发套件的安装与测试">
+      NVIDIA 7th SkyHackathon（二）开发套件的安装与测试 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【向量范数】"><span class="nav-number">1.</span> <span class="nav-text">【向量范数】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#定义"><span class="nav-number">1.1.</span> <span class="nav-text">定义</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#等价性"><span class="nav-number">1.2.</span> <span class="nav-text">等价性</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#常用范数"><span class="nav-number">1.3.</span> <span class="nav-text">常用范数</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【矩阵范数】"><span class="nav-number">2.</span> <span class="nav-text">【矩阵范数】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#相容与协调"><span class="nav-number">2.1.</span> <span class="nav-text">相容与协调</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#等价性-1"><span class="nav-number">2.2.</span> <span class="nav-text">等价性</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#F-范数"><span class="nav-number">2.3.</span> <span class="nav-text">F 范数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#诱导范数"><span class="nav-number">2.4.</span> <span class="nav-text">诱导范数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#谱半径"><span class="nav-number">2.5.</span> <span class="nav-text">谱半径</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">  
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Alex_McAvoy"
+      src="/assets/img/head.jpg">
+  <p class="site-author-name" itemprop="name">Alex_McAvoy</p>
+  <div class="site-description" itemprop="description">想要成为渔夫的猎手</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">577</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">56</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">61</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Alex-McAvoy" title="GitHub → https://github.com/Alex-McAvoy" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/u011815404" title="CSDN → https://blog.csdn.net/u011815404" rel="noopener" target="_blank"><i class="fas fa-copyright fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+<!-- 访客地图 -->
+<script type="text/javascript" src="//rf.revolvermaps.com/0/0/5.js?i=50n58yo58ow&amp;m=0&amp;c=ff0000&amp;cr1=ffffff&amp;s=140" async="async"></script>
+
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdz20172133" title="https://blog.csdn.net/sdz20172133" rel="noopener" target="_blank">神仙队友</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://pxlsdz.gitee.io/" title="https://pxlsdz.gitee.io/" rel="noopener" target="_blank">神仙队友的另一个博客</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://bycore.net" title="https://bycore.net" rel="noopener" target="_blank">凉了的某饼同学</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://kris-cn.github.io/" title="http://kris-cn.github.io/" rel="noopener" target="_blank">翟孙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://deng.fun/" title="http://deng.fun/" rel="noopener" target="_blank">芙蓉姐姐</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdau_fangshifeng" title="https://blog.csdn.net/sdau_fangshifeng" rel="noopener" target="_blank">一个头很酷的家伙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/wentong_Xu" title="https://blog.csdn.net/wentong_Xu" rel="noopener" target="_blank">小黑贱胖子</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.yuheng.tech/" title="https://www.yuheng.tech/" rel="noopener" target="_blank">咸于</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/lanshan1111" title="https://blog.csdn.net/lanshan1111" rel="noopener" target="_blank">肥硕硕</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdauguanweihong" title="https://blog.csdn.net/sdauguanweihong" rel="noopener" target="_blank">管少</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_41661919" title="https://blog.csdn.net/qq_41661919" rel="noopener" target="_blank">俊杰</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_40859951" title="https://blog.csdn.net/qq_40859951" rel="noopener" target="_blank">峰哥</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/LSD20164388" title="https://blog.csdn.net/LSD20164388" rel="noopener" target="_blank">狗冬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37748451" title="https://blog.csdn.net/qq_37748451" rel="noopener" target="_blank">胖亚亚</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37868325" title="https://blog.csdn.net/qq_37868325" rel="noopener" target="_blank">妍大佬</a>
+        </li>
+    </ul>
+  </div>
+
+		
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+  
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Alex_McAvoy</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+</br>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script><script src="/js/bookmark.js"></script>
+
+
+
+  
+
+
+
+
+  <script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '48fd73a538d3fa927f65',
+      clientSecret: '56618aefeee90bac3c20de8d51bb0b985d67252d',
+      repo        : 'Gitalk-Comment',
+      owner       : 'Alex-McAvoy',
+      admin       : ['Alex-McAvoy'],
+      id          : '1515349ab6a0e67a4861ca735425f9fa',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+  
+  <!-- 鼠标单击粒子特效 -->
+  <script type="text/javascript" src="/js/cursor-effects.js"></script>
+  <!-- 多级目录 -->
+  <script type="text/javascript" src="/js/category.js"></script>
+  
+</body>
+</html>
