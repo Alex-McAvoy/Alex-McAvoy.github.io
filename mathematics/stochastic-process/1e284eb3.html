@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.9.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/img/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/assets/img/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/pace-js@1/themes/blue/pace-theme-minimal.css">
+  <script src="//cdn.jsdelivr.net/npm/pace-js@1/pace.min.js"></script>
+
+
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"alex-mcavoy.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":16,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":true,"color":"#ff0000","save":"manual"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":true},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.json"};
+  </script>
+
+  <meta name="description" content="【相关函数的谱密度】平稳过程的相关函数可视为一表示位移的时间函数，在时域上描述了随机过程的统计特征，因此，对于平稳过程的相关函数，利用 Fourier 分析的方法进行研究，便可在频域上描述平稳过程的统计特征，进而得到平稳过程谱密度这一概念 设 \{X(t),-\infty">
+<meta name="keywords" content="数学,随机过程">
+<meta property="og:type" content="article">
+<meta property="og:title" content="平稳过程的谱密度">
+<meta property="og:url" content="https://alex-mcavoy.github.io/mathematics/stochastic-process/1e284eb3.html">
+<meta property="og:site_name" content="Alex_McAvoy">
+<meta property="og:description" content="【相关函数的谱密度】平稳过程的相关函数可视为一表示位移的时间函数，在时域上描述了随机过程的统计特征，因此，对于平稳过程的相关函数，利用 Fourier 分析的方法进行研究，便可在频域上描述平稳过程的统计特征，进而得到平稳过程谱密度这一概念 设 \{X(t),-\infty">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/mathematics/stochastic-process/12-1.png">
+<meta property="og:updated_time" content="2022-12-25T08:05:20.508Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="平稳过程的谱密度">
+<meta name="twitter:description" content="【相关函数的谱密度】平稳过程的相关函数可视为一表示位移的时间函数，在时域上描述了随机过程的统计特征，因此，对于平稳过程的相关函数，利用 Fourier 分析的方法进行研究，便可在频域上描述平稳过程的统计特征，进而得到平稳过程谱密度这一概念 设 \{X(t),-\infty">
+<meta name="twitter:image" content="https://alex-mcavoy.github.io/images/mathematics/stochastic-process/12-1.png">
+
+<link rel="canonical" href="https://alex-mcavoy.github.io/mathematics/stochastic-process/1e284eb3.html">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>平稳过程的谱密度 | Alex_McAvoy</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Alex_McAvoy</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">想要成为渔夫的猎手</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+
+	
+	
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/mathematics/stochastic-process/1e284eb3.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/assets/img/head.jpg">
+      <meta itemprop="name" content="Alex_McAvoy">
+      <meta itemprop="description" content="想要成为渔夫的猎手">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Alex_McAvoy">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          平稳过程的谱密度
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2022-12-12 17:36:00" itemprop="dateCreated datePublished" datetime="2022-12-12T17:36:00+08:00">2022-12-12</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/mathematics/" itemprop="url" rel="index"><span itemprop="name">数学</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/mathematics/stochastic-process/" itemprop="url" rel="index"><span itemprop="name">随机过程</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>132</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>1 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="【相关函数的谱密度】"><a href="#【相关函数的谱密度】" class="headerlink" title="【相关函数的谱密度】"></a>【相关函数的谱密度】</h1><p>平稳过程的相关函数可视为一表示位移的时间函数，在时域上描述了随机过程的统计特征，因此，对于平稳过程的相关函数，利用 Fourier 分析的方法进行研究，便可在频域上描述平稳过程的统计特征，进而得到平稳过程谱密度这一概念</p>
+<p>设 <script type="math/tex">\{X(t),-\infty<t<+\infty\}</script> 是均方连续的平稳过程，则其相关函数</p>
+<script type="math/tex; mode=display">
+R_X(\tau)=\frac{1}{2\pi} \int_{-\infty}^{+\infty} e^{j\omega\pi}dF_X(\omega),\quad -\infty<\tau<+\infty</script><p>被称为 <script type="math/tex">\{X(t),-\infty<t<+\infty\}</script> 相关函数的<strong>谱展开式</strong>，或<strong>谱分解式</strong></p>
+<p>其中，<script type="math/tex">F_X(\omega)</script> 被称为 <script type="math/tex">\{X(t),-\infty<t<+\infty\}</script> 的<strong>谱函数</strong>，其在 <script type="math/tex">(-\infty,+\infty)</script> 上非负、有界、单调不减、右连续，且有</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+F_X(-\infty)&=0 \\
+F_X(+\infty)&=2\pi R_X(0)
+\end{align*}</script><p>若存在函数 <script type="math/tex">S_X(\omega)</script>，使得</p>
+<script type="math/tex; mode=display">
+F_X(\omega)=\int_{-\infty}^{\omega}S_X(\lambda)d\lambda,\quad -\infty<\omega<+\infty</script><p>则称 <script type="math/tex">S_X(\omega)</script> 为 <script type="math/tex">\{X(t),-\infty<t<+\infty\}</script> 的<strong>谱密度</strong></p>
+<h1 id="【功率谱密度】"><a href="#【功率谱密度】" class="headerlink" title="【功率谱密度】"></a>【功率谱密度】</h1><p>谱密度的概念来自于无线电技术，在物理学中表示功率谱密度</p>
+<p>设 $x(t),-\infty&lt;t&lt;+\infty$ 为一确定性信号，如果 $x(t)$ 满足 Dirichlet 条件且绝对可积，那么 $x(t)$ 具有频谱</p>
+<script type="math/tex; mode=display">
+F(\omega)=\int_{-\infty}^{+\infty} e^{-j\omega t}x(t)dt</script><p>则在 $x(t)$ 和 $F(\omega)$ 中有 Parseval 等式成立</p>
+<script type="math/tex; mode=display">
+\int_{-\infty}^{+\infty} x^2(t)dt=\frac{1}{2\pi}\int_{-\infty}^{+\infty} |F_x(\omega)|^2 d\omega</script><p>等式左边表示 $x(t)$ 在 $(-\infty,+\infty)$ 上的总能量，相应地，<script type="math/tex">|F_x(\omega)|^2</script> 被称为 $x(t)$ 的能谱密度</p>
+<p>在实际应用中，很多信号的总能量是无限的，不满足绝对可积的条件，此时通常转为研究 $x(t)$ 在 $(-\infty,+\infty)$ 上的<strong>平均功率</strong>，即</p>
+<script type="math/tex; mode=display">
+\lim_{T\rightarrow +\infty} \frac{1}{2T}\int_{-T}^{T} x^2(t)dt</script><p>作 $x(t)$ 的截尾函数</p>
+<script type="math/tex; mode=display">
+x_T(t)=\left\{\begin{array}{c}
+x(t),& |t|\leq T \\
+0,& |t|>T
+\end{array}\right.</script><p>其在 $(-\infty,+\infty)$ 上绝对可积，此时 $x_T(t)$ 的 Fourier 变换为</p>
+<script type="math/tex; mode=display">
+F_x(\omega,T)=\int_{-\infty}^{+\infty} e^{-j\omega t} x_T(t) dt=\int_{-T}^T e^{-j\omega t} x(t)dt</script><p>那么，Parseval 等式就变为</p>
+<script type="math/tex; mode=display">
+\int_{-T}^{T} x^2(t)dt=\frac{1}{2\pi}\int_{-\infty}^{+\infty} |F_x(\omega,T)|^2 d\omega</script><p>将 Parseval 等式两边同时除以 $2T$，再令 $T\rightarrow +\infty$，即可得 $x(t)$ 在 $(-\infty,+\infty)$ 上的<strong>平均功率</strong>为</p>
+<script type="math/tex; mode=display">
+\lim_{T\rightarrow +\infty}\frac{1}{2T}\int_{-T}^{T} x^2(t)dt=\frac{1}{2\pi}\int_{-\infty}^{+\infty} \lim_{T\rightarrow +\infty}\frac{1}{2T} |F_x(\omega,T)|^2 d\omega</script><p>相应地，能谱密度为</p>
+<script type="math/tex; mode=display">
+S_x(\omega)=\lim_{T\rightarrow +\infty}\frac{1}{2T}|F_x(\omega,T)|^2=\lim_{T\rightarrow +\infty}\frac{1}{2T}\Big|\int_{-T}^T e^{-j\omega t} x(t)dt\Big|^2</script><p>称为确定性信号 $x(t)$ 在 $\omega$ 处的<strong>功率谱密度</strong></p>
+<hr>
+<p>对于平稳过程，类似地，有如下定义</p>
+<p>设 <script type="math/tex">\{X(t),-\infty<t<+\infty\}</script> 平稳过程，称</p>
+<script type="math/tex; mode=display">
+\lim_{T\rightarrow +\infty} E\Big[ \frac{1}{2T}\int_{-T}^T X^2(t)dt \Big]</script><p>为 <script type="math/tex">\{X(t),-\infty<t<+\infty\}</script> 的<strong>平均功率</strong>，称</p>
+<script type="math/tex; mode=display">
+\lim_{T\rightarrow +\infty} \frac{1}{2T} E\big[ |F_X(\omega,T)|^2 \big]</script><p>为 <script type="math/tex">\{X(t),-\infty<t<+\infty\}</script> 的<strong>功率谱密度</strong>，其中</p>
+<script type="math/tex; mode=display">
+F_X(\omega,T)=\int_{-T}^Te^{-j\omega t} X(t)dt</script><p>对于平稳过程 <script type="math/tex">\{X(t),-\infty<t<+\infty\}</script>，若 <script type="math/tex">R_X(\tau)</script> 绝对可积，那么 <script type="math/tex">\{X(t),-\infty<t<+\infty\}</script> 的<strong>谱密度是功率谱密度</strong>，即</p>
+<script type="math/tex; mode=display">
+S_X(\omega)=\lim_{T\rightarrow +\infty} \frac{1}{2T} E\Big[ \Big| \int_{-T}^Te^{-j\omega t} X(t)dt \Big|^2 \Big]=\lim_{T\rightarrow +\infty} \frac{1}{2T} E\big[ |F_X(\omega,T)|^2 \big]</script><h1 id="【Wiener-Khintchine-公式】"><a href="#【Wiener-Khintchine-公式】" class="headerlink" title="【Wiener-Khintchine 公式】"></a>【Wiener-Khintchine 公式】</h1><p>设 <script type="math/tex">\{X(t),-\infty<t<+\infty\}</script> 是均方连续的平稳过程，且 <script type="math/tex">R_X(\tau)</script> 绝对可积，即</p>
+<script type="math/tex; mode=display">
+\int_{-\infty}^{+\infty} |R_X(\tau)|d\tau<+\infty</script><p>则 <script type="math/tex">F_X(\omega)</script>，且有 Wiener-Khintchine 公式</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+R_X(\omega)&=\frac{1}{2\pi}\int_{-\infty}^{+\infty} e^{-j\omega\pi}S_X(\omega) d\omega,\quad -\infty<\tau<+\infty \\
+S_X(\omega)&=\int_{-\infty}^{+\infty} e^{-j\omega\pi}R_X(\tau) d\tau,\quad -\infty<\omega<+\infty \\
+\end{align*}</script><p>当取 $\omega=0$ 时，有</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+R_X(0) &= \frac{1}{2\pi}\int_{-\infty}^{+\infty} S_X(\omega) d\omega \\
+S_X(0)&=\int_{-\infty}^{+\infty} R_X(\tau) d\tau
+\end{align*}</script><p>其中，<script type="math/tex">R_X(0)</script> 说明了功率谱密度曲线下的总面积（平均功率）等于平稳过程的均方值，<script type="math/tex">S_X(0)</script> 说明了功率谱密度的零频率分量等于相关函数曲线下的总面积</p>
+<p>可以发现，Wiener-Khintchine 公式给出了平稳过程相关函数和谱密度的转换关系，揭示了从时间角度描述平稳过程的统计规律和从频率角度描述平稳过程的统计规律间的联系</p>
+<p>在实际应用中，根据实际情况去选择时域方法或等价的频域方法来解决问题</p>
+<h1 id="【谱密度的计算】"><a href="#【谱密度的计算】" class="headerlink" title="【谱密度的计算】"></a>【谱密度的计算】</h1><p>平稳过程谱密度的计算，包括由相关函数计算谱密度和由谱密度计算相关函数两方面</p>
+<p>由 Wiener-Khintchine 公式可知，实际上是计算 Fourier 变换和逆 Fourier 变换的问题，因此，计算方法有两种：</p>
+<ol>
+<li>直接计算积分</li>
+<li>利用 Fourier 变换性质与常用的相关函数和谱密度变换结果进行计算</li>
+</ol>
+<p>下图给出了常用的相关函数 <script type="math/tex">R_X(\tau)</script> 和谱密度 <script type="math/tex">S_X(\omega)</script> 的变换</p>
+<p><img src="/images/mathematics/stochastic-process/12-1.png"></p>
+<hr>
+<p>例如：已知平稳过程的相关函数为 <script type="math/tex">R_X(\tau)=5+4e^{-3|\tau|}\cos^22\tau</script>，求其谱密度 <script type="math/tex">S_X(\omega)</script></p>
+<p>由于</p>
+<script type="math/tex; mode=display">
+R_X(\tau)=5+4e^{-3|\tau|}\cos^22\tau=5+2e^{-3|\tau|}+2e^{-3|\tau|}\cos4\tau</script><p>利用 Fourier 变换性质与上表，有：</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+S_X(\omega) &= \mathscr{F}(R_X(\tau))\\
+&= 5\mathscr{F}(1)+2\mathscr{F}(e^{-3|\tau|})+2\mathscr{F}(e^{-3|\tau|}\cos4\tau) \\
+&= 10\pi\delta(\omega)+2\cdot\frac{6}{9+\omega^2}+2(\frac{3}{9+(\omega-4)^2}+\frac{3}{9+(\omega+4)^2}) \\
+&= 10\pi\delta(\omega)+\frac{12}{9+\omega^2}+\frac{6}{9+(\omega-4)^2}+\frac{6}{9+(\omega+4)^2}
+\end{align*}</script><p>其中，$\mathscr{F}$ 代表 Fourier 变换</p>
+<h1 id="【互谱密度】"><a href="#【互谱密度】" class="headerlink" title="【互谱密度】"></a>【互谱密度】</h1><h2 id="定义"><a href="#定义" class="headerlink" title="定义"></a>定义</h2><p>设 <script type="math/tex">\{X(t),-\infty<t<+\infty\}</script> 和 <script type="math/tex">\{Y(t),-\infty<t<+\infty\}</script> 是联合平稳的平稳过程，若互相关函数 <script type="math/tex">R_{XY}(\tau)</script> 绝对可积，即</p>
+<script type="math/tex; mode=display">
+\int_{-\infty}^{+\infty} |R_{XY}(\tau)|d\tau<+\infty</script><p>则称</p>
+<script type="math/tex; mode=display">
+S_{XY}(\omega) = \int_{-\infty}^{+\infty} e^{-j\omega t} R_{XY}(\tau) d\tau,\quad -\infty<\omega<+\infty</script><p>为 <script type="math/tex">\{X(t),-\infty<t<+\infty\}</script> 和 <script type="math/tex">\{Y(t),-\infty<t<+\infty\}</script> 的<strong>互谱密度</strong></p>
+<p>互谱密度一般是 $\omega$ 的复函数，不像谱密度那样具有物理意义，其作用在于：将时域上描述 <script type="math/tex">\{X(t),-\infty<t<+\infty\}</script> 和 <script type="math/tex">\{Y(t),-\infty<t<+\infty\}</script> 相互关系的互相关函数，转换到频域上来研究他们的相关关系</p>
+<h2 id="性质"><a href="#性质" class="headerlink" title="性质"></a>性质</h2><p>互谱密度具有如下简单的性质：</p>
+<p>1）<script type="math/tex">\overline{S_{XY}(\omega)}=S_{YX}(\omega)</script></p>
+<p>2）<script type="math/tex">R_{XY}(\tau)</script> 和 <script type="math/tex">S_{XY}(\omega)</script> 是一对 Fourier 变换，即</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+R_{XY}(\tau) &= \frac{1}{2\pi} \int_{-\infty}^{+\infty} e^{j\omega \tau}S_{XY}(\omega)d\omega,\quad -\infty<\tau<+\infty \\
+S_{XY}(\omega) &=\int_{-\infty}^{+\infty} e^{-j\omega \tau}R_{XY}(\tau)d\tau,\quad -\infty<\omega<+\infty 
+\end{align*}</script><p>3）若 <script type="math/tex">\{X(t),-\infty<t<+\infty\}</script> 和 <script type="math/tex">\{Y(t),-\infty<t<+\infty\}</script> 是实联合平稳的平稳过程，则 <script type="math/tex">S_{XY}(\omega)</script> 的实部 <script type="math/tex">\text{Re}(S_{XY}(\omega))</script> 是偶函数，虚部 <script type="math/tex">\text{Im}(S_{XY}(\omega))</script> 是奇函数</p>
+<p>4）<script type="math/tex">|S_{XY}(\omega)|^2\leq S_{X}(\omega)S_{Y}(\omega),|S_{YX}(\omega)|^2\leq S_{X}(\omega)S_{Y}(\omega)</script></p>
+
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>感谢您对我的支持，让我继续努力分享有用的技术与知识点！</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/wechatpay.jpg" alt="Alex_McAvoy 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/alipay.jpg" alt="Alex_McAvoy 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Alex_McAvoy
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://alex-mcavoy.github.io/mathematics/stochastic-process/1e284eb3.html" title="平稳过程的谱密度">https://alex-mcavoy.github.io/mathematics/stochastic-process/1e284eb3.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/mathematics/" rel="tag"># 数学</a>
+              <a href="/tags/stochastic-process/" rel="tag"># 随机过程</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/mathematics/stochastic-process/db731bd0.html" rel="prev" title="平稳过程的各态历经性">
+      <i class="fa fa-chevron-left"></i> 平稳过程的各态历经性
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/mathematics/stochastic-process/ea17b667.html" rel="next" title="平稳过程的谱分解">
+      平稳过程的谱分解 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【相关函数的谱密度】"><span class="nav-number">1.</span> <span class="nav-text">【相关函数的谱密度】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【功率谱密度】"><span class="nav-number">2.</span> <span class="nav-text">【功率谱密度】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【Wiener-Khintchine-公式】"><span class="nav-number">3.</span> <span class="nav-text">【Wiener-Khintchine 公式】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【谱密度的计算】"><span class="nav-number">4.</span> <span class="nav-text">【谱密度的计算】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【互谱密度】"><span class="nav-number">5.</span> <span class="nav-text">【互谱密度】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#定义"><span class="nav-number">5.1.</span> <span class="nav-text">定义</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#性质"><span class="nav-number">5.2.</span> <span class="nav-text">性质</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">  
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Alex_McAvoy"
+      src="/assets/img/head.jpg">
+  <p class="site-author-name" itemprop="name">Alex_McAvoy</p>
+  <div class="site-description" itemprop="description">想要成为渔夫的猎手</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">585</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">56</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">61</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Alex-McAvoy" title="GitHub → https://github.com/Alex-McAvoy" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/u011815404" title="CSDN → https://blog.csdn.net/u011815404" rel="noopener" target="_blank"><i class="fas fa-copyright fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+<!-- 访客地图 -->
+<script type="text/javascript" src="//rf.revolvermaps.com/0/0/5.js?i=50n58yo58ow&amp;m=0&amp;c=ff0000&amp;cr1=ffffff&amp;s=140" async="async"></script>
+
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdz20172133" title="https://blog.csdn.net/sdz20172133" rel="noopener" target="_blank">神仙队友</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://pxlsdz.gitee.io/" title="https://pxlsdz.gitee.io/" rel="noopener" target="_blank">神仙队友的另一个博客</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://bycore.net" title="https://bycore.net" rel="noopener" target="_blank">凉了的某饼同学</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://kris-cn.github.io/" title="http://kris-cn.github.io/" rel="noopener" target="_blank">翟孙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://deng.fun/" title="http://deng.fun/" rel="noopener" target="_blank">芙蓉姐姐</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdau_fangshifeng" title="https://blog.csdn.net/sdau_fangshifeng" rel="noopener" target="_blank">一个头很酷的家伙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/wentong_Xu" title="https://blog.csdn.net/wentong_Xu" rel="noopener" target="_blank">小黑贱胖子</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.yuheng.tech/" title="https://www.yuheng.tech/" rel="noopener" target="_blank">咸于</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/lanshan1111" title="https://blog.csdn.net/lanshan1111" rel="noopener" target="_blank">肥硕硕</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdauguanweihong" title="https://blog.csdn.net/sdauguanweihong" rel="noopener" target="_blank">管少</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_41661919" title="https://blog.csdn.net/qq_41661919" rel="noopener" target="_blank">俊杰</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_40859951" title="https://blog.csdn.net/qq_40859951" rel="noopener" target="_blank">峰哥</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/LSD20164388" title="https://blog.csdn.net/LSD20164388" rel="noopener" target="_blank">狗冬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37748451" title="https://blog.csdn.net/qq_37748451" rel="noopener" target="_blank">胖亚亚</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37868325" title="https://blog.csdn.net/qq_37868325" rel="noopener" target="_blank">妍大佬</a>
+        </li>
+    </ul>
+  </div>
+
+		
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+  
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Alex_McAvoy</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+</br>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script><script src="/js/bookmark.js"></script>
+
+
+
+  
+
+
+
+
+  <script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '48fd73a538d3fa927f65',
+      clientSecret: '56618aefeee90bac3c20de8d51bb0b985d67252d',
+      repo        : 'Gitalk-Comment',
+      owner       : 'Alex-McAvoy',
+      admin       : ['Alex-McAvoy'],
+      id          : '0234691c8d09929c5816babe2ee064a5',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+  
+  <!-- 鼠标单击粒子特效 -->
+  <script type="text/javascript" src="/js/cursor-effects.js"></script>
+  <!-- 多级目录 -->
+  <script type="text/javascript" src="/js/category.js"></script>
+  
+</body>
+</html>
