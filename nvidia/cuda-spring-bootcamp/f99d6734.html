@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.9.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/img/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/assets/img/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/pace-js@1/themes/blue/pace-theme-minimal.css">
+  <script src="//cdn.jsdelivr.net/npm/pace-js@1/pace.min.js"></script>
+
+
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"alex-mcavoy.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":16,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":true,"color":"#ff0000","save":"manual"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":true},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.json"};
+  </script>
+
+  <meta name="description" content="Reference  CUDA 官方文档 【CUDA教程】二、主存与显存 CUDA共享内存操作(shared关键字) 【CUDA】学习记录（7）- Global Memory cudaMemcpyToSymbol使用 Unified Memory Programming   CUDA 存储单元架构CUDA 各存储单元架构如下">
+<meta name="keywords" content="NVIDIA,CUDA春训营">
+<meta property="og:type" content="article">
+<meta property="og:title" content="NVIDIA CUDA2023春训营（四）CUDA 存储单元">
+<meta property="og:url" content="https://alex-mcavoy.github.io/nvidia/cuda-spring-bootcamp/f99d6734.html">
+<meta property="og:site_name" content="Alex_McAvoy">
+<meta property="og:description" content="Reference  CUDA 官方文档 【CUDA教程】二、主存与显存 CUDA共享内存操作(shared关键字) 【CUDA】学习记录（7）- Global Memory cudaMemcpyToSymbol使用 Unified Memory Programming   CUDA 存储单元架构CUDA 各存储单元架构如下">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/nvidia/cuda-spring-bootcamp/04-1.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/nvidia/cuda-spring-bootcamp/04-2.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/nvidia/cuda-spring-bootcamp/04-3.png">
+<meta property="og:updated_time" content="2023-02-09T06:59:39.562Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="NVIDIA CUDA2023春训营（四）CUDA 存储单元">
+<meta name="twitter:description" content="Reference  CUDA 官方文档 【CUDA教程】二、主存与显存 CUDA共享内存操作(shared关键字) 【CUDA】学习记录（7）- Global Memory cudaMemcpyToSymbol使用 Unified Memory Programming   CUDA 存储单元架构CUDA 各存储单元架构如下">
+<meta name="twitter:image" content="https://alex-mcavoy.github.io/images/nvidia/cuda-spring-bootcamp/04-1.png">
+
+<link rel="canonical" href="https://alex-mcavoy.github.io/nvidia/cuda-spring-bootcamp/f99d6734.html">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>NVIDIA CUDA2023春训营（四）CUDA 存储单元 | Alex_McAvoy</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Alex_McAvoy</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">想要成为渔夫的猎手</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+
+	
+	
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/nvidia/cuda-spring-bootcamp/f99d6734.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/assets/img/head.jpg">
+      <meta itemprop="name" content="Alex_McAvoy">
+      <meta itemprop="description" content="想要成为渔夫的猎手">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Alex_McAvoy">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          NVIDIA CUDA2023春训营（四）CUDA 存储单元
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2023-02-06 20:39:05" itemprop="dateCreated datePublished" datetime="2023-02-06T20:39:05+08:00">2023-02-06</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/nvidia/" itemprop="url" rel="index"><span itemprop="name">NVIDIA</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/nvidia/cuda-spring-bootcamp/" itemprop="url" rel="index"><span itemprop="name">CUDA春训营</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>7.1k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>6 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <blockquote>
+<p>Reference</p>
+<ul>
+<li><a href="https://docs.nvidia.com/cuda/cuda-runtime-api/group__CUDART__MEMORY.html#group__CUDART__MEMORY_1ga042655cbbf3408f01061652a075e094" target="_blank" rel="noopener">CUDA 官方文档</a></li>
+<li><a href="https://zhuanlan.zhihu.com/p/146691161" target="_blank" rel="noopener">【CUDA教程】二、主存与显存</a></li>
+<li><a href="https://blog.csdn.net/BOBOyspa/article/details/88642858" target="_blank" rel="noopener">CUDA共享内存操作(<strong>shared</strong>关键字)</a></li>
+<li><a href="https://www.jianshu.com/p/3d4c9cc3a777" target="_blank" rel="noopener">【CUDA】学习记录（7）- Global Memory</a></li>
+<li><a href="https://blog.csdn.net/jqw11/article/details/104716411" target="_blank" rel="noopener">cudaMemcpyToSymbol使用</a></li>
+<li><a href="https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#unified-memory-programming" target="_blank" rel="noopener">Unified Memory Programming</a></li>
+</ul>
+</blockquote>
+<h1 id="CUDA-存储单元架构"><a href="#CUDA-存储单元架构" class="headerlink" title="CUDA 存储单元架构"></a>CUDA 存储单元架构</h1><p>CUDA 各存储单元架构如下</p>
+<p><img src="/images/nvidia/cuda-spring-bootcamp/04-1.png"></p>
+<p>CUDA 各存储单元的对比如下</p>
+<p><img src="/images/nvidia/cuda-spring-bootcamp/04-2.png"></p>
+<p>CUDA 函数关系与 device 端变量访问权限如下</p>
+<p><img src="/images/nvidia/cuda-spring-bootcamp/04-3.png"></p>
+<h1 id="主存"><a href="#主存" class="headerlink" title="主存"></a>主存</h1><p><strong>主存（Host Memory）</strong>是 host 端的内存，其可分为<strong>可分页内存（Pageable Memory）</strong>和<strong>锁定内存（Page-Locked Memory / Pinned Memory）</strong> 两种</p>
+<p>可分页内存由 <code>malloc()</code>、<code>new()</code> 等操作系统 API 在 host 端分配与释放的，该内存是可以换页的，即内存页可以被置换到磁盘中，普通的 C/C++ 程序使用的内存就是该内存</p>
+<p>锁定内存是由 CUDA 函数 <code>cudaMallocHost()</code>、<code>cudaFree()</code> 分配与释放的，其一大特点是操作系统不会对这块内存进行分页与交换操作，能够确保该内存始终驻留在物理内存中，不会被分配到低速的虚拟内存</p>
+<p>同时，由于 GPU 知道锁定内存的物理地址，因此可以通过 DMA（Direct Memory Acess）技术直接在 host 端和 device 端进行通信，速率更快</p>
+<p><code>cudaMallocHost()</code> 和 <code>cudaFree()</code> 的函数原型如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">__<span class="function">host__ cudaError_t <span class="title">cudaMallocHost</span><span class="params">(<span class="keyword">void</span> **ptr, <span class="keyword">size_t</span> size)</span></span></span><br><span class="line"><span class="function">__host__ cudaError_t <span class="title">cudaFreeHost</span><span class="params">(<span class="keyword">void</span> *ptr)</span></span></span><br></pre></td></tr></table></figure>
+<p>关键在于 <code>cudaMallocHost()</code> 函数第一个参数的二维指针，如下例</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">double</span> *host_data = <span class="literal">NULL</span>;</span><br><span class="line"><span class="keyword">size_t</span> size = <span class="keyword">sizeof</span>(<span class="keyword">double</span>) * <span class="number">1024</span>;</span><br><span class="line">cudaMallocHost((<span class="keyword">void</span>**) &amp;host_data, size);</span><br></pre></td></tr></table></figure>
+<p><code>host_data</code> 是存储在 host 端上的指针变量，其要存储的值是内存地址，现在想要利用 <code>cudaMallocHost()</code> 在 host 端申请了一个大小为 1024 的 double 型一维数组</p>
+<p>由于该函数的无法返回在 host 申请的首地址，那么就需要利用参数来传递这个地址，也就是存储在 host 端中 <code>host_data</code> 这个指针变量的地址 <code>&amp;host_data</code></p>
+<p>当 <code>cudaMallocHost()</code> 执行完后，会向 <code>host_data</code> 这个指针变量中写入一个地址值，这个地址值就是在 host 端所申请的数组首地址</p>
+<h1 id="寄存器与本地内存"><a href="#寄存器与本地内存" class="headerlink" title="寄存器与本地内存"></a>寄存器与本地内存</h1><h2 id="寄存器"><a href="#寄存器" class="headerlink" title="寄存器"></a>寄存器</h2><p><strong>寄存器（Registers）</strong>是速度最快的存储单元，位于 GPU 的<strong>计算单元（Streaming Multiprocessor，SM）</strong>上，当核函数启动后，这些位于计算单元上的寄存器会被分配给指定的线程使用</p>
+<p>在核函数中，<strong>没有特殊声明</strong>的自动变量与数组都是存放在寄存器里，这些变量是每个线程私有的，一旦线程执行结束，寄存器变量就会失效</p>
+<h2 id="本地内存"><a href="#本地内存" class="headerlink" title="本地内存"></a>本地内存</h2><p><strong>本地内存（Local Memory）</strong>在硬件中没有特定的存储单元，其是从<strong>全局内存</strong>上虚拟出来的地址空间，因此针对它的访问速度与全局内存是相近的</p>
+<p>本地内存是为寄存器无法满足存储需求的情况而设计的，其与寄存器相似，是线程私有的，当寄存器不够用时，就会使用本地内存来代替这部分存储空间</p>
+<p>此外，当出现以下几种情况时，编译器会将变量放到内存空间</p>
+<ul>
+<li>编译期间无法确定值的本地数组</li>
+<li>消耗太多寄存器的较大的结构体或数组</li>
+<li>超过寄存器限制的变量</li>
+</ul>
+<h1 id="全局内存"><a href="#全局内存" class="headerlink" title="全局内存"></a>全局内存</h1><h2 id="全局内存-1"><a href="#全局内存-1" class="headerlink" title="全局内存"></a>全局内存</h2><p><strong>全局内存（Global Memory）</strong>是 GPU 中空间最大、最基础的内存，任意 SM 都可以在整个程序的生命周期中获取其状态</p>
+<p>某种意义上，常说的 GPU 显存就是指全局内存，其是核函数输入数据和写入结果的唯一来源</p>
+<p>在 CUDA 中，使用 <code>cudaMalloc()</code> 和 <code>cudaFree()</code> 函数可以申请和释放 GPU 显存，函数原型如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">__host__ __<span class="function">device__ cudaError_t <span class="title">cudaMalloc</span><span class="params">(<span class="keyword">void</span> **devPtr, <span class="keyword">size_t</span> size)</span></span></span><br><span class="line"><span class="function">__host__ __device__ cudaError_t <span class="title">cudaFree</span><span class="params">(<span class="keyword">void</span> *devPtr)</span></span></span><br></pre></td></tr></table></figure>
+<p>其使用方法与 <code>cudaMallocHost()</code> 和 <code>cudaFreeHost()</code> 类似，例如：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">double</span> *device_data = <span class="literal">NULL</span>;</span><br><span class="line"><span class="keyword">size_t</span> size = <span class="keyword">sizeof</span>(<span class="keyword">double</span>) * <span class="number">1024</span>;</span><br><span class="line">cudaMalloc((<span class="keyword">void</span>**) &amp;device_data, size);</span><br></pre></td></tr></table></figure>
+<p>使用 <code>cudaMemset()</code> 可以对 device 端申请的显存进行初始化，其类似于 <code>memset()</code> 函数，函数原型如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">__<span class="function">host__ cudaError_t <span class="title">cudaMemset</span> <span class="params">(<span class="keyword">void</span>* devPtr, <span class="keyword">int</span> value, <span class="keyword">size_t</span> count)</span></span></span><br></pre></td></tr></table></figure>
+<p>需要注意的是，与 <code>memset()</code> 类似，其是以字节为单位来进行赋值的，需要使用十六进制来进行赋值，因此一般使用该函数将申请的空间置为全 0 或全 -1</p>
+<h2 id="资源传递"><a href="#资源传递" class="headerlink" title="资源传递"></a>资源传递</h2><p>对于 CUDA 程序，除了 host 端和 device 端的内存申请、释放，以及核函数在 device 端的执行外，另一关键的步骤就是数据在 host 端和 device 端上的传输</p>
+<p>CUDA 使用 <code>cudaMemcpy()</code> 函数将资源内存复制到目标内存中，类似于 C 语言中的 <code>memcpy()</code>，函数原型如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">__<span class="function">host__ cudaError_t <span class="title">cudaMemcpy</span><span class="params">(<span class="keyword">void</span> *dst, <span class="keyword">const</span> <span class="keyword">void</span> *src, <span class="keyword">size_t</span> count, cudaMemcpyKind kind)</span></span></span><br></pre></td></tr></table></figure>
+<p>其输入参数有四个：</p>
+<ul>
+<li><code>*dst</code>：指向用于存储复制内容的目标数组</li>
+<li><code>*src</code>：指向要复制内容的数据源</li>
+<li><code>conut</code>：要复制的数据大小，以 Byte 为单位</li>
+<li><code>kind</code>：复制的方向，从 host 端复制到 device 端为 <code>cudaMemcpyHostToDevice</code>，从 device 端复制到 host 端为 <code>cudaMemcpyDeviceToHost</code></li>
+</ul>
+<p>下述代码给出了一个使用 <code>cudaMemcpy()</code> 传输资源的实例</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 申请大小</span></span><br><span class="line"><span class="keyword">const</span> <span class="keyword">int</span> size = <span class="keyword">sizeof</span>(<span class="keyword">double</span>) * <span class="number">100</span>;</span><br><span class="line"><span class="comment">// 申请host内存</span></span><br><span class="line"><span class="keyword">double</span> *h_x = (<span class="keyword">double</span>*) <span class="built_in">malloc</span>(size);</span><br><span class="line"><span class="comment">// 申请device显存</span></span><br><span class="line"><span class="keyword">double</span> *d_x;</span><br><span class="line">cudaMalloc((<span class="keyword">void</span> **)&amp;d_x, size);</span><br><span class="line"><span class="comment">// host到device</span></span><br><span class="line">cudaMemcpy(d_x, h_x, size, cudaMemcpyHostToDevice);</span><br><span class="line"><span class="comment">// device到host</span></span><br><span class="line">cudaMemcpy(h_x, d_x, size, cudaMemcpyDeviceToHost);</span><br></pre></td></tr></table></figure>
+<p>需要注意的是，该函数是一个同步函数，在未完成数据转移操作前会锁死并一直占有 CPU 控制权，因此无需再添加 <code>cudaDeviceSynchronize()</code> 同步函数</p>
+<h2 id="全局变量"><a href="#全局变量" class="headerlink" title="全局变量"></a>全局变量</h2><p>使用 <code>__device__</code> 修饰符可以定义 device 端的全局变量，其与 C/C++ 的全局变量声明位置相同，只能在类和函数外声明</p>
+<p>在 host 端无法直接访问 <code>__device__</code> 修饰的变量，只能通过 <code>cudaMemcpyToSymbol()</code> 和 <code>cudaMemcpyFromSymbol()</code> 函数来传递或获取变量值，函数原型如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">__<span class="function">host__ cudaError_t <span class="title">cudaMemcpyToSymbol</span><span class="params">(<span class="keyword">const</span> <span class="keyword">void</span>* symbol, <span class="keyword">const</span> <span class="keyword">void</span>* src, <span class="keyword">size_t</span> count, <span class="keyword">size_t</span> offset = <span class="number">0</span>, cudaMemcpyKind kind = cudaMemcpyHostToDevice)</span></span></span><br><span class="line"><span class="function">__host__ cudaError_t <span class="title">cudaMemcpyFromSymbol</span><span class="params">(<span class="keyword">void</span>* dst, <span class="keyword">const</span> <span class="keyword">void</span>* symbol, <span class="keyword">size_t</span> count, <span class="keyword">size_t</span> offset = <span class="number">0</span>, cudaMemcpyKind kind = cudaMemcpyDeviceToHost)</span></span></span><br></pre></td></tr></table></figure>
+<p>下述代码给出了一个使用全局变量的实例</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> N 5</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 声明device端全局变量</span></span><br><span class="line">__device__ <span class="keyword">int</span> constant_a[N];</span><br><span class="line"></span><br><span class="line"><span class="comment">// 输出全局变量核函数</span></span><br><span class="line">__<span class="function">global__ <span class="keyword">void</span> <span class="title">print_constant</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> index = blockDim.x * blockIdx.x + threadIdx.x;</span><br><span class="line">    <span class="keyword">if</span> (index &gt;= N)</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"%d "</span>,constant_a[index]);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 修改全局变量核函数</span></span><br><span class="line">__<span class="function">global__ <span class="keyword">void</span> <span class="title">update_constant</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> index = blockDim.x * blockIdx.x + threadIdx.x;</span><br><span class="line">    <span class="keyword">if</span> (index &gt;= N)</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    constant_a[index] = <span class="number">1024</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> h_a[N] = &#123;<span class="number">0</span>,<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">4</span>&#125;;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 修改device端全局变量</span></span><br><span class="line">    cudaMemcpyToSymbol(constant_a, h_a, <span class="keyword">sizeof</span>(h_a));</span><br><span class="line"></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"修改前的全局变量："</span>);</span><br><span class="line">    print_constant&lt;&lt;&lt;<span class="number">1</span>, <span class="number">16</span>&gt;&gt;&gt;();</span><br><span class="line"></span><br><span class="line">    cudaDeviceSynchronize();</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 获取全局变量</span></span><br><span class="line">    update_constant&lt;&lt;&lt;<span class="number">1</span>, <span class="number">16</span>&gt;&gt;&gt;();</span><br><span class="line">    cudaMemcpyFromSymbol(h_a, constant_a, <span class="keyword">sizeof</span>(h_a));</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"\n修改后的全局变量："</span>);</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; N; i++) &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"%d "</span>, h_a[i]);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"\n"</span>);</span><br><span class="line"></span><br><span class="line">    cudaDeviceSynchronize();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h1 id="固定内存"><a href="#固定内存" class="headerlink" title="固定内存"></a>固定内存</h1><h2 id="固定内存-1"><a href="#固定内存-1" class="headerlink" title="固定内存"></a>固定内存</h2><p><strong>固定内存（Constant Memory）</strong>类似于本地内存，没有特定的存储单元的，只是<strong>全局内存</strong>的虚拟地址</p>
+<p>与本地内存不同的是，其范围是全局的，所有核函数均可见，同时其是<strong>只读</strong>的，因此一定程度上简化了缓存管理，硬件无需管理复杂的回写策略</p>
+<h2 id="常量"><a href="#常量" class="headerlink" title="常量"></a>常量</h2><p>固定内存中的变量使用 <code>__constant__</code> 来修饰，即 device 端的常量</p>
+<p>由于其是只读的，因此必须在 host 端使用 <code>cudaMemcpyToSymbol()</code> 函数来进行初始化赋初值，且一经赋值后就无法再更改</p>
+<p>当想要在 host 端读取常量值时，需要使用 <code>cudaMemcpyFromSymbol()</code> 来获取其值</p>
+<p>下述代码给出了一个使用全局常量的实例</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> N 5</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 声明device端常量</span></span><br><span class="line">__device__ <span class="keyword">int</span> constant_a[N];</span><br><span class="line"></span><br><span class="line"><span class="comment">// 输出常量核函数</span></span><br><span class="line">__<span class="function">global__ <span class="keyword">void</span> <span class="title">print_constant</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> index = blockDim.x * blockIdx.x + threadIdx.x;</span><br><span class="line">    <span class="keyword">if</span> (index &gt;= N)</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"%d "</span>,constant_a[index]);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> h_a[N] = &#123;<span class="number">0</span>,<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">4</span>&#125;;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 初始化device端常量</span></span><br><span class="line">    cudaMemcpyToSymbol(constant_a, h_a, <span class="keyword">sizeof</span>(h_a));</span><br><span class="line"></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"通过核函数读取常量："</span>);</span><br><span class="line">    print_constant&lt;&lt;&lt;<span class="number">16</span>, <span class="number">1</span>&gt;&gt;&gt;();</span><br><span class="line"></span><br><span class="line">    cudaDeviceSynchronize();</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 获取全局变量</span></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"\n通过host端读取常量："</span>);</span><br><span class="line">    cudaMemcpyFromSymbol(h_a, constant_a, <span class="keyword">sizeof</span>(h_a));</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; N; i++) &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"%d "</span>, h_a[i]);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"\n"</span>);</span><br><span class="line"></span><br><span class="line">    cudaDeviceSynchronize();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h1 id="共享内存"><a href="#共享内存" class="headerlink" title="共享内存"></a>共享内存</h1><h2 id="共享内存-1"><a href="#共享内存-1" class="headerlink" title="共享内存"></a>共享内存</h2><p><strong>共享内存（Shared Memory）</strong>的访问延迟仅次于寄存器，其可以被一个 block 中的所有线程访问，从而实现 block 内线程间的低开销通信</p>
+<p>若线程频繁对某个数据进行读写操作，可以设置将该数据常驻共享内存，从而提高代码运行效率</p>
+<h2 id="块内共享变量"><a href="#块内共享变量" class="headerlink" title="块内共享变量"></a>块内共享变量</h2><p>共享内存中的变量使用 <code>__shared__</code> 来修饰，其能被一个 block 中的所有线程访问，因为被称为<strong>块内共享变量</strong></p>
+<p>共享变量只能在 <code>__device__</code> 函数或者 <code>__global__</code> 函数内被声明，不能跨过一个 block，因此，某个 block 中的共享变量是无法被其他 block 所访问到的</p>
+<p>此外，由于共享内存中的数据可以被一个 block 中的所有线程访问，那么当多个线程对同一个共享变量进行操作时，需要对线程进行同步操作，从而避免竞争的发生，常使用 <code>__syncthreads()</code> 来控制线程同步</p>
+<p>共享变量的一个典型应用是用来优化矩阵乘法，详见：<a href="https://github.com/Alex-McAvoy/nvidia/cuda-spring-bootcamp/84df80c7.html" target="_blank" rel="noopener">NVIDIA CUDA2023春训营（五）CUDA 向量加法与矩阵乘法</a></p>
+<h1 id="纹理内存"><a href="#纹理内存" class="headerlink" title="纹理内存"></a>纹理内存</h1><p><strong>纹理内存（Texture Memory）</strong>实际上也是全局内存的一部分，从读取性能的角度来说，其与固定内存类似</p>
+<p>但与固定内存不同的是，它有自己专属的只读 Cache，这个 Cache 在进行浮点运算时十分有用</p>
+<p>纹理内存实质上是针对 2D 空间局部性的优化策略，要获取 2D 数据时，就可以使用纹理内存来获取</p>
+<h1 id="统一内存"><a href="#统一内存" class="headerlink" title="统一内存"></a>统一内存</h1><h2 id="统一内存-1"><a href="#统一内存-1" class="headerlink" title="统一内存"></a>统一内存</h2><p><strong>统一内存（Unifled Memory）</strong>是 CUDA 6.0 引入的，其避免了编写程序时在 host 和 device 上进行内存分配与数据传输的麻烦</p>
+<p>统一内存定义了一个<strong>托管内存（Managed Memory）</strong>来共同管理 host 和 device 中的内存，使得 host 端和 device 端都可以看到共同的地址空间，无需再使用 <code>cudaMemcpy()</code> 函数进行资源传递</p>
+<p>在使用统一内存时，分配空间是在 host 端和 device 端的全局内存上各自申请了一块空间，只是可以使用一个变量来共同维护</p>
+<h2 id="统一内存资源分配"><a href="#统一内存资源分配" class="headerlink" title="统一内存资源分配"></a>统一内存资源分配</h2><p>统一内存中的变量使用 <code>__managed__</code> 来修饰，需要在类和函数外声明</p>
+<p>此外，CUDA 中还可使用 <code>cudaMallocManaged()</code> 函数在 host 端上分配统一内存，但使用完毕后需要使用 <code>cudaFree()</code> 进行资源释放，函数原型如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">__<span class="function">host__ cudaError_t <span class="title">cudaMallocManaged</span><span class="params">(<span class="keyword">void</span> **devPtr, <span class="keyword">size_t</span> size, <span class="keyword">unsigned</span> <span class="keyword">int</span> flags = cudaMemAttachGlobal)</span></span></span><br></pre></td></tr></table></figure>
+<p>其第三个参数是一个标志，默认值为 <code>cudaMemAttachGlobal</code>，代表内存可由任何设备上的任何流访问</p>
+<p>两种统一内存分配方式的分配行为相同，不同的是由于 <code>cudaMallocManaged()</code> 函数第三个参数的限制，使用 <code>cudaMallocManaged()</code> 函数分配的统一内存可能会受到 <code>cudaStreamAttachMemAsync()</code> 的限制</p>
+<p>如下给出了一个使用统一内存的实例</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> N 64</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 第一种分配方式</span></span><br><span class="line">__managed__ <span class="keyword">int</span> arr_managed1[N];</span><br><span class="line"></span><br><span class="line">__<span class="function">global__ <span class="keyword">void</span> <span class="title">add1</span><span class="params">(<span class="keyword">int</span> a, <span class="keyword">int</span> b)</span> </span>&#123;</span><br><span class="line">    arr_managed1[threadIdx.x] = a + b;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">__<span class="function">global__ <span class="keyword">void</span> <span class="title">add2</span><span class="params">(<span class="keyword">int</span> *arr, <span class="keyword">int</span> a, <span class="keyword">int</span> b)</span> </span>&#123;</span><br><span class="line">    arr[threadIdx.x] = a + b;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"第一种分配方式运行核函数：\n"</span>);</span><br><span class="line"></span><br><span class="line">    add1&lt;&lt;&lt; <span class="number">1</span>, N&gt;&gt;&gt;(<span class="number">100</span>, <span class="number">100</span>);</span><br><span class="line">    cudaDeviceSynchronize();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; N; i++)</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"%d "</span>, arr_managed1[i]);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"\n"</span>);</span><br><span class="line"></span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 第二种分配方式</span></span><br><span class="line">    <span class="keyword">int</span> *arr_managed2;</span><br><span class="line">    cudaMallocManaged(&amp;arr_managed2, <span class="keyword">sizeof</span>(<span class="keyword">int</span>) * N);</span><br><span class="line"></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"第二种分配方式运行核函数：\n"</span>);</span><br><span class="line">    add2&lt;&lt;&lt; <span class="number">1</span>, N&gt;&gt;&gt;(arr_managed2, <span class="number">200</span>, <span class="number">100</span>);</span><br><span class="line">    cudaDeviceSynchronize();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; N; i++)</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"%d "</span>, arr_managed2[i]);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"\n"</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 释放第二种分配方式申请的统一内存资源</span></span><br><span class="line">    cudaFree(arr_managed2); </span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>感谢您对我的支持，让我继续努力分享有用的技术与知识点！</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/wechatpay.jpg" alt="Alex_McAvoy 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/alipay.jpg" alt="Alex_McAvoy 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Alex_McAvoy
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://alex-mcavoy.github.io/nvidia/cuda-spring-bootcamp/f99d6734.html" title="NVIDIA CUDA2023春训营（四）CUDA 存储单元">https://alex-mcavoy.github.io/nvidia/cuda-spring-bootcamp/f99d6734.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/nvidia/" rel="tag"># NVIDIA</a>
+              <a href="/tags/cuda-spring-bootcamp/" rel="tag"># CUDA春训营</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/nvidia/cuda-spring-bootcamp/acc1b378.html" rel="prev" title="NVIDIA CUDA2023春训营（三）CUDA 线程层次结构与线程索引">
+      <i class="fa fa-chevron-left"></i> NVIDIA CUDA2023春训营（三）CUDA 线程层次结构与线程索引
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/nvidia/cuda-spring-bootcamp/84df80c7.html" rel="next" title="NVIDIA CUDA2023春训营（五）CUDA 向量加法与矩阵乘法">
+      NVIDIA CUDA2023春训营（五）CUDA 向量加法与矩阵乘法 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#CUDA-存储单元架构"><span class="nav-number">1.</span> <span class="nav-text">CUDA 存储单元架构</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#主存"><span class="nav-number">2.</span> <span class="nav-text">主存</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#寄存器与本地内存"><span class="nav-number">3.</span> <span class="nav-text">寄存器与本地内存</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#寄存器"><span class="nav-number">3.1.</span> <span class="nav-text">寄存器</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#本地内存"><span class="nav-number">3.2.</span> <span class="nav-text">本地内存</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#全局内存"><span class="nav-number">4.</span> <span class="nav-text">全局内存</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#全局内存-1"><span class="nav-number">4.1.</span> <span class="nav-text">全局内存</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#资源传递"><span class="nav-number">4.2.</span> <span class="nav-text">资源传递</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#全局变量"><span class="nav-number">4.3.</span> <span class="nav-text">全局变量</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#固定内存"><span class="nav-number">5.</span> <span class="nav-text">固定内存</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#固定内存-1"><span class="nav-number">5.1.</span> <span class="nav-text">固定内存</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#常量"><span class="nav-number">5.2.</span> <span class="nav-text">常量</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#共享内存"><span class="nav-number">6.</span> <span class="nav-text">共享内存</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#共享内存-1"><span class="nav-number">6.1.</span> <span class="nav-text">共享内存</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#块内共享变量"><span class="nav-number">6.2.</span> <span class="nav-text">块内共享变量</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#纹理内存"><span class="nav-number">7.</span> <span class="nav-text">纹理内存</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#统一内存"><span class="nav-number">8.</span> <span class="nav-text">统一内存</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#统一内存-1"><span class="nav-number">8.1.</span> <span class="nav-text">统一内存</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#统一内存资源分配"><span class="nav-number">8.2.</span> <span class="nav-text">统一内存资源分配</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">  
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Alex_McAvoy"
+      src="/assets/img/head.jpg">
+  <p class="site-author-name" itemprop="name">Alex_McAvoy</p>
+  <div class="site-description" itemprop="description">想要成为渔夫的猎手</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">601</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">58</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">63</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Alex-McAvoy" title="GitHub → https://github.com/Alex-McAvoy" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/u011815404" title="CSDN → https://blog.csdn.net/u011815404" rel="noopener" target="_blank"><i class="fas fa-copyright fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+<!-- 访客地图 -->
+<script type="text/javascript" src="//rf.revolvermaps.com/0/0/5.js?i=50n58yo58ow&amp;m=0&amp;c=ff0000&amp;cr1=ffffff&amp;s=140" async="async"></script>
+
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdz20172133" title="https://blog.csdn.net/sdz20172133" rel="noopener" target="_blank">神仙队友</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://pxlsdz.gitee.io/" title="https://pxlsdz.gitee.io/" rel="noopener" target="_blank">神仙队友的另一个博客</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://bycore.net" title="https://bycore.net" rel="noopener" target="_blank">凉了的某饼同学</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://kris-cn.github.io/" title="http://kris-cn.github.io/" rel="noopener" target="_blank">翟孙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://deng.fun/" title="http://deng.fun/" rel="noopener" target="_blank">芙蓉姐姐</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdau_fangshifeng" title="https://blog.csdn.net/sdau_fangshifeng" rel="noopener" target="_blank">一个头很酷的家伙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/wentong_Xu" title="https://blog.csdn.net/wentong_Xu" rel="noopener" target="_blank">小黑贱胖子</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.yuheng.tech/" title="https://www.yuheng.tech/" rel="noopener" target="_blank">咸于</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/lanshan1111" title="https://blog.csdn.net/lanshan1111" rel="noopener" target="_blank">肥硕硕</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdauguanweihong" title="https://blog.csdn.net/sdauguanweihong" rel="noopener" target="_blank">管少</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_41661919" title="https://blog.csdn.net/qq_41661919" rel="noopener" target="_blank">俊杰</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_40859951" title="https://blog.csdn.net/qq_40859951" rel="noopener" target="_blank">峰哥</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/LSD20164388" title="https://blog.csdn.net/LSD20164388" rel="noopener" target="_blank">狗冬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37748451" title="https://blog.csdn.net/qq_37748451" rel="noopener" target="_blank">胖亚亚</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37868325" title="https://blog.csdn.net/qq_37868325" rel="noopener" target="_blank">妍大佬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://sanshuiii.github.io/" title="https://sanshuiii.github.io/" rel="noopener" target="_blank">sanshuiii</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://zjpzhao.github.io/" title="https://zjpzhao.github.io/" rel="noopener" target="_blank">Brain_Compiler</a>
+        </li>
+    </ul>
+  </div>
+
+		
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+  
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Alex_McAvoy</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+</br>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script><script src="/js/bookmark.js"></script>
+
+
+
+  
+
+
+
+
+  <script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '48fd73a538d3fa927f65',
+      clientSecret: '56618aefeee90bac3c20de8d51bb0b985d67252d',
+      repo        : 'Gitalk-Comment',
+      owner       : 'Alex-McAvoy',
+      admin       : ['Alex-McAvoy'],
+      id          : 'b4b8541a6362a31dfe8afccf466b727d',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+  
+  <!-- 鼠标单击粒子特效 -->
+  <script type="text/javascript" src="/js/cursor-effects.js"></script>
+  <!-- 多级目录 -->
+  <script type="text/javascript" src="/js/category.js"></script>
+  
+</body>
+</html>
