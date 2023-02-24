@@ -288,14 +288,14 @@ B^{-1}=D</script><p>此时再看 DFP 和 BFGS 迭代式与其求逆后的迭代�
 <h1 id="【Broyden-族】"><a href="#【Broyden-族】" class="headerlink" title="【Broyden 族】"></a>【Broyden 族】</h1><p>既然 DFP 与 BFGS 互为对偶，那么在具体应用中，选择哪一个会更好？</p>
 <p>一个基本的思路是通过若干组实验来测试哪个算法在模型训练过程中更优，或对其进行收敛验证，但这无疑会耗费大量的时间</p>
 <p>为此，Broyden 提出了一种较为简易的思路，即将 DFP 的迭代式与 BFGS 的迭代式进行正加权组合</p>
-<p>将由 DFP 算法的迭代式得到的 $D<em>{k+1}$ 记作 $G^{DFP}</em>{k+1}$，即：</p>
+<p>将由 DFP 算法的迭代式得到的 $D_{k+1}$ 记作 $G^{DFP}_{k+1}$，即：</p>
 <script type="math/tex; mode=display">
-G^{DFP}_{k+1}=D_{k+1}=D_k+\frac{\mathbf{\delta_k}\mathbf{\delta_k}^T}{\mathbf{\delta_k}^T\mathbf{y_k}}-\frac{D_k\mathbf{y_k}\mathbf{y_k}^TD_k}{\mathbf{y_k}^TD_k\mathbf{y_k}},\quad k=0,1,2,...</script><p>再将使用 Sherman-Morrison 公式后的 BFGS 算法的迭代式得到的 $G<em>{k+1}$ 记作 $G^{BFGS}</em>{k+1}$，即：</p>
+G^{DFP}_{k+1}=D_{k+1}=D_k+\frac{\mathbf{\delta_k}\mathbf{\delta_k}^T}{\mathbf{\delta_k}^T\mathbf{y_k}}-\frac{D_k\mathbf{y_k}\mathbf{y_k}^TD_k}{\mathbf{y_k}^TD_k\mathbf{y_k}},\quad k=0,1,2,...</script><p>再将使用 Sherman-Morrison 公式后的 BFGS 算法的迭代式得到的 $G_{k+1}$ 记作 $G^{BFGS}_{k+1}$，即：</p>
 <script type="math/tex; mode=display">
-G^{BFGS}_{k+1}=G_{k+1} = (I-\frac{\mathbf{\delta_k}\mathbf{y_k}^T}{\mathbf{y_k}^T\mathbf{\delta_k}})G_k(I-\frac{\mathbf{y_k}\mathbf{\delta_k}^T}{\mathbf{y_k}^T\mathbf{\delta_k}})+\frac{\mathbf{\delta_k}\mathbf{\delta_k}^T}{\mathbf{y_k}^T\mathbf{\delta_k}}</script><p>由于 $G^{DFP}<em>{k+1}$ 与 $G^{BFGS}</em>{k+1}$ 均满足拟牛顿条件，那么它们的线性组合也满足拟牛顿条件，且是正定的，故有：</p>
+G^{BFGS}_{k+1}=G_{k+1} = (I-\frac{\mathbf{\delta_k}\mathbf{y_k}^T}{\mathbf{y_k}^T\mathbf{\delta_k}})G_k(I-\frac{\mathbf{y_k}\mathbf{\delta_k}^T}{\mathbf{y_k}^T\mathbf{\delta_k}})+\frac{\mathbf{\delta_k}\mathbf{\delta_k}^T}{\mathbf{y_k}^T\mathbf{\delta_k}}</script><p>由于 $G^{DFP}_{k+1}$ 与 $G^{BFGS}_{k+1}$ 均满足拟牛顿条件，那么它们的线性组合也满足拟牛顿条件，且是正定的，故有：</p>
 <script type="math/tex; mode=display">
-G^{\phi}_{k+1}=\phi_{k} G^{DFP}_{k+1}+(1-\phi_k)G^{BFGS}_{k+1},\quad 0\leq\phi\leq 1</script><p>当 $\phi<em>k=0$ 时，$G</em>{k+1}^{\phi}$ 为 BFGS 校正，$\phi<em>k=1$ 时，$G</em>{k+1}^{\phi}$ 为 DFP 校正</p>
-<p>随着 $\phi<em>k$ 遍历 $[0,1]$ 的值，就可以得到一系列的 $G</em>{k+1}^{\phi}$，这一系列的 $G_{k+1}^{\phi}$ 的集合被称为 Broyden 族</p>
+G^{\phi}_{k+1}=\phi_{k} G^{DFP}_{k+1}+(1-\phi_k)G^{BFGS}_{k+1},\quad 0\leq\phi\leq 1</script><p>当 $\phi_k=0$ 时，$G_{k+1}^{\phi}$ 为 BFGS 校正，$\phi_k=1$ 时，$G_{k+1}^{\phi}$ 为 DFP 校正</p>
+<p>随着 $\phi_k$ 遍历 $[0,1]$ 的值，就可以得到一系列的 $G_{k+1}^{\phi}$，这一系列的 $G_{k+1}^{\phi}$ 的集合被称为 Broyden 族</p>
 
     </div>
 

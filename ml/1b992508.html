@@ -243,7 +243,7 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>5.6k</span>
+              <span>5.7k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
@@ -276,8 +276,8 @@
 <p>以 $N=100,000$ 为例，其所需要消耗的内存空间如下：</p>
 <script type="math/tex; mode=display">
 \frac{N\:阶矩阵字节数\quad\quad}{1GB\:的字节数\quad\quad}=\frac{10^5 \cdot 10^5 \cdot 8}{2^{10} \cdot 2^{10} \cdot 2^{10}}=74.5\:GB</script><p>这对一般的服务器是难以承受的，虽然考虑到矩阵 $G_k$ 是对称阵，使用对称存储的方法内存可以降低一半，但是 $10W$ 规模的数据在机器学习问题中只能算是中小规模</p>
-<p>为减少 BFGS 算法迭代过程中的内存开销，有了 <strong>L-BFGS 算法（Limited-memory BFGS）</strong>，其对矩阵 $G_k$ 进行了近似，不再存储完整的矩阵 $G_k$，而是存储计算过程中的向量序列 ${\boldsymbol{\delta_i}}$ 和 ${\mathbf{y_i}}$，在需要矩阵 $G_k$ 时，利用这两个向量序列计算来代替</p>
-<p>同时，向量序列 ${\boldsymbol{\delta_i}}$ 和 ${\mathbf{y_i}}$，也并非每次都存储，而是根据用户机器的内存每次各自存储最新的 $m$ 个，每次计算 $G_k$ 时，都利用这最新的 $m$ 个向量序列进行计算，这样存储就由原来的 $O(N^2)$ 降低到了 $O(mN)$</p>
+<p>为减少 BFGS 算法迭代过程中的内存开销，有了 <strong>L-BFGS 算法（Limited-memory BFGS）</strong>，其对矩阵 $G_k$ 进行了近似，不再存储完整的矩阵 $G_k$，而是存储计算过程中的向量序列 $\{\boldsymbol{\delta_i}\}$ 和 $\{\mathbf{y_i}\}$，在需要矩阵 $G_k$ 时，利用这两个向量序列计算来代替</p>
+<p>同时，向量序列 $\{\boldsymbol{\delta_i}\}$ 和 $\{\mathbf{y_i}\}$，也并非每次都存储，而是根据用户机器的内存每次各自存储最新的 $m$ 个，每次计算 $G_k$ 时，都利用这最新的 $m$ 个向量序列进行计算，这样存储就由原来的 $O(N^2)$ 降低到了 $O(mN)$</p>
 <h1 id="【算法原理】"><a href="#【算法原理】" class="headerlink" title="【算法原理】"></a>【算法原理】</h1><p>L-BFGS 算法的出发点是 BFGS 算法中的迭代式：</p>
 <script type="math/tex; mode=display">
 G_{k+1} = (I-\frac{\boldsymbol{\delta_k}\mathbf{y_k}^T}{\mathbf{y_k}^T\boldsymbol{\delta_k}})G_k(I-\frac{\mathbf{y_k}\boldsymbol{\delta_k}^T}{\mathbf{y_k}^T\boldsymbol{\delta_k}})+\frac{\boldsymbol{\delta_k}\boldsymbol{\delta_k}^T}{\mathbf{y_k}^T\boldsymbol{\delta_k}}</script><p>记：$\rho_k=\frac{1}{\mathbf{y_k}^T\boldsymbol{\delta_k}}$，$V_k=I-\rho_k\mathbf{y_k}\boldsymbol{\delta_k}^T$，则上式可写为：</p>
@@ -308,9 +308,9 @@ G_{k+1}
 &\quad + (V_k^TV_{k-1}^T)(\rho_{k-2}\boldsymbol{\delta_{k-2}}\boldsymbol{\delta_{k-2}}^T)(V_{k-1}V_k) \notag \\ 
 &\quad + V_k^T(\rho_{k-1}\boldsymbol{\delta_{k-1}}\boldsymbol{\delta_{k-1}}^T)V_k \notag \\ 
 &\quad + \rho_k\boldsymbol{\delta_k}\boldsymbol{\delta_k}^T \notag 
-\end{align}</script><p>可见，计算 $G<em>{k+1}$ 需要用到向量序列 ${(\boldsymbol{\delta_i},\mathbf{y_i})}</em>{i=0}^k$，若从 $\boldsymbol{\delta_0},\mathbf{y_0}$ 开始连续地存储 $m$ 组的话，只能依次计算到 $G_m$</p>
-<p>也就是说，如果想要求 $G<em>{m+1},G</em>{m+2},…$ 的话，就要考虑丢弃一些最早生成的向量</p>
-<p>举例来说，如果要计算 $G<em>{m+1}$，就保存 ${(\boldsymbol{\delta_i},\mathbf{y_i})}</em>{i=1}^{m}$，丢弃 ${(\boldsymbol{\delta<em>0},\mathbf{y_0})}$，如果要计算 $G</em>{m+2}$，就保存 ${(\boldsymbol{\delta<em>i},\mathbf{y_i})}</em>{i=2}^{m+1}$，丢弃 ${(\boldsymbol{\delta<em>i},\mathbf{y_i})}</em>{i=0}^{1}$</p>
+\end{align}</script><p>可见，计算 $G_{k+1}$ 需要用到向量序列 $\{(\boldsymbol{\delta_i},\mathbf{y_i})\}_{i=0}^k$，若从 $\boldsymbol{\delta_0},\mathbf{y_0}$ 开始连续地存储 $m$ 组的话，只能依次计算到 $G_m$</p>
+<p>也就是说，如果想要求 $G_{m+1},G_{m+2},…$ 的话，就要考虑丢弃一些最早生成的向量</p>
+<p>举例来说，如果要计算 $G_{m+1}$，就保存 $\{(\boldsymbol{\delta_i},\mathbf{y_i})\}_{i=1}^{m}$，丢弃 $\{(\boldsymbol{\delta_0},\mathbf{y_0})\}$，如果要计算 $G_{m+2}$，就保存 $\{(\boldsymbol{\delta_i},\mathbf{y_i})\}_{i=2}^{m+1}$，丢弃 $\{(\boldsymbol{\delta_i},\mathbf{y_i})\}_{i=0}^{1}$</p>
 <p>在舍弃一些向量后，就只能近似计算了，当 $k+1&gt;m$ 时，按照上述的 $G_{k+1}$ 可以构造近似计算公式，即：</p>
 <script type="math/tex; mode=display">
 \begin{align}
@@ -321,7 +321,7 @@ G_{k+1} &\approx \quad (V_k^TV_{k-1}^T...V_{k-m+2}^TV_{k-m+1}^T) G_0 (V_{k-m+1}V
 &\quad + (V_k^TV_{k-1}^T)(\rho_{k-2}\boldsymbol{\delta_{k-2}}\boldsymbol{\delta_{k-2}}^T)(V_{k-1}V_k) \notag \\
 &\quad + V_k^T(\rho_{k-1}\boldsymbol{\delta_{k-1}}\boldsymbol{\delta_{k-1}}^T)V_k \notag \\
 &\quad + \rho_k\boldsymbol{\delta_k}\boldsymbol{\delta_k}^T \notag 
-\end{align}</script><p>若引入 $\hat{m}=\min{k,m-1}$ 则可以将上述的递推式与近似式进行合并，即：</p>
+\end{align}</script><p>若引入 $\hat{m}=\min\{k,m-1\}$ 则可以将上述的递推式与近似式进行合并，即：</p>
 <script type="math/tex; mode=display">
 \begin{align}
 G_{k+1} 
