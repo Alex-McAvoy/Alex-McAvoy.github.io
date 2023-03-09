@@ -26,19 +26,19 @@
   </script>
 
   <meta name="description" content="Reference  Broyden–Fletcher–Goldfarb–Shanno algorithm Sherman–Morrison formula Woodbury matrix identitty 牛顿法与拟牛顿法学习笔记（四）BFGS 算法 Broyden类算法：BFGS算法的迭代公式推导（应用两次Sherman-Morrison公式） Sherman-Morrison公式在BFG">
-<meta name="keywords" content="机器学习,数学,数值分析">
+<meta name="keywords" content="机器学习,数学,凸优化">
 <meta property="og:type" content="article">
 <meta property="og:title" content="BFGS 算法">
-<meta property="og:url" content="https://alex-mcavoy.github.io/mathematics/numerical-analysis/dec32020.html">
+<meta property="og:url" content="https://alex-mcavoy.github.io/mathematics/convex-optimization/dec32020.html">
 <meta property="og:site_name" content="Alex_McAvoy">
 <meta property="og:description" content="Reference  Broyden–Fletcher–Goldfarb–Shanno algorithm Sherman–Morrison formula Woodbury matrix identitty 牛顿法与拟牛顿法学习笔记（四）BFGS 算法 Broyden类算法：BFGS算法的迭代公式推导（应用两次Sherman-Morrison公式） Sherman-Morrison公式在BFG">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2023-03-09T13:06:36.131Z">
+<meta property="og:updated_time" content="2023-03-09T14:04:09.625Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="BFGS 算法">
 <meta name="twitter:description" content="Reference  Broyden–Fletcher–Goldfarb–Shanno algorithm Sherman–Morrison formula Woodbury matrix identitty 牛顿法与拟牛顿法学习笔记（四）BFGS 算法 Broyden类算法：BFGS算法的迭代公式推导（应用两次Sherman-Morrison公式） Sherman-Morrison公式在BFG">
 
-<link rel="canonical" href="https://alex-mcavoy.github.io/mathematics/numerical-analysis/dec32020.html">
+<link rel="canonical" href="https://alex-mcavoy.github.io/mathematics/convex-optimization/dec32020.html">
 
 
 <script id="page-configurations">
@@ -195,7 +195,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/mathematics/numerical-analysis/dec32020.html">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/mathematics/convex-optimization/dec32020.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/assets/img/head.jpg">
@@ -230,7 +230,7 @@
                 </span>
                   ，
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/mathematics/numerical-analysis/" itemprop="url" rel="index"><span itemprop="name">数值分析</span></a>
+                  <a href="/categories/mathematics/convex-optimization/" itemprop="url" rel="index"><span itemprop="name">凸优化</span></a>
                 </span>
             </span>
 
@@ -282,20 +282,20 @@
 <p>对于阻尼牛顿法的搜索方向 $\mathbf{d_k}=-H_k^{-1}\cdot \mathbf{g_k}$，根据拟牛顿条件，BFCS 选用近似矩阵 $B_k$ 作为海森矩阵 $H_k$ 的近似，其迭代格式为：</p>
 <script type="math/tex; mode=display">
 B_{k+1}=B_k+\triangle B_k,\quad k=0,1,2,...</script><p>其中，$B_0$ 取单位矩阵 $I$，因此，算法的关键就是每一次迭代的校正矩阵 $\triangle B_k$ 如何构造</p>
-<p>关于拟牛顿条件详见：<a href="https://alex-mcavoy.github.io/mathematics/numerical-analysis/374099fe.html">拟牛顿迭代法</a></p>
+<p>关于拟牛顿条件详见：<a href="https://alex-mcavoy.github.io/mathematics/convex-optimization/374099fe.html">拟牛顿迭代法</a></p>
 <h1 id="【BFCS-算法】"><a href="#【BFCS-算法】" class="headerlink" title="【BFCS 算法】"></a>【BFCS 算法】</h1><h2 id="算法原理"><a href="#算法原理" class="headerlink" title="算法原理"></a>算法原理</h2><p>假设校正矩阵 $\triangle B_k$ 与拟牛顿条件 $\mathbf{y_k} = B_{k+1}\boldsymbol{\delta_k}$、近似矩阵 $B_k$ 有关</p>
 <p>采用待定系数法，设 $\alpha$、$\beta$ 为待定系数，向量 $\boldsymbol{\mu},\boldsymbol{\nu} \in \mathbb{R}^n$ 为待定列向量，则校正矩阵 $\triangle B_k$ 可待定为：</p>
 <script type="math/tex; mode=display">
 \triangle B_k=\alpha\boldsymbol{\mu}\boldsymbol{\mu}^T+\beta\boldsymbol{\nu}\boldsymbol{\nu}^T</script><p>从形式上看，这种待定公式保证了校正矩阵 $\triangle B_k$ 的对称性</p>
 <p>结合拟牛顿条件 $\mathbf{y_k} = B_{k+1}\boldsymbol{\delta_k}$，将 $\triangle B_k$ 的待定式带入迭代式，有：</p>
 <script type="math/tex; mode=display">
-\begin{align}
+\begin{align*}
 \mathbf{y_k} 
 &= (B_k+\triangle B_k)\boldsymbol{\delta_k}\\
 &= B_k\boldsymbol{\delta_k}+\alpha\boldsymbol{\mu}\boldsymbol{\mu}^T\boldsymbol{\delta_k}+\beta\boldsymbol{\nu}\boldsymbol{\nu}^T\boldsymbol{\delta_k} \notag \\
 &= B_k\boldsymbol{\delta_k}+\boldsymbol{\mu}(\alpha\boldsymbol{\mu}^T\boldsymbol{\delta_k})+\boldsymbol{\nu}(\beta\boldsymbol{\nu}^T\boldsymbol{\delta_k}) \notag \\
 &= B_k\boldsymbol{\delta_k}+(\alpha\boldsymbol{\mu}^T\boldsymbol{\delta_k})\boldsymbol{\mu}+(\beta\boldsymbol{\nu}^T\boldsymbol{\delta_k})\boldsymbol{\nu} \notag
-\end{align}</script><p>可以发现，括号中的 $\alpha\boldsymbol{\mu}^T\boldsymbol{\delta_k}$ 与 $\beta\boldsymbol{\nu}^T\boldsymbol{\delta_k}$ 是两个数，取最简单的情况，进行如下赋值：</p>
+\end{align*}</script><p>可以发现，括号中的 $\alpha\boldsymbol{\mu}^T\boldsymbol{\delta_k}$ 与 $\beta\boldsymbol{\nu}^T\boldsymbol{\delta_k}$ 是两个数，取最简单的情况，进行如下赋值：</p>
 <script type="math/tex; mode=display">
 \left\{\begin{array}{rl}
 \alpha\boldsymbol{\mu}^T\boldsymbol{\delta_k} &=& 1 \\ \beta\boldsymbol{\nu}^T\boldsymbol{\delta_k} &=& -1
@@ -549,7 +549,7 @@ B_k^{-1}
   </li>
   <li class="post-copyright-link">
     <strong>本文链接：</strong>
-    <a href="https://alex-mcavoy.github.io/mathematics/numerical-analysis/dec32020.html" title="BFGS 算法">https://alex-mcavoy.github.io/mathematics/numerical-analysis/dec32020.html</a>
+    <a href="https://alex-mcavoy.github.io/mathematics/convex-optimization/dec32020.html" title="BFGS 算法">https://alex-mcavoy.github.io/mathematics/convex-optimization/dec32020.html</a>
   </li>
   <li class="post-copyright-license">
     <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
@@ -562,7 +562,7 @@ B_k^{-1}
           <div class="post-tags">
               <a href="/tags/ml/" rel="tag"># 机器学习</a>
               <a href="/tags/mathematics/" rel="tag"># 数学</a>
-              <a href="/tags/numerical-analysis/" rel="tag"># 数值分析</a>
+              <a href="/tags/convex-optimization/" rel="tag"># 凸优化</a>
           </div>
 
         
@@ -571,11 +571,11 @@ B_k^{-1}
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/mathematics/numerical-analysis/45eb9a09.html" rel="prev" title="DFP 算法">
+    <a href="/mathematics/convex-optimization/45eb9a09.html" rel="prev" title="DFP 算法">
       <i class="fa fa-chevron-left"></i> DFP 算法
     </a></div>
       <div class="post-nav-item">
-    <a href="/mathematics/numerical-analysis/19c28982.html" rel="next" title="Broyden 族">
+    <a href="/mathematics/convex-optimization/19c28982.html" rel="next" title="Broyden 族">
       Broyden 族 <i class="fa fa-chevron-right"></i>
     </a></div>
     </div>
@@ -910,7 +910,7 @@ NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
       repo        : 'Gitalk-Comment',
       owner       : 'Alex-McAvoy',
       admin       : ['Alex-McAvoy'],
-      id          : 'b76e195c647aef3de2d09cb7acbdc032',
+      id          : '9450439994c5039cc71a392480b9442b',
         language: '',
       distractionFreeMode: true
     });

@@ -33,7 +33,7 @@
 <meta property="og:site_name" content="Alex_McAvoy">
 <meta property="og:description" content="【假设形式】在回归分析中，只有一个自变量和因变量，且因变量和自变量之间是线性关系，一般称为一元线性回归（Unary Linear Regression） 通过线性回归算法，会得到很多的线性回归模型，但是不同的模型对于数据的拟合（描述能力）是不一样的，我们的目的是找到一个能够最精确描述数据之间关系的线性回归模型">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2023-03-09T12:57:23.259Z">
+<meta property="og:updated_time" content="2023-03-09T14:05:49.851Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="一元线性回归">
 <meta name="twitter:description" content="【假设形式】在回归分析中，只有一个自变量和因变量，且因变量和自变量之间是线性关系，一般称为一元线性回归（Unary Linear Regression） 通过线性回归算法，会得到很多的线性回归模型，但是不同的模型对于数据的拟合（描述能力）是不一样的，我们的目的是找到一个能够最精确描述数据之间关系的线性回归模型">
@@ -243,14 +243,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>7k</span>
+              <span>4.6k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>6 分钟</span>
+              <span>4 分钟</span>
             </span>
 
         </div>
@@ -271,56 +271,30 @@
 <p>这就需要一个<strong>损失函数</strong> $J(\theta_0,\theta_1)$ 来作为衡量预测结果的指标，对于损失函数最小化时的 $\theta_0$ 与 $\theta_1$，通常使用<strong>最小二乘法</strong>或以<strong>梯度下降法</strong>为代表的迭代法来求解</p>
 <p>无论使用何种方法，最终的目标，都是要令这个损失函数的值最小化，即</p>
 <script type="math/tex; mode=display">
-(\theta_0^*,\theta_1^*)  = \arg \min \limits_{(\theta_0,\theta_1)} \:J(\theta_0,\theta_1)</script><h1 id="【批量梯度下降法求解】"><a href="#【批量梯度下降法求解】" class="headerlink" title="【批量梯度下降法求解】"></a>【批量梯度下降法求解】</h1><p>对于给定的容量为 $n$ 的样本集 $T=\{(\mathbf{x_1},y_1),(\mathbf{x_2},y_2),…,(\mathbf{x_n},y_n)\}$，第 $i$ 组样本中的输入 $\mathbf{x_i}$ 具有 $m$ 个特征值，即：$\mathbf{x_i}=(x_i^{(1)},x_i^{(2)},…,x_i^{(m)})\in \mathbb{R}^m$</p>
+(\theta_0^*,\theta_1^*)  = \arg \min \limits_{(\theta_0,\theta_1)} \:J(\theta_0,\theta_1)</script><h1 id="【梯度下降法求解】"><a href="#【梯度下降法求解】" class="headerlink" title="【梯度下降法求解】"></a>【梯度下降法求解】</h1><p>对于给定的容量为 $n$ 的样本集 $D=\{(x_1,y_1),(x_2,y_2),…,(x_n,y_n)\}$，第 $i$ 组样本中的输入为 $x_i$，输出为 $y_i$</p>
 <p>设习得的模型的假设函数为：</p>
 <script type="math/tex; mode=display">
-f(\mathbf{x_i};\boldsymbol{\theta})=\theta^{(0)} + \theta^{(1)} x_i^{(1)} + \theta^{(2)} x_i^{(2)} + ... + \theta^{(m)} x_i^{(m)}</script><p>其中，特征参数 $\boldsymbol{\theta}$ 为 $(m+1)\times 1$ 的列向量，即：</p>
+f(x_i;\theta_0,\theta_1)=\theta_0+\theta_1 x_i</script><p>令损失函数为：</p>
 <script type="math/tex; mode=display">
-\boldsymbol{\theta}=[\theta^{(0)},\theta^{(1)},...,\theta^{(m)}]^T\in \mathbb{R}^{m+1}</script><p>为了表述方便，对假设函数进行简化，定义一个额外的第 $0$ 个特征量，这个特征量对所有样本的取值全部为 $1$，这使得特征量从过去的 $m$ 个变为 $m+1$ 个，即设：$x_i^{(0)}=1$</p>
-<p>那么假设函数就可以写为：</p>
+J(\theta_0,\theta_1) = \frac{1}{2n} \sum\limits_{i=1}^{n} (f(x_i;\theta_0,\theta_1) - y_i )^2</script><p>之所以要乘以 $\frac{1}{2}$，是因为在求导后会带来 $\times 2$，不利于表达与计算，当乘以 $\frac{1}{2}$ 后，求导带来的 $\times 2$ 就与 $\frac{1}{2}$ 抵消，从而简化计算</p>
+<p>目标是通过最小化代价函数 $J(\theta_0,\theta_1)$ 来在参数空间 $\Theta$ 中找到合适的 $\theta_0,\theta_1$ 参数，即：</p>
 <script type="math/tex; mode=display">
-f(\mathbf{x_i};\boldsymbol{\theta})=\theta^{(0)} x_i^{(0)} + \theta^{(1)} x_i^{(1)} + \theta^{(2)} x_i^{(2)} + ... + \theta^{(m)} x_i^{(m)}</script><p>假设损失函数为：</p>
+(\theta_0^*,\theta_1^*)  = \arg \min \limits_{(\theta_0,\theta_1)} \:J(\theta_0,\theta_1)</script><p>在最小化代价函数 $J(\theta_0,\theta_1)$ 时，其核心是损失函数对应的梯度函数，使用梯度下降法，即将下列公式<strong>重复直到收敛</strong>为止：</p>
 <script type="math/tex; mode=display">
-J(\boldsymbol{\theta})=\frac{1}{2}\big[f(\mathbf{x_i};\boldsymbol{\theta})-y_i\big]^2</script><p>之所以要乘以 $\frac{1}{2}$，是因为在求导后会带来 $\times 2$，不利于表达与计算，当乘以 $\frac{1}{2}$ 后，求导带来的 $\times 2$ 就与 $\frac{1}{2}$ 抵消，从而简化计算</p>
-<p>目标是通过最小化代价函数 $J(\boldsymbol{\theta})$ 来在参数空间 $\Theta$ 中找到合适的 $\boldsymbol{\theta}$ 参数，即：</p>
-<script type="math/tex; mode=display">
-\boldsymbol{\theta}^*=\arg \min_{\Theta}\:J(\boldsymbol{\theta})</script><p>在最小化代价函数 $J(\boldsymbol{\theta})$ 时，其核心是损失函数对应的梯度函数，即将下列公式<strong>重复直到收敛</strong>为止：</p>
-<script type="math/tex; mode=display">
-\boldsymbol{\theta_{k+1}} = \boldsymbol{\theta_k} - \alpha \frac{\partial}{\partial \boldsymbol{\theta_k}}J(\boldsymbol{\theta_k})</script><p>根据链式法则：若 $z=f[g(x)]$，则 $z’=f[g(x)]’+g(x)’$</p>
-<p>则对于偏导数项 $\frac{\partial}{\partial  \boldsymbol{\theta}}J( \boldsymbol{\theta})$ 有：</p>
-<script type="math/tex; mode=display">
-\begin{align}
-\frac{\partial}{\partial  \boldsymbol{\theta}}J( \boldsymbol{\theta})
-&= \frac{\partial}{\partial  \boldsymbol{\theta}} \frac{1}{2}\big[f(\mathbf{x_i};\boldsymbol{\theta})-y_i\big]^2 \notag \\
-&= \frac{1}{2} \cdot \frac{\partial}{\partial  \boldsymbol{\theta}} \Big[\big(f(\mathbf{x_i};\boldsymbol{\theta})-y_i\big)^2\Big] \cdot \Big[ \frac{\partial}{\partial  \boldsymbol{\theta}} \big(f(\mathbf{x_i};\boldsymbol{\theta}) - y_i\big)\Big] \notag \\
-&= \big(f(\mathbf{x_i};\boldsymbol{\theta})-y_i\big) \cdot \Big[ \frac{\partial}{\partial  \boldsymbol{\theta}} \big(f(\mathbf{x_i};\boldsymbol{\theta}) - y_i\big)\Big] \notag \\
-&=  \big(f(\mathbf{x_i};\boldsymbol{\theta})-y_i\big) \cdot \frac{\partial}{\partial  \boldsymbol{\theta}} \bigg( \sum_{j=0}^m \theta^{(j)} x_i^{(j)} - y_i \bigg) \notag \\
-&= \big(f(\mathbf{x_i};\boldsymbol{\theta})-y_i\big) \cdot \bigg[ \frac{\partial}{\partial  \boldsymbol{\theta}}  \sum_{j=0}^m \theta^{(j)} x_i^{(j)} - 0 \bigg] \notag \\
-&= \big(f(\mathbf{x_i};\boldsymbol{\theta})-y_i\big) \cdot \frac{\partial}{\partial  \boldsymbol{\theta}}  \big(\theta^{(0)}x_i^{(0)}+\theta^{(1)}x_i^{(1)}+...+\theta^{(m)}x_i^{(m)}\big)  \notag 
-\end{align}</script><p>对于求和函数展开的部分，当对其中第 $j$ 项求导时，其余各项实际上就是一个常数，它们在求导这一刻是固定不变的，因此有：</p>
-<script type="math/tex; mode=display">
-\frac{\partial}{\partial  \boldsymbol{\theta}} f(\mathbf{x_i};\boldsymbol{\theta}) 
-= 0+...+ \frac{\partial}{\partial  \boldsymbol{\theta}} \theta^{(j)}x_i^{(j)}+...+0</script><p>对于得到的乘积函数 $\frac{\partial}{\partial \boldsymbol{\theta}} \theta^{(j)}x_i^{(j)}$，有：</p>
-<script type="math/tex; mode=display">
-\frac{\partial}{\partial \boldsymbol{\theta}} \theta^{(j)}x_i^{(j)}= x_i^{(j)}</script><p>将得到的结果组合回去，即有：</p>
-<script type="math/tex; mode=display">
-\frac{\partial}{\partial  \boldsymbol{\theta}}  J(\boldsymbol{\theta})= \big[f(\mathbf{x_i};\boldsymbol{\theta}) -y_i\big] \cdot x_i^{(j)}</script><p>故而，只需将下列公式<strong>重复至收敛</strong>即可：</p>
-<script type="math/tex; mode=display">
-\boldsymbol{\theta_{k+1}} = \boldsymbol{\theta_k} - \alpha \big[f(\mathbf{x_i};\boldsymbol{\theta}) -y_i \big] \cdot x_i^{(j)},j = 0,1,...,m</script><p>其中，$x_i^{(0)}=1$</p>
-<p>在使用批量梯度下降法时，令损失函数为：</p>
-<script type="math/tex; mode=display">
-J(\theta_0,\theta_1) = \frac{1}{2n} \sum\limits_{i=1}^{n} (f(x_i;\theta_0,\theta_1) - y_i )^2</script><p>之后使用批量梯度下降法进行拟合时，只需将下列公式<strong>重复直到收敛</strong>为止：</p>
+\boldsymbol{\theta_{k+1}} = \boldsymbol{\theta_k} - \alpha \frac{\partial}{\partial \boldsymbol{\theta_k}}J(\boldsymbol{\theta_k})</script><p>即：</p>
 <script type="math/tex; mode=display">
 \left\{\begin{array}{rl}
-\theta_0 & = & \theta_0 - \alpha \frac{1}{n} \sum\limits_{i=1}^n (f(x_i;\theta_0,\theta_1) - y_i)
-\\ \theta_1 & = & \theta_1 - \alpha \frac{1}{n} \sum\limits_{i=1}^n (f(x_i;\theta_0,\theta_1) - y_i)\cdot x_i
-\end{array} \right.</script><p>关于批量梯度下降法的具体介绍，详见：<a href="https://alex-mcavoy.github.io/ml/14625c0.html">梯度下降法</a></p>
-<h1 id="【普通最小二乘法求解】"><a href="#【普通最小二乘法求解】" class="headerlink" title="【普通最小二乘法求解】"></a>【普通最小二乘法求解】</h1><p>当使用普通最小二乘法来求解时，一般选用<strong>残差平方和 RSS</strong> 作为损失函数，即：</p>
+\theta_0 & = & \theta_0 - \alpha \sum\limits_{i=1}^n (f(x_i;\theta_0,\theta_1) - y_i)
+\\ \theta_1 & = & \theta_1 - \alpha  \sum\limits_{i=1}^n (f(x_i;\theta_0,\theta_1) - y_i)\cdot x_i
+\end{array} \right.</script><p>关于批量梯度下降法的具体介绍，详见：<a href="https://alex-mcavoy.github.io/mathematics/convex-optimization/14625c0.html">梯度下降法</a></p>
+<h1 id="【最小二乘法求解】"><a href="#【最小二乘法求解】" class="headerlink" title="【最小二乘法求解】"></a>【最小二乘法求解】</h1><p>当使用最小二乘法来求解时，一般选用<strong>残差平方和 RSS</strong> 作为损失函数，即：</p>
 <script type="math/tex; mode=display">
 \begin{align}
 J(\theta_0,\theta_1) & = \sum_{i=1}^n(f(x_i;\theta_0,\theta_1)-y_i)^2 \notag \\
 & = \sum_{i=1}^n( \theta_0 + \theta_1 x_i-y_i)^2 \notag
-\end{align}</script><p>此时，分别对 $J(\theta_0,\theta_1)$ 分别对 $\theta_0$、$\theta_1$ 进行求导，有：</p>
+\end{align}</script><p>目标是通过最小化代价函数 $J(\theta_0,\theta_1)$ 来在参数空间 $\Theta$ 中找到合适的 $\theta_0,\theta_1$ 参数，即：</p>
+<script type="math/tex; mode=display">
+(\theta_0^*,\theta_1^*)  = \arg \min \limits_{(\theta_0,\theta_1)} \:J(\theta_0,\theta_1)</script><p>在最小化代价函数 $J(\theta_0,\theta_1)$ 时，其核心是损失函数对应的梯度函数，分别对 $J(\theta_0,\theta_1)$ 分别对 $\theta_0$、$\theta_1$ 进行求导，有：</p>
 <script type="math/tex; mode=display">
 \left\{\begin{array}{rl}
 \frac{\partial J(\theta_0,\theta_1)}{\partial \theta_0} 
@@ -333,7 +307,7 @@ J(\theta_0,\theta_1) & = \sum_{i=1}^n(f(x_i;\theta_0,\theta_1)-y_i)^2 \notag \\
 \left\{\begin{array}{rl}
 \theta_0 &=& \overline{y}- \overline{x}\cdot \frac{\sum\limits_{i=1}^n(x_i-\overline{x})(y_i-\overline{y})}{\sum\limits_{i=1}^n(x-\overline{x})^2} \\
 \theta_1 &=& \frac{\sum\limits_{i=1}^n(x_i-\overline{x})(y_i-\overline{y})}{\sum\limits_{i=1}^n(x-\overline{x})^2}
-\end{array} \right.</script><p>关于普通最小二乘法的具体介绍，详见：<a href="https://alex-mcavoy.github.io/ml/6b330b18.html">最小二乘法</a></p>
+\end{array} \right.</script><p>关于普通最小二乘法的具体介绍，详见：<a href="https://alex-mcavoy.github.io/mathematics/convex-optimization/6b330b18.html">最小二乘法</a></p>
 <h1 id="【实现】"><a href="#【实现】" class="headerlink" title="【实现】"></a>【实现】</h1><p>以 <code>sklearn</code> 中的波士顿房价数据集为例，选取该数据集中的 CRIM 特征作为自变量，选用普通最小二乘法实现一元线性回归</p>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"><span class="keyword">import</span> pandas <span class="keyword">as</span> pd</span><br><span class="line"><span class="keyword">import</span> matplotlib.pyplot <span class="keyword">as</span> plt</span><br><span class="line"><span class="keyword">from</span> sklearn.datasets <span class="keyword">import</span> load_boston</span><br><span class="line"><span class="keyword">from</span> sklearn.model_selection <span class="keyword">import</span> train_test_split</span><br><span class="line"><span class="keyword">from</span> sklearn.linear_model <span class="keyword">import</span> LinearRegression</span><br><span class="line"><span class="keyword">from</span> sklearn.metrics <span class="keyword">import</span> mean_squared_error</span><br><span class="line"><span class="keyword">from</span> sklearn.metrics <span class="keyword">import</span> mean_squared_error</span><br><span class="line"><span class="keyword">from</span> sklearn.metrics <span class="keyword">import</span> mean_absolute_error</span><br><span class="line"><span class="keyword">from</span> sklearn.metrics <span class="keyword">import</span> r2_score</span><br><span class="line"></span><br><span class="line"><span class="comment"># 特征提取</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">deal_data</span><span class="params">()</span>:</span></span><br><span class="line">    boston = load_boston()  <span class="comment"># sklearn的波士顿房价数据集</span></span><br><span class="line">    df = pd.DataFrame(boston.data, columns=boston.feature_names)</span><br><span class="line">    df[<span class="string">'result'</span>] = boston.target</span><br><span class="line">    data = np.array(df)</span><br><span class="line">    <span class="keyword">return</span> data[:, <span class="number">0</span>], data[:, <span class="number">-1</span>]</span><br><span class="line"></span><br><span class="line"><span class="comment"># 模型训练</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">train_model</span><span class="params">(features, labels)</span>:</span></span><br><span class="line">    <span class="comment"># 由一维变为二维</span></span><br><span class="line">    features = features.reshape(<span class="number">-1</span>,<span class="number">1</span>)</span><br><span class="line">    labels = labels.reshape(<span class="number">-1</span>,<span class="number">1</span>)</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 建立线性回归模型</span></span><br><span class="line">    model = LinearRegression() <span class="comment"># 普通最小二乘法</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 训练</span></span><br><span class="line">    model.fit(features, labels)</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> model</span><br><span class="line"></span><br><span class="line"><span class="comment"># 模型评估</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">estimate_model</span><span class="params">(y_true, y_pred)</span>:</span></span><br><span class="line">    MSE = mean_squared_error(y_true, y_pred)</span><br><span class="line">    RMSE = np.sqrt(MSE)</span><br><span class="line">    MAE = mean_absolute_error(y_true, y_pred)</span><br><span class="line">    R2 = r2_score(y_true, y_pred)</span><br><span class="line">    indicators = &#123;<span class="string">"MSE"</span>: MSE, <span class="string">"RMSE"</span>:RMSE, <span class="string">"MAE"</span>:MAE, <span class="string">"R2"</span>:R2&#125;</span><br><span class="line">    <span class="keyword">return</span> indicators</span><br><span class="line"></span><br><span class="line"><span class="comment"># 可视化</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">visualization</span><span class="params">(x, y, model)</span>:</span></span><br><span class="line">    <span class="comment"># 斜率</span></span><br><span class="line">    w = model.coef_[<span class="number">0</span>][<span class="number">0</span>]</span><br><span class="line">    print(<span class="string">"coefficients: "</span>, w)</span><br><span class="line">   </span><br><span class="line">    <span class="comment"># 截距</span></span><br><span class="line">    b = model.intercept_[<span class="number">0</span>]</span><br><span class="line">    print(<span class="string">"intercept: "</span>, b)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 绘图</span></span><br><span class="line">    plt.scatter(x, y, s=<span class="number">60</span>, marker=<span class="string">"o"</span>)</span><br><span class="line">    plt.plot(x, w * x + b, <span class="string">"r"</span>)</span><br><span class="line">    </span><br><span class="line">    plt.show()</span><br><span class="line">    </span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:</span><br><span class="line">    <span class="comment"># 特征提取</span></span><br><span class="line">    x, y = deal_data()</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 简单交叉验证</span></span><br><span class="line">    x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=<span class="number">0.3</span>)</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 模型训练</span></span><br><span class="line">    model = train_model(x_train, y_train)</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 预测结果</span></span><br><span class="line">    x_test = x_test.reshape(<span class="number">-1</span>,<span class="number">1</span>) <span class="comment"># 由一维变为二维</span></span><br><span class="line">    y_pred = model.predict(x_test) <span class="comment"># predict()输入输出均为二维</span></span><br><span class="line">    y_pred = y_pred.flatten() <span class="comment"># 由二维变为一维</span></span><br><span class="line">    print(<span class="string">"y test:"</span>, y_test) <span class="comment"># 测试集y值</span></span><br><span class="line">    print(<span class="string">"y pred:"</span>, y_pred) <span class="comment"># 预测y值</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 模型评估</span></span><br><span class="line">    indicators = estimate_model(y_test, y_pred)</span><br><span class="line">    print(indicators)</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 可视化</span></span><br><span class="line">    visualization(x_train, y_train, model)</span><br></pre></td></tr></table></figure>
 
@@ -391,7 +365,7 @@ J(\theta_0,\theta_1) & = \sum_{i=1}^n(f(x_i;\theta_0,\theta_1)-y_i)^2 \notag \\
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/mathematics/numerical-analysis/6b330b18.html" rel="prev" title="最小二乘法">
+    <a href="/mathematics/convex-optimization/6b330b18.html" rel="prev" title="最小二乘法">
       <i class="fa fa-chevron-left"></i> 最小二乘法
     </a></div>
       <div class="post-nav-item">
@@ -457,7 +431,7 @@ J(\theta_0,\theta_1) & = \sum_{i=1}^n(f(x_i;\theta_0,\theta_1)-y_i)^2 \notag \\
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【假设形式】"><span class="nav-number">1.</span> <span class="nav-text">【假设形式】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【批量梯度下降法求解】"><span class="nav-number">2.</span> <span class="nav-text">【批量梯度下降法求解】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【普通最小二乘法求解】"><span class="nav-number">3.</span> <span class="nav-text">【普通最小二乘法求解】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【实现】"><span class="nav-number">4.</span> <span class="nav-text">【实现】</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【假设形式】"><span class="nav-number">1.</span> <span class="nav-text">【假设形式】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【梯度下降法求解】"><span class="nav-number">2.</span> <span class="nav-text">【梯度下降法求解】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【最小二乘法求解】"><span class="nav-number">3.</span> <span class="nav-text">【最小二乘法求解】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【实现】"><span class="nav-number">4.</span> <span class="nav-text">【实现】</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
