@@ -33,7 +33,7 @@
 <meta property="og:site_name" content="Alex_McAvoy">
 <meta property="og:description" content="【假设形式】在回归分析中，只有一个自变量和因变量，且因变量和自变量之间是线性关系，一般称为一元线性回归（Unary Linear Regression） 通过线性回归算法，会得到很多的线性回归模型，但是不同的模型对于数据的拟合（描述能力）是不一样的，我们的目的是找到一个能够最精确描述数据之间关系的线性回归模型">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2022-08-09T02:22:18.675Z">
+<meta property="og:updated_time" content="2023-03-09T12:57:23.259Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="一元线性回归">
 <meta name="twitter:description" content="【假设形式】在回归分析中，只有一个自变量和因变量，且因变量和自变量之间是线性关系，一般称为一元线性回归（Unary Linear Regression） 通过线性回归算法，会得到很多的线性回归模型，但是不同的模型对于数据的拟合（描述能力）是不一样的，我们的目的是找到一个能够最精确描述数据之间关系的线性回归模型">
@@ -243,14 +243,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>3.9k</span>
+              <span>7k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>4 分钟</span>
+              <span>6 分钟</span>
             </span>
 
         </div>
@@ -271,7 +271,43 @@
 <p>这就需要一个<strong>损失函数</strong> $J(\theta_0,\theta_1)$ 来作为衡量预测结果的指标，对于损失函数最小化时的 $\theta_0$ 与 $\theta_1$，通常使用<strong>最小二乘法</strong>或以<strong>梯度下降法</strong>为代表的迭代法来求解</p>
 <p>无论使用何种方法，最终的目标，都是要令这个损失函数的值最小化，即</p>
 <script type="math/tex; mode=display">
-(\theta_0^*,\theta_1^*)  = \arg \min \limits_{(\theta_0,\theta_1)} \:J(\theta_0,\theta_1)</script><h1 id="【批量梯度下降法求解】"><a href="#【批量梯度下降法求解】" class="headerlink" title="【批量梯度下降法求解】"></a>【批量梯度下降法求解】</h1><p>在使用批量梯度下降法时，令损失函数为：</p>
+(\theta_0^*,\theta_1^*)  = \arg \min \limits_{(\theta_0,\theta_1)} \:J(\theta_0,\theta_1)</script><h1 id="【批量梯度下降法求解】"><a href="#【批量梯度下降法求解】" class="headerlink" title="【批量梯度下降法求解】"></a>【批量梯度下降法求解】</h1><p>对于给定的容量为 $n$ 的样本集 $T=\{(\mathbf{x_1},y_1),(\mathbf{x_2},y_2),…,(\mathbf{x_n},y_n)\}$，第 $i$ 组样本中的输入 $\mathbf{x_i}$ 具有 $m$ 个特征值，即：$\mathbf{x_i}=(x_i^{(1)},x_i^{(2)},…,x_i^{(m)})\in \mathbb{R}^m$</p>
+<p>设习得的模型的假设函数为：</p>
+<script type="math/tex; mode=display">
+f(\mathbf{x_i};\boldsymbol{\theta})=\theta^{(0)} + \theta^{(1)} x_i^{(1)} + \theta^{(2)} x_i^{(2)} + ... + \theta^{(m)} x_i^{(m)}</script><p>其中，特征参数 $\boldsymbol{\theta}$ 为 $(m+1)\times 1$ 的列向量，即：</p>
+<script type="math/tex; mode=display">
+\boldsymbol{\theta}=[\theta^{(0)},\theta^{(1)},...,\theta^{(m)}]^T\in \mathbb{R}^{m+1}</script><p>为了表述方便，对假设函数进行简化，定义一个额外的第 $0$ 个特征量，这个特征量对所有样本的取值全部为 $1$，这使得特征量从过去的 $m$ 个变为 $m+1$ 个，即设：$x_i^{(0)}=1$</p>
+<p>那么假设函数就可以写为：</p>
+<script type="math/tex; mode=display">
+f(\mathbf{x_i};\boldsymbol{\theta})=\theta^{(0)} x_i^{(0)} + \theta^{(1)} x_i^{(1)} + \theta^{(2)} x_i^{(2)} + ... + \theta^{(m)} x_i^{(m)}</script><p>假设损失函数为：</p>
+<script type="math/tex; mode=display">
+J(\boldsymbol{\theta})=\frac{1}{2}\big[f(\mathbf{x_i};\boldsymbol{\theta})-y_i\big]^2</script><p>之所以要乘以 $\frac{1}{2}$，是因为在求导后会带来 $\times 2$，不利于表达与计算，当乘以 $\frac{1}{2}$ 后，求导带来的 $\times 2$ 就与 $\frac{1}{2}$ 抵消，从而简化计算</p>
+<p>目标是通过最小化代价函数 $J(\boldsymbol{\theta})$ 来在参数空间 $\Theta$ 中找到合适的 $\boldsymbol{\theta}$ 参数，即：</p>
+<script type="math/tex; mode=display">
+\boldsymbol{\theta}^*=\arg \min_{\Theta}\:J(\boldsymbol{\theta})</script><p>在最小化代价函数 $J(\boldsymbol{\theta})$ 时，其核心是损失函数对应的梯度函数，即将下列公式<strong>重复直到收敛</strong>为止：</p>
+<script type="math/tex; mode=display">
+\boldsymbol{\theta_{k+1}} = \boldsymbol{\theta_k} - \alpha \frac{\partial}{\partial \boldsymbol{\theta_k}}J(\boldsymbol{\theta_k})</script><p>根据链式法则：若 $z=f[g(x)]$，则 $z’=f[g(x)]’+g(x)’$</p>
+<p>则对于偏导数项 $\frac{\partial}{\partial  \boldsymbol{\theta}}J( \boldsymbol{\theta})$ 有：</p>
+<script type="math/tex; mode=display">
+\begin{align}
+\frac{\partial}{\partial  \boldsymbol{\theta}}J( \boldsymbol{\theta})
+&= \frac{\partial}{\partial  \boldsymbol{\theta}} \frac{1}{2}\big[f(\mathbf{x_i};\boldsymbol{\theta})-y_i\big]^2 \notag \\
+&= \frac{1}{2} \cdot \frac{\partial}{\partial  \boldsymbol{\theta}} \Big[\big(f(\mathbf{x_i};\boldsymbol{\theta})-y_i\big)^2\Big] \cdot \Big[ \frac{\partial}{\partial  \boldsymbol{\theta}} \big(f(\mathbf{x_i};\boldsymbol{\theta}) - y_i\big)\Big] \notag \\
+&= \big(f(\mathbf{x_i};\boldsymbol{\theta})-y_i\big) \cdot \Big[ \frac{\partial}{\partial  \boldsymbol{\theta}} \big(f(\mathbf{x_i};\boldsymbol{\theta}) - y_i\big)\Big] \notag \\
+&=  \big(f(\mathbf{x_i};\boldsymbol{\theta})-y_i\big) \cdot \frac{\partial}{\partial  \boldsymbol{\theta}} \bigg( \sum_{j=0}^m \theta^{(j)} x_i^{(j)} - y_i \bigg) \notag \\
+&= \big(f(\mathbf{x_i};\boldsymbol{\theta})-y_i\big) \cdot \bigg[ \frac{\partial}{\partial  \boldsymbol{\theta}}  \sum_{j=0}^m \theta^{(j)} x_i^{(j)} - 0 \bigg] \notag \\
+&= \big(f(\mathbf{x_i};\boldsymbol{\theta})-y_i\big) \cdot \frac{\partial}{\partial  \boldsymbol{\theta}}  \big(\theta^{(0)}x_i^{(0)}+\theta^{(1)}x_i^{(1)}+...+\theta^{(m)}x_i^{(m)}\big)  \notag 
+\end{align}</script><p>对于求和函数展开的部分，当对其中第 $j$ 项求导时，其余各项实际上就是一个常数，它们在求导这一刻是固定不变的，因此有：</p>
+<script type="math/tex; mode=display">
+\frac{\partial}{\partial  \boldsymbol{\theta}} f(\mathbf{x_i};\boldsymbol{\theta}) 
+= 0+...+ \frac{\partial}{\partial  \boldsymbol{\theta}} \theta^{(j)}x_i^{(j)}+...+0</script><p>对于得到的乘积函数 $\frac{\partial}{\partial \boldsymbol{\theta}} \theta^{(j)}x_i^{(j)}$，有：</p>
+<script type="math/tex; mode=display">
+\frac{\partial}{\partial \boldsymbol{\theta}} \theta^{(j)}x_i^{(j)}= x_i^{(j)}</script><p>将得到的结果组合回去，即有：</p>
+<script type="math/tex; mode=display">
+\frac{\partial}{\partial  \boldsymbol{\theta}}  J(\boldsymbol{\theta})= \big[f(\mathbf{x_i};\boldsymbol{\theta}) -y_i\big] \cdot x_i^{(j)}</script><p>故而，只需将下列公式<strong>重复至收敛</strong>即可：</p>
+<script type="math/tex; mode=display">
+\boldsymbol{\theta_{k+1}} = \boldsymbol{\theta_k} - \alpha \big[f(\mathbf{x_i};\boldsymbol{\theta}) -y_i \big] \cdot x_i^{(j)},j = 0,1,...,m</script><p>其中，$x_i^{(0)}=1$</p>
+<p>在使用批量梯度下降法时，令损失函数为：</p>
 <script type="math/tex; mode=display">
 J(\theta_0,\theta_1) = \frac{1}{2n} \sum\limits_{i=1}^{n} (f(x_i;\theta_0,\theta_1) - y_i )^2</script><p>之后使用批量梯度下降法进行拟合时，只需将下列公式<strong>重复直到收敛</strong>为止：</p>
 <script type="math/tex; mode=display">
@@ -355,7 +391,7 @@ J(\theta_0,\theta_1) & = \sum_{i=1}^n(f(x_i;\theta_0,\theta_1)-y_i)^2 \notag \\
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/ml/6b330b18.html" rel="prev" title="最小二乘法">
+    <a href="/mathematics/numerical-analysis/6b330b18.html" rel="prev" title="最小二乘法">
       <i class="fa fa-chevron-left"></i> 最小二乘法
     </a></div>
       <div class="post-nav-item">
@@ -444,13 +480,13 @@ J(\theta_0,\theta_1) & = \sum_{i=1}^n(f(x_i;\theta_0,\theta_1)-y_i)^2 \notag \\
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">58</span>
+        <span class="site-state-item-count">59</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">63</span>
+        <span class="site-state-item-count">64</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
