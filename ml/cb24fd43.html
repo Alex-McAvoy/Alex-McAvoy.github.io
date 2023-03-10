@@ -33,14 +33,14 @@
 <meta property="og:site_name" content="Alex_McAvoy">
 <meta property="og:description" content="Reference  西瓜书读书笔记——第七章：贝叶斯分类器 贝叶斯算法小总结 半朴素贝叶斯分类器   【概述】在 朴素贝叶斯 中介绍了朴素贝叶斯分类器与其所假设的条件独立性，但该假设过于强势，在实际模型中有时并不满足，即样本的很多特征可能存在关联关系，并不独立">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/44-1.png">
-<meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/44-2.png">
-<meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/44-3.png">
-<meta property="og:updated_time" content="2022-09-15T04:03:40.560Z">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/29-1.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/29-2.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/29-3.png">
+<meta property="og:updated_time" content="2023-03-10T13:02:15.723Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="半朴素贝叶斯">
 <meta name="twitter:description" content="Reference  西瓜书读书笔记——第七章：贝叶斯分类器 贝叶斯算法小总结 半朴素贝叶斯分类器   【概述】在 朴素贝叶斯 中介绍了朴素贝叶斯分类器与其所假设的条件独立性，但该假设过于强势，在实际模型中有时并不满足，即样本的很多特征可能存在关联关系，并不独立">
-<meta name="twitter:image" content="https://alex-mcavoy.github.io/images/ml/44-1.png">
+<meta name="twitter:image" content="https://alex-mcavoy.github.io/images/ml/29-1.png">
 
 <link rel="canonical" href="https://alex-mcavoy.github.io/ml/cb24fd43.html">
 
@@ -278,7 +278,7 @@
 <p>为解决上述问题，在朴素贝叶斯的基础上引入了限制条件：允许某些特征间存在依赖关系，即<strong>半朴素贝叶斯（Semi-naive Bayes）</strong></p>
 <p>半朴素贝叶斯适当地考虑一部分特征间的相互依赖信息，这样既不需要进行完全联合概率计算，又不至于彻底忽略了较强的属性依赖关系</p>
 <p>如下图，显示了朴素贝叶斯和两种半朴素贝叶斯分类器所考虑的特征依赖关系</p>
-<p><img src="/images/ml/44-1.png"></p>
+<p><img src="/images/ml/29-1.png"></p>
 <h1 id="【ODE-策略】"><a href="#【ODE-策略】" class="headerlink" title="【ODE 策略】"></a>【ODE 策略】</h1><p><strong>独依赖估计（One-dependent Estimator，ODE）</strong>是半朴素贝叶斯中最常用的策略，即假设每个特征在类别之外最多依赖一个其他特征，即：</p>
 <script type="math/tex; mode=display">
 P(Y=c_k|\mathbb{x})\propto P(Y=c_k)\prod_{j=1}^n P(X^{(j)}=x^{(j)}|Y=c_k,a^{(j)})</script><p>其中，$a^{(j)}$ 为特征 $x^{(j)}$ 的父特征，即 $x^{(j)}$ 所依赖的特征</p>
@@ -289,7 +289,7 @@ P(Y=c_k|\mathbb{x})\propto P(Y=c_k)\prod_{j=1}^n P(X^{(j)}=x^{(j)}|Y=c_k,a^{(j)}
 <p>在确定超父特征 $X^{(f)}$ 后，概率公式变为：</p>
 <script type="math/tex; mode=display">
 P(Y=c_k|\mathbb{x})\propto P(Y=c_k)\prod_{j=1}^{n} {P(X^{(j)}=x^{(j)}|Y=c_k,X^{(f)}=x^{(f)})}</script><p>在下图 SPODE 模型的特征依赖关系中，$x^{(1)}$ 即为超父特征</p>
-<p><img width="300" src="/images/ml/44-2.png"></p>
+<p><img width="300" src="/images/ml/29-2.png"></p>
 <h2 id="AODE-模型"><a href="#AODE-模型" class="headerlink" title="AODE 模型"></a>AODE 模型</h2><p><strong>平均独依赖估计（Averaged One-Dependent Estimator，AODE）</strong>模型是一种基于集成学习机制的独依赖分类器</p>
 <p>与 SPODE 通过模型选择超父特征不同，其通过将每个特征分别作为超父来构建 SPODE，然后将有足够训练数据支撑的 SPODE 集成后作为最终结果，即：</p>
 <script type="math/tex; mode=display">
@@ -311,7 +311,7 @@ P(Y=c_k|\mathbb{x})\propto \sum_{\begin{matrix}i=1\\N_{x^{(i)}}\geq \alpha'\end{
 <h2 id="TAN-模型"><a href="#TAN-模型" class="headerlink" title="TAN 模型"></a>TAN 模型</h2><p><strong>树扩展朴素贝叶斯（Tree Augmented Naive Bayes，TAN）</strong>与 SPODE 模型类似，也是假设每个特征只依赖于一个特征，但与 SPODE 不同的是，其并不是统一的依赖于一个超父</p>
 <p>其将 $m$ 个特征视为 $m$ 个结点，对于任意两个结点建立无向边，以构建一个无向完全图，同时，每条边的权重设为两条边的<strong>条件互信息（Conditional Mutual Information）</strong>：</p>
 <script type="math/tex; mode=display">
-I(x^{(i)};x^{(j)}|y) = \sum_{c_k\in\mathcal{Y}} \sum_{x^{(i)}\in\mathcal{X}} \sum_{x^{(j)}\in\mathcal{X}} P(x^{(i)},x^{(j)},c_k) \log{\frac {P(c_k)P(x^{(i)},x^{(j)},c_k)}{P(x^{(i)},c_k)P(x^{(j)},c_k)}}</script><p>关于条件互信息，详见：<a href="https://alex-mcavoy.github.io/ml/d9f8f63d">信息熵与互信息</a></p>
+I(x^{(i)};x^{(j)}|y) = \sum_{c_k\in\mathcal{Y}} \sum_{x^{(i)}\in\mathcal{X}} \sum_{x^{(j)}\in\mathcal{X}} P(x^{(i)},x^{(j)},c_k) \log{\frac {P(c_k)P(x^{(i)},x^{(j)},c_k)}{P(x^{(i)},c_k)P(x^{(j)},c_k)}}</script><p>关于条件互信息，详见：<a href="https://alex-mcavoy.github.io/mathematics/information-theory/d9f8f63d">信息熵与互信息</a></p>
 <p>观察上式可知，其刻画了特征 $x^{(i)}$ 和 $x^{(j)}$ 在已知类别 $c_k$ 的情况下的相关性，即：</p>
 <ul>
 <li>若 $P(x^{(i)},x^{(j)},c_k)=P(x^{(i)},c_k)P(x^{(j)},c_k)$，则 $I(x^{(i)};x^{(j)}|y)=0$，此时 $x^{(i)}$ 与 $x^{(j)}$ 无关</li>
@@ -321,7 +321,7 @@ I(x^{(i)};x^{(j)}|y) = \sum_{c_k\in\mathcal{Y}} \sum_{x^{(i)}\in\mathcal{X}} \su
 <p>之后，对于建立好的无向完全图，根据<strong>最大带权生成树（Maximum Weighted Spanning Tree）算法</strong>，挑选根结点，同时根据特征 $x^{(i)}$ 和 $x^{(j)}$ 的相关性，将无向边设为有向边</p>
 <p>最后，加入类别结点 $y$，增加类别结点 $y$ 到每个特征的有向边</p>
 <p>这样一来，即可像 AODE 模型中一样计算概率，只是每个特征有着自己独特的父类</p>
-<p><img width="300" src="/images/ml/44-3.png"></p>
+<p><img width="300" src="/images/ml/29-3.png"></p>
 
     </div>
 
@@ -466,13 +466,13 @@ I(x^{(i)};x^{(j)}|y) = \sum_{c_k\in\mathcal{Y}} \sum_{x^{(i)}\in\mathcal{X}} \su
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">59</span>
+        <span class="site-state-item-count">60</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">64</span>
+        <span class="site-state-item-count">65</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>

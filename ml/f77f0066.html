@@ -33,14 +33,14 @@
 <meta property="og:site_name" content="Alex_McAvoy">
 <meta property="og:description" content="Reference  【辨析】先验概率、后验概率、似然概率 带你理解朴素贝叶斯分类算法 算法杂货铺——分类算法之朴素贝叶斯分类(Naive Bayesian classification) 贝叶斯估计 平滑处理—拉普拉斯（Laplace Smoothing） Naive Bayes classifier Additive smoothing   【概述】贝叶斯分类模型是基于贝叶斯定理与特征条件独">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/43-1.png">
-<meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/43-2.png">
-<meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/43-3.png">
-<meta property="og:updated_time" content="2022-09-15T04:03:30.230Z">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/28-1.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/28-2.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/28-3.png">
+<meta property="og:updated_time" content="2023-03-10T13:01:21.355Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="朴素贝叶斯">
 <meta name="twitter:description" content="Reference  【辨析】先验概率、后验概率、似然概率 带你理解朴素贝叶斯分类算法 算法杂货铺——分类算法之朴素贝叶斯分类(Naive Bayesian classification) 贝叶斯估计 平滑处理—拉普拉斯（Laplace Smoothing） Naive Bayes classifier Additive smoothing   【概述】贝叶斯分类模型是基于贝叶斯定理与特征条件独">
-<meta name="twitter:image" content="https://alex-mcavoy.github.io/images/ml/43-1.png">
+<meta name="twitter:image" content="https://alex-mcavoy.github.io/images/ml/28-1.png">
 
 <link rel="canonical" href="https://alex-mcavoy.github.io/ml/f77f0066.html">
 
@@ -280,7 +280,7 @@
 </blockquote>
 <h1 id="【概述】"><a href="#【概述】" class="headerlink" title="【概述】"></a>【概述】</h1><p>贝叶斯分类模型是基于贝叶斯定理与特征条件独立假设的分类模型，<strong>朴素贝叶斯（Naive Bayes）</strong>是贝叶斯分类模型中最简单、最常见的一种分类方法，该方法从概率论的角度来进行分类预测，实现简单，预测效率高</p>
 <p>贝叶斯定理、贝叶斯分类模型、朴素贝叶斯三者关系如下：</p>
-<p><img width="500" src="/images/ml/43-1.png"></p>
+<p><img width="500" src="/images/ml/28-1.png"></p>
 <p>之所以叫做朴素贝叶斯，一方面是其基于贝叶斯定理，另一方面，朴素是指其基于特征独立性假设，各特征不会相互影响，大大减少了计算概率的难度</p>
 <p>该方法的基本思想是：对于给定的训练集，当要根据多个特征对数据进行分类时，通常假设这些特征相互独立，然后利用条件概率乘法法则得到每一个分类的概率，对于给定的输入样本 $\mathbf{x}$，利用模型求出后验概率最大的作为预测输出 $y$</p>
 <h1 id="【贝叶斯公式】"><a href="#【贝叶斯公式】" class="headerlink" title="【贝叶斯公式】"></a>【贝叶斯公式】</h1><p>假设事件 $A$ 发生的概率为 $P(A)$，事件 $B$ 发生的概率为 $P(B)$，在事件 $B$ 发生的情况下，事件 $A$ 发生的概率为 $P(A|B)$，则事件 $A$ 发生的情况下事件 $B$ 发生的概率为：</p>
@@ -295,7 +295,7 @@ P(B|A)
 P(类别|特征)=\frac{P(特征|类别)P(类别)}{P(特征)}</script><p>为便于表述，记数据特征为 $\mathbb{x}$，记类别为 $c$，那么有：</p>
 <script type="math/tex; mode=display">
 P(c|\mathbb{x}) = \frac{P(\mathbb{x}|c) P(c)}{P(\mathbb{x})}</script><p>进一步，对于先验概率 $P(c)$ 和 $P(\mathbb{x})$，表示类别的先验概率 $P(类别)$ 称为<strong>类先验概率（Class Prior Probability）</strong>，表示做出预测的先验概率 $P(特征)$ 称为<strong>预测先验概率（Predictor Prior Probability）</strong></p>
-<p><img width="500" src="/images/ml/43-2.png"></p>
+<p><img width="500" src="/images/ml/28-2.png"></p>
 <h1 id="【朴素贝叶斯分类器】"><a href="#【朴素贝叶斯分类器】" class="headerlink" title="【朴素贝叶斯分类器】"></a>【朴素贝叶斯分类器】</h1><h2 id="朴素贝叶斯模型"><a href="#朴素贝叶斯模型" class="headerlink" title="朴素贝叶斯模型"></a>朴素贝叶斯模型</h2><p>设输入空间 $\mathcal{X}\subseteq \mathbb{R}^m $ 为 $m$ 维向量的集合，输出空间为类标记集合 $\mathcal{Y}=\{c_1,c_2,…,c_K\}$，输入为特征向量 $\mathbf{x}\in \mathcal{X}$，输出为类标记 $y\in \mathcal{Y}$，$X$ 是定义在输入空间 $\mathcal{X}$ 上的随机向量，$Y$ 是定义在输出空间 $\mathcal{Y}$ 上的随机变量，$P(X,Y)$ 是 $X$ 和 $Y$ 的联合概率分布</p>
 <p>已知给定的训练集 $T=\{(\mathbf{x_1},y_1),(\mathbf{x_2},y_2),…,(\mathbf{x_n},y_n)\}$ 由 $P(X,Y)$ 独立同分布产生，对于第 $i$ 组样本对，输入 $\mathbf{x_i}$ 具有 $m$ 个特征值，即：$\mathbf{x_i} =(x_i^{(1)},x_i^{(2)},…,x_i^{(m)})\in \mathbb{X} \subseteq  \mathbb{R}^m$，输出 $y_i\in\mathcal{Y}= \{c_1,c_2,…,c_K\}$ 为实例的类别</p>
 <p>根据训练集 $T$ 可知，类标记的先验概率分布为：</p>
@@ -383,7 +383,7 @@ P_{\lambda}(X^{(j)}=a^{(j)}_l|Y=c_k)=\frac{\sum\limits_{i=1}^n I(x_i^{(j)}=a^{(j
 P_{\lambda}(X^{(j)}=a^{(j)}_l|Y=c_k)>0 \\
 \sum\limits_{l=1}^{L}P(X^{(j)}=a^{(j)}_l|Y=c_k)=1
 \end{matrix}</script><h1 id="【实例】"><a href="#【实例】" class="headerlink" title="【实例】"></a>【实例】</h1><h2 id="问题描述"><a href="#问题描述" class="headerlink" title="问题描述"></a>问题描述</h2><p>现给出一个身高为 <code>高</code>，体重为 <code>中</code>，鞋码为 <code>中</code> 的数据，根据下图中的数据，判断这个数据是男是女</p>
-<p><img width="600" src="/images/ml/43-3.png"></p>
+<p><img width="600" src="/images/ml/28-3.png"></p>
 <h2 id="问题分析"><a href="#问题分析" class="headerlink" title="问题分析"></a>问题分析</h2><p>设特征：身高为 <code>高</code> 为 $A_1$，体重为 <code>中</code> 为 $A_2$，鞋码为 <code>中</code> 为 $A_3$，类别：男 $C_1$，女 $C_2$</p>
 <p>首先要求在 $A_1,A_2,A_3$ 下 $C_k$ 的概率，即：</p>
 <script type="math/tex; mode=display">
@@ -528,7 +528,7 @@ P(X^{(j)}=x^{(j)}|Y=c_k)=\frac{N_{c_k}^{(j)}+\alpha}{N_{c_k}+n\alpha}</script><p
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/ml/346416ed.html" rel="prev" title="改进的迭代尺度法 IIS">
+    <a href="/mathematics/convex-optimization/346416ed.html" rel="prev" title="改进的迭代尺度法 IIS">
       <i class="fa fa-chevron-left"></i> 改进的迭代尺度法 IIS
     </a></div>
       <div class="post-nav-item">
@@ -617,13 +617,13 @@ P(X^{(j)}=x^{(j)}|Y=c_k)=\frac{N_{c_k}^{(j)}+\alpha}{N_{c_k}+n\alpha}</script><p
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">59</span>
+        <span class="site-state-item-count">60</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">64</span>
+        <span class="site-state-item-count">65</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
