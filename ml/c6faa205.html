@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.9.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/img/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/assets/img/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/pace-js@1/themes/blue/pace-theme-minimal.css">
+  <script src="//cdn.jsdelivr.net/npm/pace-js@1/pace.min.js"></script>
+
+
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"alex-mcavoy.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":16,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":true,"color":"#ff0000","save":"manual"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":true},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.json"};
+  </script>
+
+  <meta name="description" content="Reference  【机器学习】决策树（上）——ID3、C4.5、CART 决策树—ID3、C4.5、CART   【ID3 算法】概述">
+<meta name="keywords" content="机器学习">
+<meta property="og:type" content="article">
+<meta property="og:title" content="决策树的 ID3 与 C4.5 生成算法">
+<meta property="og:url" content="https://alex-mcavoy.github.io/ml/c6faa205.html">
+<meta property="og:site_name" content="Alex_McAvoy">
+<meta property="og:description" content="Reference  【机器学习】决策树（上）——ID3、C4.5、CART 决策树—ID3、C4.5、CART   【ID3 算法】概述">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/31-1.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/31-2.png">
+<meta property="og:updated_time" content="2023-03-16T16:10:52.746Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="决策树的 ID3 与 C4.5 生成算法">
+<meta name="twitter:description" content="Reference  【机器学习】决策树（上）——ID3、C4.5、CART 决策树—ID3、C4.5、CART   【ID3 算法】概述">
+<meta name="twitter:image" content="https://alex-mcavoy.github.io/images/ml/31-1.png">
+
+<link rel="canonical" href="https://alex-mcavoy.github.io/ml/c6faa205.html">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>决策树的 ID3 与 C4.5 生成算法 | Alex_McAvoy</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Alex_McAvoy</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">想要成为渔夫的猎手</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+
+	
+	
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/ml/c6faa205.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/assets/img/head.jpg">
+      <meta itemprop="name" content="Alex_McAvoy">
+      <meta itemprop="description" content="想要成为渔夫的猎手">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Alex_McAvoy">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          决策树的 ID3 与 C4.5 生成算法
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-08-05 16:01:00" itemprop="dateCreated datePublished" datetime="2019-08-05T16:01:00+08:00">2019-08-05</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/ml/" itemprop="url" rel="index"><span itemprop="name">机器学习</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>3.8k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>3 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <blockquote>
+<p>Reference</p>
+<ul>
+<li><a href="https://zhuanlan.zhihu.com/p/85731206" target="_blank" rel="noopener">【机器学习】决策树（上）——ID3、C4.5、CART</a></li>
+<li><a href="https://blog.csdn.net/choven_meng/article/details/82878018" target="_blank" rel="noopener">决策树—ID3、C4.5、CART</a></li>
+</ul>
+</blockquote>
+<h1 id="【ID3-算法】"><a href="#【ID3-算法】" class="headerlink" title="【ID3 算法】"></a>【ID3 算法】</h1><h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>ID3 相当于用极大似然估计进行概率模型的选择，其核心是在决策树各结点上使用<strong>信息增益</strong>作为量化标准来选择特征，递归地构建决策树</p>
+<p>具体方法是：从根结点开始，对结点计算所有可能的特征的信息增益，选择信息增益最大的特征作为结点的特征，由该特征的不同取值建立子结点，再对子结点递归的调用以上方法，构建决策树，直到所有特征的信息增益均很小或没有特征可以选择为止</p>
+<p>ID3 的做法是<strong>每次选取当前最佳的特征</strong>来分割数据，并按照<strong>该特征的所有可能取值来切分</strong>，也就是说，如果一个特征有 3 种取值，那么数据将被切分成 3 份，一旦按照某特征切分后，该特征在之后的算法执行过程中将不会再起作用</p>
+<p>归结来说，除上述探讨的问题外，ID3 存在以下问题：</p>
+<ul>
+<li>无法直接处理连续型数据</li>
+<li>采用<strong>信息增益</strong>作为特征选择的准则，可能对特征取值数较多的特征有偏好</li>
+<li>没有考虑<strong>数据存在缺失值</strong>的情况</li>
+<li>没有<strong>剪枝策略</strong>，生成的决策树结构可能过于复杂，容易发生<strong>过拟合现象</strong></li>
+</ul>
+<h2 id="算法流程"><a href="#算法流程" class="headerlink" title="算法流程"></a>算法流程</h2><p>ID3 的算法流程如下：</p>
+<ol>
+<li>初始化特征集合 $A$、数据集 $D$</li>
+<li>计算数据集 $D$ 的信息熵 $H(D)$ 与所有特征的条件熵 $H(D|A_i)$ </li>
+<li>根据 $H(D)$ 与 $H(D|A_i)$ 计算信息增益 $g(D|A_i)$，选择信息增益最大的特征 $A_g$ 作为当前决策结点</li>
+<li>更新数据集 $D$ 和特征集 $A$，即删除上一步所使用的特征 $A_g$，并按 $A_g$ 的取值来划分不同的数据子集</li>
+<li>若数据子集包含单一特征，则为叶结点，否则，对新划分的数据子集重复第 2、3、4 步，直到所有特征的信息增益均很小或没有特征可以选择为止</li>
+</ol>
+<h2 id="实例"><a href="#实例" class="headerlink" title="实例"></a>实例</h2><p>以 <a href="https://alex-mcavoy.github.io/mathematics/information-theory/ff75e46a.html">信息增益与信息增益比</a> 中的实例为例，即对于下表：</p>
+<p><img width="500" src="/images/ml/31-1.png"></p>
+<p>各特征的信息增益如下：</p>
+<script type="math/tex; mode=display">
+\begin{matrix}
+g(D,A_1)=H(D)-H(D|A_1) = 0.083\\
+g(D,A_2)=H(D)-H(D|A_2) = 0.324\\
+g(D,A_3)=H(D)-H(D|A_3) = 0.420\\
+g(D,A_4)=H(D)-H(D|A_4) = 0.363
+\end{matrix}</script><p>选择信息增益最大的特征，是否有房子 $A_3$，作为根结点的特征，其有两个取值 <code>是</code>、<code>否</code>，据此将训练集 $D$ 划分为两个子集 $D_1$ 和 $D_2$</p>
+<p>对于 $D_1$ 来说，其分类结果只有同一类 <code>是</code> 的样本点，因此其成为一个叶结点，该叶结点的类标记为 <code>是</code></p>
+<p>对于 $D_2$ 来说，要进一步从特征 $A_1$、$A_2$、$A_4$ 中选择新的特征，计算各特征的信息增益：</p>
+<script type="math/tex; mode=display">
+\begin{matrix}
+g(D_2,A_1)=H(D)-H(D|A_1) = 0.251\\
+g(D_2,A_2)=H(D)-H(D|A_2) = 0.918\\
+g(D_2,A_4)=H(D)-H(D|A_4) = 0.474
+\end{matrix}</script><p>选择信息增益最大的特征，是否有工作 $A_2$，作为分支结点的特征，其有两个取值 <code>是</code>、<code>否</code>，据此将训练集 $D_2$ 划分为两个子集 $D_{21}$ 和 $D_{22}$</p>
+<p>对于 $D_{21}$ 来说，其分类结果只有同一类 <code>是</code> 的样本点，因此其成为一个叶结点，该叶结点的类标记为 <code>是</code></p>
+<p>对于 $D_{22}$ 来说，其分类结果只有同一类 <code>否</code> 的样本点，因此其成为一个叶结点，该叶结点的类标记为 <code>否</code></p>
+<p>据此，生成一个如下图的决策树，其只用了两个特征</p>
+<p><img width="250" src="/images/ml/31-2.png"></p>
+<h1 id="【C4-5-算法】"><a href="#【C4-5-算法】" class="headerlink" title="【C4.5  算法】"></a>【C4.5  算法】</h1><h2 id="概述-1"><a href="#概述-1" class="headerlink" title="概述"></a>概述</h2><p>对于 ID3 来说，其存在以下四点缺陷：</p>
+<ol>
+<li>无法直接处理连续型数据</li>
+<li>采用<strong>信息增益</strong>作为特征选择的准则，可能对特征取值数较多的特征有偏好</li>
+<li>没有考虑<strong>数据存在缺失值</strong>的情况</li>
+<li>没有<strong>剪枝策略</strong>，生成的决策树结构可能过于复杂，容易发生<strong>过拟合现象</strong></li>
+</ol>
+<p>C4.5 严格来说是 ID3 的改进算法，其通过对 ID3 的改进，一定程度上解决了上述的四个问题：</p>
+<ol>
+<li>采用了<strong>连续特征离散化</strong>的方法，将连续型特征转为离散型特征，但这种转换过程可能会破坏连续型变量的内在性质</li>
+<li>采用了<strong>信息增益比</strong>作为特征选择的标准，以校正信息增益偏向取值较多的特征的问题</li>
+<li>通过<strong>计算概率</strong>的方式，将信息增益的计算式进行了推广，从而解决缺失值处理的问题</li>
+<li>采用<strong>悲观剪枝策略</strong>对决策树进行后剪枝</li>
+</ol>
+<p>C4.5 相较于 ID3 来说，准确率更高，实现也简单，但对数据进行了多次顺序扫描与排序，效率较低，仅适合小规模的数据集</p>
+<h2 id="连续特征离散化"><a href="#连续特征离散化" class="headerlink" title="连续特征离散化"></a>连续特征离散化</h2><p>C4.5 采用了<strong>连续特征离散化</strong>的策略，将连续型数据进行处理，最简单的离散化策略是利用<strong>二分法</strong>对连续特征进行处理</p>
+<p>对于给定 $n$ 个样本的数据集 $D$ 和在 $D$ 上的连续型特征 $a$，假定 $a$ 在 $D$ 上出现 $m$ 个不同的取值，将这些值按照升序排序，记为 $\{a_1,a_2,…,a_m\}$</p>
+<p>取相邻两样本值的平均值作为<strong>划分点</strong>，一共有 $m-1$ 个划分点，其中第 $i$ 个划分点记为：</p>
+<script type="math/tex; mode=display">
+T_i=\frac{a_i+a_{i+1}}{2}</script><p>对于这 $m-1$ 个划分点，分别计算以该点作为二元分类点时的信息增益，以信息增益最大的点作为该连续特征的<strong>二元离散分类点</strong></p>
+<p>简单来说，当取得信息增益最大的点为 $a_t$，则小于 $a_t$ 的值为 <code>类别1</code>，大于 $a_t$ 的值为 <code>类别2</code>，这样就做到了连续特征的离散化</p>
+<p>要注意的是，与离散型数据不同的是，若当前结点为连续值，则该值还可参与子结点的特征选择过程</p>
+<h2 id="缺失值处理"><a href="#缺失值处理" class="headerlink" title="缺失值处理"></a>缺失值处理</h2><p>在实际应用中，尤其是在样本特征数目众多的情况下，经常会遇到不完整的样本，即样本的某些特征值存在缺失</p>
+<p>如果简单地放弃不完整的样本，仅使用无缺失的数据来学习，这无疑是对数据的极大浪费，为此，需要对缺失值进行处理</p>
+<p>对于缺失值的处理可以分为两个子问题：</p>
+<ol>
+<li>在特征值缺失的情况下，如何进行特征选择，即如何计算特征的信息增益率</li>
+<li>给定划分特征后，对于缺失该特征值的样本如何处理，即将这个样本划分到哪个结点中</li>
+</ol>
+<hr>
+<p>在给出上述两个问题答案前，先给出以下记号：</p>
+<p>对于给定的分为 $K$ 类的具有 $|D|$ 个样本的训练集 $D$，存在一个具有 $n$ 个取值的特征 $A$</p>
+<p>令 $\tilde{D}$ 表示 $D$ 中在特征 $A$ 上没有缺失值的样本子集，用 $\tilde{D_k}$ 表示在该子集上根据样本类别所划分的第 $k$ 个子集，用 $\tilde{D}^i$ 表示在 $\tilde{D}$ 上根据特征 $A$ 的取值 $A_i$ 所划分的第 $i$ 个子集</p>
+<p>同时，为每一个样本 $\vec{x}$ 赋予一个权重 $w_\vec{x}$</p>
+<p>用 $\rho$ 表示无缺失值样本所占的比例，即：</p>
+<script type="math/tex; mode=display">
+\rho=\frac{\sum\limits_{\vec{x}\in\tilde{D}}w_\vec{x}}{\sum\limits_{\vec{x}\in D}w_\vec{x}}</script><p>用 $\tilde{p_k}$ 表示无缺失值样本中第 $k$ 类所占的比例，即：</p>
+<script type="math/tex; mode=display">
+\tilde{p_k}=\frac{\sum\limits_{\vec{x}\in\tilde{D_k}}w_\vec{x}}{\sum\limits_{\vec{x}\in \tilde{D}}w_\vec{x}},\quad 1\leq k\leq K</script><p>用 $\tilde{r_i}$ 表示无缺失值样本中在特征 $A$ 上取值为 $A_i$ 的样本所占的比例，即：</p>
+<script type="math/tex; mode=display">
+\tilde{r_i}=\frac{\sum\limits_{\vec{x}\in\tilde{D}^i}w_\vec{x}}{\sum\limits_{\vec{x}\in \tilde{D}}w_\vec{x}},\quad 1\leq i\leq n</script><p>显然，有：</p>
+<script type="math/tex; mode=display">
+\sum\limits_{k=1}^K \tilde{p_k}=1,\quad
+\sum\limits_{i=1}^n \tilde{r_i}=1</script><hr>
+<p>对于<strong>第一个问题</strong>，显然可以利用 $\tilde{D}$ 来计算特征 $A$ 的信息增益率</p>
+<p>基于上述定义，将信息增益的计算式进行推广，有：</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+G(D,A) &= \rho\cdot G(\tilde{D},A) \\
+&= \rho\cdot[H(\tilde{D})-\sum_{i=1}^n\tilde{r_i}H(\tilde{D}^i)] \\
+&= \rho\cdot \bigl[ -\sum_{k=1}^K\tilde{p_k}\log_2\tilde{p_k} -\sum_{=1}^n\tilde{r_i}H(\tilde{D}^i) \bigr]
+\end{align*}</script><p>对于<strong>第二个问题</strong>，根据样本 $\vec{x}$ 在划分特征 $A$ 上的取值是否已知，分为两种情况：</p>
+<ul>
+<li>已知：将 $\vec{x}$ 划入与其取值对应的子结点，且样本权值在子结点中保持为 $w_{\vec{x}}$ </li>
+<li>未知：将 $\vec{x}$ 同时划入所有子结点，且样本权值 $w_{\vec{x}}$ 在与特征值 $A_i$ 的对应的子结点中调整为 $\tilde{r_i}\cdot w_{\vec{x}}$</li>
+</ul>
+<p>对于未知的情况，其本质就是让同一个样本以不同的概率划分到不同的子结点中</p>
+<h2 id="剪枝策略"><a href="#剪枝策略" class="headerlink" title="剪枝策略"></a>剪枝策略</h2><p>C4.5 采用的<strong>悲观剪枝方法</strong>，用递归的方式按照树的后序遍历算法，从下向上针对每一个分支结点，评估用一个最佳叶结点去代替这棵子树是否有益</p>
+<p>如果剪枝后与剪枝前相比其错误率是保持或者下降，则这棵子树就可以被替换掉，C4.5 通过训练集上的错误分类数量来估算未知样本上的错误率</p>
+<p>后剪枝决策树的欠拟合风险很小，泛化性能往往优于预剪枝决策树，但同时其训练时间会大的多</p>
+<p>关于悲观剪枝算法的详细介绍，见：<a href="https://alex-mcavoy.github.io/ml/1a3614c.html">决策树的剪枝策略</a></p>
+
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>感谢您对我的支持，让我继续努力分享有用的技术与知识点！</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/wechatpay.jpg" alt="Alex_McAvoy 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/alipay.jpg" alt="Alex_McAvoy 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Alex_McAvoy
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://alex-mcavoy.github.io/ml/c6faa205.html" title="决策树的 ID3 与 C4.5 生成算法">https://alex-mcavoy.github.io/ml/c6faa205.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/ml/" rel="tag"># 机器学习</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/mathematics/information-theory/9690b9de.html" rel="prev" title="基尼指数">
+      <i class="fa fa-chevron-left"></i> 基尼指数
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/ml/729a7bb2.html" rel="next" title="决策树的 CART 生成算法">
+      决策树的 CART 生成算法 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【ID3-算法】"><span class="nav-number">1.</span> <span class="nav-text">【ID3 算法】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#概述"><span class="nav-number">1.1.</span> <span class="nav-text">概述</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#算法流程"><span class="nav-number">1.2.</span> <span class="nav-text">算法流程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#实例"><span class="nav-number">1.3.</span> <span class="nav-text">实例</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【C4-5-算法】"><span class="nav-number">2.</span> <span class="nav-text">【C4.5  算法】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#概述-1"><span class="nav-number">2.1.</span> <span class="nav-text">概述</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#连续特征离散化"><span class="nav-number">2.2.</span> <span class="nav-text">连续特征离散化</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#缺失值处理"><span class="nav-number">2.3.</span> <span class="nav-text">缺失值处理</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#剪枝策略"><span class="nav-number">2.4.</span> <span class="nav-text">剪枝策略</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">  
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Alex_McAvoy"
+      src="/assets/img/head.jpg">
+  <p class="site-author-name" itemprop="name">Alex_McAvoy</p>
+  <div class="site-description" itemprop="description">想要成为渔夫的猎手</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">588</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">58</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">63</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Alex-McAvoy" title="GitHub → https://github.com/Alex-McAvoy" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/u011815404" title="CSDN → https://blog.csdn.net/u011815404" rel="noopener" target="_blank"><i class="fas fa-copyright fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+<!-- 访客地图 -->
+<script type="text/javascript" src="//rf.revolvermaps.com/0/0/5.js?i=50n58yo58ow&amp;m=0&amp;c=ff0000&amp;cr1=ffffff&amp;s=140" async="async"></script>
+
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdz20172133" title="https://blog.csdn.net/sdz20172133" rel="noopener" target="_blank">神仙队友</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://pxlsdz.gitee.io/" title="https://pxlsdz.gitee.io/" rel="noopener" target="_blank">神仙队友blog2</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdau_fangshifeng" title="https://blog.csdn.net/sdau_fangshifeng" rel="noopener" target="_blank">酷头</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://bycore.net" title="https://bycore.net" rel="noopener" target="_blank">凉了的某饼同学</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://kris-cn.github.io/" title="http://kris-cn.github.io/" rel="noopener" target="_blank">翟孙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://deng.fun/" title="http://deng.fun/" rel="noopener" target="_blank">芙蓉姐姐</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/wentong_Xu" title="https://blog.csdn.net/wentong_Xu" rel="noopener" target="_blank">小黑贱胖子</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.yuheng.tech/" title="https://www.yuheng.tech/" rel="noopener" target="_blank">咸于</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/lanshan1111" title="https://blog.csdn.net/lanshan1111" rel="noopener" target="_blank">肥硕硕</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdauguanweihong" title="https://blog.csdn.net/sdauguanweihong" rel="noopener" target="_blank">管少</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_41661919" title="https://blog.csdn.net/qq_41661919" rel="noopener" target="_blank">俊杰</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_40859951" title="https://blog.csdn.net/qq_40859951" rel="noopener" target="_blank">峰哥</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/LSD20164388" title="https://blog.csdn.net/LSD20164388" rel="noopener" target="_blank">狗冬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37868325" title="https://blog.csdn.net/qq_37868325" rel="noopener" target="_blank">妍大佬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://sanshuiii.github.io/" title="https://sanshuiii.github.io/" rel="noopener" target="_blank">sanshuiii</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://zjpzhao.github.io/" title="https://zjpzhao.github.io/" rel="noopener" target="_blank">brain</a>
+        </li>
+    </ul>
+  </div>
+
+		
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+  
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Alex_McAvoy</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+</br>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script><script src="/js/bookmark.js"></script>
+
+
+
+  
+
+
+
+
+  <script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '48fd73a538d3fa927f65',
+      clientSecret: '56618aefeee90bac3c20de8d51bb0b985d67252d',
+      repo        : 'Gitalk-Comment',
+      owner       : 'Alex-McAvoy',
+      admin       : ['Alex-McAvoy'],
+      id          : '505e6596eaaebbae14eb53fad2b7ef7e',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+  
+  <!-- 鼠标单击粒子特效 -->
+  <script type="text/javascript" src="/js/cursor-effects.js"></script>
+  <!-- 多级目录 -->
+  <script type="text/javascript" src="/js/category.js"></script>
+  
+</body>
+</html>

@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.9.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/img/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/assets/img/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/pace-js@1/themes/blue/pace-theme-minimal.css">
+  <script src="//cdn.jsdelivr.net/npm/pace-js@1/pace.min.js"></script>
+
+
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"alex-mcavoy.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":16,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":true,"color":"#ff0000","save":"manual"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":true},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.json"};
+  </script>
+
+  <meta name="description" content="【信息增益与互信息】在决策树中，信息增益（Information Gain）表示在知道了特征 $X$ 的信息后，使得使类 $Y$ 的信息的不确定性减少了的程度 信息增益是针对特征而言的，因此，特征 $A$ 对于训练集 $D$ 的信息增益 $g(D,A)$，被定义为：训练集 $D$ 的经验信息熵 $H(D)$ 与给定条件下特征 $A$ 与训练集 $D$ 的经验条件熵 $H(D|A)$ 的差，即：">
+<meta name="keywords" content="机器学习,数学,信息论">
+<meta property="og:type" content="article">
+<meta property="og:title" content="信息增益与信息增益比">
+<meta property="og:url" content="https://alex-mcavoy.github.io/mathematics/information-theory/ff75e46a.html">
+<meta property="og:site_name" content="Alex_McAvoy">
+<meta property="og:description" content="【信息增益与互信息】在决策树中，信息增益（Information Gain）表示在知道了特征 $X$ 的信息后，使得使类 $Y$ 的信息的不确定性减少了的程度 信息增益是针对特征而言的，因此，特征 $A$ 对于训练集 $D$ 的信息增益 $g(D,A)$，被定义为：训练集 $D$ 的经验信息熵 $H(D)$ 与给定条件下特征 $A$ 与训练集 $D$ 的经验条件熵 $H(D|A)$ 的差，即：">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/mathematics/information-theory/03-1.png">
+<meta property="og:updated_time" content="2023-03-16T15:14:46.402Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="信息增益与信息增益比">
+<meta name="twitter:description" content="【信息增益与互信息】在决策树中，信息增益（Information Gain）表示在知道了特征 $X$ 的信息后，使得使类 $Y$ 的信息的不确定性减少了的程度 信息增益是针对特征而言的，因此，特征 $A$ 对于训练集 $D$ 的信息增益 $g(D,A)$，被定义为：训练集 $D$ 的经验信息熵 $H(D)$ 与给定条件下特征 $A$ 与训练集 $D$ 的经验条件熵 $H(D|A)$ 的差，即：">
+<meta name="twitter:image" content="https://alex-mcavoy.github.io/images/mathematics/information-theory/03-1.png">
+
+<link rel="canonical" href="https://alex-mcavoy.github.io/mathematics/information-theory/ff75e46a.html">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>信息增益与信息增益比 | Alex_McAvoy</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Alex_McAvoy</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">想要成为渔夫的猎手</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+
+	
+	
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/mathematics/information-theory/ff75e46a.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/assets/img/head.jpg">
+      <meta itemprop="name" content="Alex_McAvoy">
+      <meta itemprop="description" content="想要成为渔夫的猎手">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Alex_McAvoy">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          信息增益与信息增益比
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-08-02 22:56:00" itemprop="dateCreated datePublished" datetime="2019-08-02T22:56:00+08:00">2019-08-02</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/mathematics/" itemprop="url" rel="index"><span itemprop="name">数学</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/mathematics/information-theory/" itemprop="url" rel="index"><span itemprop="name">信息论</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>5.6k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>5 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="【信息增益与互信息】"><a href="#【信息增益与互信息】" class="headerlink" title="【信息增益与互信息】"></a>【信息增益与互信息】</h1><p>在决策树中，<strong>信息增益（Information Gain）</strong>表示在知道了特征 $X$ 的信息后，使得使类 $Y$ 的<strong>信息的不确定性减少了的程度</strong></p>
+<p>信息增益是针对特征而言的，因此，特征 $A$ 对于训练集 $D$ 的信息增益 $g(D,A)$，被定义为：训练集 $D$ 的经验信息熵 $H(D)$ 与给定条件下特征 $A$ 与训练集 $D$ 的经验条件熵 $H(D|A)$ 的差，即：</p>
+<script type="math/tex; mode=display">
+g(D,A)=H(D)-H(D|A)</script><p>而对于二维离散型随机变量 $(X,Y)$ 来说，信息熵 $H(X)$ 与条件熵 $H(X|Y)$ 的差被定义为互信息 $I(X,Y)$，也就是说，在决策树中，<strong>信息增益就是训练数据集中类与特征的互信息</strong></p>
+<p>对于训练集 $D$ 而言，其每个特征都有一个信息增益值，在出现<strong>训练集经验信息熵大（分类困难）</strong>时，信息增益值会偏大，反之信息增益值会偏小，而信息增益值大的特征，具有更强的分类能力</p>
+<h1 id="【信息增益算法】"><a href="#【信息增益算法】" class="headerlink" title="【信息增益算法】"></a>【信息增益算法】</h1><p>对于样本容量为 $|D|$ 的训练集 $D$，设其有 $K$ 个类 $C_k,k=1,2,…,K$，每个类中的样本个数为 $|C_k|$，则有：</p>
+<script type="math/tex; mode=display">
+\sum_{k=1}^K|C_k|=|D|</script><p>设特征 $A$ 有 $n$ 个不同的取值 $\{a_1,a_2,…,a_n\}$，根据特征 $A$ 的取值将 $D$ 划分为 $n$ 个子集 $D_1,D_2,…,D_n$，并用 $|D_i|$ 表示划分子集 $D_i$ 中的样本数，同样有：</p>
+<script type="math/tex; mode=display">
+\sum_{i=1}^n|D_i|=|D|</script><p>记子集 $D_i$ 中属于类 $C_k$ 的样本的集合为 $D_{ik}$，其样本数为 $|D_{ik}|$，即：</p>
+<script type="math/tex; mode=display">
+D_{ik}=D_i\cap C_k</script><hr>
+<p>下面给出计算信息增益的算法：</p>
+<p>输入：训练集 $D$ 与特征 $A$</p>
+<p>输出：特征 $A$ 对于训练集 $D$ 的信息增益 $g(D,A)$</p>
+<p><strong>1.计算训练集 $D$ 的经验信息熵</strong> </p>
+<script type="math/tex; mode=display">
+\begin{align*}
+H(D) &= -\sum_{k=1}^Kp_k\log p_k \\
+&= -\sum_{k=1}^K\frac{|C_k|}{|D|}\log\frac{|C_k|}{|D|}
+\end{align*}</script><p><strong>2.计算特征 $A$ 对训练集 $D$ 的经验条件熵 $H(D|A)$</strong></p>
+<script type="math/tex; mode=display">
+\begin{align*}
+H(D|A) &=  -\sum_{i=1}^np(a_i)H(D|A=a_i)\\
+&= -\sum_{i=1}^n p(a_i) \sum_{k=1}^K p(C_k|a_i)\log p(C_k|a_i) \\
+&= -\sum_{i=1}^n \frac{|D_i|}{|D|} \sum_{k=1}^K \frac{|D_{ik}|}{|D_i|}\log(\frac{|D_{ik}|}{|D_i|}) \\
+\end{align*}</script><p><strong>3.计算信息增益 $g(D,A)$</strong></p>
+<script type="math/tex; mode=display">
+g(D,A) = H(D)-H(D|A)</script><h1 id="【信息增益比】"><a href="#【信息增益比】" class="headerlink" title="【信息增益比】"></a>【信息增益比】</h1><p>当以信息增益作为划分训练集的特征时，存在<strong>偏向于选择取值较多的特征</strong>的问题，使用<strong>信息增益比（Information Gain Radio）</strong>可以对这个问题进行校正，使得<strong>偏向于选择取值较少的特征</strong>，这是特征选择的另一个标准</p>
+<p>对于训练集 $D$ 关于特征 $A$ 的信息熵 $H_A(D)$，有：</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+H_A(D) &= -\sum_{x}p(x)\log p(x) \\
+&=-\sum_{i=1}^n\frac{|D_i|}{|D|}\log\frac{|D_i|}{|D|}
+\end{align*}</script><p>其中，$|D|$ 是训练集的样本个数，$|D_i|$ 是特征 $A$ 上第 $i$ 个取值的个数，$n$ 是特征 $A$ 的取值个数</p>
+<p>简单来说，$H_A(D)$ 是将特征 $A$ 作为一个随机变量，其取值是 $A$ 的各个特征值，而求得的信息熵</p>
+<p>对于特征 $A$ 与训练集 $D$ 的信息增益比 $g_R(D,A)$，其被定义为信息增益 $g(D,A)$ 与训练集 $D$ 关于特征 $A$ 的信息熵 $H_A(D)$ 的比，即：</p>
+<script type="math/tex; mode=display">
+g_R(D,A) = \frac{g(D,A)}{H_A(D)}</script><p>可以发现，信息增益比的本质，是在信息增益的基础上乘以一个惩罚参数 $\frac{1}{H_A(D)}$，当特征 $A$ 取值数量 $n$ 较大时，惩罚参数较小；当特征 $A$ 取值数量 $n$ 较小时，惩罚参数较大</p>
+<p>基于上述问题，在使用信息增益比时，并不是直接选择信息增益率最大的特征，而是使用一种<strong>启发式方法</strong>：</p>
+<ol>
+<li>在候选特征中找出<strong>信息增益高于平均水平的特征</strong></li>
+<li>在这些高于平均水平的特征中<strong>再选择信息增益率最高</strong>的特征作为特征选择的标准</li>
+</ol>
+<h1 id="【实例】"><a href="#【实例】" class="headerlink" title="【实例】"></a>【实例】</h1><h2 id="信息增益"><a href="#信息增益" class="headerlink" title="信息增益"></a>信息增益</h2><p>以下表为例，计算信息增益</p>
+<p><img width="500" src="/images/mathematics/information-theory/03-1.png"></p>
+<p>在上表中，有 $|D|=15$ 个数据，存在 $A=4$ 个特征，分别用 $A_1$、$A_2$、$A_3$、$A_4$ 来表示年龄、有无工作、有无房子、信贷情况，最终分类结果只有两类，即放贷、不放贷，有：$K=2$</p>
+<p>根据统计，9 个数据结果为放贷，6 个数据结果为不放贷，记放贷为 $C_1$ 类，不放贷为 $C_2$ 类</p>
+<p><strong><font size="4">1.计算信息经验熵：</font></strong></p>
+<script type="math/tex; mode=display">
+\begin{align*}
+H(D) &= -\sum_{k=1}^K\frac{|C_k|}{|D|}\log\frac{|C_k|}{|D|} \\
+&= -(\frac{|C_1|}{|D|}\log\frac{|C_1|}{|D|}+\frac{|C_2|}{|D|}\log \frac{|C_2|}{|D|}) \\
+&= -(\frac{|9|}{|15|}\log\frac{|9|}{|15|}+\frac{|6|}{|15|}\log \frac{|6|}{|15|}) \\
+&= 0.971
+\end{align*}</script><p><strong><font size="4">2.计算各特征的经验条件熵：</font></strong></p>
+<p>对于年龄 $A_1$，其有三个取值：<code>青年</code>、<code>中年</code>、<code>老年</code>，划分子集后有 $|D_1|=5$，$|D_2|=5$，$|D_3|=5$，这三个子集属于放贷类 $C_1$ 的样本集合分别有 $|D_{11}|=2$，$|D_{21}|=3$，$|D_{31}|=4$ 个样本，属于不放贷类 $C_2$ 的样本集合分别有 $|D_{12}|=3$，$|D_{22}|=2$，$|D_{32}|=1$ 个样本，则：</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+H(D|A_1) &= -\sum_{i=1}^n \frac{|D_i|}{|D|} \sum_{k=1}^K \frac{|D_{ik}|}{|D_i|}\log(\frac{|D_{ik}|}{|D_i|}) \\
+&= -\bigl[\frac{5}{15}(\frac{2}{5}\log\frac{2}{5}+\frac{3}{5}\log\frac{3}{5})+\frac{5}{15}(\frac{3}{5}\log\frac{3}{5}+\frac{2}{5}\log\frac{2}{5}) \\
+& \quad+ \frac{5}{15}(\frac{4}{5}\log\frac{4}{5}+\frac{1}{5}\log\frac{1}{5})\bigr] \\
+&= 0.888
+\end{align*}</script><p>对于有无工作 $A_2$，其有两个取值：<code>有</code>、<code>无</code>，划分子集后有 $|D_1|=5$，$|D_2|=10$，这两个子集属于放贷类 $C_1$ 的样本集合分别有 $|D_{11}|=5$，$|D_{21}|=0$ 个样本，属于不放贷类 $C_2$ 的样本集合分别有 $|D_{12}|=4$，$|D_{22}|=6$ 个样本，则：</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+H(D|A_2) &= -\sum_{i=1}^n \frac{|D_i|}{|D|} \sum_{k=1}^K \frac{|D_{ik}|}{|D_i|}\log(\frac{|D_{ik}|}{|D_i|}) \\
+&= -\bigl[\frac{5}{15}(\frac{5}{5}\log\frac{5}{5}+\frac{0}{5}\log\frac{0}{5})+\frac{10}{15}(\frac{4}{10}\log\frac{4}{10}+\frac{6}{10}\log\frac{6}{10}) \\
+&= 0.647
+\end{align*}</script><p>对于有无房子 $A_3$，其有两个取值：<code>有</code>、<code>无</code>，划分子集后有 $|D_1|=6$，$|D_2|=9$，这两个子集属于放贷类 $C_1$ 的样本集合分别有 $|D_{11}|=6$，$|D_{21}|=0$ 个样本，属于不放贷类 $C_2$ 的样本集合分别有 $|D_{12}|=3$，$|D_{22}|=6$ 个样本，则：</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+H(D|A_3) &= -\sum_{i=1}^n \frac{|D_i|}{|D|} \sum_{k=1}^K \frac{|D_{ik}|}{|D_i|}\log(\frac{|D_{ik}|}{|D_i|}) \\
+&= -\bigl[\frac{6}{15}(\frac{6}{6}\log\frac{6}{6}+\frac{0}{6}\log\frac{0}{6}) + \frac{9}{15}(\frac{3}{9}\log\frac{3}{9}+\frac{6}{9}\log\frac{6}{9}) \\
+&= 0.551
+\end{align*}</script><p>对于信贷情况 $A_4$，其有三个取值：<code>一般</code>、<code>好</code>、<code>非常好</code>，划分子集后有 $|D_1|=5$，$|D_2|=6$，$|D_3|=4$，这三个子集属于放贷类 $C_1$ 的样本集合分别有 $|D_{11}|=1$，$|D_{21}|=4$，$|D_{31}|=4$ 个样本，属于不放贷类 $C_2$ 的样本集合分别有 $|D_{12}|=4$，$|D_{22}|=2$，$|D_{32}|=0$ 个样本，则：</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+H(D|A_4) &= -\sum_{i=1}^n \frac{|D_i|}{|D|} \sum_{k=1}^K \frac{|D_{ik}|}{|D_i|}\log(\frac{|D_{ik}|}{|D_i|}) \\
+&= -\bigl[\frac{5}{15}(\frac{1}{5}\log\frac{1}{5}+\frac{4}{5}\log\frac{4}{5}) + \frac{6}{15}(\frac{4}{6}\log\frac{4}{6}+\frac{2}{6}\log\frac{2}{6}) \\
+& \quad+ \frac{4}{15}(\frac{4}{4}\log\frac{4}{4}+\frac{0}{4}\log\frac{0}{4})\bigr] \\
+&= 0.608
+\end{align*}</script><p><strong><font size="4">3.计算各特征的信息增益</font></strong></p>
+<script type="math/tex; mode=display">
+\begin{matrix}
+g(D,A_1)=H(D)-H(D|A_1) = 0.083\\
+g(D,A_2)=H(D)-H(D|A_2) = 0.324\\
+g(D,A_3)=H(D)-H(D|A_3) = 0.420\\
+g(D,A_4)=H(D)-H(D|A_4) = 0.363
+\end{matrix}</script><p>此时，选择信息增益最大的 $A_3$ 作为最优特征</p>
+<h2 id="信息增益比"><a href="#信息增益比" class="headerlink" title="信息增益比"></a>信息增益比</h2><p>以上例的信息增益为基础，继续计算信息增益比</p>
+<p><strong><font size="4">1.计算平均信息增益，选择高于平均水平的信息增益</font></strong></p>
+<script type="math/tex; mode=display">
+\begin{align*}
+\bar{g}(D,A) &= \frac{1}{n}\sum\limits_{i=1}^ng(D,A_i) \\
+&= \frac{1}{4}\cdot 1.19 \\
+&= 0.298
+\end{align*}</script><p>此时，高于 $\bar{g}(D,A)$ 的有：</p>
+<script type="math/tex; mode=display">
+\begin{matrix}
+g(D,A_2)= 0.324\\
+g(D,A_3)= 0.420\\
+g(D,A_4)= 0.363
+\end{matrix}</script><p><strong><font size="4">2.计算训练集关于各特征的信息熵</font></strong></p>
+<p>对于特征 $A_2$，其有两个取值：<code>有</code>、<code>无</code>，划分子集后有 $|D_1|=5$，$|D_2|=10$，此时：</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+H_{A_2}(D) &= -\sum_{i=1}^n\frac{|D_i|}{|D|}\log\frac{|D_i|}{|D|} \\
+&=-( \frac{5}{15}\log\frac{5}{15}+\frac{10}{15}\log\frac{10}{15}) \\
+&= 0.918
+\end{align*}</script><p>对于特征 $A_3$，其有两个取值：<code>有</code>、<code>无</code>，划分子集后有 $|D_1|=6$，$|D_2|=9$，此时：</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+H_{A_3}(D) &= -\sum_{i=1}^n\frac{|D_i|}{|D|}\log\frac{|D_i|}{|D|} \\
+&= -(\frac{6}{15}\log\frac{6}{15}+\frac{9}{15}\log\frac{9}{15}) \\
+&= 0.971
+\end{align*}</script><p>对于特征 $A_4$，其有三个取值：<code>一般</code>、<code>好</code>、<code>非常好</code>，划分子集后有 $|D_1|=5$，$|D_2|=6$，$|D_3|=4$，此时：</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+H_{A_4}(D) &= -\sum_{i=1}^n\frac{|D_i|}{|D|}\log\frac{|D_i|}{|D|} \\
+&= -(\frac{5}{15}\log\frac{5}{15}+\frac{6}{15}\log\frac{6}{15}+\frac{4}{15}\log\frac{4}{15}) \\
+&= 1.566
+\end{align*}</script><p><strong><font size="4">3.计算各特征的信息增益比</font></strong></p>
+<script type="math/tex; mode=display">
+\begin{matrix}
+g_R(D,A_2)=\frac{g(D,A_2)}{H_{A_2}(D)}= 0.353 \\
+g_R(D,A_3)=\frac{g(D,A_3)}{H_{A_3}(D)}= 0.433 \\
+g_R(D,A_4)=\frac{g(D,A_4)}{H_{A_4}(D)}= 0.232 \\
+\end{matrix}</script><p>此时，选择信息增益比最大的 $A_3$ 作为最优特征</p>
+
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>感谢您对我的支持，让我继续努力分享有用的技术与知识点！</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/wechatpay.jpg" alt="Alex_McAvoy 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/alipay.jpg" alt="Alex_McAvoy 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Alex_McAvoy
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://alex-mcavoy.github.io/mathematics/information-theory/ff75e46a.html" title="信息增益与信息增益比">https://alex-mcavoy.github.io/mathematics/information-theory/ff75e46a.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/ml/" rel="tag"># 机器学习</a>
+              <a href="/tags/mathematics/" rel="tag"># 数学</a>
+              <a href="/tags/information-theory/" rel="tag"># 信息论</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/ml/8ddc7426.html" rel="prev" title="决策树概述">
+      <i class="fa fa-chevron-left"></i> 决策树概述
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/mathematics/information-theory/9690b9de.html" rel="next" title="基尼指数">
+      基尼指数 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【信息增益与互信息】"><span class="nav-number">1.</span> <span class="nav-text">【信息增益与互信息】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【信息增益算法】"><span class="nav-number">2.</span> <span class="nav-text">【信息增益算法】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【信息增益比】"><span class="nav-number">3.</span> <span class="nav-text">【信息增益比】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【实例】"><span class="nav-number">4.</span> <span class="nav-text">【实例】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#信息增益"><span class="nav-number">4.1.</span> <span class="nav-text">信息增益</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#信息增益比"><span class="nav-number">4.2.</span> <span class="nav-text">信息增益比</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">  
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Alex_McAvoy"
+      src="/assets/img/head.jpg">
+  <p class="site-author-name" itemprop="name">Alex_McAvoy</p>
+  <div class="site-description" itemprop="description">想要成为渔夫的猎手</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">588</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">58</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">63</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Alex-McAvoy" title="GitHub → https://github.com/Alex-McAvoy" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/u011815404" title="CSDN → https://blog.csdn.net/u011815404" rel="noopener" target="_blank"><i class="fas fa-copyright fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+<!-- 访客地图 -->
+<script type="text/javascript" src="//rf.revolvermaps.com/0/0/5.js?i=50n58yo58ow&amp;m=0&amp;c=ff0000&amp;cr1=ffffff&amp;s=140" async="async"></script>
+
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdz20172133" title="https://blog.csdn.net/sdz20172133" rel="noopener" target="_blank">神仙队友</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://pxlsdz.gitee.io/" title="https://pxlsdz.gitee.io/" rel="noopener" target="_blank">神仙队友blog2</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdau_fangshifeng" title="https://blog.csdn.net/sdau_fangshifeng" rel="noopener" target="_blank">酷头</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://bycore.net" title="https://bycore.net" rel="noopener" target="_blank">凉了的某饼同学</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://kris-cn.github.io/" title="http://kris-cn.github.io/" rel="noopener" target="_blank">翟孙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://deng.fun/" title="http://deng.fun/" rel="noopener" target="_blank">芙蓉姐姐</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/wentong_Xu" title="https://blog.csdn.net/wentong_Xu" rel="noopener" target="_blank">小黑贱胖子</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.yuheng.tech/" title="https://www.yuheng.tech/" rel="noopener" target="_blank">咸于</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/lanshan1111" title="https://blog.csdn.net/lanshan1111" rel="noopener" target="_blank">肥硕硕</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdauguanweihong" title="https://blog.csdn.net/sdauguanweihong" rel="noopener" target="_blank">管少</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_41661919" title="https://blog.csdn.net/qq_41661919" rel="noopener" target="_blank">俊杰</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_40859951" title="https://blog.csdn.net/qq_40859951" rel="noopener" target="_blank">峰哥</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/LSD20164388" title="https://blog.csdn.net/LSD20164388" rel="noopener" target="_blank">狗冬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37868325" title="https://blog.csdn.net/qq_37868325" rel="noopener" target="_blank">妍大佬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://sanshuiii.github.io/" title="https://sanshuiii.github.io/" rel="noopener" target="_blank">sanshuiii</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://zjpzhao.github.io/" title="https://zjpzhao.github.io/" rel="noopener" target="_blank">brain</a>
+        </li>
+    </ul>
+  </div>
+
+		
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+  
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Alex_McAvoy</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+</br>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script><script src="/js/bookmark.js"></script>
+
+
+
+  
+
+
+
+
+  <script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '48fd73a538d3fa927f65',
+      clientSecret: '56618aefeee90bac3c20de8d51bb0b985d67252d',
+      repo        : 'Gitalk-Comment',
+      owner       : 'Alex-McAvoy',
+      admin       : ['Alex-McAvoy'],
+      id          : '2e53c5c519d9da3ef8de07271510ee90',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+  
+  <!-- 鼠标单击粒子特效 -->
+  <script type="text/javascript" src="/js/cursor-effects.js"></script>
+  <!-- 多级目录 -->
+  <script type="text/javascript" src="/js/category.js"></script>
+  
+</body>
+</html>
