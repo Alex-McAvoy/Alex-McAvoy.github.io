@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.9.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/img/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/assets/img/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/pace-js@1/themes/blue/pace-theme-minimal.css">
+  <script src="//cdn.jsdelivr.net/npm/pace-js@1/pace.min.js"></script>
+
+
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"alex-mcavoy.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":16,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":true,"color":"#ff0000","save":"manual"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":true},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.json"};
+  </script>
+
+  <meta name="description" content="【引入】在 感知机 中，介绍了单层感知机：  f(\mathbf{x})=\text{sigmoid}(\boldsymbol{\omega}\cdot\mathbf{x}+\theta)其可以处理线性可分的二分类问题">
+<meta name="keywords" content="机器学习">
+<meta property="og:type" content="article">
+<meta property="og:title" content="多层感知机">
+<meta property="og:url" content="https://alex-mcavoy.github.io/ml/c3f7cdb7.html">
+<meta property="og:site_name" content="Alex_McAvoy">
+<meta property="og:description" content="【引入】在 感知机 中，介绍了单层感知机：  f(\mathbf{x})=\text{sigmoid}(\boldsymbol{\omega}\cdot\mathbf{x}+\theta)其可以处理线性可分的二分类问题">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/36-1.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/36-2.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/36-3.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/36-4.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/36-5.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/36-6.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/36-7.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/36-8.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/36-9.png">
+<meta property="og:updated_time" content="2023-03-18T19:03:14.708Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="多层感知机">
+<meta name="twitter:description" content="【引入】在 感知机 中，介绍了单层感知机：  f(\mathbf{x})=\text{sigmoid}(\boldsymbol{\omega}\cdot\mathbf{x}+\theta)其可以处理线性可分的二分类问题">
+<meta name="twitter:image" content="https://alex-mcavoy.github.io/images/ml/36-1.png">
+
+<link rel="canonical" href="https://alex-mcavoy.github.io/ml/c3f7cdb7.html">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>多层感知机 | Alex_McAvoy</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Alex_McAvoy</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">想要成为渔夫的猎手</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+
+	
+	
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/ml/c3f7cdb7.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/assets/img/head.jpg">
+      <meta itemprop="name" content="Alex_McAvoy">
+      <meta itemprop="description" content="想要成为渔夫的猎手">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Alex_McAvoy">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          多层感知机
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-08-11 15:20:00" itemprop="dateCreated datePublished" datetime="2019-08-11T15:20:00+08:00">2019-08-11</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/ml/" itemprop="url" rel="index"><span itemprop="name">机器学习</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>6.6k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>6 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="【引入】"><a href="#【引入】" class="headerlink" title="【引入】"></a>【引入】</h1><p>在 <a href="https://alex-mcavoy.github.io/ml/18592060.html">感知机</a> 中，介绍了单层感知机：</p>
+<script type="math/tex; mode=display">
+f(\mathbf{x})=\text{sigmoid}(\boldsymbol{\omega}\cdot\mathbf{x}+\theta)</script><p>其可以处理线性可分的二分类问题</p>
+<p>而<strong>与（AND）</strong>、<strong>或（OR）</strong>、<strong>非（NOT）</strong>均可认为是一线性可分问题，即这三种逻辑电路均可使用单层感知机来实现</p>
+<p>对于<strong>异或（XOR）</strong>来说，其是一线性不可分问题，无法使用单层感知机来实现，考虑到异或可以通过与、或、非来组合实现：</p>
+<script type="math/tex; mode=display">
+a⊕b = (¬a ∧ b) ∨ (a ∧¬b)</script><p>那么，借鉴这种思想，将多个感知机进行连接，形成层级结构，由此有了<strong>多层感知机（Muti-Layer Perceptron，MLP）</strong></p>
+<h1 id="【从与或非到异或】"><a href="#【从与或非到异或】" class="headerlink" title="【从与或非到异或】"></a>【从与或非到异或】</h1><h2 id="与门"><a href="#与门" class="headerlink" title="与门"></a>与门</h2><p>与门，是具有两个输入和一个输出的门电路，在两个输入均为 $1$ 时输出 $1$，其他情况输出 $0$</p>
+<p>其真值表如下：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:center">$x_1$</th>
+<th style="text-align:center">$x_2$</th>
+<th style="text-align:center">$y$</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">$0$</td>
+<td style="text-align:center">$0$</td>
+<td style="text-align:center">$0$</td>
+</tr>
+<tr>
+<td style="text-align:center">$0$</td>
+<td style="text-align:center">$1$</td>
+<td style="text-align:center">$0$</td>
+</tr>
+<tr>
+<td style="text-align:center">$1$</td>
+<td style="text-align:center">$0$</td>
+<td style="text-align:center">$0$</td>
+</tr>
+<tr>
+<td style="text-align:center">$1$</td>
+<td style="text-align:center">$1$</td>
+<td style="text-align:center">$1$</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>若想使用感知机来表示与门，需要做的就是确定参数 $\omega_1,\omega_2$ 与阈值 $\theta$，使得在给定二值输入时，感知机的输出能够满足真值表</p>
+<p>满足真值表条件的参数的选择方案有无数种，这里选取较为简单的一种，即：</p>
+<script type="math/tex; mode=display">
+\begin{matrix}
+\omega_1=1 & \omega_2=1 & \theta=-2
+\end{matrix}</script><p>此时，有：</p>
+<script type="math/tex; mode=display">
+y=\text{sigmoid}(x_1+x_2-2)</script><p>仅当 $x_1=x_2=1$ 时，有 $y=1$</p>
+<p>其分离超平面如下：</p>
+<p><img width="300" src="/images/ml/36-1.png"></p>
+<h2 id="或门"><a href="#或门" class="headerlink" title="或门"></a>或门</h2><p>或门，是具有两个输入和一个输出的门电路，在两个输入中的任意一个为 $1$ 时输出 $1$，在两个输入全为 $0$ 时输出 $0$</p>
+<p>其真值表如下：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:center">$x_1$</th>
+<th style="text-align:center">$x_2$</th>
+<th style="text-align:center">$y$</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">$0$</td>
+<td style="text-align:center">$0$</td>
+<td style="text-align:center">$0$</td>
+</tr>
+<tr>
+<td style="text-align:center">$0$</td>
+<td style="text-align:center">$1$</td>
+<td style="text-align:center">$1$</td>
+</tr>
+<tr>
+<td style="text-align:center">$1$</td>
+<td style="text-align:center">$0$</td>
+<td style="text-align:center">$1$</td>
+</tr>
+<tr>
+<td style="text-align:center">$1$</td>
+<td style="text-align:center">$1$</td>
+<td style="text-align:center">$1$</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>若想使用感知机来表示或门，需要做的就是确定参数 $\omega_1,\omega_2$ 与阈值 $\theta$，使得在给定二值输入时，感知机的输出能够满足真值表</p>
+<p>满足真值表条件的参数的选择方案有无数种，这里选取较为简单的一种，即：</p>
+<script type="math/tex; mode=display">
+\begin{matrix}
+\omega_1=1 & \omega_2=1 & \theta=-0.5
+\end{matrix}</script><p>此时，有：</p>
+<script type="math/tex; mode=display">
+y=\text{sigmoid}(x_1+x_2-0.5)</script><p>当 $x_1=1$ 或 $x_2=1$ 时，有 $y=1$</p>
+<p>其分离超平面如下：</p>
+<p><img width="300" src="/images/ml/36-2.png"></p>
+<h2 id="非门"><a href="#非门" class="headerlink" title="非门"></a>非门</h2><p>非门，是具有一个输入和一个输出的门电路，在输入为 $1$ 时输出 $0$，输入为 $0$ 时输出 $1$</p>
+<p>其真值表如下：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:center">$x$</th>
+<th style="text-align:center">$y$</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">$0$</td>
+<td style="text-align:center">$1$</td>
+</tr>
+<tr>
+<td style="text-align:center">$1$</td>
+<td style="text-align:center">$0$</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>若想使用感知机来表示非门，需要做的就是确定参数 $\omega$ 与阈值 $\theta$，使得在给定输入时，感知机的输出能够满足真值表</p>
+<p>满足真值表条件的参数的选择方案有无数种，这里选取较为简单的一种，即：</p>
+<script type="math/tex; mode=display">
+\begin{matrix}
+\omega=-1 & \theta=0.5
+\end{matrix}</script><p>此时，有：</p>
+<script type="math/tex; mode=display">
+y=\text{sigmoid}(-x+0.5)</script><p>当 $x=1$ 时，有 $y=0$；当 $x=0$ 时，有 $y=1$</p>
+<p>其分离超平面如下：</p>
+<p><img width="300" src="/images/ml/36-3.png"></p>
+<h2 id="异或门"><a href="#异或门" class="headerlink" title="异或门"></a>异或门</h2><p>异或门，是具有两个输入和一个输出的门电路，在两个输入相同时输出 $0$，在两个输入不同时输出 $1$</p>
+<p>其真值表如下：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:center">$x_1$</th>
+<th style="text-align:center">$x_2$</th>
+<th style="text-align:center">$y$</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">$0$</td>
+<td style="text-align:center">$0$</td>
+<td style="text-align:center">$0$</td>
+</tr>
+<tr>
+<td style="text-align:center">$0$</td>
+<td style="text-align:center">$1$</td>
+<td style="text-align:center">$1$</td>
+</tr>
+<tr>
+<td style="text-align:center">$1$</td>
+<td style="text-align:center">$0$</td>
+<td style="text-align:center">$1$</td>
+</tr>
+<tr>
+<td style="text-align:center">$1$</td>
+<td style="text-align:center">$1$</td>
+<td style="text-align:center">$0$</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>其分离超平面如下：</p>
+<p><img width="300" src="/images/ml/36-4.png"></p>
+<p>可以看出，若想将其分开，只能通过如下图的曲线来分割</p>
+<p><img width="300" src="/images/ml/36-5.png"></p>
+<p>可以发现，异或问题是一个非线性可分问题，单层感知机无法进行实现</p>
+<hr>
+<p>在数字电路中，异或门可以通过与门、非门、或门的组合来实现</p>
+<p><img width="500" src="/images/ml/36-6.png"></p>
+<p>根据上面的数字电路图，给出真值表：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:center">$x_1$</th>
+<th style="text-align:center">$x_2$</th>
+<th style="text-align:center">$s_1$</th>
+<th style="text-align:center">$s_2$</th>
+<th style="text-align:center">$y$</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">$0$</td>
+<td style="text-align:center">$0$</td>
+<td style="text-align:center">$1$</td>
+<td style="text-align:center">$0$</td>
+<td style="text-align:center">$0$</td>
+</tr>
+<tr>
+<td style="text-align:center">$0$</td>
+<td style="text-align:center">$1$</td>
+<td style="text-align:center">$1$</td>
+<td style="text-align:center">$1$</td>
+<td style="text-align:center">$1$</td>
+</tr>
+<tr>
+<td style="text-align:center">$1$</td>
+<td style="text-align:center">$0$</td>
+<td style="text-align:center">$1$</td>
+<td style="text-align:center">$1$</td>
+<td style="text-align:center">$1$</td>
+</tr>
+<tr>
+<td style="text-align:center">$1$</td>
+<td style="text-align:center">$1$</td>
+<td style="text-align:center">$0$</td>
+<td style="text-align:center">$1$</td>
+<td style="text-align:center">$0$</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>那么，参考真值表，可以构建出如下由 MP 神经元构成的网络图，即最简单的多层感知机</p>
+<p><img width="500" src="/images/ml/36-7.png"></p>
+<p>其中，第 $0$ 层为<strong>输入层（Input Layer）</strong>，该层不涉及到计算；第 $1$ 层用于处理数据，被称为<strong>隐藏层（Hidden Layer）</strong>，第 $2$ 层为<strong>输出层（Output Layer）</strong>，将隐藏层的输出进行处理，作为整个多层感知机的输出</p>
+<h1 id="【多层感知机】"><a href="#【多层感知机】" class="headerlink" title="【多层感知机】"></a>【多层感知机】</h1><p><strong>多层感知机（Multi-Layer Perceptron，MLP）</strong>，也叫<strong>人工神经网络（Artificial Neural Network，ANN）</strong>，是最简单的神经网络结构，其除了输入层和输出层外，中间可以有多个隐藏层，最简单的 MLP 只包含一个隐藏层</p>
+<p><img width="500" src="/images/ml/36-8.png"></p>
+<p>如上图所示的多层感知机，每层神经元与下一层神经元完全互连，且神经元间不存在同层连接与跨层连接，这样的神经网络结构被称为<strong>多层前馈神经网络（Multi-layer Feedforward Neural Networks）</strong></p>
+<p>对于多层前馈神经网络来说，输入层用于接收外接输入，隐藏层与输出层对输入进行处理，并由输出层输出，因此，上图所示的多层感知机，其层数为 $2$，一般称为两层网络</p>
+<p>第 $0$ 层为输入层，该层不涉及到计算；第 $1$ 层为隐藏层，含有 $5$ 个 MP 神经元；第 $2$ 层为输出层，含有 $3$ 个 MP 神经元</p>
+<p>设第 $1$ 层权重为 $W_h$，阈值为 $\theta_h$，激活函数为 $f(\cdot)$，则该多层感知机隐藏层的输出为：</p>
+<script type="math/tex; mode=display">
+H=f(XW_h+\theta_h)</script><p>设第 $2$ 层权重为 $W_o$，阈值为 $\theta_o$，则该多层感知机的输出为：</p>
+<script type="math/tex; mode=display">
+\begin{matrix}
+O=HW_o+\theta_o
+\end{matrix}</script><p>将上述两个式子联立，可得：</p>
+<script type="math/tex; mode=display">
+O=f(XW_h+\theta_h)W_o+\theta_o</script><p>在分类问题中，通常会将输出层的输出单元个数设为 $1$ ，并对输出 $O$ 进行 softmax 运算，将输出转换为分类概率</p>
+<p>多层感知机的学习过程，就是根据训练数据来调整<strong>神经元间的连接权重</strong>以及<strong>每个神经元的阈值</strong>，除了使用随机梯度下降法、牛顿法等迭代算法外，由于多层感知机是最基础的神经网络，其还可使用 BP 算法</p>
+<p>关于 BP 算法，详见：<a href="https://alex-mcavoy.github.io/dl/437097cd.html">反向传播算法</a></p>
+<h1 id="【sklearn-实现】"><a href="#【sklearn-实现】" class="headerlink" title="【sklearn 实现】"></a>【sklearn 实现】</h1><p>以 <code>sklearn</code> 中的鸢尾花数据集为例，选取其后两个特征来实现多层感知机</p>
+<p><img src="/images/ml/36-9.png"></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> pandas <span class="keyword">as</span> pd</span><br><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"><span class="keyword">import</span> matplotlib.pyplot <span class="keyword">as</span> plt</span><br><span class="line"><span class="keyword">from</span> sklearn.datasets <span class="keyword">import</span> load_iris</span><br><span class="line"><span class="keyword">from</span> sklearn.model_selection <span class="keyword">import</span> train_test_split</span><br><span class="line"><span class="keyword">from</span> sklearn.preprocessing <span class="keyword">import</span> StandardScaler</span><br><span class="line"><span class="keyword">from</span> sklearn.neural_network <span class="keyword">import</span> MLPClassifier</span><br><span class="line"><span class="keyword">from</span> sklearn.metrics <span class="keyword">import</span> confusion_matrix,accuracy_score,classification_report,precision_score,recall_score,f1_score</span><br><span class="line"><span class="keyword">from</span> matplotlib.colors <span class="keyword">import</span> ListedColormap</span><br><span class="line"></span><br><span class="line"><span class="comment"># 特征提取</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">deal_data</span><span class="params">()</span>:</span></span><br><span class="line">    iris = load_iris()  <span class="comment"># sklearn的鸢尾花数据集</span></span><br><span class="line">    <span class="comment"># iris分为三类，前50行一类，51-100行一类，101-150行一类</span></span><br><span class="line">    X = iris.data[:, [<span class="number">2</span>, <span class="number">3</span>]] <span class="comment"># 选用后两个特征作为样本特征</span></span><br><span class="line">    y = iris.target  <span class="comment">#取species列，类别</span></span><br><span class="line">    <span class="keyword">return</span> X,y</span><br><span class="line"></span><br><span class="line"><span class="comment"># 数据归一化</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">standard_scaler</span><span class="params">(X_train,X_test)</span>:</span></span><br><span class="line">    sc = StandardScaler() <span class="comment"># 初始化一个sc对象去对数据集作变换</span></span><br><span class="line">    scaler = sc.fit(X_train) <span class="comment"># 归一化，存有计算出的均值和方差</span></span><br><span class="line">    X_train_std = scaler.transform(X_train) <span class="comment"># 利用 scaler 进行标准化</span></span><br><span class="line">    X_test_std = scaler.transform(X_test) <span class="comment"># 利用 scaler 进行标准化</span></span><br><span class="line">    <span class="keyword">return</span> X_train_std, X_test_std</span><br><span class="line"></span><br><span class="line"><span class="comment"># 模型训练</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">train_model</span><span class="params">(X_train_std, y_train)</span>:</span></span><br><span class="line">    <span class="comment"># 建立MLP模型，优化算法采用L-BFGS</span></span><br><span class="line">    <span class="comment"># solver可选：</span></span><br><span class="line">    <span class="comment">#  - lbfgs：L-BFGS，在小数据上表现较好</span></span><br><span class="line">    <span class="comment">#  - adam：Adam，鲁棒性较好</span></span><br><span class="line">    <span class="comment">#  - sgd：SGD，在参数调整较优时会有最佳表现</span></span><br><span class="line">    model = MLPClassifier(solver=<span class="string">'lbfgs'</span>, alpha=<span class="number">1e-5</span>,hidden_layer_sizes=(<span class="number">30</span>,<span class="number">20</span>), random_state=<span class="number">1</span>)</span><br><span class="line">    <span class="comment"># 训练</span></span><br><span class="line">    model.fit(X_train_std, y_train)</span><br><span class="line">    <span class="keyword">return</span> model</span><br><span class="line"></span><br><span class="line"><span class="comment"># 模型评估</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">estimate_model</span><span class="params">(y_pred, y_test, model)</span>:</span></span><br><span class="line">    <span class="comment"># 混淆矩阵，三分类情况下，大小为 3*3</span></span><br><span class="line">    cm2 = confusion_matrix(y_test,y_pred) </span><br><span class="line">    <span class="comment"># 准确率</span></span><br><span class="line">    acc = accuracy_score(y_test,y_pred)</span><br><span class="line">    <span class="comment"># 正确分类的样本数</span></span><br><span class="line">    acc_num = accuracy_score(y_test,y_pred,normalize=<span class="literal">False</span>)</span><br><span class="line">    <span class="comment"># macro 分类报告</span></span><br><span class="line">    macro_class_report = classification_report(y_test, y_pred,target_names=[<span class="string">"类0"</span>,<span class="string">"类1"</span>,<span class="string">"类2"</span>])</span><br><span class="line">    <span class="comment"># 微精确率</span></span><br><span class="line">    micro_p = precision_score(y_test,y_pred,average=<span class="string">'micro'</span>) </span><br><span class="line">    <span class="comment"># 微召回率</span></span><br><span class="line">    micro_r = recall_score(y_test,y_pred,average=<span class="string">'micro'</span>)</span><br><span class="line">    <span class="comment"># 微F1得分</span></span><br><span class="line">    micro_f1 = f1_score(y_test,y_pred,average=<span class="string">'micro'</span>) </span><br><span class="line">    </span><br><span class="line">    indicators = &#123;<span class="string">"cm2"</span>:cm2,<span class="string">"acc"</span>:acc,<span class="string">"acc_num"</span>:acc_num,<span class="string">"macro_class_report"</span>:macro_class_report,<span class="string">"micro_p"</span>:micro_p,<span class="string">"micro_r"</span>:micro_r,<span class="string">"micro_f1"</span>:micro_f1&#125;</span><br><span class="line">    <span class="keyword">return</span> indicators</span><br><span class="line"></span><br><span class="line"><span class="comment"># 可视化</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">visualization</span><span class="params">(X, y, classifier, test_id=None, resolution=<span class="number">0.02</span>)</span>:</span></span><br><span class="line">    <span class="comment"># 创建 color map</span></span><br><span class="line">    markers = (<span class="string">'s'</span>, <span class="string">'x'</span>, <span class="string">'o'</span>, <span class="string">'^'</span>, <span class="string">'v'</span>)</span><br><span class="line">    colors = (<span class="string">'red'</span>, <span class="string">'blue'</span>, <span class="string">'lightgreen'</span>, <span class="string">'gray'</span>, <span class="string">'cyan'</span>)</span><br><span class="line">    cmap = ListedColormap(colors[:len(np.unique(y))])</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 绘制决策边界</span></span><br><span class="line">    x1_min, x1_max = X[:, <span class="number">0</span>].min() - <span class="number">1</span>, X[:, <span class="number">0</span>].max() + <span class="number">1</span> <span class="comment">#第一个特征取值范围作为横轴</span></span><br><span class="line">    x2_min, x2_max = X[:, <span class="number">1</span>].min() - <span class="number">1</span>, X[:, <span class="number">1</span>].max() + <span class="number">1</span> <span class="comment">#第二个特征取值范围作为纵轴</span></span><br><span class="line">    xx1, xx2 = np.meshgrid(np.arange(x1_min, x1_max, resolution), np.arange(x2_min, x2_max, resolution)) <span class="comment"># reolution为网格剖分粒度</span></span><br><span class="line">    Z = classifier.predict(np.array([xx1.ravel(), xx2.ravel()]).T) <span class="comment"># 对组合的特征进行预测，ravel为数组展平</span></span><br><span class="line">    Z = Z.reshape(xx1.shape) <span class="comment"># Z是列向量</span></span><br><span class="line">    plt.contourf(xx1, xx2, Z, alpha=<span class="number">0.4</span>, cmap=cmap) <span class="comment"># x和y为两个等长一维数组，z为二维数组，指定每一对xy所对应的z值</span></span><br><span class="line">    plt.xlim(xx1.min(), xx1.max()) <span class="comment">#对等高线间的区域进行填充</span></span><br><span class="line">    plt.ylim(xx2.min(), xx2.max()) <span class="comment">#对等高线间的区域进行填充</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 全数据集，不同类别样本点的特征作为坐标(x,y)，用不同颜色画散点图</span></span><br><span class="line">    <span class="keyword">for</span> idx, cl <span class="keyword">in</span> enumerate(np.unique(y)):</span><br><span class="line">        plt.scatter(x=X[y == cl, <span class="number">0</span>], y=X[y == cl, <span class="number">1</span>], alpha=<span class="number">0.8</span>, c=cmap(idx), marker=markers[idx], label=cl) </span><br><span class="line">        </span><br><span class="line">    <span class="comment"># 高亮测试集</span></span><br><span class="line">    <span class="keyword">if</span> test_id:</span><br><span class="line">        X_test, y_test = X[test_id, :], y[test_id]</span><br><span class="line">        <span class="comment"># c设置颜色，测试集不同类别的实例点画图不区别颜色</span></span><br><span class="line">        plt.scatter(x=X_test[:, <span class="number">0</span>], y=X_test[:, <span class="number">1</span>], alpha=<span class="number">1.0</span>, c=<span class="string">'gray'</span>, marker=<span class="string">'^'</span>, linewidths=<span class="number">1</span>, s=<span class="number">55</span>, label=<span class="string">'test set'</span>)</span><br><span class="line">        </span><br><span class="line">    plt.xlabel(<span class="string">'petal length [standardized]'</span>)</span><br><span class="line">    plt.ylabel(<span class="string">'petal width [standardized]'</span>)</span><br><span class="line">    plt.legend(loc=<span class="string">'upper left'</span>)</span><br><span class="line">    plt.tight_layout()</span><br><span class="line">    plt.show()</span><br><span class="line">    </span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:</span><br><span class="line">    <span class="comment"># 特征提取</span></span><br><span class="line">    X, y = deal_data()</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 简单交叉验证</span></span><br><span class="line">    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=<span class="number">0.3</span>, random_state=<span class="number">0</span>)</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 数据标准化</span></span><br><span class="line">    X_train_std, X_test_std = standard_scaler(X_train, X_test)</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 模型训练</span></span><br><span class="line">    model = train_model(X_train_std, y_train)</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 预测结果</span></span><br><span class="line">    y_pred = model.predict(X_test_std)</span><br><span class="line">    print(<span class="string">"y test:"</span>, y_test) <span class="comment"># 测试集y值</span></span><br><span class="line">    print(<span class="string">"y pred:"</span>, y_pred) <span class="comment"># 预测y值</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 模型评估</span></span><br><span class="line">    indicators = estimate_model(y_pred, y_test, model)</span><br><span class="line">    cm2 = indicators[<span class="string">"cm2"</span>] </span><br><span class="line">    print(<span class="string">"混淆矩阵：\n"</span>, cm2) </span><br><span class="line">    acc =  indicators[<span class="string">"acc"</span>]</span><br><span class="line">    print(<span class="string">"准确率："</span>, acc)</span><br><span class="line">    acc_num =  indicators[<span class="string">"acc_num"</span>]</span><br><span class="line">    print(<span class="string">"正确分类的样本数："</span>, acc_num)</span><br><span class="line">    macro_class_report = indicators[<span class="string">"macro_class_report"</span>]</span><br><span class="line">    print(<span class="string">"macro 分类报告：\n"</span>, macro_class_report)</span><br><span class="line">    micro_p = indicators[<span class="string">"micro_p"</span>]</span><br><span class="line">    print(<span class="string">"微精确率："</span>, micro_p)</span><br><span class="line">    micro_r = indicators[<span class="string">"micro_r"</span>]</span><br><span class="line">    print(<span class="string">"微召回率："</span>, micro_r)</span><br><span class="line">    micro_f1 = indicators[<span class="string">"micro_f1"</span>]</span><br><span class="line">    print(<span class="string">"微F1得分："</span>, micro_f1)</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 可视化</span></span><br><span class="line">    X_combined_std = np.vstack((X_train_std, X_test_std))</span><br><span class="line">    y_combined = np.hstack((y_train, y_test))</span><br><span class="line">    <span class="comment"># classifier为分类器，test_id为测试集序号</span></span><br><span class="line">    visualization(X_combined_std, y_combined, classifier=model, test_id=range(<span class="number">105</span>, <span class="number">150</span>))</span><br></pre></td></tr></table></figure>
+
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>感谢您对我的支持，让我继续努力分享有用的技术与知识点！</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/wechatpay.jpg" alt="Alex_McAvoy 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/alipay.jpg" alt="Alex_McAvoy 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Alex_McAvoy
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://alex-mcavoy.github.io/ml/c3f7cdb7.html" title="多层感知机">https://alex-mcavoy.github.io/ml/c3f7cdb7.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/ml/" rel="tag"># 机器学习</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/ml/18592060.html" rel="prev" title="感知机">
+      <i class="fa fa-chevron-left"></i> 感知机
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/dl/437097cd.html" rel="next" title="反向传播算法">
+      反向传播算法 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【引入】"><span class="nav-number">1.</span> <span class="nav-text">【引入】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【从与或非到异或】"><span class="nav-number">2.</span> <span class="nav-text">【从与或非到异或】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#与门"><span class="nav-number">2.1.</span> <span class="nav-text">与门</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#或门"><span class="nav-number">2.2.</span> <span class="nav-text">或门</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#非门"><span class="nav-number">2.3.</span> <span class="nav-text">非门</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#异或门"><span class="nav-number">2.4.</span> <span class="nav-text">异或门</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【多层感知机】"><span class="nav-number">3.</span> <span class="nav-text">【多层感知机】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【sklearn-实现】"><span class="nav-number">4.</span> <span class="nav-text">【sklearn 实现】</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">  
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Alex_McAvoy"
+      src="/assets/img/head.jpg">
+  <p class="site-author-name" itemprop="name">Alex_McAvoy</p>
+  <div class="site-description" itemprop="description">想要成为渔夫的猎手</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">592</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">59</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">64</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Alex-McAvoy" title="GitHub → https://github.com/Alex-McAvoy" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/u011815404" title="CSDN → https://blog.csdn.net/u011815404" rel="noopener" target="_blank"><i class="fas fa-copyright fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+<!-- 访客地图 -->
+<script type="text/javascript" src="//rf.revolvermaps.com/0/0/5.js?i=50n58yo58ow&amp;m=0&amp;c=ff0000&amp;cr1=ffffff&amp;s=140" async="async"></script>
+
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdz20172133" title="https://blog.csdn.net/sdz20172133" rel="noopener" target="_blank">神仙队友</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://pxlsdz.gitee.io/" title="https://pxlsdz.gitee.io/" rel="noopener" target="_blank">神仙队友blog2</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdau_fangshifeng" title="https://blog.csdn.net/sdau_fangshifeng" rel="noopener" target="_blank">酷头</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://bycore.net" title="https://bycore.net" rel="noopener" target="_blank">凉了的某饼同学</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://kris-cn.github.io/" title="http://kris-cn.github.io/" rel="noopener" target="_blank">翟孙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://deng.fun/" title="http://deng.fun/" rel="noopener" target="_blank">芙蓉姐姐</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/wentong_Xu" title="https://blog.csdn.net/wentong_Xu" rel="noopener" target="_blank">小黑贱胖子</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.yuheng.tech/" title="https://www.yuheng.tech/" rel="noopener" target="_blank">咸于</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/lanshan1111" title="https://blog.csdn.net/lanshan1111" rel="noopener" target="_blank">肥硕硕</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdauguanweihong" title="https://blog.csdn.net/sdauguanweihong" rel="noopener" target="_blank">管少</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_41661919" title="https://blog.csdn.net/qq_41661919" rel="noopener" target="_blank">俊杰</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_40859951" title="https://blog.csdn.net/qq_40859951" rel="noopener" target="_blank">峰哥</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/LSD20164388" title="https://blog.csdn.net/LSD20164388" rel="noopener" target="_blank">狗冬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37868325" title="https://blog.csdn.net/qq_37868325" rel="noopener" target="_blank">妍大佬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://sanshuiii.github.io/" title="https://sanshuiii.github.io/" rel="noopener" target="_blank">sanshuiii</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://zjpzhao.github.io/" title="https://zjpzhao.github.io/" rel="noopener" target="_blank">brain</a>
+        </li>
+    </ul>
+  </div>
+
+		
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+  
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Alex_McAvoy</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+</br>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script><script src="/js/bookmark.js"></script>
+
+
+
+  
+
+
+
+
+  <script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '48fd73a538d3fa927f65',
+      clientSecret: '56618aefeee90bac3c20de8d51bb0b985d67252d',
+      repo        : 'Gitalk-Comment',
+      owner       : 'Alex-McAvoy',
+      admin       : ['Alex-McAvoy'],
+      id          : '809697b942ce92f28a48758f809cfcda',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+  
+  <!-- 鼠标单击粒子特效 -->
+  <script type="text/javascript" src="/js/cursor-effects.js"></script>
+  <!-- 多级目录 -->
+  <script type="text/javascript" src="/js/category.js"></script>
+  
+</body>
+</html>
