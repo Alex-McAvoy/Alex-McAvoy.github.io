@@ -37,7 +37,7 @@
 <meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/30-2.png">
 <meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/30-3.png">
 <meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/30-4.png">
-<meta property="og:updated_time" content="2023-03-18T17:29:07.721Z">
+<meta property="og:updated_time" content="2023-03-19T09:06:58.704Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="决策树概述">
 <meta name="twitter:description" content="【概述】决策树（Decision Tree）是一种用于分类或回归的机器学习方法，对于复杂的预测问题，通过建立树模型产生分支结点，依照规则递归地分割数据集，使得问题从结构上划分为不同的子问题 决策树本质是从训练集中归纳出一组规则，在给出一个新的输入后，根据规则给出相应的输出，由于与训练集不矛盾的决策树可能有多个，需要选择一个与训练数据矛盾较小的决策树，同时具有较好的泛化能力">
@@ -248,14 +248,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>10k</span>
+              <span>8.6k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>9 分钟</span>
+              <span>8 分钟</span>
             </span>
 
         </div>
@@ -348,70 +348,7 @@
 <li><code>DecisionTreeClassifier()</code>：处理分类问题</li>
 </ul>
 <p>两个方法的参数一致，使用方法相似，二者唯一的区别是用于处理分类问题的 <code>DecisionTreeClassifier()</code> 相较于 <code>DecisionTreeRegressor()</code> 多了一个 <code>class_weight</code> 参数</p>
-<p>下面以 <code>DecisionTreeClassifier()</code> 为例，介绍该方法的参数</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">DecisionTreeClassifier(criterion=<span class="string">"gini"</span>, splitter=<span class="string">"best"</span>, max_depth=<span class="literal">None</span>,</span><br><span class="line">                       min_samples_split=<span class="number">2</span>, min_samples_leaf=<span class="number">1</span>,</span><br><span class="line">                       min_weight_fraction_leaf=<span class="number">0.</span>, max_features=<span class="literal">None</span>,</span><br><span class="line">                       random_state=<span class="literal">None</span>, max_leaf_nodes=<span class="literal">None</span>,</span><br><span class="line">                       class_weight=<span class="literal">None</span>, presort=<span class="literal">False</span>)</span><br></pre></td></tr></table></figure>
-<p>令 <code>n_samples</code> 为生成样本数，<code>n_featrues</code> 为样本特征数，各参数含义如下：</p>
-<p><code>criterion</code>：特征选择的评价指标，可选参数如下：</p>
-<ul>
-<li><code>gini</code>：基尼指数（默认）</li>
-<li><code>entropy</code>：信息增益</li>
-</ul>
-<p><code>splitter</code>：分裂结点时的策略，可选参数如下：</p>
-<ul>
-<li><code>best</code>：最优分裂策略（默认），分枝时虽然随机，但是还是会优先选择更重要的特征进行分枝</li>
-<li><code>random</code>：随机分裂策略，分枝时完全随机，可能出现过拟合</li>
-</ul>
-<p><code>max_depth</code>：树的最大深度，默认 <code>None</code> 表示树的深度不限，直到出现以下两种情况之一停止：</p>
-<ul>
-<li>叶结点中所有样本点均属同一类别</li>
-<li>每个叶结点包含的样本数小于 <code>min_samples_split</code></li>
-</ul>
-<p><code>min_samples_split</code>：分裂一个内部结点所需的最少样本数</p>
-<ul>
-<li>若为整数，<code>min_samples_split</code> 即为最少样本数</li>
-<li>若为浮点数，每次分裂最少样本数为 <code>ceil(min_samples_split * n_samples)</code> </li>
-<li>若为整数，<code>min_samples_leaf</code> 即为最少样本数</li>
-<li>若为浮点数，每个叶结点最少样本数为 <code>ceil(min_samples_leaf * n_samples)</code> </li>
-</ul>
-<p><code>min_weight_fraction_leaf</code>：叶结点中样本的最小权重</p>
-<p><code>max_featrues</code>：搜寻最佳划分的时候考虑的特征数量，若已考虑了 <code>max_features</code> 个特征，但还是没有寻找到一个有效的切分，则会寻找下一个特征，直到找到一个有效切分为止</p>
-<ul>
-<li>若为整数：每次切分只考虑 <code>max_featrues</code> 个特征</li>
-<li>若为浮点数：每次切分只考虑 <code>int(max_featrues * n_features)</code> 个特征</li>
-<li>若为 <code>None</code>：每次切分只考虑 <code>n_features</code> 个特征</li>
-<li>若为 <code>auto</code> 或 <code>sqrt</code>：每次切分只考虑 <code>sqrt(n_features)</code> 个特征</li>
-<li>若为 <code>log2</code>：每次切分只考虑 <code>log2(n_features)</code> 个特征</li>
-</ul>
-<p><code>random_state</code>：设置随机数生成器</p>
-<ul>
-<li>若为 <code>None</code>：使用默认的随机数生成器</li>
-<li>若为整数：指定随机数生成器的种子</li>
-<li>若为 <code>RandomState</code> 实例：使用 <code>RandomState</code>  指定的随机数生成器</li>
-</ul>
-<p><code>max_leaf_nodes</code>：指定叶结点的最大数量</p>
-<ul>
-<li>若为 <code>None</code>：叶结点数量不限</li>
-<li>若为整数：叶结点最大数量为 <code>max_leaf_nodes</code>，同时，<code>max_depth</code> 参数被忽略</li>
-</ul>
-<p><code>class_weight</code>：类别权重</p>
-<ul>
-<li>若为 <code>None</code>：即未给出每个类别的权重，每个类别的权重都为 1</li>
-<li>若为 <code>balanced</code>：则分类权重与样本中每个类别出现的频率成反比</li>
-<li>若由 <code>fit()</code> 方法提供了样本权重：这些权重都会乘以 <code>sample_weight</code></li>
-</ul>
-<p><code>presort</code>：指定是否需要提前排序数据从而加速训练中寻找最优切分的过程</p>
-<ul>
-<li>若为 <code>True</code>：对于大数据集会减慢总体的训练过程，对于一个小数据集或者设定了最大深度的情况下，会加速训练过程</li>
-<li>若为 <code>False</code>：不提取排序数据来加速训练</li>
-</ul>
-<p>虽然参数众多，但参数都有默认值，只需要调整其中较为重要的几个参数即可，通常来说，较为重要的参数有：</p>
-<ul>
-<li><code>criterion</code>：用以设置用信息熵还是基尼系数计算</li>
-<li><code>splitter</code>：指定分支模式</li>
-<li><code>max_depth</code>：最大深度，防止过拟合</li>
-<li><code>min_samples_leaf</code>：限定每个节点分枝后子节点至少有多少个数据，否则就不分枝</li>
-</ul>
-<h2 id="决策树结构可视化"><a href="#决策树结构可视化" class="headerlink" title="决策树结构可视化"></a>决策树结构可视化</h2><p>sklearn 中没有提供决策树的可视化，其仅能让训练的模型保存到 <code>dot</code> 文件中</p>
+<h2 id="决策树结构可视化"><a href="#决策树结构可视化" class="headerlink" title="决策树结构可视化"></a>决策树结构可视化</h2><p><code>sklearn</code> 中没有提供决策树的可视化，其仅能让训练的模型保存到 <code>dot</code> 文件中</p>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> sklearn.tree <span class="keyword">import</span> export_graphviz</span><br><span class="line"><span class="keyword">with</span> open(<span class="string">"out.dot"</span>, <span class="string">"w"</span>) <span class="keyword">as</span> f:</span><br><span class="line">    f = export_graphviz(model, out_file = f, </span><br><span class="line">                        feature_names = [<span class="string">'a'</span>, <span class="string">'b'</span>, <span class="string">'c'</span>, <span class="string">'d'</span>])</span><br></pre></td></tr></table></figure>
 <p>之后，一般使用 <code>graphviz</code> 来进行可视化，其部署主要包括 <code>graphviz</code>  的安装和 Python 的 <code>graphviz</code> 插件的安装</p>
 <ol>
@@ -570,7 +507,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">592</span>
+          <span class="site-state-item-count">597</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
