@@ -25,18 +25,22 @@
     var CONFIG = {"hostname":"alex-mcavoy.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":16,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":true,"color":"#ff0000","save":"manual"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":true},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.json"};
   </script>
 
-  <meta name="description" content="References：  【机器学习】支持向量机 SVM（非常详细） 机器学习笔记（五）：支持向量机（SVM） 支持向量机（SVM）——原理篇   【】">
+  <meta name="description" content="References：  【机器学习】支持向量机 SVM（非常详细） 机器学习笔记（五）：支持向量机（SVM） 支持向量机（SVM）——原理篇   【引入】硬间隔支持向量机是用来解决训练集完全线性可分情况的二分类模型，但在实际应用中，由于实际获取的真实样本往往会存在噪声，使得训练数据不是清晰线性可分的，又或者即使找到了一个可以使不同类样本完全分开的超平面，也很难确定这个线性可分的结果是不是由于过">
 <meta name="keywords" content="机器学习">
 <meta property="og:type" content="article">
 <meta property="og:title" content="软间隔支持向量机">
 <meta property="og:url" content="https://alex-mcavoy.github.io/ml/141da982.html">
 <meta property="og:site_name" content="Alex_McAvoy">
-<meta property="og:description" content="References：  【机器学习】支持向量机 SVM（非常详细） 机器学习笔记（五）：支持向量机（SVM） 支持向量机（SVM）——原理篇   【】">
+<meta property="og:description" content="References：  【机器学习】支持向量机 SVM（非常详细） 机器学习笔记（五）：支持向量机（SVM） 支持向量机（SVM）——原理篇   【引入】硬间隔支持向量机是用来解决训练集完全线性可分情况的二分类模型，但在实际应用中，由于实际获取的真实样本往往会存在噪声，使得训练数据不是清晰线性可分的，又或者即使找到了一个可以使不同类样本完全分开的超平面，也很难确定这个线性可分的结果是不是由于过">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2023-03-23T14:11:11.976Z">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/40-1.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/40-2.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/40-3.png">
+<meta property="og:updated_time" content="2023-03-29T02:46:39.262Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="软间隔支持向量机">
-<meta name="twitter:description" content="References：  【机器学习】支持向量机 SVM（非常详细） 机器学习笔记（五）：支持向量机（SVM） 支持向量机（SVM）——原理篇   【】">
+<meta name="twitter:description" content="References：  【机器学习】支持向量机 SVM（非常详细） 机器学习笔记（五）：支持向量机（SVM） 支持向量机（SVM）——原理篇   【引入】硬间隔支持向量机是用来解决训练集完全线性可分情况的二分类模型，但在实际应用中，由于实际获取的真实样本往往会存在噪声，使得训练数据不是清晰线性可分的，又或者即使找到了一个可以使不同类样本完全分开的超平面，也很难确定这个线性可分的结果是不是由于过">
+<meta name="twitter:image" content="https://alex-mcavoy.github.io/images/ml/40-1.png">
 
 <link rel="canonical" href="https://alex-mcavoy.github.io/ml/141da982.html">
 
@@ -243,14 +247,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>68</span>
+              <span>11k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>1 分钟</span>
+              <span>10 分钟</span>
             </span>
 
         </div>
@@ -270,7 +274,238 @@
 <li><a href="https://zhuanlan.zhihu.com/p/31886934" target="_blank" rel="noopener">支持向量机（SVM）——原理篇</a></li>
 </ul>
 </blockquote>
-<h1 id="【】"><a href="#【】" class="headerlink" title="【】"></a>【】</h1>
+<h1 id="【引入】"><a href="#【引入】" class="headerlink" title="【引入】"></a>【引入】</h1><p>硬间隔支持向量机是用来解决训练集完全线性可分情况的二分类模型，但在实际应用中，由于实际获取的真实样本往往会存在噪声，使得训练数据不是清晰线性可分的，又或者即使找到了一个可以使不同类样本完全分开的超平面，也很难确定这个线性可分的结果是不是由于过拟合导致的</p>
+<p>也就是说，训练集中存在一些<strong>特异点（Outlier）</strong>，将这些特异点去除后，剩余大部分的样本点的集合是线性可分的，这被称为近似线性可分</p>
+<p><img width="400" src="/images/ml/40-1.png"></p>
+<p>对于近似线性可分的训练集，引入了<strong>软间隔（Soft Margin）</strong>这个概念，并将求解硬间隔最大化问题改为求解<strong>软间隔最大化</strong>问题，从而使得硬间隔支持向量机更一般化，能够对近似线性可分的数据进行处理</p>
+<h1 id="【假设形式】"><a href="#【假设形式】" class="headerlink" title="【假设形式】"></a>【假设形式】</h1><p>对于给定容量为 $n$ 的<strong>线性不可分</strong>训练集 $D=\{(\mathbf{x}_1,y_1),(\mathbf{x}_2,y_2),…,(\mathbf{x}_n,y_n)\}$，第 $i$ 组样本中的输入 $\mathbf{x}_i$ 具有 $m$ 个特征值，即：$\mathbf{x}_i=(x_i^{(1)},x_i^{(2)},…,x_i^{(n)})\in \mathbb{R}^m$，输出 $y_i\in\mathcal{Y}=\{+1,-1\}$</p>
+<p><strong>软间隔支持向量机（Soft Margin Support Vector Machines）</strong>对于线性不可分的训练集，通过求解<strong>软间隔最大化</strong>问题：</p>
+<script type="math/tex; mode=display">
+\begin{matrix}
+\min\limits_{\boldsymbol{\omega},\theta,\boldsymbol{\xi}} && \frac{1}{2}||\boldsymbol{\omega}||_2^2 + C\sum\limits_{i=1}^n \xi_i\\
+s.t. && y_i(\boldsymbol{\omega}\cdot\mathbf{x}+\theta)\geq 1-\xi_i  \\
+&& \xi_i \geq 0, && i=1,2,\cdots,n
+\end{matrix}</script><p>其中，$\xi_i\geq 0$ 是为每个样本点 $(\mathbf{x}_i,y_i)$ 引入的松弛变量，$C&gt;0$ 是惩罚系数</p>
+<p>得到最优分离超平面：</p>
+<script type="math/tex; mode=display">
+S: \boldsymbol{\omega}^*\cdot \mathbf{x}+\theta^* = 0</script><p>以及相应的分类决策函数：</p>
+<script type="math/tex; mode=display">
+f(\mathbf{x}) = \text{sigmoid}(\boldsymbol{\omega}^*+\theta^*)</script><p>由于现实中的训练数据往往存在噪声或特异点，是线性不可分的，因此软间隔支持向量机具有更广的适用性</p>
+<p>同时，由于软间隔支持向量机是在硬间隔支持向量机基础上针对训练数据线性不可分时的改进，因此又称<strong>线性支持向量机（Linear Support Vector Machines）</strong></p>
+<p>也就是说，线性（软间隔）支持向量机包含线性可分（硬间隔）支持向量机</p>
+<h1 id="【软间隔支持向量机学习算法的原始形式】"><a href="#【软间隔支持向量机学习算法的原始形式】" class="headerlink" title="【软间隔支持向量机学习算法的原始形式】"></a>【软间隔支持向量机学习算法的原始形式】</h1><h2 id="软间隔最大化"><a href="#软间隔最大化" class="headerlink" title="软间隔最大化"></a>软间隔最大化</h2><p><strong>软间隔最大化（Soft Margin Maximization）</strong>同样是找到使所有样本点的几何间隔的最小值最大的分离超平面，即寻找<strong>最大间隔分离超平面</strong></p>
+<p>对于硬间隔最大化中的原始问题：</p>
+<script type="math/tex; mode=display">
+\begin{matrix}
+\min\limits_{\boldsymbol{\omega},\theta} && \frac{1}{2}||\boldsymbol{\omega}||_2^2 \\
+s.t. && y_i ( \boldsymbol{\omega}\cdot\mathbf{x}_i+\theta)-1  \geq 0 ,&& i=1,2,\cdots,n
+\end{matrix}</script><p>线性不可分意味着某些样本点 $(\mathbf{x}_i,y_i)$ 不能满足函数间隔大于等于 $1$ 的约束条件 $y_i(\boldsymbol{\omega}\cdot\mathbf{x}+\theta)-1\geq 0$</p>
+<p>为解决这个问题，可以对每个样本点 $(\mathbf{x}_i,y_i)$ 引入一个松弛变量 $\xi_i\geq 0$，使得函数间隔加上松弛变量大于等于 $1$，即：</p>
+<script type="math/tex; mode=display">
+y_i(\boldsymbol{\omega}\cdot\mathbf{x}+\theta)\geq 1-\xi_i</script><p>同时，对每个松弛变量 $\xi_i$，支付一个代价 $\xi_i$，使得目标函数由 $\frac{1}{2}||\boldsymbol{\omega}||_2^2$ 变为：</p>
+<script type="math/tex; mode=display">
+\frac{1}{2}||\boldsymbol{\omega}||_2^2 + C\sum_{i=1}^n \xi_i</script><p>其中，$C&gt;0$ 为惩罚系数，由具体的应用问题决定，$C$ 越大说明对误分类的惩罚越大</p>
+<p>此时的目标函数有两层含义，一是使 $\frac{1}{2}||\boldsymbol{\omega}||_2^2$ 尽量小，即令几何间隔尽量大，二是令误分类点的个数尽量小，并通过惩罚系数 $C$ 来调和二者的关系</p>
+<p>于是可以得到约束最优化问题：</p>
+<script type="math/tex; mode=display">
+\begin{matrix}
+\min\limits_{\boldsymbol{\omega},\theta} && \frac{1}{2}||\boldsymbol{\omega}||_2^2 + C\sum\limits_{i=1}^n \xi_i\\
+s.t. && y_i(\boldsymbol{\omega}\cdot\mathbf{x}+\theta)\geq 1-\xi_i  \\
+&& \xi_i \geq 0, && i=1,2,\cdots,n
+\end{matrix}</script><p>上述的约束最优化问题是一个<strong>凸二次规划（Convex Quadratic Programming）</strong>问题，相对于硬间隔最大化，其被称为软间隔最大化</p>
+<p>需要注意的是，对于上述的凸二次规划问题，关于 $(\boldsymbol{\omega},\theta,\boldsymbol{\xi})$ 的解是存在的，同时 $\boldsymbol{\omega}$ 的解是唯一的，但 $\theta$ 的解可能不唯一，其存在于一个区间中</p>
+<p>关于硬间隔最大化，详见：<a href="https://alex-mcavoy.github.io/ml/cfe76bf2.html">硬间隔支持向量机</a></p>
+<h2 id="最大间隔法"><a href="#最大间隔法" class="headerlink" title="最大间隔法"></a>最大间隔法</h2><p>软间隔支持向量机的学习算法为<strong>最大间隔法</strong></p>
+<p>输入：容量为 $n$ 的训练集 $D=\{(\mathbf{x}_1,y_1),(\mathbf{x}_2,y_2),…,(\mathbf{x}_n,y_n)\}$，第 $i$ 组样本中的输入 $\mathbf{x}_i$ 具有 $m$ 个特征值，即：$\mathbf{x}_i=(x_i^{(1)},x_i^{(2)},…,x_i^{(m)})\in \mathbb{R}^m$，输出 $y_i\in\mathcal{Y}=\{+1,-1\}$</p>
+<p>输出：最大间隔分离超平面、分类决策函数</p>
+<p>算法步骤：</p>
+<p>Step1：构造并求解如下约束最优化问题</p>
+<script type="math/tex; mode=display">
+\begin{matrix}
+\min\limits_{\boldsymbol{\omega},\theta,\boldsymbol{\xi}} && \frac{1}{2}||\boldsymbol{\omega}||_2^2 + C\sum\limits_{i=1}^n \xi_i\\
+s.t. && y_i(\boldsymbol{\omega}\cdot\mathbf{x}+\theta)\geq 1-\xi_i  \\
+&& \xi_i \geq 0, && i=1,2,\cdots,n
+\end{matrix}</script><p>求得最优解 $\boldsymbol{\omega}^*$ 和 $\theta^*$</p>
+<p>Step2：根据最优解 $\boldsymbol{\omega}^*$ 和 $\theta^*$，得到分离超平面</p>
+<script type="math/tex; mode=display">
+\boldsymbol{\omega}^* \cdot \mathbf{x} +\theta^* = 0</script><p>以及分类决策函数</p>
+<script type="math/tex; mode=display">
+f(\mathbf{x}) = \text{sigmoid}(\boldsymbol{\omega}^*\cdot\mathbf{x}+\theta^*)</script><h1 id="【软间隔支持向量机学习算法的对偶形式】"><a href="#【软间隔支持向量机学习算法的对偶形式】" class="headerlink" title="【软间隔支持向量机学习算法的对偶形式】"></a>【软间隔支持向量机学习算法的对偶形式】</h1><h2 id="对偶问题的转化"><a href="#对偶问题的转化" class="headerlink" title="对偶问题的转化"></a>对偶问题的转化</h2><p>为求解软间隔支持向量机的最优化问题：</p>
+<script type="math/tex; mode=display">
+\begin{matrix}
+\min\limits_{\boldsymbol{\omega},\theta} && \frac{1}{2}||\boldsymbol{\omega}||_2^2 + C\sum\limits_{i=1}^n \xi_i\\
+s.t. && y_i(\boldsymbol{\omega}\cdot\mathbf{x}+\theta)\geq 1-\xi_i  \\
+&& \xi_i \geq 0, && i=1,2,\cdots,n
+\end{matrix}</script><p>将其作为原始最优化问题，应用拉格朗日对偶性，通过求解对偶问题来得到原始问题的最优解</p>
+<p>首先，构建拉格朗日函数，即为每一个不等式约束引入拉格朗日乘子 $\lambda_i\geq 0$ 和 $\mu_i\geq 0$，即：</p>
+<script type="math/tex; mode=display">
+L(\boldsymbol{\omega},\theta,\boldsymbol{\xi},\boldsymbol{\lambda},\boldsymbol{\mu}) 
+= \frac{1}{2}||\boldsymbol{\omega}||_2^2 + C\sum_{i=1}^n\xi_i - \sum_{i=1}^n \lambda_i( y_i(\boldsymbol{\omega}\cdot \mathbf{x}_i + \theta)-1+\xi_i) -\sum_{i=1}^n \mu_i\xi_i</script><p>其中，$\boldsymbol{\lambda}=(\lambda_1,\lambda_2,\cdots,\lambda_n)^T$ 和 <script type="math/tex">\boldsymbol{\mu}=(\mu_1,\mu_2,\cdots,\mu_n)^T</script> 为拉格朗日乘子向量</p>
+<p>此时，根据拉格朗日对偶性，原始问题的对偶问题就变为了极大极小问题，即：</p>
+<script type="math/tex; mode=display">
+\max_{\boldsymbol{\lambda},\boldsymbol{\mu}} \min_{\boldsymbol{\omega},\theta,\boldsymbol{\xi}} L(\boldsymbol{\omega},\theta,\boldsymbol{\xi},\boldsymbol{\lambda},\boldsymbol{\mu})</script><p>因此，为了得到对偶问题的解，就要先求拉格朗日函数 $L(\boldsymbol{\omega},\theta,\boldsymbol{\xi},\boldsymbol{\lambda},\boldsymbol{\mu})$ 对 $\boldsymbol{\omega}$、$\theta$、$\boldsymbol{\xi}$ 的极小，再求对 $\boldsymbol{\lambda}$、$\boldsymbol{\xi}$ 的极大</p>
+<p>注：关于拉格朗日函数与拉格朗日对偶性，详见 <a href="https://alex-mcavoy.github.io/mathematics/convex-optimization/763e2d04.html">拉格朗日乘子法与对偶性</a></p>
+<h2 id="对偶问题中的极小问题"><a href="#对偶问题中的极小问题" class="headerlink" title="对偶问题中的极小问题"></a>对偶问题中的极小问题</h2><p>对于对偶问题中的极小问题：</p>
+<script type="math/tex; mode=display">
+\min_{\boldsymbol{\omega},\theta,\boldsymbol{\xi}} L(\boldsymbol{\omega},\theta,\boldsymbol{\xi},\boldsymbol{\lambda},\boldsymbol{\mu})</script><p>令拉格朗日函数 $L(\boldsymbol{\omega},\theta,\boldsymbol{\xi},\boldsymbol{\lambda},\boldsymbol{\mu})$ 分别对 $\boldsymbol{\omega}$、$\theta$、$\boldsymbol{\xi}$ 求偏导，并令其等于 $0$，即：</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+\triangledown_{\boldsymbol{\omega}} L(\boldsymbol{\omega},\theta,\boldsymbol{\xi},\boldsymbol{\lambda},\boldsymbol{\mu})
+&= \boldsymbol{\omega} - \sum_{i=1}^n \lambda_i y_i \mathbf{x}_i = 0 \\
+\triangledown_{\theta} L(\boldsymbol{\omega},\theta,\boldsymbol{\xi},\boldsymbol{\lambda},\boldsymbol{\mu}) 
+&= -\sum_{i=1}^n \lambda_i y_i = 0 \\
+\triangledown_{\xi_i} L(\boldsymbol{\omega},\theta,\boldsymbol{\xi},\boldsymbol{\lambda},\boldsymbol{\mu}) 
+&= C-\lambda_i -\mu_i= 0
+\end{align*}</script><p>可得：</p>
+<script type="math/tex; mode=display">
+\begin{gather*}
+\boldsymbol{\omega}
+= \sum_{i=1}^n \lambda_i y_i \mathbf{x}_i \\
+\sum_{i=1}^n \lambda_i y_i = 0 \\
+C-\lambda_i-\mu_i = 0
+\end{gather*}</script><p>将上式带回拉格朗日函数 $L(\boldsymbol{\omega},\theta,\boldsymbol{\xi},\boldsymbol{\lambda},\boldsymbol{\mu})$ 中，有：</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+L(\boldsymbol{\omega},\theta,\boldsymbol{\xi},\boldsymbol{\lambda},\boldsymbol{\mu})
+=& \frac{1}{2}||\boldsymbol{\omega}||_2^2 + C\sum_{i=1}^n\xi_i - \sum_{i=1}^n \lambda_i( y_i(\boldsymbol{\omega}\cdot \mathbf{x}_i + \theta)-1+\xi_i) -\sum_{i=1}^n \mu_i\xi_i \\
+=& \frac{1}{2} \sum_{i=1}^n \sum_{j=1}^n \lambda_i\lambda_j y_i y_j (\mathbf{x}_i\cdot\mathbf{x}_j) + \sum_{i=1}^n(\lambda_i+\mu_i) \xi_i \\
+&-\sum_{i=1}^n\lambda_i \Big ( y_i \big( (\sum_{j=1}^n\lambda_jy_j\mathbf{x}_j)\cdot \mathbf{x}_i +\theta \big) -1 + \xi_i \Big) -\sum_{i=1}^n\mu_i\xi_i \\
+=& \frac{1}{2} \sum_{i=1}^n \sum_{j=1}^n \lambda_i\lambda_j y_i y_j (\mathbf{x}_i\cdot\mathbf{x}_j) + \sum_{i=1}^n(\lambda_i+\mu_i) \xi_i \\
+&-\sum_{i=1}^n\sum_{j=1}^n\lambda_i\lambda_jy_iy_j(\mathbf{x}_j\cdot \mathbf{x}_i) + 
+\theta\sum_{i=1}^n\lambda_iy_i  +\sum_{i=1}^n\lambda_i -\sum_{i=1}^n\lambda_i\xi_i
+-\sum_{i=1}^n\mu_i\xi_i \\
+=& -\frac{1}{2} \sum_{i=1}^n \sum_{j=1}^n \lambda_i\lambda_j y_i y_j (\mathbf{x}_i\cdot\mathbf{x}_j) +\sum_{i=1}^n \lambda_i
+\end{align*}</script><p>故有：</p>
+<script type="math/tex; mode=display">
+\min_{\boldsymbol{\omega},\theta,\boldsymbol{\xi}} L(\boldsymbol{\omega},\theta,\boldsymbol{\xi},\boldsymbol{\lambda},\boldsymbol{\mu})
+= -\frac{1}{2} \sum_{i=1}^n \sum_{j=1}^n \lambda_i\lambda_j y_i y_j (\mathbf{x}_i\cdot\mathbf{x}_j)   + \sum_{i=1}^n \lambda_i</script><h2 id="对偶问题中的极大问题"><a href="#对偶问题中的极大问题" class="headerlink" title="对偶问题中的极大问题"></a>对偶问题中的极大问题</h2><p>对于对偶问题中的极大问题：</p>
+<script type="math/tex; mode=display">
+\max_{\boldsymbol{\lambda},\boldsymbol{\mu}} \min_{\boldsymbol{\omega},\theta,\boldsymbol{\xi}} L(\boldsymbol{\omega},\theta,\boldsymbol{\xi},\boldsymbol{\lambda},\boldsymbol{\mu})</script><p>即为对偶问题，有：</p>
+<script type="math/tex; mode=display">
+\begin{matrix}
+\max\limits_{\boldsymbol{\lambda}} && -\frac{1}{2} \sum\limits_{i=1}^n \sum\limits_{j=1}^n \lambda_i\lambda_j y_i y_j (\mathbf{x}_i\cdot\mathbf{x}_j)   + \sum\limits_{i=1}^n \lambda_i \\
+s.t. && \sum\limits_{i=1}^n\lambda_i y_i= 0 \\
+&& C-\lambda_i-\mu_i=0 \\
+&& \lambda_i\geq 0\\
+&& \mu_i \geq 0 ,&& i=1,2,\cdots,n
+\end{matrix}</script><p>利用等式约束 $C-\lambda_i-\mu_i=0$，消去 $\mu_i$，有：</p>
+<script type="math/tex; mode=display">
+\begin{matrix}
+\max\limits_{\boldsymbol{\lambda}} && -\frac{1}{2} \sum\limits_{i=1}^n \sum\limits_{j=1}^n \lambda_i\lambda_j y_i y_j (\mathbf{x}_i\cdot\mathbf{x}_j)   + \sum\limits_{i=1}^n \lambda_i \\
+s.t. && \sum\limits_{i=1}^n\lambda_i y_i= 0 \\
+&& 0\leq \lambda_i \leq C,\quad i=1,2,\cdots,n
+\end{matrix}</script><p>再将该问题的目标函数由求极大转为求极小，就得到如下的等价的对偶最优化问题：</p>
+<script type="math/tex; mode=display">
+\begin{matrix}
+\min\limits_{\boldsymbol{\lambda}} && \frac{1}{2} \sum\limits_{i=1}^n \sum\limits_{j=1}^n \lambda_i\lambda_j y_i y_j (\mathbf{x}_i\cdot\mathbf{x}_j) - \sum\limits_{i=1}^n \lambda_i \\
+s.t. && \sum\limits_{i=1}^n\lambda_i y_i= 0 \\
+&& 0\leq \lambda_i \leq C,\quad i=1,2,\cdots,n
+\end{matrix}</script><p>可以发现，原始问题是凸优化问题，且 Slater 条件成立，那么，原始问题强对偶性成立，即求解原始问题可以转换为求解上述的对偶问题</p>
+<p>假设上述的对偶问题对 $\boldsymbol{\lambda}$ 的一个解为 $\boldsymbol{\lambda}^* = (\lambda_1^*,\lambda_2^*,\cdots,\lambda_n^*)^T$，那么根据 KKT 条件，可得：</p>
+<script type="math/tex; mode=display">
+\begin{gather*}
+\triangledown_{\boldsymbol{\omega}} L(\boldsymbol{\omega}^*,\theta^*,\boldsymbol{\xi}^*,\boldsymbol{\lambda}^*,\boldsymbol{\mu}^*) = \boldsymbol{\omega}^* - \sum_{i=1}^n \lambda_i^* y_i \mathbf{x}_i = 0 \\
+\triangledown_{\theta} L(\boldsymbol{\omega}^*,\theta^*,\boldsymbol{\xi}^*,\boldsymbol{\lambda}^*,\boldsymbol{\mu}^*) = -\sum_{i=1}^n \lambda_i^* y_i = 0 \\
+\triangledown_{\boldsymbol{\xi}} L(\boldsymbol{\omega}^*,\theta^*,\boldsymbol{\xi}^*,\boldsymbol{\lambda}^*,\boldsymbol{\mu}^*) =C-\boldsymbol{\lambda}^*-\boldsymbol{\mu}^* = 0 \\ 
+\lambda_i^*(y_i(\boldsymbol{\omega}^*\cdot \mathbf{x}_i+\theta^*)-1+\xi_i^*) = 0 \\
+\mu_i^*\xi_i^*=0 \\
+y_i(\boldsymbol{\omega}^*\cdot \mathbf{x}_i+\theta^*)-1+\xi_i^* \geq 0 \\
+\xi_i^* \geq 0 \\
+\lambda_i^* \geq 0 \\
+\mu_i^* \geq 0, && i=1,2,\cdots,n
+\end{gather*}</script><p>故而有：</p>
+<script type="math/tex; mode=display">
+\boldsymbol{\omega}^* = \sum_{i=1}^n \lambda_i^* y_i\mathbf{x}_i</script><p>同时，若存在 $0&lt;\lambda_j^*&lt;C$，对此 $j$ 有：</p>
+<script type="math/tex; mode=display">
+y_j(\boldsymbol{\omega}^* \cdot \mathbf{x}_j+\theta^*)-1=0</script><p>将 $\boldsymbol{\omega}^* = \sum\limits_{i=1}^n \lambda_i^* y_i\mathbf{x}_i$ 带入到上式，并由 $y_j^2=1$，可得：</p>
+<script type="math/tex; mode=display">
+\theta^* = y_j - \sum_{i=1}^n \lambda_i^* y_i (\mathbf{x_i}\cdot \mathbf{x}_j)</script><p>故而，分离超平面可写为：</p>
+<script type="math/tex; mode=display">
+\sum_{i=1}^n \lambda_i^* y_i(\mathbf{x}\cdot\mathbf{x}_i) + \theta^* =0</script><p>分类决策函数可写为：</p>
+<script type="math/tex; mode=display">
+f(\mathbf{x}) = \text{sigmoid}\Big(\sum_{i=1}^n \lambda_i^* y_i(\mathbf{x}\cdot\mathbf{x}_i)+\theta^*\Big)</script><h2 id="对偶学习算法"><a href="#对偶学习算法" class="headerlink" title="对偶学习算法"></a>对偶学习算法</h2><p>根据上述对偶问题的推导，可得到软间隔支持向量机的对偶学习算法</p>
+<p>输入：容量为 $n$ 的<strong>近似线性可分</strong>的训练集 $D=\{(\mathbf{x}_1,y_1),(\mathbf{x}_2,y_2),…,(\mathbf{x}_n,y_n)\}$，第 $i$ 组样本中的输入 $\mathbf{x}_i$ 具有 $m$ 个特征值，即：$\mathbf{x}_i=(x_i^{(1)},x_i^{(2)},…,x_i^{(m)})\in \mathbb{R}^m$，输出 $y_i\in\mathcal{Y}=\{+1,-1\}$</p>
+<p>输出：最大间隔分离超平面、分类决策函数</p>
+<p>算法步骤：</p>
+<p>Step1：选择惩罚系数 $C&gt;0$，构造并求解如下约束最优化问题（原始问题的对偶问题）</p>
+<script type="math/tex; mode=display">
+\begin{matrix}
+\min\limits_{\boldsymbol{\lambda}} && \frac{1}{2} \sum\limits_{i=1}^n \sum\limits_{j=1}^n \lambda_i\lambda_j y_i y_j (\mathbf{x}_i\cdot\mathbf{x}_j) - \sum\limits_{i=1}^n \lambda_i \\
+s.t. && \sum\limits_{i=1}^n\lambda_i y_i= 0 \\
+&& 0\leq \lambda_i \leq C,&& i=1,2,\cdots,n
+\end{matrix}</script><p>求得最优解 $\boldsymbol{\lambda}^* = (\lambda_1^*,\lambda_2^*,\cdots,\lambda_n^*)^T$</p>
+<p>Step2：根据最优解 $\boldsymbol{\lambda}^*$，计算分离超平面的法向量 $\boldsymbol{\omega}^*$ 和截距 $\theta^*$</p>
+<p>对于法向量 $\boldsymbol{\omega}^*$，有：</p>
+<script type="math/tex; mode=display">
+\boldsymbol{\omega}^* = \sum_{i=1}^n \lambda_i^* y_i\mathbf{x}_i</script><p>选择最优解 $\boldsymbol{\lambda}^*$的一个分量 $\lambda_j^*$，满足 $0&lt;\lambda_j^*&lt;C$，计算截距 $\theta^*$，有：</p>
+<script type="math/tex; mode=display">
+\theta^* = y_j - \sum_{i=1}^n \lambda_i^* y_i (\mathbf{x_i}\cdot \mathbf{x}_j)</script><p>Step3：根据最优解 $\boldsymbol{\omega}^*$ 和 $\theta^*$，得到分离超平面</p>
+<script type="math/tex; mode=display">
+\boldsymbol{\omega}^* \cdot \mathbf{x} +\theta^* = 0</script><p>以及分类决策函数</p>
+<script type="math/tex; mode=display">
+f(\mathbf{x}) = \text{sigmoid}(\boldsymbol{\omega}^*\cdot\mathbf{x}+\theta^*)</script><hr>
+<p>对于 Step1 中的约束最优化问题，其是一个凸二次规划问题，可以使用 SMO 算法求解，关于 SMO 算法，详见：<a href="https://alex-mcavoy.github.io/mathematics/convex-optimization/1f33dd66.html">序列最小最优化(SMO)算法</a></p>
+<p>在 Step2 中，对任一满足 $0&lt;\lambda_j^*&lt;C$ 的 $\lambda_j^*$，均可求出截距 $\theta^*$，从理论上来说，原始问题对 $\theta$ 的解可能不唯一，然而在实际应用中，往往只会出现上述算法叙述的情况</p>
+<h1 id="【支持向量与间隔边界】"><a href="#【支持向量与间隔边界】" class="headerlink" title="【支持向量与间隔边界】"></a>【支持向量与间隔边界】</h1><p>在线性不可分的情况下，对于对偶问题的解 $\boldsymbol{\lambda}^* = (\lambda_1^*,\lambda_2^*,\cdots,\lambda_n^*)^T$ 中对应 $\lambda_i^*&gt;0$ 的样本点 $(\mathbf{x}_i,y_i)$ 的实例 $\mathbf{x_i}$ 称为软间隔的<strong>支持向量（Support Vector）</strong></p>
+<p>如图所示，红线标出的是支持向量 $\mathbf{x}_i$ 到间隔边界的距离 $\frac{1}{||\boldsymbol{\omega}_2^2||}\xi_i$</p>
+<p><img width="500" src="/images/ml/40-2.png"></p>
+<p>此外，分类决策函数：</p>
+<script type="math/tex; mode=display">
+f(\mathbf{x}) = \text{sigmoid}\Big(\sum_{i=1}^n \lambda_i^* y_i(\mathbf{x}\cdot\mathbf{x}_i)+\theta^*\Big)</script><p>根据 KKT 条件，对于任意样本 $(\mathbf{x}_i,y_i)$，总有 $\lambda_i=0$ 或 $y_i(\boldsymbol{\omega}\cdot \mathbf{x}_i+\theta)=1-\xi_i$</p>
+<ul>
+<li>当 $\lambda_i=0$ 时，该样本不会在分类决策函数 $f(\mathbf{x})$ 求和中出现，也就不会对 $f(\mathbf{x})$ 造成任何影响</li>
+<li>当 $\lambda_i&gt;0$ 时，必有 $y_i(\boldsymbol{\omega}\cdot \mathbf{x}_i+\theta)=1-\xi_i$，所对应的样本点正好位于间隔边界上，是一个支持向量<ul>
+<li>若 <script type="math/tex">\lambda_i<C</script>，则 $\mu_i&gt;0$，进而有 $\xi_i=0$，相应的支持向量 $\mathbf{x}_i$ 恰好落在间隔边界上</li>
+<li>若 $\lambda_i=C$，则 $\mu_i=0$，此时若 $\xi_i=0$，即分类正确，$\mathbf{x}_i$ 位于间隔边界与分离超平面之间</li>
+<li>若 $\lambda_i=C$，则 $\mu_i=0$，此时若 $\xi_i=1$，$\mathbf{x}_i$ 位于分离超平面上</li>
+<li>若 $\lambda_i=C$，则 $\mu_i=0$，此时若 $\xi_i&gt;1$，即分类错误，$\mathbf{x}_i$ 位于分离超平面误分一侧</li>
+</ul>
+</li>
+</ul>
+<h1 id="【软间隔支持向量机的等价问题】"><a href="#【软间隔支持向量机的等价问题】" class="headerlink" title="【软间隔支持向量机的等价问题】"></a>【软间隔支持向量机的等价问题】</h1><h2 id="最优化问题"><a href="#最优化问题" class="headerlink" title="最优化问题"></a>最优化问题</h2><p>对于软间隔支持向量机来说，其模型为分离超平面 $S:\boldsymbol{\omega}^*\cdot \mathbf{x}+\theta^*=0$ 以及分类决策函数 $f(\mathbf{x}) = \text{sigmoid}(\boldsymbol{\omega}^*+\theta^*)$，学习策略为软间隔最大化，学习方法为凸二次规划</p>
+<p>对于原始问题：</p>
+<script type="math/tex; mode=display">
+\begin{matrix}
+\min\limits_{\boldsymbol{\omega},\theta,\boldsymbol{\xi}} && \frac{1}{2}||\boldsymbol{\omega}||_2^2 + C\sum\limits_{i=1}^n \xi_i\\
+s.t. && y_i(\boldsymbol{\omega}\cdot\mathbf{x}+\theta)\geq 1-\xi_i  \\
+&& \xi_i \geq 0, && i=1,2,\cdots,n
+\end{matrix}</script><p>其等价于最优化：</p>
+<script type="math/tex; mode=display">
+\begin{matrix}
+\min\limits_{\boldsymbol{\omega},\theta} && \sum\limits_{i=1}^n \max(0,1-y_i(\boldsymbol{\omega}\cdot \mathbf{x}_i+\theta))+\lambda||\boldsymbol{\omega}||_2^2
+\end{matrix}</script><hr>
+<p>证明：</p>
+<p>对于最优化问题：</p>
+<script type="math/tex; mode=display">
+\begin{matrix}
+\min\limits_{\boldsymbol{\omega},\theta} && \sum\limits_{i=1}^n \max(0,1-y_i(\boldsymbol{\omega}\cdot \mathbf{x}_i+\theta))+\lambda||\boldsymbol{\omega}||_2^2
+\end{matrix}</script><p>取 $\xi_i=\max(0,1-y_i(\boldsymbol{\omega}\cdot \mathbf{x}_i+\theta))$，当 $1-y_i(\boldsymbol{\omega}\cdot \mathbf{x}_i+\theta)&gt;0$ 时，有 $\xi_i&gt;0$，进而有： </p>
+<script type="math/tex; mode=display">
+y_i(\boldsymbol{\omega}\cdot \mathbf{x}_i+\theta)=1-\xi_i</script><p>当 $1-y_i(\boldsymbol{\omega}\cdot \mathbf{x}_i+\theta)\leq0$ 时，有 $\xi_i=0$，进而有：</p>
+<script type="math/tex; mode=display">
+y_i(\boldsymbol{\omega}\cdot \mathbf{x}_i+\theta)\geq 1-\xi_i</script><p>此时，满足原始问题的不等式约束，故最优化问题可写为：</p>
+<script type="math/tex; mode=display">
+\begin{matrix}
+\min\limits_{\boldsymbol{\omega},\theta} && \sum\limits_{i=1}^n \xi_i+\lambda||\boldsymbol{\omega}||_2^2
+\end{matrix}</script><p>进一步，取 $\lambda=\frac{1}{2C}$，则有：</p>
+<script type="math/tex; mode=display">
+\begin{matrix}
+\min\limits_{\boldsymbol{\omega},\theta} && \frac{1}{C}(\frac{1}{2}||\boldsymbol{\omega}||_2^2+C\sum\limits_{i=1}^n \xi_i)
+\end{matrix}</script><p>与原始问题等价</p>
+<p>反之，也可将原始问题表示为上述的最优化问题</p>
+<h2 id="合页损失函数"><a href="#合页损失函数" class="headerlink" title="合页损失函数"></a>合页损失函数</h2><p>对于最优化问题</p>
+<script type="math/tex; mode=display">
+\begin{matrix}
+\min\limits_{\boldsymbol{\omega},\theta} && \sum\limits_{i=1}^n \max(0,1-y_i(\boldsymbol{\omega}\cdot \mathbf{x}_i+\theta))+\lambda||\boldsymbol{\omega}||_2^2
+\end{matrix}</script><p>其中，目标函数第一项中的 $\max(0,1-y_i(\boldsymbol{\omega}\cdot \mathbf{x}_i+\theta))$ 被称为<strong>合页损失函数（Hinge Loss Function）</strong>，当样本点 $(\mathbf{x}_i,y_i)$ 被正确分类且函数间隔 $y_i(\boldsymbol{\omega}\cdot \mathbf{x}_i+\theta)&gt;1$ 时，损失是 $0$，否则损失是 $1-y_i(\boldsymbol{\omega}\cdot \mathbf{x}_i+\theta)$，第二项 $\lambda||\boldsymbol{\omega}||_2^2$ 是正则化项</p>
+<p>如下图所示，横轴是函数间隔 $y(\boldsymbol{\omega}\cdot \mathbf{x}+\theta)$，纵轴是损失，函数的形状如同一个合页，因此被称为合页损失函数，图中还画出了 0-1 损失函数，可以认为其是二分类问题真正的损失函数，合页损失函数是 0-1 损失函数的上界</p>
+<p><img width="500" src="/images/ml/40-3.png"></p>
+<p>由于 0-1 损失函数不是连续可导的，直接优化由其构成的目标函数较为困难，可以认为软间隔支持向量机是由优化 0-1 损失函数的上界（合页损失函数）构成的目标函数</p>
+<p>此外，图中的虚线代表的是感知机中所使用的<strong>感知损失函数（Perceptron Loss Function）</strong></p>
+<script type="math/tex; mode=display">
+\max(0,-y_i(\boldsymbol{\omega}\cdot\mathbf{x}_i+\theta))</script><p>当样本点 $(\mathbf{x}_i,y_i)$ 被正确分类时，损失是 $0$，否则损失是 $-y_i(\boldsymbol{\omega}\cdot \mathbf{x}_i+\theta)$，相比之下，合页损失函数不仅要求分类正确，而其确信度足够高时是损失才是 $0$，即合页损失函数对学习有更高的要求</p>
+<p>关于合页损失函数和感知损失函数，详见：<a href="https://alex-mcavoy.github.io/ml/4a4b5c97.html">机器学习中常见的损失函数</a></p>
+
     </div>
 
     
@@ -329,8 +564,8 @@
       <i class="fa fa-chevron-left"></i> 序列最小最优化(SMO)算法
     </a></div>
       <div class="post-nav-item">
-    <a href="/notes/computer-networks/7c4ca347.html" rel="next" title="计算机网络概述">
-      计算机网络概述 <i class="fa fa-chevron-right"></i>
+    <a href="/ml/d69d1bb1.html" rel="next" title="特征构建与核方法">
+      特征构建与核方法 <i class="fa fa-chevron-right"></i>
     </a></div>
     </div>
       </footer>
@@ -391,7 +626,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【】"><span class="nav-number">1.</span> <span class="nav-text">【】</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【引入】"><span class="nav-number">1.</span> <span class="nav-text">【引入】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【假设形式】"><span class="nav-number">2.</span> <span class="nav-text">【假设形式】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【软间隔支持向量机学习算法的原始形式】"><span class="nav-number">3.</span> <span class="nav-text">【软间隔支持向量机学习算法的原始形式】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#软间隔最大化"><span class="nav-number">3.1.</span> <span class="nav-text">软间隔最大化</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#最大间隔法"><span class="nav-number">3.2.</span> <span class="nav-text">最大间隔法</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【软间隔支持向量机学习算法的对偶形式】"><span class="nav-number">4.</span> <span class="nav-text">【软间隔支持向量机学习算法的对偶形式】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#对偶问题的转化"><span class="nav-number">4.1.</span> <span class="nav-text">对偶问题的转化</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#对偶问题中的极小问题"><span class="nav-number">4.2.</span> <span class="nav-text">对偶问题中的极小问题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#对偶问题中的极大问题"><span class="nav-number">4.3.</span> <span class="nav-text">对偶问题中的极大问题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#对偶学习算法"><span class="nav-number">4.4.</span> <span class="nav-text">对偶学习算法</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【支持向量与间隔边界】"><span class="nav-number">5.</span> <span class="nav-text">【支持向量与间隔边界】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【软间隔支持向量机的等价问题】"><span class="nav-number">6.</span> <span class="nav-text">【软间隔支持向量机的等价问题】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#最优化问题"><span class="nav-number">6.1.</span> <span class="nav-text">最优化问题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#合页损失函数"><span class="nav-number">6.2.</span> <span class="nav-text">合页损失函数</span></a></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -407,7 +642,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">597</span>
+          <span class="site-state-item-count">599</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
