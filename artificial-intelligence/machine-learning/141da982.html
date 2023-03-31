@@ -1,0 +1,927 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.9.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/img/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/assets/img/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/pace-js@1/themes/blue/pace-theme-minimal.css">
+  <script src="//cdn.jsdelivr.net/npm/pace-js@1/pace.min.js"></script>
+
+
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"alex-mcavoy.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":16,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":true,"color":"#ff0000","save":"manual"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":true},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.json"};
+  </script>
+
+  <meta name="description" content="References：  【机器学习】支持向量机 SVM（非常详细） 机器学习笔记（五）：支持向量机（SVM） 支持向量机（SVM）——原理篇   【引入】硬间隔支持向量机是用来解决训练集完全线性可分情况的二分类模型，但在实际应用中，由于实际获取的真实样本往往会存在噪声，使得训练数据不是清晰线性可分的，又或者即使找到了一个可以使不同类样本完全分开的超平面，也很难确定这个线性可分的结果是不是由于过">
+<meta name="keywords" content="人工智能,机器学习">
+<meta property="og:type" content="article">
+<meta property="og:title" content="软间隔支持向量机">
+<meta property="og:url" content="https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/141da982.html">
+<meta property="og:site_name" content="Alex_McAvoy">
+<meta property="og:description" content="References：  【机器学习】支持向量机 SVM（非常详细） 机器学习笔记（五）：支持向量机（SVM） 支持向量机（SVM）——原理篇   【引入】硬间隔支持向量机是用来解决训练集完全线性可分情况的二分类模型，但在实际应用中，由于实际获取的真实样本往往会存在噪声，使得训练数据不是清晰线性可分的，又或者即使找到了一个可以使不同类样本完全分开的超平面，也很难确定这个线性可分的结果是不是由于过">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/machine-learning/40-1.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/machine-learning/40-2.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/machine-learning/40-3.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/machine-learning/40-4.png">
+<meta property="og:updated_time" content="2023-03-31T12:43:31.407Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="软间隔支持向量机">
+<meta name="twitter:description" content="References：  【机器学习】支持向量机 SVM（非常详细） 机器学习笔记（五）：支持向量机（SVM） 支持向量机（SVM）——原理篇   【引入】硬间隔支持向量机是用来解决训练集完全线性可分情况的二分类模型，但在实际应用中，由于实际获取的真实样本往往会存在噪声，使得训练数据不是清晰线性可分的，又或者即使找到了一个可以使不同类样本完全分开的超平面，也很难确定这个线性可分的结果是不是由于过">
+<meta name="twitter:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/machine-learning/40-1.png">
+
+<link rel="canonical" href="https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/141da982.html">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>软间隔支持向量机 | Alex_McAvoy</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Alex_McAvoy</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">想要成为渔夫的猎手</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+
+	
+	
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/141da982.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/assets/img/head.jpg">
+      <meta itemprop="name" content="Alex_McAvoy">
+      <meta itemprop="description" content="想要成为渔夫的猎手">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Alex_McAvoy">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          软间隔支持向量机
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-08-17 12:08:00" itemprop="dateCreated datePublished" datetime="2019-08-17T12:08:00+08:00">2019-08-17</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/artificial-intelligence/" itemprop="url" rel="index"><span itemprop="name">人工智能</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/artificial-intelligence/machine-learning/" itemprop="url" rel="index"><span itemprop="name">机器学习</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>11k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>10 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <blockquote>
+<p>References：</p>
+<ul>
+<li><a href="https://zhuanlan.zhihu.com/p/77750026" target="_blank" rel="noopener">【机器学习】支持向量机 SVM（非常详细）</a></li>
+<li><a href="https://zhuanlan.zhihu.com/p/51153003" target="_blank" rel="noopener">机器学习笔记（五）：支持向量机（SVM）</a></li>
+<li><a href="https://zhuanlan.zhihu.com/p/31886934" target="_blank" rel="noopener">支持向量机（SVM）——原理篇</a></li>
+</ul>
+</blockquote>
+<h1 id="【引入】"><a href="#【引入】" class="headerlink" title="【引入】"></a>【引入】</h1><p>硬间隔支持向量机是用来解决训练集完全线性可分情况的二分类模型，但在实际应用中，由于实际获取的真实样本往往会存在噪声，使得训练数据不是清晰线性可分的，又或者即使找到了一个可以使不同类样本完全分开的超平面，也很难确定这个线性可分的结果是不是由于过拟合导致的</p>
+<p>也就是说，训练集中存在一些<strong>特异点（Outlier）</strong>，将这些特异点去除后，剩余大部分的样本点的集合是线性可分的，这被称为近似线性可分</p>
+<p><img width="400" src="/images/artificial-intelligence/machine-learning/40-1.png"></p>
+<p>对于近似线性可分的训练集，引入了<strong>软间隔（Soft Margin）</strong>这个概念，并将求解硬间隔最大化问题改为求解<strong>软间隔最大化</strong>问题，从而使得硬间隔支持向量机更一般化，能够对近似线性可分的数据进行处理</p>
+<h1 id="【假设形式】"><a href="#【假设形式】" class="headerlink" title="【假设形式】"></a>【假设形式】</h1><p>对于给定容量为 $n$ 的<strong>线性不可分</strong>训练集 $D=\{(\mathbf{x}_1,y_1),(\mathbf{x}_2,y_2),…,(\mathbf{x}_n,y_n)\}$，第 $i$ 组样本中的输入 $\mathbf{x}_i$ 具有 $m$ 个特征值，即：$\mathbf{x}_i=(x_i^{(1)},x_i^{(2)},…,x_i^{(n)})\in \mathbb{R}^m$，输出 $y_i\in\mathcal{Y}=\{+1,-1\}$</p>
+<p><strong>软间隔支持向量机（Soft Margin Support Vector Machines）</strong>对于线性不可分的训练集，通过求解<strong>软间隔最大化</strong>问题：</p>
+<script type="math/tex; mode=display">
+\begin{matrix}
+\min\limits_{\boldsymbol{\omega},\theta,\boldsymbol{\xi}} && \frac{1}{2}||\boldsymbol{\omega}||_2^2 + C\sum\limits_{i=1}^n \xi_i\\
+s.t. && y_i(\boldsymbol{\omega}\cdot\mathbf{x}+\theta)\geq 1-\xi_i  \\
+&& \xi_i \geq 0, && i=1,2,\cdots,n
+\end{matrix}</script><p>其中，$\xi_i\geq 0$ 是为每个样本点 $(\mathbf{x}_i,y_i)$ 引入的松弛变量，$C&gt;0$ 是惩罚系数</p>
+<p>得到最优分离超平面：</p>
+<script type="math/tex; mode=display">
+S: \boldsymbol{\omega}^*\cdot \mathbf{x}+\theta^* = 0</script><p>以及相应的分类决策函数：</p>
+<script type="math/tex; mode=display">
+f(\mathbf{x}) = \text{sigmoid}(\boldsymbol{\omega}^*+\theta^*)</script><p>由于现实中的训练数据往往存在噪声或特异点，是线性不可分的，因此软间隔支持向量机具有更广的适用性</p>
+<p>同时，由于软间隔支持向量机是在硬间隔支持向量机基础上针对训练数据线性不可分时的改进，因此又称<strong>线性支持向量机（Linear Support Vector Machines）</strong></p>
+<p>也就是说，线性（软间隔）支持向量机包含线性可分（硬间隔）支持向量机</p>
+<h1 id="【软间隔支持向量机学习算法的原始形式】"><a href="#【软间隔支持向量机学习算法的原始形式】" class="headerlink" title="【软间隔支持向量机学习算法的原始形式】"></a>【软间隔支持向量机学习算法的原始形式】</h1><h2 id="软间隔最大化"><a href="#软间隔最大化" class="headerlink" title="软间隔最大化"></a>软间隔最大化</h2><p><strong>软间隔最大化（Soft Margin Maximization）</strong>同样是找到使所有样本点的几何间隔的最小值最大的分离超平面，即寻找<strong>最大间隔分离超平面</strong></p>
+<p>对于硬间隔最大化中的原始问题：</p>
+<script type="math/tex; mode=display">
+\begin{matrix}
+\min\limits_{\boldsymbol{\omega},\theta} && \frac{1}{2}||\boldsymbol{\omega}||_2^2 \\
+s.t. && y_i ( \boldsymbol{\omega}\cdot\mathbf{x}_i+\theta)-1  \geq 0 ,&& i=1,2,\cdots,n
+\end{matrix}</script><p>线性不可分意味着某些样本点 $(\mathbf{x}_i,y_i)$ 不能满足函数间隔大于等于 $1$ 的约束条件 $y_i(\boldsymbol{\omega}\cdot\mathbf{x}+\theta)-1\geq 0$</p>
+<p>为解决这个问题，可以对每个样本点 $(\mathbf{x}_i,y_i)$ 引入一个松弛变量 $\xi_i\geq 0$，使得函数间隔加上松弛变量大于等于 $1$，即：</p>
+<script type="math/tex; mode=display">
+y_i(\boldsymbol{\omega}\cdot\mathbf{x}+\theta)\geq 1-\xi_i</script><p>同时，对每个松弛变量 $\xi_i$，支付一个代价 $\xi_i$，使得目标函数由 $\frac{1}{2}||\boldsymbol{\omega}||_2^2$ 变为：</p>
+<script type="math/tex; mode=display">
+\frac{1}{2}||\boldsymbol{\omega}||_2^2 + C\sum_{i=1}^n \xi_i</script><p>其中，$C&gt;0$ 为惩罚系数，由具体的应用问题决定，$C$ 越大说明对误分类的惩罚越大</p>
+<p>此时的目标函数有两层含义，一是使 $\frac{1}{2}||\boldsymbol{\omega}||_2^2$ 尽量小，即令几何间隔尽量大，二是令误分类点的个数尽量小，并通过惩罚系数 $C$ 来调和二者的关系</p>
+<p>于是可以得到约束最优化问题：</p>
+<script type="math/tex; mode=display">
+\begin{matrix}
+\min\limits_{\boldsymbol{\omega},\theta} && \frac{1}{2}||\boldsymbol{\omega}||_2^2 + C\sum\limits_{i=1}^n \xi_i\\
+s.t. && y_i(\boldsymbol{\omega}\cdot\mathbf{x}+\theta)\geq 1-\xi_i  \\
+&& \xi_i \geq 0, && i=1,2,\cdots,n
+\end{matrix}</script><p>上述的约束最优化问题是一个<strong>凸二次规划（Convex Quadratic Programming）</strong>问题，相对于硬间隔最大化，其被称为软间隔最大化</p>
+<p>需要注意的是，对于上述的凸二次规划问题，关于 $(\boldsymbol{\omega},\theta,\boldsymbol{\xi})$ 的解是存在的，同时 $\boldsymbol{\omega}$ 的解是唯一的，但 $\theta$ 的解可能不唯一，其存在于一个区间中</p>
+<p>关于硬间隔最大化，详见：<a href="https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/cfe76bf2.html">硬间隔支持向量机</a></p>
+<h2 id="最大间隔法"><a href="#最大间隔法" class="headerlink" title="最大间隔法"></a>最大间隔法</h2><p>软间隔支持向量机的学习算法为<strong>最大间隔法</strong></p>
+<p>输入：容量为 $n$ 的训练集 $D=\{(\mathbf{x}_1,y_1),(\mathbf{x}_2,y_2),…,(\mathbf{x}_n,y_n)\}$，第 $i$ 组样本中的输入 $\mathbf{x}_i$ 具有 $m$ 个特征值，即：$\mathbf{x}_i=(x_i^{(1)},x_i^{(2)},…,x_i^{(m)})\in \mathbb{R}^m$，输出 $y_i\in\mathcal{Y}=\{+1,-1\}$</p>
+<p>输出：最大间隔分离超平面、分类决策函数</p>
+<p>算法步骤：</p>
+<p>Step1：构造并求解如下约束最优化问题</p>
+<script type="math/tex; mode=display">
+\begin{matrix}
+\min\limits_{\boldsymbol{\omega},\theta,\boldsymbol{\xi}} && \frac{1}{2}||\boldsymbol{\omega}||_2^2 + C\sum\limits_{i=1}^n \xi_i\\
+s.t. && y_i(\boldsymbol{\omega}\cdot\mathbf{x}+\theta)\geq 1-\xi_i  \\
+&& \xi_i \geq 0, && i=1,2,\cdots,n
+\end{matrix}</script><p>求得最优解 $\boldsymbol{\omega}^*$ 和 $\theta^*$</p>
+<p>Step2：根据最优解 $\boldsymbol{\omega}^*$ 和 $\theta^*$，得到分离超平面</p>
+<script type="math/tex; mode=display">
+\boldsymbol{\omega}^* \cdot \mathbf{x} +\theta^* = 0</script><p>以及分类决策函数</p>
+<script type="math/tex; mode=display">
+f(\mathbf{x}) = \text{sigmoid}(\boldsymbol{\omega}^*\cdot\mathbf{x}+\theta^*)</script><h1 id="【软间隔支持向量机学习算法的对偶形式】"><a href="#【软间隔支持向量机学习算法的对偶形式】" class="headerlink" title="【软间隔支持向量机学习算法的对偶形式】"></a>【软间隔支持向量机学习算法的对偶形式】</h1><h2 id="对偶问题的转化"><a href="#对偶问题的转化" class="headerlink" title="对偶问题的转化"></a>对偶问题的转化</h2><p>为求解软间隔支持向量机的最优化问题：</p>
+<script type="math/tex; mode=display">
+\begin{matrix}
+\min\limits_{\boldsymbol{\omega},\theta} && \frac{1}{2}||\boldsymbol{\omega}||_2^2 + C\sum\limits_{i=1}^n \xi_i\\
+s.t. && y_i(\boldsymbol{\omega}\cdot\mathbf{x}+\theta)\geq 1-\xi_i  \\
+&& \xi_i \geq 0, && i=1,2,\cdots,n
+\end{matrix}</script><p>将其作为原始最优化问题，应用拉格朗日对偶性，通过求解对偶问题来得到原始问题的最优解</p>
+<p>首先，构建拉格朗日函数，即为每一个不等式约束引入拉格朗日乘子 $\lambda_i\geq 0$ 和 $\mu_i\geq 0$，即：</p>
+<script type="math/tex; mode=display">
+L(\boldsymbol{\omega},\theta,\boldsymbol{\xi},\boldsymbol{\lambda},\boldsymbol{\mu}) 
+= \frac{1}{2}||\boldsymbol{\omega}||_2^2 + C\sum_{i=1}^n\xi_i - \sum_{i=1}^n \lambda_i( y_i(\boldsymbol{\omega}\cdot \mathbf{x}_i + \theta)-1+\xi_i) -\sum_{i=1}^n \mu_i\xi_i</script><p>其中，$\boldsymbol{\lambda}=(\lambda_1,\lambda_2,\cdots,\lambda_n)^T$ 和 <script type="math/tex">\boldsymbol{\mu}=(\mu_1,\mu_2,\cdots,\mu_n)^T</script> 为拉格朗日乘子向量</p>
+<p>此时，根据拉格朗日对偶性，原始问题的对偶问题就变为了极大极小问题，即：</p>
+<script type="math/tex; mode=display">
+\max_{\boldsymbol{\lambda},\boldsymbol{\mu}} \min_{\boldsymbol{\omega},\theta,\boldsymbol{\xi}} L(\boldsymbol{\omega},\theta,\boldsymbol{\xi},\boldsymbol{\lambda},\boldsymbol{\mu})</script><p>因此，为了得到对偶问题的解，就要先求拉格朗日函数 $L(\boldsymbol{\omega},\theta,\boldsymbol{\xi},\boldsymbol{\lambda},\boldsymbol{\mu})$ 对 $\boldsymbol{\omega}$、$\theta$、$\boldsymbol{\xi}$ 的极小，再求对 $\boldsymbol{\lambda}$、$\boldsymbol{\xi}$ 的极大</p>
+<p>注：关于拉格朗日函数与拉格朗日对偶性，详见 <a href="https://alex-mcavoy.github.io/mathematics/convex-optimization/763e2d04.html">拉格朗日乘子法与对偶性</a></p>
+<h2 id="对偶问题中的极小问题"><a href="#对偶问题中的极小问题" class="headerlink" title="对偶问题中的极小问题"></a>对偶问题中的极小问题</h2><p>对于对偶问题中的极小问题：</p>
+<script type="math/tex; mode=display">
+\min_{\boldsymbol{\omega},\theta,\boldsymbol{\xi}} L(\boldsymbol{\omega},\theta,\boldsymbol{\xi},\boldsymbol{\lambda},\boldsymbol{\mu})</script><p>令拉格朗日函数 $L(\boldsymbol{\omega},\theta,\boldsymbol{\xi},\boldsymbol{\lambda},\boldsymbol{\mu})$ 分别对 $\boldsymbol{\omega}$、$\theta$、$\boldsymbol{\xi}$ 求偏导，并令其等于 $0$，即：</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+\triangledown_{\boldsymbol{\omega}} L(\boldsymbol{\omega},\theta,\boldsymbol{\xi},\boldsymbol{\lambda},\boldsymbol{\mu})
+&= \boldsymbol{\omega} - \sum_{i=1}^n \lambda_i y_i \mathbf{x}_i = 0 \\
+\triangledown_{\theta} L(\boldsymbol{\omega},\theta,\boldsymbol{\xi},\boldsymbol{\lambda},\boldsymbol{\mu}) 
+&= -\sum_{i=1}^n \lambda_i y_i = 0 \\
+\triangledown_{\xi_i} L(\boldsymbol{\omega},\theta,\boldsymbol{\xi},\boldsymbol{\lambda},\boldsymbol{\mu}) 
+&= C-\lambda_i -\mu_i= 0
+\end{align*}</script><p>可得：</p>
+<script type="math/tex; mode=display">
+\begin{gather*}
+\boldsymbol{\omega}
+= \sum_{i=1}^n \lambda_i y_i \mathbf{x}_i \\
+\sum_{i=1}^n \lambda_i y_i = 0 \\
+C-\lambda_i-\mu_i = 0
+\end{gather*}</script><p>将上式带回拉格朗日函数 $L(\boldsymbol{\omega},\theta,\boldsymbol{\xi},\boldsymbol{\lambda},\boldsymbol{\mu})$ 中，有：</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+L(\boldsymbol{\omega},\theta,\boldsymbol{\xi},\boldsymbol{\lambda},\boldsymbol{\mu})
+=& \frac{1}{2}||\boldsymbol{\omega}||_2^2 + C\sum_{i=1}^n\xi_i - \sum_{i=1}^n \lambda_i( y_i(\boldsymbol{\omega}\cdot \mathbf{x}_i + \theta)-1+\xi_i) -\sum_{i=1}^n \mu_i\xi_i \\
+=& \frac{1}{2} \sum_{i=1}^n \sum_{j=1}^n \lambda_i\lambda_j y_i y_j (\mathbf{x}_i\cdot\mathbf{x}_j) + \sum_{i=1}^n(\lambda_i+\mu_i) \xi_i \\
+&-\sum_{i=1}^n\lambda_i \Big ( y_i \big( (\sum_{j=1}^n\lambda_jy_j\mathbf{x}_j)\cdot \mathbf{x}_i +\theta \big) -1 + \xi_i \Big) -\sum_{i=1}^n\mu_i\xi_i \\
+=& \frac{1}{2} \sum_{i=1}^n \sum_{j=1}^n \lambda_i\lambda_j y_i y_j (\mathbf{x}_i\cdot\mathbf{x}_j) + \sum_{i=1}^n(\lambda_i+\mu_i) \xi_i \\
+&-\sum_{i=1}^n\sum_{j=1}^n\lambda_i\lambda_jy_iy_j(\mathbf{x}_j\cdot \mathbf{x}_i) + 
+\theta\sum_{i=1}^n\lambda_iy_i  +\sum_{i=1}^n\lambda_i -\sum_{i=1}^n\lambda_i\xi_i
+-\sum_{i=1}^n\mu_i\xi_i \\
+=& -\frac{1}{2} \sum_{i=1}^n \sum_{j=1}^n \lambda_i\lambda_j y_i y_j (\mathbf{x}_i\cdot\mathbf{x}_j) +\sum_{i=1}^n \lambda_i
+\end{align*}</script><p>故有：</p>
+<script type="math/tex; mode=display">
+\min_{\boldsymbol{\omega},\theta,\boldsymbol{\xi}} L(\boldsymbol{\omega},\theta,\boldsymbol{\xi},\boldsymbol{\lambda},\boldsymbol{\mu})
+= -\frac{1}{2} \sum_{i=1}^n \sum_{j=1}^n \lambda_i\lambda_j y_i y_j (\mathbf{x}_i\cdot\mathbf{x}_j)   + \sum_{i=1}^n \lambda_i</script><h2 id="对偶问题中的极大问题"><a href="#对偶问题中的极大问题" class="headerlink" title="对偶问题中的极大问题"></a>对偶问题中的极大问题</h2><p>对于对偶问题中的极大问题：</p>
+<script type="math/tex; mode=display">
+\max_{\boldsymbol{\lambda},\boldsymbol{\mu}} \min_{\boldsymbol{\omega},\theta,\boldsymbol{\xi}} L(\boldsymbol{\omega},\theta,\boldsymbol{\xi},\boldsymbol{\lambda},\boldsymbol{\mu})</script><p>即为对偶问题，有：</p>
+<script type="math/tex; mode=display">
+\begin{matrix}
+\max\limits_{\boldsymbol{\lambda}} && -\frac{1}{2} \sum\limits_{i=1}^n \sum\limits_{j=1}^n \lambda_i\lambda_j y_i y_j (\mathbf{x}_i\cdot\mathbf{x}_j)   + \sum\limits_{i=1}^n \lambda_i \\
+s.t. && \sum\limits_{i=1}^n\lambda_i y_i= 0 \\
+&& C-\lambda_i-\mu_i=0 \\
+&& \lambda_i\geq 0\\
+&& \mu_i \geq 0 ,&& i=1,2,\cdots,n
+\end{matrix}</script><p>利用等式约束 $C-\lambda_i-\mu_i=0$，消去 $\mu_i$，有：</p>
+<script type="math/tex; mode=display">
+\begin{matrix}
+\max\limits_{\boldsymbol{\lambda}} && -\frac{1}{2} \sum\limits_{i=1}^n \sum\limits_{j=1}^n \lambda_i\lambda_j y_i y_j (\mathbf{x}_i\cdot\mathbf{x}_j)   + \sum\limits_{i=1}^n \lambda_i \\
+s.t. && \sum\limits_{i=1}^n\lambda_i y_i= 0 \\
+&& 0\leq \lambda_i \leq C,\quad i=1,2,\cdots,n
+\end{matrix}</script><p>再将该问题的目标函数由求极大转为求极小，就得到如下的等价的对偶最优化问题：</p>
+<script type="math/tex; mode=display">
+\begin{matrix}
+\min\limits_{\boldsymbol{\lambda}} && \frac{1}{2} \sum\limits_{i=1}^n \sum\limits_{j=1}^n \lambda_i\lambda_j y_i y_j (\mathbf{x}_i\cdot\mathbf{x}_j) - \sum\limits_{i=1}^n \lambda_i \\
+s.t. && \sum\limits_{i=1}^n\lambda_i y_i= 0 \\
+&& 0\leq \lambda_i \leq C,\quad i=1,2,\cdots,n
+\end{matrix}</script><p>可以发现，原始问题是凸优化问题，且 Slater 条件成立，那么，原始问题强对偶性成立，即求解原始问题可以转换为求解上述的对偶问题</p>
+<p>假设上述的对偶问题对 $\boldsymbol{\lambda}$ 的一个解为 $\boldsymbol{\lambda}^* = (\lambda_1^*,\lambda_2^*,\cdots,\lambda_n^*)^T$，那么根据 KKT 条件，可得：</p>
+<script type="math/tex; mode=display">
+\begin{gather*}
+\triangledown_{\boldsymbol{\omega}} L(\boldsymbol{\omega}^*,\theta^*,\boldsymbol{\xi}^*,\boldsymbol{\lambda}^*,\boldsymbol{\mu}^*) = \boldsymbol{\omega}^* - \sum_{i=1}^n \lambda_i^* y_i \mathbf{x}_i = 0 \\
+\triangledown_{\theta} L(\boldsymbol{\omega}^*,\theta^*,\boldsymbol{\xi}^*,\boldsymbol{\lambda}^*,\boldsymbol{\mu}^*) = -\sum_{i=1}^n \lambda_i^* y_i = 0 \\
+\triangledown_{\boldsymbol{\xi}} L(\boldsymbol{\omega}^*,\theta^*,\boldsymbol{\xi}^*,\boldsymbol{\lambda}^*,\boldsymbol{\mu}^*) =C-\boldsymbol{\lambda}^*-\boldsymbol{\mu}^* = 0 \\ 
+\lambda_i^*(y_i(\boldsymbol{\omega}^*\cdot \mathbf{x}_i+\theta^*)-1+\xi_i^*) = 0 \\
+\mu_i^*\xi_i^*=0 \\
+y_i(\boldsymbol{\omega}^*\cdot \mathbf{x}_i+\theta^*)-1+\xi_i^* \geq 0 \\
+\xi_i^* \geq 0 \\
+\lambda_i^* \geq 0 \\
+\mu_i^* \geq 0, && i=1,2,\cdots,n
+\end{gather*}</script><p>故而有：</p>
+<script type="math/tex; mode=display">
+\boldsymbol{\omega}^* = \sum_{i=1}^n \lambda_i^* y_i\mathbf{x}_i</script><p>同时，若存在 $0&lt;\lambda_j^*&lt;C$，对此 $j$ 有：</p>
+<script type="math/tex; mode=display">
+y_j(\boldsymbol{\omega}^* \cdot \mathbf{x}_j+\theta^*)-1=0</script><p>将 $\boldsymbol{\omega}^* = \sum\limits_{i=1}^n \lambda_i^* y_i\mathbf{x}_i$ 带入到上式，并由 $y_j^2=1$，可得：</p>
+<script type="math/tex; mode=display">
+\theta^* = y_j - \sum_{i=1}^n \lambda_i^* y_i (\mathbf{x_i}\cdot \mathbf{x}_j)</script><p>故而，分离超平面可写为：</p>
+<script type="math/tex; mode=display">
+\sum_{i=1}^n \lambda_i^* y_i(\mathbf{x}\cdot\mathbf{x}_i) + \theta^* =0</script><p>分类决策函数可写为：</p>
+<script type="math/tex; mode=display">
+f(\mathbf{x}) = \text{sigmoid}\Big(\sum_{i=1}^n \lambda_i^* y_i(\mathbf{x}\cdot\mathbf{x}_i)+\theta^*\Big)</script><h2 id="对偶学习算法"><a href="#对偶学习算法" class="headerlink" title="对偶学习算法"></a>对偶学习算法</h2><p>根据上述对偶问题的推导，可得到软间隔支持向量机的对偶学习算法</p>
+<p>输入：容量为 $n$ 的<strong>近似线性可分</strong>的训练集 $D=\{(\mathbf{x}_1,y_1),(\mathbf{x}_2,y_2),…,(\mathbf{x}_n,y_n)\}$，第 $i$ 组样本中的输入 $\mathbf{x}_i$ 具有 $m$ 个特征值，即：$\mathbf{x}_i=(x_i^{(1)},x_i^{(2)},…,x_i^{(m)})\in \mathbb{R}^m$，输出 $y_i\in\mathcal{Y}=\{+1,-1\}$</p>
+<p>输出：最大间隔分离超平面、分类决策函数</p>
+<p>算法步骤：</p>
+<p>Step1：选择惩罚系数 $C&gt;0$，构造并求解如下约束最优化问题（原始问题的对偶问题）</p>
+<script type="math/tex; mode=display">
+\begin{matrix}
+\min\limits_{\boldsymbol{\lambda}} && \frac{1}{2} \sum\limits_{i=1}^n \sum\limits_{j=1}^n \lambda_i\lambda_j y_i y_j (\mathbf{x}_i\cdot\mathbf{x}_j) - \sum\limits_{i=1}^n \lambda_i \\
+s.t. && \sum\limits_{i=1}^n\lambda_i y_i= 0 \\
+&& 0\leq \lambda_i \leq C,&& i=1,2,\cdots,n
+\end{matrix}</script><p>求得最优解 $\boldsymbol{\lambda}^* = (\lambda_1^*,\lambda_2^*,\cdots,\lambda_n^*)^T$</p>
+<p>Step2：根据最优解 $\boldsymbol{\lambda}^*$，计算分离超平面的法向量 $\boldsymbol{\omega}^*$ 和截距 $\theta^*$</p>
+<p>对于法向量 $\boldsymbol{\omega}^*$，有：</p>
+<script type="math/tex; mode=display">
+\boldsymbol{\omega}^* = \sum_{i=1}^n \lambda_i^* y_i\mathbf{x}_i</script><p>选择最优解 $\boldsymbol{\lambda}^*$的一个分量 $\lambda_j^*$，满足 $0&lt;\lambda_j^*&lt;C$，计算截距 $\theta^*$，有：</p>
+<script type="math/tex; mode=display">
+\theta^* = y_j - \sum_{i=1}^n \lambda_i^* y_i (\mathbf{x_i}\cdot \mathbf{x}_j)</script><p>Step3：根据最优解 $\boldsymbol{\omega}^*$ 和 $\theta^*$，得到分离超平面</p>
+<script type="math/tex; mode=display">
+\boldsymbol{\omega}^* \cdot \mathbf{x} +\theta^* = 0</script><p>以及分类决策函数</p>
+<script type="math/tex; mode=display">
+f(\mathbf{x}) = \text{sigmoid}(\boldsymbol{\omega}^*\cdot\mathbf{x}+\theta^*)</script><hr>
+<p>对于 Step1 中的凸二次规划问题，可使用 SMO 算法来求解，关于 SMO 算法，详见：<a href="https://alex-mcavoy.github.io/mathematics/convex-optimization/1f33dd66.html">序列最小最优化(SMO)算法</a></p>
+<p>在 Step2 中，对任一满足 $0&lt;\lambda_j^*&lt;C$ 的 $\lambda_j^*$，均可求出截距 $\theta^*$，从理论上来说，原始问题对 $\theta$ 的解可能不唯一，然而在实际应用中，往往只会出现上述算法叙述的情况</p>
+<h1 id="【支持向量与间隔边界】"><a href="#【支持向量与间隔边界】" class="headerlink" title="【支持向量与间隔边界】"></a>【支持向量与间隔边界】</h1><p>在线性不可分的情况下，对于对偶问题的解 $\boldsymbol{\lambda}^* = (\lambda_1^*,\lambda_2^*,\cdots,\lambda_n^*)^T$ 中对应 $\lambda_i^*&gt;0$ 的样本点 $(\mathbf{x}_i,y_i)$ 的实例 $\mathbf{x_i}$ 称为软间隔的<strong>支持向量（Support Vector）</strong></p>
+<p>如图所示，红线标出的是支持向量 $\mathbf{x}_i$ 到间隔边界的距离 $\frac{1}{||\boldsymbol{\omega}_2^2||}\xi_i$</p>
+<p><img width="500" src="/images/artificial-intelligence/machine-learning/40-2.png"></p>
+<p>此外，分类决策函数：</p>
+<script type="math/tex; mode=display">
+f(\mathbf{x}) = \text{sigmoid}\Big(\sum_{i=1}^n \lambda_i^* y_i(\mathbf{x}\cdot\mathbf{x}_i)+\theta^*\Big)</script><p>根据 KKT 条件，对于任意样本 $(\mathbf{x}_i,y_i)$，总有 $\lambda_i=0$ 或 $y_i(\boldsymbol{\omega}\cdot \mathbf{x}_i+\theta)=1-\xi_i$</p>
+<ul>
+<li>当 $\lambda_i=0$ 时，该样本不会在分类决策函数 $f(\mathbf{x})$ 求和中出现，也就不会对 $f(\mathbf{x})$ 造成任何影响</li>
+<li>当 $\lambda_i&gt;0$ 时，必有 $y_i(\boldsymbol{\omega}\cdot \mathbf{x}_i+\theta)=1-\xi_i$，所对应的样本点正好位于间隔边界上，是一个支持向量<ul>
+<li>若 <script type="math/tex">\lambda_i<C</script>，则 $\mu_i&gt;0$，进而有 $\xi_i=0$，相应的支持向量 $\mathbf{x}_i$ 恰好落在间隔边界上</li>
+<li>若 $\lambda_i=C$，则 $\mu_i=0$，此时若 $\xi_i=0$，即分类正确，$\mathbf{x}_i$ 位于间隔边界与分离超平面之间</li>
+<li>若 $\lambda_i=C$，则 $\mu_i=0$，此时若 $\xi_i=1$，$\mathbf{x}_i$ 位于分离超平面上</li>
+<li>若 $\lambda_i=C$，则 $\mu_i=0$，此时若 $\xi_i&gt;1$，即分类错误，$\mathbf{x}_i$ 位于分离超平面误分一侧</li>
+</ul>
+</li>
+</ul>
+<h1 id="【软间隔支持向量机的等价问题】"><a href="#【软间隔支持向量机的等价问题】" class="headerlink" title="【软间隔支持向量机的等价问题】"></a>【软间隔支持向量机的等价问题】</h1><h2 id="最优化问题"><a href="#最优化问题" class="headerlink" title="最优化问题"></a>最优化问题</h2><p>对于软间隔支持向量机来说，其模型为分离超平面 $S:\boldsymbol{\omega}^*\cdot \mathbf{x}+\theta^*=0$ 以及分类决策函数 $f(\mathbf{x}) = \text{sigmoid}(\boldsymbol{\omega}^*+\theta^*)$，学习策略为软间隔最大化，学习方法为凸二次规划</p>
+<p>对于原始问题：</p>
+<script type="math/tex; mode=display">
+\begin{matrix}
+\min\limits_{\boldsymbol{\omega},\theta,\boldsymbol{\xi}} && \frac{1}{2}||\boldsymbol{\omega}||_2^2 + C\sum\limits_{i=1}^n \xi_i\\
+s.t. && y_i(\boldsymbol{\omega}\cdot\mathbf{x}+\theta)\geq 1-\xi_i  \\
+&& \xi_i \geq 0, && i=1,2,\cdots,n
+\end{matrix}</script><p>其等价于最优化：</p>
+<script type="math/tex; mode=display">
+\begin{matrix}
+\min\limits_{\boldsymbol{\omega},\theta} && \sum\limits_{i=1}^n \max(0,1-y_i(\boldsymbol{\omega}\cdot \mathbf{x}_i+\theta))+\lambda||\boldsymbol{\omega}||_2^2
+\end{matrix}</script><hr>
+<p>证明：</p>
+<p>对于最优化问题：</p>
+<script type="math/tex; mode=display">
+\begin{matrix}
+\min\limits_{\boldsymbol{\omega},\theta} && \sum\limits_{i=1}^n \max(0,1-y_i(\boldsymbol{\omega}\cdot \mathbf{x}_i+\theta))+\lambda||\boldsymbol{\omega}||_2^2
+\end{matrix}</script><p>取 $\xi_i=\max(0,1-y_i(\boldsymbol{\omega}\cdot \mathbf{x}_i+\theta))$，当 $1-y_i(\boldsymbol{\omega}\cdot \mathbf{x}_i+\theta)&gt;0$ 时，有 $\xi_i&gt;0$，进而有： </p>
+<script type="math/tex; mode=display">
+y_i(\boldsymbol{\omega}\cdot \mathbf{x}_i+\theta)=1-\xi_i</script><p>当 $1-y_i(\boldsymbol{\omega}\cdot \mathbf{x}_i+\theta)\leq0$ 时，有 $\xi_i=0$，进而有：</p>
+<script type="math/tex; mode=display">
+y_i(\boldsymbol{\omega}\cdot \mathbf{x}_i+\theta)\geq 1-\xi_i</script><p>此时，满足原始问题的不等式约束，故最优化问题可写为：</p>
+<script type="math/tex; mode=display">
+\begin{matrix}
+\min\limits_{\boldsymbol{\omega},\theta} && \sum\limits_{i=1}^n \xi_i+\lambda||\boldsymbol{\omega}||_2^2
+\end{matrix}</script><p>进一步，取 $\lambda=\frac{1}{2C}$，则有：</p>
+<script type="math/tex; mode=display">
+\begin{matrix}
+\min\limits_{\boldsymbol{\omega},\theta} && \frac{1}{C}(\frac{1}{2}||\boldsymbol{\omega}||_2^2+C\sum\limits_{i=1}^n \xi_i)
+\end{matrix}</script><p>与原始问题等价</p>
+<p>反之，也可将原始问题表示为上述的最优化问题</p>
+<h2 id="合页损失函数"><a href="#合页损失函数" class="headerlink" title="合页损失函数"></a>合页损失函数</h2><p>对于最优化问题</p>
+<script type="math/tex; mode=display">
+\begin{matrix}
+\min\limits_{\boldsymbol{\omega},\theta} && \sum\limits_{i=1}^n \max(0,1-y_i(\boldsymbol{\omega}\cdot \mathbf{x}_i+\theta))+\lambda||\boldsymbol{\omega}||_2^2
+\end{matrix}</script><p>其中，目标函数第一项中的 $\max(0,1-y_i(\boldsymbol{\omega}\cdot \mathbf{x}_i+\theta))$ 被称为<strong>合页损失函数（Hinge Loss Function）</strong>，当样本点 $(\mathbf{x}_i,y_i)$ 被正确分类且函数间隔 $y_i(\boldsymbol{\omega}\cdot \mathbf{x}_i+\theta)&gt;1$ 时，损失是 $0$，否则损失是 $1-y_i(\boldsymbol{\omega}\cdot \mathbf{x}_i+\theta)$，第二项 $\lambda||\boldsymbol{\omega}||_2^2$ 是正则化项</p>
+<p>如下图所示，横轴是函数间隔 $y(\boldsymbol{\omega}\cdot \mathbf{x}+\theta)$，纵轴是损失，函数的形状如同一个合页，因此被称为合页损失函数，图中还画出了 0-1 损失函数，可以认为其是二分类问题真正的损失函数，合页损失函数是 0-1 损失函数的上界</p>
+<p><img width="500" src="/images/artificial-intelligence/machine-learning/40-3.png"></p>
+<p>由于 0-1 损失函数不是连续可导的，直接优化由其构成的目标函数较为困难，可以认为软间隔支持向量机是由优化 0-1 损失函数的上界（合页损失函数）构成的目标函数</p>
+<p>此外，图中的虚线代表的是感知机中所使用的<strong>感知损失函数（Perceptron Loss Function）</strong></p>
+<script type="math/tex; mode=display">
+\max(0,-y_i(\boldsymbol{\omega}\cdot\mathbf{x}_i+\theta))</script><p>当样本点 $(\mathbf{x}_i,y_i)$ 被正确分类时，损失是 $0$，否则损失是 $-y_i(\boldsymbol{\omega}\cdot \mathbf{x}_i+\theta)$，相比之下，合页损失函数不仅要求分类正确，而其确信度足够高时是损失才是 $0$，即合页损失函数对学习有更高的要求</p>
+<p>关于合页损失函数和感知损失函数，详见：<a href="https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/4a4b5c97.html">机器学习中常见的损失函数</a></p>
+<h1 id="【sklearn-实现】"><a href="#【sklearn-实现】" class="headerlink" title="【sklearn 实现】"></a>【sklearn 实现】</h1><p>以 <code>sklearn</code> 中的鸢尾花数据集为例，选取其后两个特征来实现软间隔支持向量机</p>
+<p><img src="/images/artificial-intelligence/machine-learning/40-4.png"></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> pandas <span class="keyword">as</span> pd</span><br><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"><span class="keyword">import</span> matplotlib.pyplot <span class="keyword">as</span> plt</span><br><span class="line"><span class="keyword">from</span> sklearn.datasets <span class="keyword">import</span> load_iris</span><br><span class="line"><span class="keyword">from</span> sklearn.model_selection <span class="keyword">import</span> train_test_split</span><br><span class="line"><span class="keyword">from</span> sklearn.preprocessing <span class="keyword">import</span> StandardScaler</span><br><span class="line"><span class="keyword">from</span> sklearn.svm <span class="keyword">import</span> LinearSVC</span><br><span class="line"><span class="keyword">from</span> sklearn.metrics <span class="keyword">import</span> confusion_matrix,accuracy_score,classification_report,precision_score,recall_score,f1_score</span><br><span class="line"><span class="keyword">from</span> matplotlib.colors <span class="keyword">import</span> ListedColormap</span><br><span class="line"></span><br><span class="line"><span class="comment"># 特征提取</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">deal_data</span><span class="params">()</span>:</span></span><br><span class="line">    iris = load_iris()  <span class="comment"># sklearn的鸢尾花数据集</span></span><br><span class="line">    <span class="comment"># iris分为三类，前50行一类，51-100行一类，101-150行一类</span></span><br><span class="line">    X = iris.data[:, [<span class="number">2</span>, <span class="number">3</span>]] <span class="comment"># 选用后两个特征作为样本特征</span></span><br><span class="line">    y = iris.target  <span class="comment">#取species列，类别</span></span><br><span class="line">    <span class="keyword">return</span> X,y</span><br><span class="line"></span><br><span class="line"><span class="comment"># 数据归一化</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">standard_scaler</span><span class="params">(X_train,X_test)</span>:</span></span><br><span class="line">    sc = StandardScaler() <span class="comment"># 初始化一个sc对象去对数据集作变换</span></span><br><span class="line">    scaler = sc.fit(X_train) <span class="comment"># 归一化，存有计算出的均值和方差</span></span><br><span class="line">    X_train_std = scaler.transform(X_train) <span class="comment"># 利用 scaler 进行标准化</span></span><br><span class="line">    X_test_std = scaler.transform(X_test) <span class="comment"># 利用 scaler 进行标准化</span></span><br><span class="line">    <span class="keyword">return</span> X_train_std, X_test_std</span><br><span class="line"></span><br><span class="line"><span class="comment"># 模型训练</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">train_model</span><span class="params">(X_train_std, y_train)</span>:</span></span><br><span class="line">    <span class="comment"># 建立软间隔SVM模型</span></span><br><span class="line">    model = LinearSVC(penalty=<span class="string">'l2'</span>,loss=<span class="string">'hinge'</span>,C=<span class="number">5</span>,random_state=<span class="number">1</span>)</span><br><span class="line">    <span class="comment"># 训练</span></span><br><span class="line">    model.fit(X_train_std, y_train)</span><br><span class="line">    <span class="keyword">return</span> model</span><br><span class="line"></span><br><span class="line"><span class="comment"># 模型评估</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">estimate_model</span><span class="params">(y_pred, y_test, model)</span>:</span></span><br><span class="line">    <span class="comment"># 混淆矩阵，三分类情况下，大小为 3*3</span></span><br><span class="line">    cm2 = confusion_matrix(y_test,y_pred) </span><br><span class="line">    <span class="comment"># 准确率</span></span><br><span class="line">    acc = accuracy_score(y_test,y_pred)</span><br><span class="line">    <span class="comment"># 正确分类的样本数</span></span><br><span class="line">    acc_num = accuracy_score(y_test,y_pred,normalize=<span class="literal">False</span>)</span><br><span class="line">    <span class="comment"># macro 分类报告</span></span><br><span class="line">    macro_class_report = classification_report(y_test, y_pred,target_names=[<span class="string">"类0"</span>,<span class="string">"类1"</span>,<span class="string">"类2"</span>])</span><br><span class="line">    <span class="comment"># 微精确率</span></span><br><span class="line">    micro_p = precision_score(y_test,y_pred,average=<span class="string">'micro'</span>) </span><br><span class="line">    <span class="comment"># 微召回率</span></span><br><span class="line">    micro_r = recall_score(y_test,y_pred,average=<span class="string">'micro'</span>)</span><br><span class="line">    <span class="comment"># 微F1得分</span></span><br><span class="line">    micro_f1 = f1_score(y_test,y_pred,average=<span class="string">'micro'</span>) </span><br><span class="line">    </span><br><span class="line">    indicators = &#123;<span class="string">"cm2"</span>:cm2,<span class="string">"acc"</span>:acc,<span class="string">"acc_num"</span>:acc_num,<span class="string">"macro_class_report"</span>:macro_class_report,<span class="string">"micro_p"</span>:micro_p,<span class="string">"micro_r"</span>:micro_r,<span class="string">"micro_f1"</span>:micro_f1&#125;</span><br><span class="line">    <span class="keyword">return</span> indicators</span><br><span class="line"></span><br><span class="line"><span class="comment"># 可视化</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">visualization</span><span class="params">(X, y, classifier, test_id=None, resolution=<span class="number">0.02</span>)</span>:</span></span><br><span class="line">    <span class="comment"># 创建 color map</span></span><br><span class="line">    markers = (<span class="string">'s'</span>, <span class="string">'x'</span>, <span class="string">'o'</span>, <span class="string">'^'</span>, <span class="string">'v'</span>)</span><br><span class="line">    colors = (<span class="string">'red'</span>, <span class="string">'blue'</span>, <span class="string">'lightgreen'</span>, <span class="string">'gray'</span>, <span class="string">'cyan'</span>)</span><br><span class="line">    cmap = ListedColormap(colors[:len(np.unique(y))])</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 绘制决策边界</span></span><br><span class="line">    x1_min, x1_max = X[:, <span class="number">0</span>].min() - <span class="number">1</span>, X[:, <span class="number">0</span>].max() + <span class="number">1</span> <span class="comment">#第一个特征取值范围作为横轴</span></span><br><span class="line">    x2_min, x2_max = X[:, <span class="number">1</span>].min() - <span class="number">1</span>, X[:, <span class="number">1</span>].max() + <span class="number">1</span> <span class="comment">#第二个特征取值范围作为纵轴</span></span><br><span class="line">    xx1, xx2 = np.meshgrid(np.arange(x1_min, x1_max, resolution), np.arange(x2_min, x2_max, resolution)) <span class="comment"># reolution为网格剖分粒度</span></span><br><span class="line">    Z = classifier.predict(np.array([xx1.ravel(), xx2.ravel()]).T) <span class="comment"># 对组合的特征进行预测，ravel为数组展平</span></span><br><span class="line">    Z = Z.reshape(xx1.shape) <span class="comment"># Z是列向量</span></span><br><span class="line">    plt.contourf(xx1, xx2, Z, alpha=<span class="number">0.4</span>, cmap=cmap) <span class="comment"># x和y为两个等长一维数组，z为二维数组，指定每一对xy所对应的z值</span></span><br><span class="line">    plt.xlim(xx1.min(), xx1.max()) <span class="comment">#对等高线间的区域进行填充</span></span><br><span class="line">    plt.ylim(xx2.min(), xx2.max()) <span class="comment">#对等高线间的区域进行填充</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 全数据集，不同类别样本点的特征作为坐标(x,y)，用不同颜色画散点图</span></span><br><span class="line">    <span class="keyword">for</span> idx, cl <span class="keyword">in</span> enumerate(np.unique(y)):</span><br><span class="line">        plt.scatter(x=X[y == cl, <span class="number">0</span>], y=X[y == cl, <span class="number">1</span>], alpha=<span class="number">0.8</span>, c=cmap(idx), marker=markers[idx], label=cl) </span><br><span class="line">        </span><br><span class="line">    <span class="comment"># 高亮测试集</span></span><br><span class="line">    <span class="keyword">if</span> test_id:</span><br><span class="line">        X_test, y_test = X[test_id, :], y[test_id]</span><br><span class="line">        <span class="comment"># c设置颜色，测试集不同类别的实例点画图不区别颜色</span></span><br><span class="line">        plt.scatter(x=X_test[:, <span class="number">0</span>], y=X_test[:, <span class="number">1</span>], alpha=<span class="number">1.0</span>, c=<span class="string">'gray'</span>, marker=<span class="string">'^'</span>, linewidths=<span class="number">1</span>, s=<span class="number">55</span>, label=<span class="string">'test set'</span>)</span><br><span class="line">        </span><br><span class="line">    plt.xlabel(<span class="string">'petal length [standardized]'</span>)</span><br><span class="line">    plt.ylabel(<span class="string">'petal width [standardized]'</span>)</span><br><span class="line">    plt.legend(loc=<span class="string">'upper left'</span>)</span><br><span class="line">    plt.tight_layout()</span><br><span class="line">    plt.show()</span><br><span class="line">    </span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:</span><br><span class="line">    <span class="comment"># 特征提取</span></span><br><span class="line">    X, y = deal_data()</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 简单交叉验证</span></span><br><span class="line">    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=<span class="number">0.3</span>, random_state=<span class="number">0</span>)</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 数据标准化</span></span><br><span class="line">    X_train_std, X_test_std = standard_scaler(X_train, X_test)</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 模型训练</span></span><br><span class="line">    model = train_model(X_train_std, y_train)</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 预测结果</span></span><br><span class="line">    y_pred = model.predict(X_test_std)</span><br><span class="line">    print(<span class="string">"y test:"</span>, y_test) <span class="comment"># 测试集y值</span></span><br><span class="line">    print(<span class="string">"y pred:"</span>, y_pred) <span class="comment"># 预测y值</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 模型评估</span></span><br><span class="line">    indicators = estimate_model(y_pred, y_test, model)</span><br><span class="line">    cm2 = indicators[<span class="string">"cm2"</span>] </span><br><span class="line">    print(<span class="string">"混淆矩阵：\n"</span>, cm2) </span><br><span class="line">    acc =  indicators[<span class="string">"acc"</span>]</span><br><span class="line">    print(<span class="string">"准确率："</span>, acc)</span><br><span class="line">    acc_num =  indicators[<span class="string">"acc_num"</span>]</span><br><span class="line">    print(<span class="string">"正确分类的样本数："</span>, acc_num)</span><br><span class="line">    macro_class_report = indicators[<span class="string">"macro_class_report"</span>]</span><br><span class="line">    print(<span class="string">"macro 分类报告：\n"</span>, macro_class_report)</span><br><span class="line">    micro_p = indicators[<span class="string">"micro_p"</span>]</span><br><span class="line">    print(<span class="string">"微精确率："</span>, micro_p)</span><br><span class="line">    micro_r = indicators[<span class="string">"micro_r"</span>]</span><br><span class="line">    print(<span class="string">"微召回率："</span>, micro_r)</span><br><span class="line">    micro_f1 = indicators[<span class="string">"micro_f1"</span>]</span><br><span class="line">    print(<span class="string">"微F1得分："</span>, micro_f1)</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 可视化</span></span><br><span class="line">    X_combined_std = np.vstack((X_train_std, X_test_std))</span><br><span class="line">    y_combined = np.hstack((y_train, y_test))</span><br><span class="line">    <span class="comment"># classifier为分类器，test_id为测试集序号</span></span><br><span class="line">    visualization(X_combined_std, y_combined, classifier=model, test_id=range(<span class="number">105</span>, <span class="number">150</span>))</span><br></pre></td></tr></table></figure>
+
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>感谢您对我的支持，让我继续努力分享有用的技术与知识点！</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/wechatpay.jpg" alt="Alex_McAvoy 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/alipay.jpg" alt="Alex_McAvoy 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Alex_McAvoy
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/141da982.html" title="软间隔支持向量机">https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/141da982.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/artificial-intelligence/" rel="tag"># 人工智能</a>
+              <a href="/tags/machine-learning/" rel="tag"># 机器学习</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/mathematics/convex-optimization/1f33dd66.html" rel="prev" title="序列最小最优化(SMO)算法">
+      <i class="fa fa-chevron-left"></i> 序列最小最优化(SMO)算法
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/artificial-intelligence/machine-learning/d69d1bb1.html" rel="next" title="特征构建与核方法">
+      特征构建与核方法 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【引入】"><span class="nav-number">1.</span> <span class="nav-text">【引入】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【假设形式】"><span class="nav-number">2.</span> <span class="nav-text">【假设形式】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【软间隔支持向量机学习算法的原始形式】"><span class="nav-number">3.</span> <span class="nav-text">【软间隔支持向量机学习算法的原始形式】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#软间隔最大化"><span class="nav-number">3.1.</span> <span class="nav-text">软间隔最大化</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#最大间隔法"><span class="nav-number">3.2.</span> <span class="nav-text">最大间隔法</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【软间隔支持向量机学习算法的对偶形式】"><span class="nav-number">4.</span> <span class="nav-text">【软间隔支持向量机学习算法的对偶形式】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#对偶问题的转化"><span class="nav-number">4.1.</span> <span class="nav-text">对偶问题的转化</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#对偶问题中的极小问题"><span class="nav-number">4.2.</span> <span class="nav-text">对偶问题中的极小问题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#对偶问题中的极大问题"><span class="nav-number">4.3.</span> <span class="nav-text">对偶问题中的极大问题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#对偶学习算法"><span class="nav-number">4.4.</span> <span class="nav-text">对偶学习算法</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【支持向量与间隔边界】"><span class="nav-number">5.</span> <span class="nav-text">【支持向量与间隔边界】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【软间隔支持向量机的等价问题】"><span class="nav-number">6.</span> <span class="nav-text">【软间隔支持向量机的等价问题】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#最优化问题"><span class="nav-number">6.1.</span> <span class="nav-text">最优化问题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#合页损失函数"><span class="nav-number">6.2.</span> <span class="nav-text">合页损失函数</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【sklearn-实现】"><span class="nav-number">7.</span> <span class="nav-text">【sklearn 实现】</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">  
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Alex_McAvoy"
+      src="/assets/img/head.jpg">
+  <p class="site-author-name" itemprop="name">Alex_McAvoy</p>
+  <div class="site-description" itemprop="description">想要成为渔夫的猎手</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">600</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">60</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">65</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Alex-McAvoy" title="GitHub → https://github.com/Alex-McAvoy" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/u011815404" title="CSDN → https://blog.csdn.net/u011815404" rel="noopener" target="_blank"><i class="fas fa-copyright fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+<!-- 访客地图 -->
+<script type="text/javascript" src="//rf.revolvermaps.com/0/0/5.js?i=50n58yo58ow&amp;m=0&amp;c=ff0000&amp;cr1=ffffff&amp;s=140" async="async"></script>
+
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdz20172133" title="https://blog.csdn.net/sdz20172133" rel="noopener" target="_blank">神仙队友</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://pxlsdz.gitee.io/" title="https://pxlsdz.gitee.io/" rel="noopener" target="_blank">神仙队友blog2</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdau_fangshifeng" title="https://blog.csdn.net/sdau_fangshifeng" rel="noopener" target="_blank">酷头</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://bycore.net" title="https://bycore.net" rel="noopener" target="_blank">凉了的某饼同学</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://kris-cn.github.io/" title="http://kris-cn.github.io/" rel="noopener" target="_blank">翟孙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://deng.fun/" title="http://deng.fun/" rel="noopener" target="_blank">芙蓉姐姐</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/wentong_Xu" title="https://blog.csdn.net/wentong_Xu" rel="noopener" target="_blank">小黑贱胖子</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.yuheng.tech/" title="https://www.yuheng.tech/" rel="noopener" target="_blank">咸于</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/lanshan1111" title="https://blog.csdn.net/lanshan1111" rel="noopener" target="_blank">肥硕硕</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdauguanweihong" title="https://blog.csdn.net/sdauguanweihong" rel="noopener" target="_blank">管少</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_41661919" title="https://blog.csdn.net/qq_41661919" rel="noopener" target="_blank">俊杰</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_40859951" title="https://blog.csdn.net/qq_40859951" rel="noopener" target="_blank">峰哥</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/LSD20164388" title="https://blog.csdn.net/LSD20164388" rel="noopener" target="_blank">狗冬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37868325" title="https://blog.csdn.net/qq_37868325" rel="noopener" target="_blank">妍大佬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://sanshuiii.github.io/" title="https://sanshuiii.github.io/" rel="noopener" target="_blank">sanshuiii</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://zjpzhao.github.io/" title="https://zjpzhao.github.io/" rel="noopener" target="_blank">brain</a>
+        </li>
+    </ul>
+  </div>
+
+		
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+  
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Alex_McAvoy</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+</br>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script><script src="/js/bookmark.js"></script>
+
+
+
+  
+
+
+
+
+  <script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '48fd73a538d3fa927f65',
+      clientSecret: '56618aefeee90bac3c20de8d51bb0b985d67252d',
+      repo        : 'Gitalk-Comment',
+      owner       : 'Alex-McAvoy',
+      admin       : ['Alex-McAvoy'],
+      id          : '88a78d891fc23a480bd939b7f3d06b9e',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+  
+  <!-- 鼠标单击粒子特效 -->
+  <script type="text/javascript" src="/js/cursor-effects.js"></script>
+  <!-- 多级目录 -->
+  <script type="text/javascript" src="/js/category.js"></script>
+  
+</body>
+</html>

@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.9.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/img/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/assets/img/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/pace-js@1/themes/blue/pace-theme-minimal.css">
+  <script src="//cdn.jsdelivr.net/npm/pace-js@1/pace.min.js"></script>
+
+
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"alex-mcavoy.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":16,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":true,"color":"#ff0000","save":"manual"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":true},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.json"};
+  </script>
+
+  <meta name="description" content="【概述】决策树（Decision Tree）是一种用于分类或回归的机器学习方法，对于复杂的预测问题，通过建立树模型产生分支结点，依照规则递归地分割数据集，使得问题从结构上划分为不同的子问题 决策树本质是从训练集中归纳出一组规则，在给出一个新的输入后，根据规则给出相应的输出，由于与训练集不矛盾的决策树可能有多个，需要选择一个与训练数据矛盾较小的决策树，同时具有较好的泛化能力">
+<meta name="keywords" content="人工智能,机器学习">
+<meta property="og:type" content="article">
+<meta property="og:title" content="决策树概述">
+<meta property="og:url" content="https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/8ddc7426.html">
+<meta property="og:site_name" content="Alex_McAvoy">
+<meta property="og:description" content="【概述】决策树（Decision Tree）是一种用于分类或回归的机器学习方法，对于复杂的预测问题，通过建立树模型产生分支结点，依照规则递归地分割数据集，使得问题从结构上划分为不同的子问题 决策树本质是从训练集中归纳出一组规则，在给出一个新的输入后，根据规则给出相应的输出，由于与训练集不矛盾的决策树可能有多个，需要选择一个与训练数据矛盾较小的决策树，同时具有较好的泛化能力">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/machine-learning/30-1.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/machine-learning/30-2.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/machine-learning/30-3.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/machine-learning/30-4.png">
+<meta property="og:updated_time" content="2023-03-31T12:43:20.516Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="决策树概述">
+<meta name="twitter:description" content="【概述】决策树（Decision Tree）是一种用于分类或回归的机器学习方法，对于复杂的预测问题，通过建立树模型产生分支结点，依照规则递归地分割数据集，使得问题从结构上划分为不同的子问题 决策树本质是从训练集中归纳出一组规则，在给出一个新的输入后，根据规则给出相应的输出，由于与训练集不矛盾的决策树可能有多个，需要选择一个与训练数据矛盾较小的决策树，同时具有较好的泛化能力">
+<meta name="twitter:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/machine-learning/30-1.png">
+
+<link rel="canonical" href="https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/8ddc7426.html">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>决策树概述 | Alex_McAvoy</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Alex_McAvoy</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">想要成为渔夫的猎手</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+
+	
+	
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/8ddc7426.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/assets/img/head.jpg">
+      <meta itemprop="name" content="Alex_McAvoy">
+      <meta itemprop="description" content="想要成为渔夫的猎手">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Alex_McAvoy">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          决策树概述
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-08-02 14:02:00" itemprop="dateCreated datePublished" datetime="2019-08-02T14:02:00+08:00">2019-08-02</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/artificial-intelligence/" itemprop="url" rel="index"><span itemprop="name">人工智能</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/artificial-intelligence/machine-learning/" itemprop="url" rel="index"><span itemprop="name">机器学习</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>8.6k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>8 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="【概述】"><a href="#【概述】" class="headerlink" title="【概述】"></a>【概述】</h1><p><strong>决策树（Decision Tree）</strong>是一种用于分类或回归的机器学习方法，对于复杂的预测问题，通过建立树模型产生分支结点，依照规则递归地分割数据集，使得问题从结构上划分为不同的子问题</p>
+<p>决策树本质是从训练集中归纳出一组<strong>规则</strong>，在给出一个新的输入后，根据规则给出相应的输出，由于与训练集不矛盾的决策树可能有多个，需要选择一个与训练数据矛盾较小的决策树，同时具有较好的泛化能力</p>
+<p>从另一个角度来看，决策树是由训练集估计的<strong>条件概率模型</strong>，而基于特征空间划分的条件概率模型有无穷多个，选择的条件概率模型不仅要对训练数据有很好的拟合，而且对未知数据有很好的预测</p>
+<p>根据所处理数据的类型，决策树可以分为以下两种：</p>
+<ul>
+<li>分类决策树：处理的数据是离散值，用来解决分类问题</li>
+<li>回归决策树：处理的数据是连续值，用来解决回归问题</li>
+</ul>
+<p>此外，还有一种由 CART 决策树生成算法构建的<strong>分类与回归树（Classification and Regression Trees）</strong>，其既可以处理分类问题，也可以处理回归问题</p>
+<h1 id="【决策树结构】"><a href="#【决策树结构】" class="headerlink" title="【决策树结构】"></a>【决策树结构】</h1><p>一般地，一棵决策树包含一个根结点、若干分支结点、若干叶结点</p>
+<p>其中，根结点包含样本全集，叶结点对应决策结果，分支结点对应于一个属性测试</p>
+<p>从根结点到每个叶结点的路径对应了一个<strong>判定测试序列（if-then 规则）</strong>，路径上的分支结点的特征对应着规则的条件，叶结点对应着规则的结论</p>
+<p>随着树深度不断地增加，分支结点的子集会越来越小，问题也逐渐简化，当分支结点的深度或问题的规模满足一定的停止条件时，分支结点会停止分裂</p>
+<p>举例来说，为了预测明天是否适合出去打羽毛球，采集了过去 14 天的数据，数据特征包括天气、温度、湿度、风力，如下表所示：</p>
+<p><img width="450" src="/images/artificial-intelligence/machine-learning/30-1.png"></p>
+<p>下图是可能的决策树分裂方案之一：</p>
+<p><img width="350" src="/images/artificial-intelligence/machine-learning/30-2.png"></p>
+<p>其中，根结点是天气，分支结点是湿度、风力，叶结点是适合、不适合</p>
+<h1 id="【决策树学习】"><a href="#【决策树学习】" class="headerlink" title="【决策树学习】"></a>【决策树学习】</h1><h2 id="学习步骤"><a href="#学习步骤" class="headerlink" title="学习步骤"></a>学习步骤</h2><p>决策树学习通常包括特征选择、决策树生成、决策树剪枝三个步骤：</p>
+<ol>
+<li><strong>特征选择</strong>：选择最优的特征作为决策结点</li>
+<li><strong>决策树生成</strong>：即决策树的构建，仅考虑局部最优，对应模型的局部选择</li>
+<li><strong>决策树剪枝</strong>：对生成的决策树进行简化，考虑全局最优，对应模型的全局选择</li>
+</ol>
+<h2 id="特征选择"><a href="#特征选择" class="headerlink" title="特征选择"></a>特征选择</h2><p>如果利用一个特征进行预测的结果与随机选取的结果没有很大的差别，那么这个特征是与预测无关的</p>
+<p>为提高决策树学习的效率，要对其进行<strong>特征选择</strong>，即在决策树学习开始的时候，对特征进行选择，只留下对训练数据有足够分类能力的特征</p>
+<p>具体来说，对于一般的决策树，通常采用<strong>信息增益（information Gain）</strong>或<strong>信息增益比（information Gain Radio）</strong>作为特征选择的标准；对于分类与回归树 CART 来说，通常采用<strong>基尼指数（Gini Index）</strong>作为特征选择的标准</p>
+<ul>
+<li>关于信息增益与信息增益比，详见：<a href="https://alex-mcavoy.github.io/mathematics/information-theory/ff75e46a.html">信息增益与信息增益比</a></li>
+<li>关于基尼指数，详见：<a href="https://alex-mcavoy.github.io/mathematics/information-theory/9690b9de.html">基尼指数</a></li>
+</ul>
+<h2 id="决策树生成"><a href="#决策树生成" class="headerlink" title="决策树生成"></a>决策树生成</h2><h3 id="生成过程"><a href="#生成过程" class="headerlink" title="生成过程"></a>生成过程</h3><p>决策树学习的算法通常是一个递归地选择最优特征，并根据该特征对训练集进行分割，使得各子数据集有一个最好的分类的过程</p>
+<p>这一过程对应着特征空间的划分，也对应着决策树的构建，具体步骤如下：</p>
+<ol>
+<li>构建根结点，将所有训练数据都放在根结点</li>
+<li>选择一个最优特征，按该特征将训练集分割为若干子集，使得各子集有一个在当前条件下最好的分类<ol>
+<li>若各子集已经被基本正确分类，那么构建叶结点，并将这些子集分到对应的叶结点中去</li>
+<li>若各子集不能被基本正确分类，那么就对这些子集选择新的最优特征，继续进行分割，建立相应的结点</li>
+</ol>
+</li>
+<li>按步骤 2 不断的进行递归，直到所有训练子集被基本正确分类，或没有合适的特征为止</li>
+</ol>
+<p>在决策树构建完毕后，每个子集都被分到叶结点上，即都有了明确的类</p>
+<h3 id="生成算法"><a href="#生成算法" class="headerlink" title="生成算法"></a>生成算法</h3><p>常见的决策树生成算法有：ID3、C4.5、CART</p>
+<ul>
+<li><p>关于 ID3 与 C4.5 生成算法，详见：<a href="https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/c6faa205.html">决策树的 ID3 与 C4.5 生成算法</a></p>
+</li>
+<li><p>关于 CART 生成算法，详见：<a href="https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/729a7bb2.html">决策树的 CART 生成算法</a></p>
+</li>
+</ul>
+<p>其中，ID3 是最基础的决策树生成算法，其不存在决策树剪枝这个过程，C4.5 在 ID3 的基础上进行了若干改进，其中一项改进就是进行了剪枝</p>
+<p>此外，ID3 无法对连续值进行处理，C4.5 在 ID3 的基础上采用<strong>连续特征离散化策略</strong>，将连续型特征转为离散型特征，但这种转换过程可能会破坏连续型变量的内在性质，也就是说，ID3 与 C4.5 所生成的决策树，都是<strong>分类决策树</strong>，只能用来处理分类问题</p>
+<p>进一步，在 C4.5 的基础上又有了 CART，其是<strong>分类回归树</strong>，既可以用于处理分类问题，也可以用于回归问题</p>
+<h2 id="决策树的剪枝"><a href="#决策树的剪枝" class="headerlink" title="决策树的剪枝"></a>决策树的剪枝</h2><p>以上方法生成的决策树可能对训练数据有着很好的分类能力，但对未知的测试数据却未必有很好的分类能力，即可能出现<strong>过拟合现象</strong></p>
+<p>为此，需要对生成的决策树自下而上的进行剪枝，将决策树进行简化，从而使得具有更好的泛化能力</p>
+<p>具体来说，就是去掉过于细分的叶结点，使其退回父结点甚至更高的结点，然后将父结点或更高的结点改为叶结点</p>
+<p>关于决策树的剪枝策略：<a href="https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/1a3614c.html">点击这里</a></p>
+<h1 id="【决策树结点停止分裂的条件】"><a href="#【决策树结点停止分裂的条件】" class="headerlink" title="【决策树结点停止分裂的条件】"></a>【决策树结点停止分裂的条件】</h1><p>无论是使用 ID3、C4.5 还是使用 CART，在构建决策树时，决策树不可能不限制地生长，总有停止分裂的时候</p>
+<p>最极端的情况是当结点分裂到只剩下一个数据点时自动结束分裂，但这种情况下决策树的结构过于复杂，而且预测的精度不高</p>
+<p>一般情况下，为降低决策树复杂度，并提高预测的精度，会适当提前终止节点的分裂</p>
+<p>常见的决策树结点停止分裂的条件有：</p>
+<p><strong><font size="4">1.最小节点数</font></strong></p>
+<p>当节点的数据量小于一个指定的数量时，不继续分裂</p>
+<p>有两个原因：</p>
+<ol>
+<li>数据量较少时，再做分裂容易强化噪声数据的作用</li>
+<li>提前结束分裂，在一定程度上有利于降低过拟合的影响</li>
+</ol>
+<p><strong><font size="4">2.熵或者基尼值小于阀值</font></strong></p>
+<p>熵和基尼指数的大小表示数据的复杂程度，当熵或者基尼值过小时，表示数据的纯度比较大，如果熵或者基尼值小于一定程度数，结点停止分裂</p>
+<p><strong><font size="4">3.决策树的深度达到指定的条件</font></strong></p>
+<p>结点的深度可以理解为结点与决策树跟结点的距离，例如：根结点的子结点的深度为 $1$，因为这些结点与跟结点的距离为 $1$，子结点的深度要比父结点的深度大 $1$</p>
+<p>决策树的深度是所有叶结点的最大深度，当深度到达指定的上限大小时，停止分裂</p>
+<p><strong><font size="4">4.所有特征已经使用完毕，不能继续进行分裂</font></strong></p>
+<p>被动式停止分裂的条件，当已经没有可分的属性时，直接将当前节点设置为叶结点</p>
+<h1 id="【sklearn-实现】"><a href="#【sklearn-实现】" class="headerlink" title="【sklearn 实现】"></a>【sklearn 实现】</h1><h2 id="sklearn-tree"><a href="#sklearn-tree" class="headerlink" title="sklearn.tree"></a>sklearn.tree</h2><p>在 <code>sklearn.tree</code> 中，存在两个关于决策树的方法，这两种方法所采用的算法都是 CART 算法，一个用来处理回归问题，另一个用来处理分类问题：</p>
+<ul>
+<li><code>DecisionTreeRegressor()</code>：处理回归问题</li>
+<li><code>DecisionTreeClassifier()</code>：处理分类问题</li>
+</ul>
+<p>两个方法的参数一致，使用方法相似，二者唯一的区别是用于处理分类问题的 <code>DecisionTreeClassifier()</code> 相较于 <code>DecisionTreeRegressor()</code> 多了一个 <code>class_weight</code> 参数</p>
+<h2 id="决策树结构可视化"><a href="#决策树结构可视化" class="headerlink" title="决策树结构可视化"></a>决策树结构可视化</h2><p><code>sklearn</code> 中没有提供决策树的可视化，其仅能让训练的模型保存到 <code>dot</code> 文件中</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> sklearn.tree <span class="keyword">import</span> export_graphviz</span><br><span class="line"><span class="keyword">with</span> open(<span class="string">"out.dot"</span>, <span class="string">"w"</span>) <span class="keyword">as</span> f:</span><br><span class="line">    f = export_graphviz(model, out_file = f, </span><br><span class="line">                        feature_names = [<span class="string">'a'</span>, <span class="string">'b'</span>, <span class="string">'c'</span>, <span class="string">'d'</span>])</span><br></pre></td></tr></table></figure>
+<p>之后，一般使用 <code>graphviz</code> 来进行可视化，其部署主要包括 <code>graphviz</code>  的安装和 Python 的 <code>graphviz</code> 插件的安装</p>
+<ol>
+<li>安装 <code>graphviz</code>：<a href="http://www.graphviz.org/" target="_blank" rel="noopener">点击这里</a></li>
+<li>设置环境变量：将 <code>安装目录/Graphviz/bin</code> 加入 PATH 中</li>
+<li>安装 <code>graphviz</code> 插件：<code>pip install graphviz</code></li>
+<li>安装 <code>pydotplus</code> 插件： <code>pip install pydotplus</code></li>
+</ol>
+<p>此时，环境配置完成，若仍然找不到 <code>graphviz</code>，加入以下代码即可：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> os</span><br><span class="line">os.environ[<span class="string">"PATH"</span>] += os.pathsep + <span class="string">"安装目录/Graphviz/bin/"</span></span><br></pre></td></tr></table></figure>
+<p>有两种方法生成决策树的可视化</p>
+<font size="4">方案一：生成 pdf</font>
+
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> pydotplus </span><br><span class="line"><span class="keyword">from</span> sklearn.tree <span class="keyword">import</span> export_graphviz</span><br><span class="line">dot_data = export_graphviz(model, out_file=<span class="literal">None</span>) </span><br><span class="line">graph = pydotplus.graph_from_dot_data(dot_data) </span><br><span class="line">graph.write_pdf(<span class="string">"out.pdf"</span>)</span><br></pre></td></tr></table></figure>
+<font size="4">方案二：直接在 Jupyter 中显示</font>
+
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> IPython.display <span class="keyword">import</span> Image  </span><br><span class="line"><span class="keyword">from</span> sklearn.tree <span class="keyword">import</span> export_graphviz</span><br><span class="line"><span class="keyword">import</span> pydotplus </span><br><span class="line"><span class="keyword">import</span> os</span><br><span class="line"></span><br><span class="line">os.environ[<span class="string">"PATH"</span>] += os.pathsep + <span class="string">"安装目录/Graphviz/bin/"</span></span><br><span class="line">dot_data = export_graphviz(model, out_file=<span class="literal">None</span>, </span><br><span class="line">                         feature_names=[<span class="string">'a'</span>, <span class="string">'b'</span>, <span class="string">'c'</span>, <span class="string">'d'</span>],  </span><br><span class="line">                         class_names=[<span class="string">'calss1'</span>,<span class="string">'calss2'</span>,<span class="string">'calss3'</span>],  </span><br><span class="line">                         filled=<span class="literal">True</span>, rounded=<span class="literal">True</span>,  </span><br><span class="line">                         special_characters=<span class="literal">True</span>)  </span><br><span class="line"></span><br><span class="line">graph = pydotplus.graph_from_dot_data(dot_data)  </span><br><span class="line">Image(graph.create_png())</span><br></pre></td></tr></table></figure>
+<h2 id="实现"><a href="#实现" class="headerlink" title="实现"></a>实现</h2><p>以 <code>sklearn</code> 中的鸢尾花数据集为例，选取其后两个特征来实现决策树</p>
+<p><img src="/images/artificial-intelligence/machine-learning/30-3.png"></p>
+<p><img src="/images/artificial-intelligence/machine-learning/30-4.png"></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> pandas <span class="keyword">as</span> pd</span><br><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"><span class="keyword">import</span> matplotlib.pyplot <span class="keyword">as</span> plt</span><br><span class="line"><span class="keyword">from</span> sklearn.datasets <span class="keyword">import</span> load_iris</span><br><span class="line"><span class="keyword">from</span> sklearn.model_selection <span class="keyword">import</span> train_test_split</span><br><span class="line"><span class="keyword">from</span> sklearn.preprocessing <span class="keyword">import</span> StandardScaler</span><br><span class="line"><span class="keyword">from</span> sklearn.tree <span class="keyword">import</span> DecisionTreeClassifier</span><br><span class="line"><span class="keyword">from</span> sklearn.metrics <span class="keyword">import</span> confusion_matrix,accuracy_score,classification_report,precision_score,recall_score,f1_score</span><br><span class="line"><span class="keyword">from</span> matplotlib.colors <span class="keyword">import</span> ListedColormap</span><br><span class="line"></span><br><span class="line"><span class="comment"># 特征提取</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">deal_data</span><span class="params">()</span>:</span></span><br><span class="line">    iris = load_iris()  <span class="comment"># sklearn的鸢尾花数据集</span></span><br><span class="line">    <span class="comment"># iris分为三类，前50行一类，51-100行一类，101-150行一类</span></span><br><span class="line">    X = iris.data[:, [<span class="number">2</span>, <span class="number">3</span>]] <span class="comment"># 选用后两个特征作为样本特征</span></span><br><span class="line">    y = iris.target  <span class="comment">#取species列，类别</span></span><br><span class="line">    <span class="keyword">return</span> X,y</span><br><span class="line"></span><br><span class="line"><span class="comment"># 数据归一化</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">standard_scaler</span><span class="params">(X_train,X_test)</span>:</span></span><br><span class="line">    sc = StandardScaler() <span class="comment"># 初始化一个sc对象去对数据集作变换</span></span><br><span class="line">    scaler = sc.fit(X_train) <span class="comment"># 归一化，存有计算出的均值和方差</span></span><br><span class="line">    X_train_std = scaler.transform(X_train) <span class="comment"># 利用 scaler 进行标准化</span></span><br><span class="line">    X_test_std = scaler.transform(X_test) <span class="comment"># 利用 scaler 进行标准化</span></span><br><span class="line">    <span class="keyword">return</span> X_train_std, X_test_std</span><br><span class="line"></span><br><span class="line"><span class="comment"># 模型训练</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">train_model</span><span class="params">(X_train_std, y_train)</span>:</span></span><br><span class="line">    <span class="comment"># 建立Logistic回归模型</span></span><br><span class="line">    model = DecisionTreeClassifier(criterion=<span class="string">'entropy'</span>, max_depth=<span class="number">4</span>)</span><br><span class="line">    <span class="comment"># 训练</span></span><br><span class="line">    model.fit(X_train_std, y_train)</span><br><span class="line">    <span class="keyword">return</span> model</span><br><span class="line"></span><br><span class="line"><span class="comment"># 模型评估</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">estimate_model</span><span class="params">(y_pred, y_test, model)</span>:</span></span><br><span class="line">    <span class="comment"># 混淆矩阵，三分类情况下，大小为 3*3</span></span><br><span class="line">    cm2 = confusion_matrix(y_test,y_pred) </span><br><span class="line">    <span class="comment"># 准确率</span></span><br><span class="line">    acc = accuracy_score(y_test,y_pred)</span><br><span class="line">    <span class="comment"># 正确分类的样本数</span></span><br><span class="line">    acc_num = accuracy_score(y_test,y_pred,normalize=<span class="literal">False</span>)</span><br><span class="line">    <span class="comment"># macro 分类报告</span></span><br><span class="line">    macro_class_report = classification_report(y_test, y_pred,target_names=[<span class="string">"类0"</span>,<span class="string">"类1"</span>,<span class="string">"类2"</span>])</span><br><span class="line">    <span class="comment"># 微精确率</span></span><br><span class="line">    micro_p = precision_score(y_test,y_pred,average=<span class="string">'micro'</span>) </span><br><span class="line">    <span class="comment"># 微召回率</span></span><br><span class="line">    micro_r = recall_score(y_test,y_pred,average=<span class="string">'micro'</span>)</span><br><span class="line">    <span class="comment"># 微F1得分</span></span><br><span class="line">    micro_f1 = f1_score(y_test,y_pred,average=<span class="string">'micro'</span>) </span><br><span class="line">    </span><br><span class="line">    indicators = &#123;<span class="string">"cm2"</span>:cm2,<span class="string">"acc"</span>:acc,<span class="string">"acc_num"</span>:acc_num,<span class="string">"macro_class_report"</span>:macro_class_report,<span class="string">"micro_p"</span>:micro_p,<span class="string">"micro_r"</span>:micro_r,<span class="string">"micro_f1"</span>:micro_f1&#125;</span><br><span class="line">    <span class="keyword">return</span> indicators</span><br><span class="line">    </span><br><span class="line"><span class="comment"># 可视化</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">visualization</span><span class="params">(X, y, classifier, test_id=None, resolution=<span class="number">0.02</span>)</span>:</span></span><br><span class="line">    <span class="comment"># 创建 color map</span></span><br><span class="line">    markers = (<span class="string">'s'</span>, <span class="string">'x'</span>, <span class="string">'o'</span>, <span class="string">'^'</span>, <span class="string">'v'</span>)</span><br><span class="line">    colors = (<span class="string">'red'</span>, <span class="string">'blue'</span>, <span class="string">'lightgreen'</span>, <span class="string">'gray'</span>, <span class="string">'cyan'</span>)</span><br><span class="line">    cmap = ListedColormap(colors[:len(np.unique(y))])</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 绘制决策边界</span></span><br><span class="line">    x1_min, x1_max = X[:, <span class="number">0</span>].min() - <span class="number">1</span>, X[:, <span class="number">0</span>].max() + <span class="number">1</span> <span class="comment">#第一个特征取值范围作为横轴</span></span><br><span class="line">    x2_min, x2_max = X[:, <span class="number">1</span>].min() - <span class="number">1</span>, X[:, <span class="number">1</span>].max() + <span class="number">1</span> <span class="comment">#第二个特征取值范围作为纵轴</span></span><br><span class="line">    xx1, xx2 = np.meshgrid(np.arange(x1_min, x1_max, resolution), np.arange(x2_min, x2_max, resolution)) <span class="comment"># reolution为网格剖分粒度</span></span><br><span class="line">    Z = classifier.predict(np.array([xx1.ravel(), xx2.ravel()]).T) <span class="comment"># 对组合的特征进行预测，ravel为数组展平</span></span><br><span class="line">    Z = Z.reshape(xx1.shape) <span class="comment"># Z是列向量</span></span><br><span class="line">    plt.contourf(xx1, xx2, Z, alpha=<span class="number">0.4</span>, cmap=cmap) <span class="comment"># x和y为两个等长一维数组，z为二维数组，指定每一对xy所对应的z值</span></span><br><span class="line">    plt.xlim(xx1.min(), xx1.max()) <span class="comment">#对等高线间的区域进行填充</span></span><br><span class="line">    plt.ylim(xx2.min(), xx2.max()) <span class="comment">#对等高线间的区域进行填充</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 全数据集，不同类别样本点的特征作为坐标(x,y)，用不同颜色画散点图</span></span><br><span class="line">    <span class="keyword">for</span> idx, cl <span class="keyword">in</span> enumerate(np.unique(y)):</span><br><span class="line">        plt.scatter(x=X[y == cl, <span class="number">0</span>], y=X[y == cl, <span class="number">1</span>], alpha=<span class="number">0.8</span>, c=cmap(idx), marker=markers[idx], label=cl) </span><br><span class="line">        </span><br><span class="line">    <span class="comment"># 高亮测试集</span></span><br><span class="line">    <span class="keyword">if</span> test_id:</span><br><span class="line">        X_test, y_test = X[test_id, :], y[test_id]</span><br><span class="line">        <span class="comment"># c设置颜色，测试集不同类别的实例点画图不区别颜色</span></span><br><span class="line">        plt.scatter(x=X_test[:, <span class="number">0</span>], y=X_test[:, <span class="number">1</span>], alpha=<span class="number">1.0</span>, c=<span class="string">'gray'</span>, marker=<span class="string">'^'</span>, linewidths=<span class="number">1</span>, s=<span class="number">55</span>, label=<span class="string">'test set'</span>)</span><br><span class="line"></span><br><span class="line">    plt.xlabel(<span class="string">'petal length [standardized]'</span>)</span><br><span class="line">    plt.ylabel(<span class="string">'petal width [standardized]'</span>)</span><br><span class="line">    plt.legend(loc=<span class="string">'upper left'</span>)</span><br><span class="line">    plt.tight_layout()</span><br><span class="line">    plt.show()</span><br><span class="line"></span><br><span class="line"><span class="comment"># 可视化决策树结构</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">visualization_tree</span><span class="params">(way = <span class="string">"pdf"</span>)</span>:</span></span><br><span class="line">    <span class="keyword">from</span> sklearn.tree <span class="keyword">import</span> export_graphviz</span><br><span class="line">    <span class="keyword">import</span> pydotplus</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 生成pdf文件</span></span><br><span class="line">    <span class="keyword">if</span> way == <span class="string">"pdf"</span>:</span><br><span class="line">        <span class="comment"># 将模型保存为dot文件</span></span><br><span class="line">        <span class="keyword">with</span> open(<span class="string">"out.dot"</span>, <span class="string">"w"</span>) <span class="keyword">as</span> f:</span><br><span class="line">            f = export_graphviz(model, out_file = f, </span><br><span class="line">                                feature_names = [<span class="string">"petal length"</span>, <span class="string">"petal width"</span>])</span><br><span class="line">        <span class="comment"># 将dot文件进行可视化，存为pdf</span></span><br><span class="line">        dot_data = export_graphviz(model, out_file=<span class="literal">None</span>) </span><br><span class="line">        graph = pydotplus.graph_from_dot_data(dot_data) </span><br><span class="line">        graph.write_pdf(<span class="string">"out.pdf"</span>) </span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 在jupyter中可视化</span></span><br><span class="line">    <span class="keyword">if</span> way == <span class="string">"jupyter"</span>:</span><br><span class="line">        <span class="keyword">from</span> IPython.display <span class="keyword">import</span> Image  </span><br><span class="line">        <span class="keyword">import</span> os</span><br><span class="line">        </span><br><span class="line">        os.environ[<span class="string">"PATH"</span>] += os.pathsep + <span class="string">"I:/Graphviz/bin/"</span></span><br><span class="line">        dot_data = export_graphviz(model, out_file=<span class="literal">None</span>, </span><br><span class="line">                                 feature_names=[<span class="string">"petal length"</span>, <span class="string">"petal width"</span>],  </span><br><span class="line">                                 filled=<span class="literal">True</span>, rounded=<span class="literal">True</span>,  </span><br><span class="line">                                 special_characters=<span class="literal">True</span>)  </span><br><span class="line"></span><br><span class="line">        graph = pydotplus.graph_from_dot_data(dot_data)  </span><br><span class="line">        <span class="keyword">return</span> Image(graph.create_png())</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:</span><br><span class="line">    <span class="comment"># 特征提取</span></span><br><span class="line">    X, y = deal_data()</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 简单交叉验证</span></span><br><span class="line">    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=<span class="number">0.3</span>, random_state=<span class="number">0</span>)</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 数据标准化</span></span><br><span class="line">    X_train_std, X_test_std = standard_scaler(X_train, X_test)</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 模型训练</span></span><br><span class="line">    model = train_model(X_train_std, y_train)</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 预测结果</span></span><br><span class="line">    y_pred = model.predict(X_test_std)</span><br><span class="line">    print(<span class="string">"y test:"</span>, y_test) <span class="comment"># 测试集y值</span></span><br><span class="line">    print(<span class="string">"y pred:"</span>, y_pred) <span class="comment"># 预测y值</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 模型评估</span></span><br><span class="line">    indicators = estimate_model(y_pred, y_test, model)</span><br><span class="line">    cm2 = indicators[<span class="string">"cm2"</span>] </span><br><span class="line">    print(<span class="string">"混淆矩阵：\n"</span>, cm2) </span><br><span class="line">    acc =  indicators[<span class="string">"acc"</span>]</span><br><span class="line">    print(<span class="string">"准确率："</span>, acc)</span><br><span class="line">    acc_num =  indicators[<span class="string">"acc_num"</span>]</span><br><span class="line">    print(<span class="string">"正确分类的样本数："</span>, acc_num)</span><br><span class="line">    macro_class_report = indicators[<span class="string">"macro_class_report"</span>]</span><br><span class="line">    print(<span class="string">"macro 分类报告：\n"</span>, macro_class_report)</span><br><span class="line">    micro_p = indicators[<span class="string">"micro_p"</span>]</span><br><span class="line">    print(<span class="string">"微精确率："</span>, micro_p)</span><br><span class="line">    micro_r = indicators[<span class="string">"micro_r"</span>]</span><br><span class="line">    print(<span class="string">"微召回率："</span>, micro_r)</span><br><span class="line">    micro_f1 = indicators[<span class="string">"micro_f1"</span>]</span><br><span class="line">    print(<span class="string">"微F1得分："</span>, micro_f1)</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 可视化</span></span><br><span class="line">    X_combined_std = np.vstack((X_train_std, X_test_std))</span><br><span class="line">    y_combined = np.hstack((y_train, y_test))</span><br><span class="line">    <span class="comment"># classifier为分类器，test_id为测试集序号</span></span><br><span class="line">    visualization(X_combined_std, y_combined, classifier=model, test_id=range(<span class="number">105</span>, <span class="number">150</span>))</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 可视化决策树结构</span></span><br><span class="line">    visualization_tree(<span class="string">"pdf"</span>)</span><br></pre></td></tr></table></figure>
+
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>感谢您对我的支持，让我继续努力分享有用的技术与知识点！</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/wechatpay.jpg" alt="Alex_McAvoy 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/alipay.jpg" alt="Alex_McAvoy 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Alex_McAvoy
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/8ddc7426.html" title="决策树概述">https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/8ddc7426.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/artificial-intelligence/" rel="tag"># 人工智能</a>
+              <a href="/tags/machine-learning/" rel="tag"># 机器学习</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/mathematics/convex-optimization/90a5934.html" rel="prev" title="EM 算法">
+      <i class="fa fa-chevron-left"></i> EM 算法
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/mathematics/information-theory/ff75e46a.html" rel="next" title="信息增益与信息增益比">
+      信息增益与信息增益比 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【概述】"><span class="nav-number">1.</span> <span class="nav-text">【概述】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【决策树结构】"><span class="nav-number">2.</span> <span class="nav-text">【决策树结构】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【决策树学习】"><span class="nav-number">3.</span> <span class="nav-text">【决策树学习】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#学习步骤"><span class="nav-number">3.1.</span> <span class="nav-text">学习步骤</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#特征选择"><span class="nav-number">3.2.</span> <span class="nav-text">特征选择</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#决策树生成"><span class="nav-number">3.3.</span> <span class="nav-text">决策树生成</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#生成过程"><span class="nav-number">3.3.1.</span> <span class="nav-text">生成过程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#生成算法"><span class="nav-number">3.3.2.</span> <span class="nav-text">生成算法</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#决策树的剪枝"><span class="nav-number">3.4.</span> <span class="nav-text">决策树的剪枝</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【决策树结点停止分裂的条件】"><span class="nav-number">4.</span> <span class="nav-text">【决策树结点停止分裂的条件】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【sklearn-实现】"><span class="nav-number">5.</span> <span class="nav-text">【sklearn 实现】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#sklearn-tree"><span class="nav-number">5.1.</span> <span class="nav-text">sklearn.tree</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#决策树结构可视化"><span class="nav-number">5.2.</span> <span class="nav-text">决策树结构可视化</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#实现"><span class="nav-number">5.3.</span> <span class="nav-text">实现</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">  
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Alex_McAvoy"
+      src="/assets/img/head.jpg">
+  <p class="site-author-name" itemprop="name">Alex_McAvoy</p>
+  <div class="site-description" itemprop="description">想要成为渔夫的猎手</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">600</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">60</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">65</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Alex-McAvoy" title="GitHub → https://github.com/Alex-McAvoy" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/u011815404" title="CSDN → https://blog.csdn.net/u011815404" rel="noopener" target="_blank"><i class="fas fa-copyright fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+<!-- 访客地图 -->
+<script type="text/javascript" src="//rf.revolvermaps.com/0/0/5.js?i=50n58yo58ow&amp;m=0&amp;c=ff0000&amp;cr1=ffffff&amp;s=140" async="async"></script>
+
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdz20172133" title="https://blog.csdn.net/sdz20172133" rel="noopener" target="_blank">神仙队友</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://pxlsdz.gitee.io/" title="https://pxlsdz.gitee.io/" rel="noopener" target="_blank">神仙队友blog2</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdau_fangshifeng" title="https://blog.csdn.net/sdau_fangshifeng" rel="noopener" target="_blank">酷头</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://bycore.net" title="https://bycore.net" rel="noopener" target="_blank">凉了的某饼同学</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://kris-cn.github.io/" title="http://kris-cn.github.io/" rel="noopener" target="_blank">翟孙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://deng.fun/" title="http://deng.fun/" rel="noopener" target="_blank">芙蓉姐姐</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/wentong_Xu" title="https://blog.csdn.net/wentong_Xu" rel="noopener" target="_blank">小黑贱胖子</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.yuheng.tech/" title="https://www.yuheng.tech/" rel="noopener" target="_blank">咸于</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/lanshan1111" title="https://blog.csdn.net/lanshan1111" rel="noopener" target="_blank">肥硕硕</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdauguanweihong" title="https://blog.csdn.net/sdauguanweihong" rel="noopener" target="_blank">管少</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_41661919" title="https://blog.csdn.net/qq_41661919" rel="noopener" target="_blank">俊杰</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_40859951" title="https://blog.csdn.net/qq_40859951" rel="noopener" target="_blank">峰哥</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/LSD20164388" title="https://blog.csdn.net/LSD20164388" rel="noopener" target="_blank">狗冬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37868325" title="https://blog.csdn.net/qq_37868325" rel="noopener" target="_blank">妍大佬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://sanshuiii.github.io/" title="https://sanshuiii.github.io/" rel="noopener" target="_blank">sanshuiii</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://zjpzhao.github.io/" title="https://zjpzhao.github.io/" rel="noopener" target="_blank">brain</a>
+        </li>
+    </ul>
+  </div>
+
+		
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+  
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Alex_McAvoy</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+</br>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script><script src="/js/bookmark.js"></script>
+
+
+
+  
+
+
+
+
+  <script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '48fd73a538d3fa927f65',
+      clientSecret: '56618aefeee90bac3c20de8d51bb0b985d67252d',
+      repo        : 'Gitalk-Comment',
+      owner       : 'Alex-McAvoy',
+      admin       : ['Alex-McAvoy'],
+      id          : 'c131a6e52b14ca22c21e3bbb1369015e',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+  
+  <!-- 鼠标单击粒子特效 -->
+  <script type="text/javascript" src="/js/cursor-effects.js"></script>
+  <!-- 多级目录 -->
+  <script type="text/javascript" src="/js/category.js"></script>
+  
+</body>
+</html>

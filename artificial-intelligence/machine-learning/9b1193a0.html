@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.9.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/img/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/assets/img/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/pace-js@1/themes/blue/pace-theme-minimal.css">
+  <script src="//cdn.jsdelivr.net/npm/pace-js@1/pace.min.js"></script>
+
+
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"alex-mcavoy.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":16,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":true,"color":"#ff0000","save":"manual"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":true},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.json"};
+  </script>
+
+  <meta name="description" content="【概述】在实现 K 近邻时，主要考虑的是如何对训练数据进行 K 近邻搜索，最简单的实现方式是线性扫描（Linear Scan），此时要计算输入样本与每一个训练样本的距离，这在维度大的特征空间以及大容量的训练数据集中非常耗时 为提高 K 近邻搜索的效率，可以使用特殊的数据结构来存储训练数据，通过以空间换时间来快速查询样本的近邻">
+<meta name="keywords" content="人工智能,机器学习">
+<meta property="og:type" content="article">
+<meta property="og:title" content="KD 树">
+<meta property="og:url" content="https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/9b1193a0.html">
+<meta property="og:site_name" content="Alex_McAvoy">
+<meta property="og:description" content="【概述】在实现 K 近邻时，主要考虑的是如何对训练数据进行 K 近邻搜索，最简单的实现方式是线性扫描（Linear Scan），此时要计算输入样本与每一个训练样本的距离，这在维度大的特征空间以及大容量的训练数据集中非常耗时 为提高 K 近邻搜索的效率，可以使用特殊的数据结构来存储训练数据，通过以空间换时间来快速查询样本的近邻">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/machine-learning/26-1.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/machine-learning/26-2.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/machine-learning/26-3.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/machine-learning/26-4.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/machine-learning/26-5.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/machine-learning/26-6.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/machine-learning/26-7.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/machine-learning/26-8.png">
+<meta property="og:updated_time" content="2023-03-31T12:33:45.426Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="KD 树">
+<meta name="twitter:description" content="【概述】在实现 K 近邻时，主要考虑的是如何对训练数据进行 K 近邻搜索，最简单的实现方式是线性扫描（Linear Scan），此时要计算输入样本与每一个训练样本的距离，这在维度大的特征空间以及大容量的训练数据集中非常耗时 为提高 K 近邻搜索的效率，可以使用特殊的数据结构来存储训练数据，通过以空间换时间来快速查询样本的近邻">
+<meta name="twitter:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/machine-learning/26-1.png">
+
+<link rel="canonical" href="https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/9b1193a0.html">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>KD 树 | Alex_McAvoy</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Alex_McAvoy</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">想要成为渔夫的猎手</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+
+	
+	
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/9b1193a0.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/assets/img/head.jpg">
+      <meta itemprop="name" content="Alex_McAvoy">
+      <meta itemprop="description" content="想要成为渔夫的猎手">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Alex_McAvoy">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          KD 树
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-07-11 15:10:00" itemprop="dateCreated datePublished" datetime="2019-07-11T15:10:00+08:00">2019-07-11</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/artificial-intelligence/" itemprop="url" rel="index"><span itemprop="name">人工智能</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/artificial-intelligence/machine-learning/" itemprop="url" rel="index"><span itemprop="name">机器学习</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>3.6k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>3 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="【概述】"><a href="#【概述】" class="headerlink" title="【概述】"></a>【概述】</h1><p>在实现 K 近邻时，主要考虑的是如何对训练数据进行 K 近邻搜索，最简单的实现方式是<strong>线性扫描（Linear Scan）</strong>，此时要计算输入样本与每一个训练样本的距离，这在维度大的特征空间以及大容量的训练数据集中非常耗时</p>
+<p>为提高 K 近邻搜索的效率，可以使用特殊的数据结构来存储训练数据，通过以空间换时间来快速查询样本的近邻</p>
+<p><strong>KD 树（K-Dimensional Tree）</strong>利用树结构在 $k$ 维空间上为数据集建立索引，其建立思想如同分治法，即利用已有数据对 $k$ 维空间进行切分</p>
+<p>具体来说，KD 树表示了对 $k$ 维空间的一个<strong>划分（Partition）</strong>，构造 KD 树相当于不断利用垂直于坐标轴的超平面将 $k$ 维空间切分，从而构成一系列的 $k$ 维超矩形区域，这样一来，树上的每一个点都对应于一个 $k$ 维超矩形区域</p>
+<p>同时，由于 KD 树是<strong>二叉树结构</strong>，其时间复杂度上是 $O(\log n)$，相较于线性扫描的 $O(n)$ 的复杂度，有了极大的提高</p>
+<p>此外，若在使用 <code>sklearn</code> 的 <code>KNeighborsClassifier()</code> 方法时，想利用 KD 树作为数据结构，在该方法参数中加入 <code>algorithm=&#39;kd_tree&#39;</code> 即可</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">model = KNeighborsClassifier(n_neighbors=k, p=<span class="number">2</span>, metric=<span class="string">'minkowski'</span>, algorithm=<span class="string">'kd_tree'</span>)</span><br></pre></td></tr></table></figure>
+<h1 id="【KD-树的构造】"><a href="#【KD-树的构造】" class="headerlink" title="【KD 树的构造】"></a>【KD 树的构造】</h1><h2 id="基本思想"><a href="#基本思想" class="headerlink" title="基本思想"></a>基本思想</h2><p>构造 KD 树的基本思想是如下：先构造根结点，使根结点对应于 $k$ 维空间中包含所有样本的超矩形区域，之后对 $k$ 维空间进行递归切分，以生成子结点，每个子结点对应一个切分后的子超矩形区域，直到子区域内没有样本时终止切分，在迭代过程中，样本将被保存到相应的结点上</p>
+<p>递归切分的方法是在超矩形区域上选择一个坐标轴，并在坐标轴上选择一个切分点，通过切分点来确定一个超平面，这个超平面通过选定的切分点，同时垂直于选定的坐标轴，此时，当前超矩形区域被切分为左右两个子超矩形区域</p>
+<p>通常，依次选择坐标轴对空间进行切分，选择训练样本点在选定的坐标轴上的中位数作为切分点，此时得到的 KD 树，是一个平衡二叉树</p>
+<h2 id="算法流程"><a href="#算法流程" class="headerlink" title="算法流程"></a>算法流程</h2><p>对于给定的数据集 $T=\{\mathbf{x_1},\mathbf{x_2},…,\mathbf{x_n}\}$，第 $i$ 组样本中的输入 $\mathbf{x_i}$ 具有 $m$ 个特征值，即：$\mathbf{x_i} =(x_i^{(1)},x_i^{(2)},…,x_i^{(m)})\in \mathbb{R}^m$</p>
+<p>构造 KD 树的算法流程如下：</p>
+<p>Step 1：构造根结点，其对应于包含 $T$ 的样本输入 $\mathbf{x_i}$ 的 $m$ 维空间的超矩形区域，并进行切分，切分由通过切分点且与坐标轴 $x^{(1)}$ 垂直的超平面实现</p>
+<p>1）选择 $x^{(1)}$ 作为切分的坐标轴，以 $T$ 中所有实例的 $x^{(1)}$ 坐标的中位数为切分点，将根结点对应的超矩形区域切分为两个子区域</p>
+<p>2）对于由根结点生成的深度为 $1$ 的左、右子结点：左子结点对应坐标 $x^{(1)}$ 小于切分点的子区域，右子结点对应坐标 $x^{(1)}$ 大于切分点的子区域</p>
+<p>3）将落在切分超平面上的实例点，保存在根结点</p>
+<p>Step 2：对于深度为 $j$ 的结点，进行迭代切分，切分由通过切分点且与坐标轴 $x^{(l)}$ 垂直的超平面实现</p>
+<p>1）选择 $x^{(l)}$ 作为切分的坐标轴，$l=j\:(mod\:\:k)+1$，以该结点的区域中的所有实例 $x^{(l)}$ 坐标的中位数为切分点，将该结点对应的超矩形区域切分为两个子区域</p>
+<p>2）对于由该结点生成的深度为 $j+1$ 的左、右子结点：左子结点对应坐标 $x^{(l)}$ 小于切分点的子区域，右子结点对应坐标 $x^{(l)}$ 大于切分点的子区域</p>
+<p>3）将落在切分超平面上的实例点，保存在该结点</p>
+<p>Step 3：重复 Step 2，直到两个子区域没有实例存在时停止，此时即形成 KD 树的区域划分</p>
+<h2 id="实例"><a href="#实例" class="headerlink" title="实例"></a>实例</h2><p>给定一个输入 $\mathbf{x}$ 为二维的数据集 $T=\{(2,3),(5,4),(9,6),(4,7),(8,1),(7,2)\}$</p>
+<p><img width="500" src="/images/artificial-intelligence/machine-learning/26-1.png"></p>
+<p>首先构造根结点，选择 $x^{(1)}$ 轴，$6$ 个数据点的 $x^{(1)}$ 坐标的中位数为：$7$，此时以平面 $x^{(1)}=7$ 将空间划分为左、右两个子矩形</p>
+<p><img width="500" src="/images/artificial-intelligence/machine-learning/26-2.png"></p>
+<p>接着，左矩形以 $x^{(2)}=4$ 划分为两个子矩形，右矩形以 $x^{(2)}=6$ 划分为两个子矩形</p>
+<p><img width="500" src="/images/artificial-intelligence/machine-learning/26-3.png"></p>
+<p>之后，对划分出的 $4$ 个子矩形递归的进行划分，对于左上矩形，以 $x^{(1)}=4$ 划分为两个子矩形；对于左下矩形，以 $x^{(1)}=2$ 划分为两个子矩形；对于右下矩形，以 $x^{(1)}=8$ 划分为两个子矩形</p>
+<p><img width="500" src="/images/artificial-intelligence/machine-learning/26-4.png"></p>
+<p>此时，特征空间划分完毕，根据特征空间划分可生成如下图所示的 KD 树</p>
+<p><img width="500" src="/images/artificial-intelligence/machine-learning/26-5.png"></p>
+<h1 id="【KD-树的搜索】"><a href="#【KD-树的搜索】" class="headerlink" title="【KD 树的搜索】"></a>【KD 树的搜索】</h1><h2 id="基本思想-1"><a href="#基本思想-1" class="headerlink" title="基本思想"></a>基本思想</h2><p>对于指定目标点，在 KD 树上寻找该目标点的最近邻时，其基本思想是：找到包含目标点的叶结点，然后从该叶结点出发，依次退回到父结点，在退回的过程中，不断查找与目标点最近邻的结点，当确定不可能存在更近的结点时终止</p>
+<p>在上述过程中，包含目标点的叶结点对应包含目标点的最小超矩形区域，故而以该叶结点的样本点作为当前最近点，同时，目标点的最近邻一定是以目标点为中心，并且通过当前最近点的超球体内部</p>
+<p>在返回当前结点的父结点时，若父结点的另一子结点的超矩形区域与超球体相交，那么就在相交的区域内寻找与目标点更近的样本点，若存在更近的样本点，就将该结点作为新的当前最近点，之后转到更上一级的父结点，重复上述过程</p>
+<p>在返回当前结点的父结点时，若父结点的另一子结点的超矩形区域与超球体不相交，或不存在比当前点更近的点，则停止搜索</p>
+<p>这样搜索就被限制在空间的局部区域上，效率得到极大的提高</p>
+<h2 id="算法流程-1"><a href="#算法流程-1" class="headerlink" title="算法流程"></a>算法流程</h2><p>对于给定的数据集 $T=\{\mathbf{x_1},\mathbf{x_2},…,\mathbf{x_n}\}$，第 $i$ 组样本中的输入 $\mathbf{x_i}$ 具有 $m$ 个特征值，即：$\mathbf{x_i} =(x_i^{(1)},x_i^{(2)},…,x_i^{(m)})\in \mathbb{R}^m$，在构造完 KD 树后，求目标点 $\mathbf{x}$ 的最近邻的算法流程如下：</p>
+<p>Step 1：从 KD 树的根结点出发，按如下步骤递归地寻找包含目标点 $\mathbf{x}$ 的叶结点</p>
+<p>1）若目标点 $\mathbf{x}$ 当前维的坐标小于切分点的坐标，移动到左子结点</p>
+<p>2）若目标点 $\mathbf{x}$ 当前维的坐标大于切分点的坐标，移动到右子结点</p>
+<p>3）直到子结点为叶结点停止</p>
+<p>Step 2：以 Step 1 中寻找到的叶结点为当前最近点</p>
+<p>Step 3：按如下步骤递归地从叶结点向上回溯，对每个结点进行以下操作：</p>
+<p>1）若该结点保存的样本点比当前最近点距离目标点更近，将该样本点作为当前最近点</p>
+<p>2）当前最近点一定存在于该结点的某个子结点所对应的区域，检查该子结点的兄弟结点对应的区域是否有更近的点</p>
+<p>  a）该区域是否与以目标点为球心、以目标点与当前最近点的距离为半径的超球体相交</p>
+<p>  b）若相交，可能在该兄弟结点对应的区域内存在距目标点更近的点，移动到该兄弟结点中，接着向上递归</p>
+<p>Step 4：当回溯到根结点时，搜索结束，最后的当前最近点，即为 $\mathbf{x}$ 的最近邻点</p>
+<h2 id="实例-1"><a href="#实例-1" class="headerlink" title="实例"></a>实例</h2><p>以下例所示的 KD 树为例，假设求输入的目标点 $(2,4.5)$ 的最近邻</p>
+<p><img src="/images/artificial-intelligence/machine-learning/26-6.png"></p>
+<p>对于输入的目标点 $(2,4.5)$ 其落于叶结点 $(4,7)$ 上，将 $(4,7)$ 作为最近邻点，计算到该样本点的欧式距离，并将其作为最近距离，即：</p>
+<script type="math/tex; mode=display">
+d_{min}=\sqrt{(2-4)^2+(4.5-7)^2} \approx 3.2</script><p>在从叶结点向上回溯时，路径为：$(4,7)\rightarrow(5,4)\rightarrow(7,2)$</p>
+<p>输入样本点 $(2,4.5)$ 与 $(4,7)$ 的父结点 $(5,4)$ 的欧式距离为：</p>
+<script type="math/tex; mode=display">
+d=\sqrt{(2-5)^2+(4.5-4)^2} \approx 3.04</script><p>该距离小于 $d_{min}=3.2$，这就意味着叶结点 $(4,7)$ 作为最近邻点不成立，此时更新最近距离为 $d_{min}=3.04$，同时以 $(5,4)$ 作为最近邻点</p>
+<p>之后，以输入样本点 $(2,4.5)$ 为圆心，以 $d_{min}=3.04$ 为半径做圆</p>
+<p><img width="500" src="/images/artificial-intelligence/machine-learning/26-7.png"></p>
+<p>圆跟 $(5,4)$ 所切分的两个子区域相交，因此需要检查 $(5,4)$ 的另外一个子树的叶结点 $(2,3)$</p>
+<p>输入样本点 $(2,4.5)$ 与叶结点 $(2,3)$ 的欧式距离为：</p>
+<script type="math/tex; mode=display">
+d=\sqrt{(2-2)^2+(4.5-3)^2} \approx 1.5</script><p>该距离小于 $d_{min}=3.04$，更新最近距离 $d_{min}=1.5$，并令 $(2,3)$ 为最近邻点</p>
+<p>之后，回溯到根结点 $(7，2)$，由上图可以确认 $(7,2)$ 与切分的右子区域无关，回溯结束，$(2,3)$ 为最近邻点</p>
+<p><img width="500" src="/images/artificial-intelligence/machine-learning/26-8.png"></p>
+
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>感谢您对我的支持，让我继续努力分享有用的技术与知识点！</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/wechatpay.jpg" alt="Alex_McAvoy 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/alipay.jpg" alt="Alex_McAvoy 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Alex_McAvoy
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/9b1193a0.html" title="KD 树">https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/9b1193a0.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/artificial-intelligence/" rel="tag"># 人工智能</a>
+              <a href="/tags/machine-learning/" rel="tag"># 机器学习</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/artificial-intelligence/machine-learning/4021c347.html" rel="prev" title="K 近邻">
+      <i class="fa fa-chevron-left"></i> K 近邻
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/mathematics/information-theory/d9f8f63d.html" rel="next" title="信息熵与互信息">
+      信息熵与互信息 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【概述】"><span class="nav-number">1.</span> <span class="nav-text">【概述】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【KD-树的构造】"><span class="nav-number">2.</span> <span class="nav-text">【KD 树的构造】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#基本思想"><span class="nav-number">2.1.</span> <span class="nav-text">基本思想</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#算法流程"><span class="nav-number">2.2.</span> <span class="nav-text">算法流程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#实例"><span class="nav-number">2.3.</span> <span class="nav-text">实例</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【KD-树的搜索】"><span class="nav-number">3.</span> <span class="nav-text">【KD 树的搜索】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#基本思想-1"><span class="nav-number">3.1.</span> <span class="nav-text">基本思想</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#算法流程-1"><span class="nav-number">3.2.</span> <span class="nav-text">算法流程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#实例-1"><span class="nav-number">3.3.</span> <span class="nav-text">实例</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">  
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Alex_McAvoy"
+      src="/assets/img/head.jpg">
+  <p class="site-author-name" itemprop="name">Alex_McAvoy</p>
+  <div class="site-description" itemprop="description">想要成为渔夫的猎手</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">600</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">60</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">65</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Alex-McAvoy" title="GitHub → https://github.com/Alex-McAvoy" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/u011815404" title="CSDN → https://blog.csdn.net/u011815404" rel="noopener" target="_blank"><i class="fas fa-copyright fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+<!-- 访客地图 -->
+<script type="text/javascript" src="//rf.revolvermaps.com/0/0/5.js?i=50n58yo58ow&amp;m=0&amp;c=ff0000&amp;cr1=ffffff&amp;s=140" async="async"></script>
+
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdz20172133" title="https://blog.csdn.net/sdz20172133" rel="noopener" target="_blank">神仙队友</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://pxlsdz.gitee.io/" title="https://pxlsdz.gitee.io/" rel="noopener" target="_blank">神仙队友blog2</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdau_fangshifeng" title="https://blog.csdn.net/sdau_fangshifeng" rel="noopener" target="_blank">酷头</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://bycore.net" title="https://bycore.net" rel="noopener" target="_blank">凉了的某饼同学</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://kris-cn.github.io/" title="http://kris-cn.github.io/" rel="noopener" target="_blank">翟孙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://deng.fun/" title="http://deng.fun/" rel="noopener" target="_blank">芙蓉姐姐</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/wentong_Xu" title="https://blog.csdn.net/wentong_Xu" rel="noopener" target="_blank">小黑贱胖子</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.yuheng.tech/" title="https://www.yuheng.tech/" rel="noopener" target="_blank">咸于</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/lanshan1111" title="https://blog.csdn.net/lanshan1111" rel="noopener" target="_blank">肥硕硕</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdauguanweihong" title="https://blog.csdn.net/sdauguanweihong" rel="noopener" target="_blank">管少</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_41661919" title="https://blog.csdn.net/qq_41661919" rel="noopener" target="_blank">俊杰</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_40859951" title="https://blog.csdn.net/qq_40859951" rel="noopener" target="_blank">峰哥</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/LSD20164388" title="https://blog.csdn.net/LSD20164388" rel="noopener" target="_blank">狗冬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37868325" title="https://blog.csdn.net/qq_37868325" rel="noopener" target="_blank">妍大佬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://sanshuiii.github.io/" title="https://sanshuiii.github.io/" rel="noopener" target="_blank">sanshuiii</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://zjpzhao.github.io/" title="https://zjpzhao.github.io/" rel="noopener" target="_blank">brain</a>
+        </li>
+    </ul>
+  </div>
+
+		
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+  
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Alex_McAvoy</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+</br>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script><script src="/js/bookmark.js"></script>
+
+
+
+  
+
+
+
+
+  <script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '48fd73a538d3fa927f65',
+      clientSecret: '56618aefeee90bac3c20de8d51bb0b985d67252d',
+      repo        : 'Gitalk-Comment',
+      owner       : 'Alex-McAvoy',
+      admin       : ['Alex-McAvoy'],
+      id          : 'f8d8083f8a9c3b670b76f568cb7c5ccc',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+  
+  <!-- 鼠标单击粒子特效 -->
+  <script type="text/javascript" src="/js/cursor-effects.js"></script>
+  <!-- 多级目录 -->
+  <script type="text/javascript" src="/js/category.js"></script>
+  
+</body>
+</html>

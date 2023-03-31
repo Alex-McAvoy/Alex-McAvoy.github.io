@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.9.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/img/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/assets/img/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/pace-js@1/themes/blue/pace-theme-minimal.css">
+  <script src="//cdn.jsdelivr.net/npm/pace-js@1/pace.min.js"></script>
+
+
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"alex-mcavoy.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":16,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":true,"color":"#ff0000","save":"manual"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":true},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.json"};
+  </script>
+
+  <meta name="description" content="【概述】反向传播（Error Back Propagation，BP）算法，是迄今为止最成功的神经网络训练算法，其不仅可用于多层前馈神经网络中，还可用于其他神经网络，但通常说到 BP 网络时，一般是指用 BP 算法所训练的多层前馈神经网络，此外，在实际应用中，当使用神经网络建模时，大多使用 BP 算法进行训练 BP 算法是一种迭代学习算法，在迭代的每一轮中采用感知机学习算法对参数进行更新，其仍是基">
+<meta name="keywords" content="人工智能,深度学习">
+<meta property="og:type" content="article">
+<meta property="og:title" content="反向传播算法">
+<meta property="og:url" content="https://alex-mcavoy.github.io/artificial-intelligence/deep-learning/437097cd.html">
+<meta property="og:site_name" content="Alex_McAvoy">
+<meta property="og:description" content="【概述】反向传播（Error Back Propagation，BP）算法，是迄今为止最成功的神经网络训练算法，其不仅可用于多层前馈神经网络中，还可用于其他神经网络，但通常说到 BP 网络时，一般是指用 BP 算法所训练的多层前馈神经网络，此外，在实际应用中，当使用神经网络建模时，大多使用 BP 算法进行训练 BP 算法是一种迭代学习算法，在迭代的每一轮中采用感知机学习算法对参数进行更新，其仍是基">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/deep-learning/01-1.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/deep-learning/01-2.gif">
+<meta property="og:updated_time" content="2023-03-31T12:22:38.287Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="反向传播算法">
+<meta name="twitter:description" content="【概述】反向传播（Error Back Propagation，BP）算法，是迄今为止最成功的神经网络训练算法，其不仅可用于多层前馈神经网络中，还可用于其他神经网络，但通常说到 BP 网络时，一般是指用 BP 算法所训练的多层前馈神经网络，此外，在实际应用中，当使用神经网络建模时，大多使用 BP 算法进行训练 BP 算法是一种迭代学习算法，在迭代的每一轮中采用感知机学习算法对参数进行更新，其仍是基">
+<meta name="twitter:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/deep-learning/01-1.png">
+
+<link rel="canonical" href="https://alex-mcavoy.github.io/artificial-intelligence/deep-learning/437097cd.html">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>反向传播算法 | Alex_McAvoy</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Alex_McAvoy</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">想要成为渔夫的猎手</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+
+	
+	
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/artificial-intelligence/deep-learning/437097cd.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/assets/img/head.jpg">
+      <meta itemprop="name" content="Alex_McAvoy">
+      <meta itemprop="description" content="想要成为渔夫的猎手">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Alex_McAvoy">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          反向传播算法
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-08-13 12:52:00" itemprop="dateCreated datePublished" datetime="2019-08-13T12:52:00+08:00">2019-08-13</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/artificial-intelligence/" itemprop="url" rel="index"><span itemprop="name">人工智能</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/artificial-intelligence/deep-learning/" itemprop="url" rel="index"><span itemprop="name">深度学习</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>13k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>12 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="【概述】"><a href="#【概述】" class="headerlink" title="【概述】"></a>【概述】</h1><p><strong>反向传播（Error Back Propagation，BP）算法</strong>，是迄今为止最成功的神经网络训练算法，其不仅可用于多层前馈神经网络中，还可用于其他神经网络，但通常说到 BP 网络时，一般是指用 BP 算法所训练的多层前馈神经网络，此外，在实际应用中，当使用神经网络建模时，大多使用 BP 算法进行训练</p>
+<p>BP 算法是一种迭代学习算法，在迭代的每一轮中采用感知机学习算法对参数进行更新，其仍是基于<strong>梯度下降法</strong>，以目标的负梯度方向对参数进行调整</p>
+<h1 id="【符号假设】"><a href="#【符号假设】" class="headerlink" title="【符号假设】"></a>【符号假设】</h1><p>对于给定的容量为 $N$ 的样本集 $D=\{(\mathbf{x}_1,\mathbf{y}_1),(\mathbf{x}_2,\mathbf{y}_2),…,(\mathbf{x}_N,\mathbf{y}_N)\}$，第 $i$ 组样本中的输入 $\mathbf{x}_i$ 具有 $n$ 个特征值，即：$\mathbf{x}_i=(x_i^{(1)},x_i^{(2)},…,x_i^{(n)})\in \mathbb{R}^n$，输出 $\mathbf{y}_i$ 具有 $m$ 个特征值，即：$\mathbf{y}_i=(y_i^{(1)},y_i^{(2)},…,y_i^{(m)})\in\mathcal{Y}=\mathbb{R}^{m}$，也就是说，输入样本由 $n$ 个特征描述，输出为 $m$ 维实值向量</p>
+<p>为便于讨论，下图给出了一个拥有 $n$ 个输入神经元、$H$ 个隐藏层神经元、$m$ 个输出神经元的多层前馈网络结构</p>
+<p><img width="500" src="/images/artificial-intelligence/deep-learning/01-1.png"></p>
+<p>其中，输入层第 $i$ 个神经元与隐藏层第 $h$ 个神经元的连接权用 $v_{ih}$ 表示，隐藏层第 $h$ 个神经元与输出层第 $j$ 个神经元的连接权用 $w_{hj}$ 表示，隐藏层第 $h$ 个神经元阈值用 $\gamma_h$ 表示，输出层第 $j$ 个神经元阈值用 $\theta_j$ 表示</p>
+<p>可以发现，网络中有 $(n+m+1)H+m$ 个参数要确定，即：</p>
+<ul>
+<li>输入层到隐藏层的 $n\times H$ 个权值（输入层第 $i$ 个到隐藏层第 $h$ 个：$v_{ih}$）</li>
+<li>隐藏层到输出层的 $H\times m$ 个权值（隐藏层第 $h$ 个到输出层第 $j$ 个： $w_{hj}$）</li>
+<li>$H$ 个隐藏层神经元的阈值（隐藏层第 $h$ 个：$\gamma_h$）</li>
+<li>$m$ 个输出层神经元的阈值（输出层第 $j$ 个：$\theta_j$）</li>
+</ul>
+<p>记隐藏层第 $h$ 个神经元收到的输入为 $\alpha_h=\sum\limits_{i=1}^nv_{ih}x^{(i)}$，隐藏层第 $h$ 个神经元的输出为 $b_h = f(\alpha_h-\gamma_h)$，输出层第 $j$ 个神经元收到的输入为 $\beta_j=\sum\limits_{h=1}^Hw_{hj}b_h$</p>
+<h1 id="【损失函数】"><a href="#【损失函数】" class="headerlink" title="【损失函数】"></a>【损失函数】</h1><p>假设隐藏层与输出层神经元所使用的激活函数 $f(\cdot)$ 均使用 sigmoid 函数，那么，对于训练集给出的某一输入样本 $(\mathbf{x}_k,\mathbf{y}_k)$，其通过神经网络的输出为 $\hat{\mathbf{y}}_k=(\hat{y_k}^{(1)},\hat{y_k}^{(2)},…,\hat{y_k}^{(m)})$ </p>
+<p>根据 MP 神经元，有：</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+\hat{y}_k^{(j)}
+&=f(\beta_j-\theta_j) \\
+&= \text{sigmoid} \Big( \sum\limits_{h=1}^Hw_{hj}b_h-\theta_j \Big) \\
+&= \text{sigmoid} \Big( \sum\limits_{h=1}^Hw_{hj}f(\alpha_h-\gamma_h) - \theta_j \Big) \\
+&= \text{sigmoid} \Big( \sum\limits_{h=1}^Hw_{hj}f \big(\sum\limits_{i=1}^nv_{ih}x^{(i)}-\gamma_h \big) - \theta_j \Big) 
+\end{align*}</script><p>这个过程被称为多层前馈神经网络的<strong>前向传播（Forward propagation，FP）</strong></p>
+<p>此时，神经网络在输入样本 $(\mathbf{x}_k,\mathbf{y}_k)$ 上的均方误差为：</p>
+<script type="math/tex; mode=display">
+MSE_{k}=\frac{1}{m}\sum_{j=1}^m(\hat{y}_k^{(j)}-y_k^{(j)})^2</script><p>为便于求导，对 $MSE_k$ 整体乘以 $\frac{m}{2}$，此时得到的函数为每一样本的损失函数，即：</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+E_k
+&= \frac{1}{2}\sum_{j=1}^m(\hat{y}_k^{(j)}-y_k^{(j)})^2 \\
+&= \frac{1}{2} \sum_{j=1}^m \Big( \text{sigmoid} \Big( \sum\limits_{h=1}^Hw_{hj}f \big(\sum\limits_{i=1}^nv_{ih}x^{(i)}-\gamma_h \big) - \theta_j \Big)  -y_k^{(j)} \Big)^2
+\end{align*}</script><hidden id="back">
+
+<h1 id="【参数更新估计式】"><a href="#【参数更新估计式】" class="headerlink" title="【参数更新估计式】"></a>【参数更新估计式】</h1><p>BP 算法基于<strong>梯度下降法</strong>，以目标的<strong>负梯度方向</strong>对参数进行更新估计，对于任意参数 $v$，其更新估计式为：</p>
+<script type="math/tex; mode=display">
+v=v+\triangle v</script><p>值得注意的是，<strong>参数更新的方向是从后向前</strong>，即先更新输出层的连接权与阈值 $\triangle w_{hj}$ 与 $\triangle \theta_j$，再更新隐藏层的连接权与阈值 $\triangle v_{ih}$ 与 $\triangle \gamma_h$，这也是算法被称为反向传播的原因</p>
+<p>那么，对于损失函数 $E_k$，给定学习率 $\eta$，有：</p>
+<script type="math/tex; mode=display">
+\begin{matrix}
+\triangle w_{hj} = -\eta\frac{\partial E_k}{\partial w_{hj}} & \triangle v_{ih} = -\eta\frac{\partial E_k}{\partial v_{jh}}   \\
+\triangle \theta_j = -\eta\frac{\partial E_k}{\partial \theta_j} & \triangle \gamma_h = -\eta\frac{\partial E_k}{\partial \gamma_h} \\
+\end{matrix}</script><p>经过推导，可得：</p>
+<script type="math/tex; mode=display">
+\begin{matrix}
+\triangle w_{hj} = \eta g_jb_h & \triangle v_{ih} = \eta e_hx_i \\
+\triangle \theta_j = -\eta g_j & \triangle \gamma_h = -\eta e_h \\
+\end{matrix}</script><p>其中，$g_j$ 为输出层神经元的梯度项，$e_h$ 为隐藏层神经元的梯度项，有：</p>
+<script type="math/tex; mode=display">
+\begin{matrix}
+g_j = \hat{y}_k^{(j)}(1-\hat{y}_k^{(j)})(y_k^{(j)}-\hat{y}_k^{(j)}) \\
+e_h = b_h(1-b_h)\sum\limits_{j=1}^mw_{hj}g_j
+\end{matrix}</script><p><strong>关于具体的推导过程，见：<a href="#anchor">附：详细推导</a></strong></p>
+<h1 id="【算法流程】"><a href="#【算法流程】" class="headerlink" title="【算法流程】"></a>【算法流程】</h1><p>输入：容量为 $N$ 的样本集 $D=\{(\mathbf{x}_1,\mathbf{y}_1),(\mathbf{x}_2,\mathbf{y}_2),…,(\mathbf{x}_N,\mathbf{y}_N)\}$，第 $i$ 组样本中的输入 $\mathbf{x}_i$ 具有 $n$ 个特征值，即：$\mathbf{x}_i=(x_i^{(1)},x_i^{(2)},…,x_i^{(n)})\in \mathbb{R}^n$，输出 $\mathbf{y}_i$ 具有 $m$ 个特征值，即：$\mathbf{y}_i=(y_i^{(1)},y_i^{(2)},…,y_i^{(m)})\in\mathcal{Y}=\mathbb{R}^{m}$，学习率 $0&lt;\eta\leq1$</p>
+<p>输出：连接权与阈值确定的多层前馈神经网络</p>
+<p>算法步骤：</p>
+<p>Step1：在 $(0,1)$ 范围内，随机初始化网络中所有的连接权与阈值</p>
+<p>Step：对于训练集中的每个样本，执行以下步骤：</p>
+<p>1）根据下式，计算当前样本的输出 $\hat{\mathbf{y}}_k=(\hat{y_k}^{(1)},\hat{y_k}^{(2)},…,\hat{y_k}^{(m)})$</p>
+<script type="math/tex; mode=display">
+\hat{y}_k^{(j)}=f(\beta_j-\theta_j)</script><p>2）根据下式，计算输出层神经元的梯度项 $g_j$</p>
+<script type="math/tex; mode=display">
+g_j = \hat{y}_k^{(j)}(1-\hat{y}_k^{(j)})(y_k^{(j)}-\hat{y}_k^{(j)})</script><p>3）根据下式，计算隐藏层神经元的梯度项 $e_h$</p>
+<script type="math/tex; mode=display">
+e_h = b_h(1-b_h)\sum\limits_{j=1}^mw_{hj}g_j</script><p>4）根据下述的参数更新估计式，更新连接权 $w_{hj},v_{ih}$ 与阈值 $\theta_j,\gamma_h$</p>
+<script type="math/tex; mode=display">
+\begin{matrix}
+\triangle w_{hj} = \eta g_jb_h & \triangle v_{ih} = \eta e_hx_i \\
+\triangle \theta_j = -\eta g_j & \triangle \gamma_h = -\eta e_h \\
+\end{matrix}</script><p>Step3：重复 Step2，直到训练集的累计误差 $E$ 达到要求的值</p>
+<script type="math/tex; mode=display">
+E=\frac{1}{N}\sum_{k=1}^N E_k</script><hr>
+<p>通过上述算法流程可以发现，对于每个训练集中的每个训练样本，BP 算法先将输入提供给输入层单元，然后逐层将信号前传，直到产生输出层结果（步骤 Step2.1）</p>
+<p>之后，再计算输出层的误差（步骤 Step2.2），将误差逆向传播至隐藏层（步骤 Step2.3），根据隐藏层神经元的误差对连接权和阈值进行调整（步骤 Step2.4）</p>
+<p>下图给出了一个多层前馈神经网络的 FP 与 BP 的完整过程</p>
+<p><img width="500" src="/images/artificial-intelligence/deep-learning/01-2.gif"></p>
+<h1 id="【过拟合】"><a href="#【过拟合】" class="headerlink" title="【过拟合】"></a>【过拟合】</h1><p>对于一个隐藏层包含足够多的神经元的多层前馈神经网络，能够以任意精度逼近任意复杂度的连续函数，但如何设置隐藏层神经元个数仍然是个未解问题，在实际应用中，常采用<strong>试错法</strong>来解决</p>
+<p>正因为多层前馈神经网络强大的表示能力，BP 神经网络经常会出现<strong>过拟合</strong></p>
+<p>为避免过拟合问题的发生，常采用以下策略进行缓解：</p>
+<ol>
+<li><strong>正则化（Regularizatoin）</strong>：在目标函数中增加用于描述网络复杂度的部分</li>
+<li><strong>随机失活（Dropout）</strong>：训练过程中，每次按一定的概率随机地删除一部分隐藏单元，删除概率一般设为 50%</li>
+<li><strong>提前终止（Early Stoping）</strong>：在模型对训练数据集迭代收敛前，通过停止迭代来防止过拟合</li>
+</ol>
+<p>关于上述策略的详细介绍，详见：<a href="https://alex-mcavoy.github.io/ml/d9259ca2.html">机器学习的模型选择</a></p>
+<hidden id="anchor">
+
+<h1 id="【附：详细推导】"><a href="#【附：详细推导】" class="headerlink" title="【附：详细推导】"></a>【附：详细推导】</h1><h2 id="输出层连接权-triangle-w-hj"><a href="#输出层连接权-triangle-w-hj" class="headerlink" title="输出层连接权 $\triangle w_{hj}$"></a>输出层连接权 $\triangle w_{hj}$</h2><p>对于损失函数 $E_k$，给定学习率 $\eta$，有：</p>
+<script type="math/tex; mode=display">
+\triangle w_{hj} = -\eta\frac{\partial E_k}{\partial w_{hj}}</script><p>由于隐藏层第 $h$ 个神经元到输出层第 $j$ 个神经元的权值 $w_{hj}$，先影响到第 $j$ 个输出层神经元的输入 $\beta_j$，再影响到其输出值 $\hat{y}_k^{(j)}$，最后再影响到 $E_k$</p>
+<p>根据影响过程，可将求导部分进行拆分，有：</p>
+<script type="math/tex; mode=display">
+\frac{\partial E_k}{\partial w_{hj}}=\frac{\partial E_k}{\partial \hat{y}_k^{(j)}} \cdot \frac{\partial \hat{y}_k^{(j)}}{\partial \beta_j} \cdot \frac{\partial \beta_j}{ \partial w_{hj}}</script><p>进一步，考虑到 $\beta_j$ 为输出层第 $j$ 个神经元收到的输入，$\hat{y}_k^{(j)}$ 为第 $k$ 个训练样本的第 $j$ 个输出单元的输出，$E_k$ 为网络的损失函数，即：</p>
+<script type="math/tex; mode=display">
+\begin{matrix}
+\beta_j=\sum\limits_{h=1}^Hw_{hj}b_h \\ 
+\hat{y}_k^{(j)}=f(\beta_j-\theta_j) \\
+E_k=\frac{1}{2}\sum\limits_{j=1}^m(\hat{y}_k^{(j)}-y_k^{(j)})^2
+\end{matrix}</script><p>因此，有：</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+\frac{\partial E_k}{\partial w_{hj}} &= \frac{\partial E_k}{\partial \hat{y}_k^{(j)}} \cdot \frac{\partial \hat{y}_k^{(j)}}{\partial \beta_j} \cdot \frac{\partial \beta_j}{ \partial w_{hj}} \\
+&= \frac{\partial E_k}{\partial \hat{y}_k^{(j)}} \cdot \frac{\partial \hat{y}_k^{(j)}}{\partial \beta_j} \cdot b_h \\
+&= \frac{\partial \frac{1}{2}\sum\limits_{j=1}^m(\hat{y}_k^{(j)}-y_k^{(j)})^2}{\partial \hat{y}_k^{(j)}} \cdot \frac{\partial f(\beta_j-\theta_j)}{\partial \beta_j} \cdot b_h \\
+&= (\hat{y}_k^{(j)}-y_k^{(j)}) \cdot f'_{\beta_j}(\beta_j-\theta_j) \cdot b_h \\
+\end{align*}</script><p>由于激活函数 $f(\cdot)$ 为 sigmoid 函数，其导数为：</p>
+<script type="math/tex; mode=display">
+f'(x)=f(x)(1-f(x))</script><p>故有：</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+\frac{\partial E_k}{\partial w_{hj}} &= (\hat{y}_k^{(j)}-y_k^{(j)}) \cdot f'_{\beta_j}(\beta_j-\theta_j) \cdot b_h \\
+&= (\hat{y}_k^{(j)}-y_k^{(j)}) f(\beta_j-\theta_j)(1-f(\beta_j-\theta_j))b_h \\
+&= (\hat{y}_k^{(j)}-y_k^{(j)})\hat{y}_k^{(j)}(1-\hat{y}_k^{(j)})b_h \\
+&= -\hat{y}_k^{(j)}(1-\hat{y}_k^{(j)})(y_k^{(j)}-\hat{y}_k^{(j)})b_h
+\end{align*}</script><p>记 $g_j=\hat{y}_k^{(j)}(1-\hat{y}_k^{(j)})(y_k^{(j)}-\hat{y}_k^{(j)})$，有：</p>
+<script type="math/tex; mode=display">
+\frac{\partial E_k}{\partial w_{hj}}=-g_jb_h</script><p>即：</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+\triangle w_{hj} &= -\eta\frac{\partial E_k}{\partial w_{hj}} \\
+&= -\eta \cdot (-g_jb_h) \\
+&= \eta g_jb_h
+\end{align*}</script><h2 id="输出层阈值-triangle-theta-j"><a href="#输出层阈值-triangle-theta-j" class="headerlink" title="输出层阈值 $\triangle \theta_j$"></a>输出层阈值 $\triangle \theta_j$</h2><p>对于损失函数 $E_k$，给定学习率 $\eta$，有：</p>
+<script type="math/tex; mode=display">
+\triangle \theta_j = -\eta\frac{\partial E_k}{\partial \theta_j}</script><p>仿照输出层连接权的拆分过程，可将求导部分进行拆分，有：</p>
+<script type="math/tex; mode=display">
+\frac{\partial E_k}{\partial \theta_j}=\frac{\partial E_k}{\partial \hat{y}_k^{(j)}} \cdot \frac{\partial \hat{y}_k^{(j)}}{\partial \theta_j}</script><p>进一步，考虑到 $\hat{y}_k^{(j)}$ 为第 $k$ 个训练样本的第 $j$ 个输出单元的输出，$E_k$ 为网络的损失函数，即：</p>
+<script type="math/tex; mode=display">
+\begin{matrix}
+\hat{y}_k^{(j)}=f(\beta_j-\theta_j) \\
+E_k=\frac{1}{2}\sum\limits_{j=1}^m(\hat{y}_k^{(j)}-y_k^{(j)})^2
+\end{matrix}</script><p>因此，有：</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+\frac{\partial E_k}{\partial \theta_j} &= \frac{\partial E_k}{\partial \hat{y}_k^{(j)}} \cdot \frac{\partial \hat{y}_k^{(j)}}{\partial \theta_j}  \\
+&= \frac{\partial \frac{1}{2}\sum\limits_{j=1}^m(\hat{y}_k^{(j)}-y_k^{(j)})^2}{\partial \hat{y}_k^{(j)}} \cdot \frac{\partial f(\beta_j-\theta_j)}{\partial \theta_j}  \\
+&= (\hat{y}_k^{(j)}-y_k^{(j)}) \cdot [-f'_{\theta_j}(\beta_j-\theta_j)] \\
+\end{align*}</script><p>由于激活函数 $f(\cdot)$ 为 sigmoid 函数，其导数为：</p>
+<script type="math/tex; mode=display">
+f'(x)=f(x)(1-f(x))</script><p>故有：</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+\frac{\partial E_k}{\partial \theta_j} &= -(\hat{y}_k^{(j)}-y_k^{(j)})  f'_{\theta_j}(\beta_j-\theta_j)  \\
+&= -(\hat{y}_k^{(j)}-y_k^{(j)}) f(\beta_j-\theta_j)(1-f(\beta_j-\theta_j)) \\
+&= -(\hat{y}_k^{(j)}-y_k^{(j)})\hat{y}_k^{(j)}(1-\hat{y}_k^{(j)}) \\
+&= \hat{y}_k^{(j)}(1-\hat{y}_k^{(j)})(y_k^{(j)}-\hat{y}_k^{(j)})
+\end{align*}</script><p>记 $g_j=\hat{y}_k^{(j)}(1-\hat{y}_k^{(j)})(y_k^{(j)}-\hat{y}_k^{(j)})$，有：</p>
+<script type="math/tex; mode=display">
+\frac{\partial E_k}{\partial \theta_j}=g_j</script><p>即：</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+\triangle \theta_j &= -\eta\frac{\partial E_k}{\partial \theta_j} \\
+&= -\eta g_j
+\end{align*}</script><h2 id="隐藏层连接权-triangle-v-ih"><a href="#隐藏层连接权-triangle-v-ih" class="headerlink" title="隐藏层连接权 $\triangle v_{ih}$"></a>隐藏层连接权 $\triangle v_{ih}$</h2><p>对于损失函数 $E_k$，给定学习率 $\eta$，有：</p>
+<script type="math/tex; mode=display">
+\triangle v_{ih} = -\eta\frac{\partial E_k}{\partial v_{jh}}</script><p>由于隐藏层第 $h$ 个神经元到输出层第 $j$ 个神经元的权值 $v_{jh}$，先影响到第 $h$ 个隐藏层神经元的输入 $\alpha_h$，再影响到其输出值 $b_h$，之后再影响输出层第 $j$ 个神经元收到的输入 $\beta_j$，继而影响到其输出值 $\hat{y}_k^{(j)}$，最后再影响到 </p>
+<p>$E_k$根据影响过程，可将求导部分进行拆分，有：</p>
+<script type="math/tex; mode=display">
+\frac{\partial E_k}{\partial v_{ih}} = \bigl[ -\sum_{j=1}^m \frac{\partial E_k}{\partial \hat{y}_k^{(j)}} \cdot \frac{\partial \hat{y}_k^{(j)}}{\partial \beta_j} \cdot \frac{\partial \beta_j}{\partial b_h}\bigr] \cdot \frac{\partial b_h}{\partial \alpha_h} \cdot \frac{\partial \alpha_h}{ \partial v_{ih}}</script><p>进一步，考虑到 $b_h$ 为隐藏层第 $h$ 个神经元的输出，$\alpha_h$ 为隐藏层第 $h$ 个神经元收到的输入，$\beta_j$ 为输出层第 $j$ 个神经元收到的输入，$\hat{y}_k^{(j)}$ 为第 $k$ 个训练样本的第 $j$ 个输出单元的输出，$E_k$ 为网络的损失函数，即：</p>
+<script type="math/tex; mode=display">
+\begin{matrix}
+\alpha_h=\sum\limits_{i=1}^nv_{ih}x^{(i)} \\
+\beta_j=\sum\limits_{h=1}^Hw_{hj}b_h\\
+b_h = f(\alpha_h-\gamma_h)\\
+\hat{y}_k^{(j)}=f(\beta_j-\theta_j)\\
+E_k=\frac{1}{2}\sum\limits_{j=1}^m(\hat{y}_k^{(j)}-y_k^{(j)})^2
+\end{matrix}</script><p>因此，有：</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+\frac{\partial E_k}{\partial v_{ih}} &= \bigl[ \sum_{j=1}^m \frac{\partial E_k}{\partial \hat{y}_k^{(j)}} \cdot \frac{\partial \hat{y}_k^{(j)}}{\partial \beta_j} \cdot \frac{\partial \beta_j}{\partial b_h}\bigr] \cdot \frac{\partial b_h}{\partial \alpha_h} \cdot \frac{\partial \alpha_h}{ \partial v_{ih}} \\
+&= \bigl[ \sum_{j=1}^m \frac{\partial \frac{1}{2}\sum\limits_{j=1}^m(\hat{y}_k^{(j)}-y_k^{(j)})^2}{\partial \hat{y}_k^{(j)}} \cdot \frac{\partial f(\beta_j-\theta_j)}{\partial \beta_j} \cdot w_{hj} \bigr] \cdot f'_{\alpha_h}(\alpha_h-\gamma_h) \cdot x^{(i)} \\
+&= \bigl[ \sum_{j=1}^m(\hat{y}_k^{(j)}-y_k^{(j)}) \cdot f'_{\beta_j}(\beta_j-\theta_j)\cdot w_{hj} \bigr] \cdot f'_{\alpha_h}(\alpha_h-\gamma_h) \cdot x^{(i)} \\
+\end{align*}</script><p>由于激活函数 $f(\cdot)$ 为 sigmoid 函数，其导数为：</p>
+<script type="math/tex; mode=display">
+f'(x)=f(x)(1-f(x))</script><p>故有：</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+\frac{\partial E_k}{\partial v_{ih}} &= \bigl[ \sum_{j=1}^m (\hat{y}_k^{(j)}-y_k^{(j)}) \cdot f'_{\beta_j}(\beta_j-\theta_j)  \cdot w_{hj} \bigr]\cdot f'_{\alpha_h}(\alpha_h-\gamma_h) \cdot x^{(i)} \\
+&=  \bigl[\sum_{j=1}^m (\hat{y}_k^{(j)}-y_k^{(j)}) \cdot f(\beta_j-\theta_j)\cdot(1-f(\beta_j-\theta_j)) \cdot w_{hj} \bigr] f'_{\alpha_h}(\alpha_h-\gamma_h) \cdot x^{(i)} \\
+&= \bigl[ \sum_{j=1}^m (\hat{y}_k^{(j)}-y_k^{(j)})\hat{y}_k^{(j)}(1-\hat{y}_k^{(j)}) \cdot w_{hj} \bigr] \cdot f'_{\alpha_h}(\alpha_h-\gamma_h) \cdot x^{(i)} \\
+&= \bigl[ \sum_{j=1}^m (\hat{y}_k^{(j)}-y_k^{(j)})\hat{y}_k^{(j)}(1-\hat{y}_k^{(j)}) \cdot w_{hj} \bigr]\cdot f(\alpha_h-\gamma_h)\cdot(1-f(\alpha_h-\gamma_h)) \cdot x^{(i)} \\
+&= \bigl[ \sum_{j=1}^m (\hat{y}_k^{(j)}-y_k^{(j)})\hat{y}_k^{(j)}(1-\hat{y}_k^{(j)}) \cdot w_{hj} \bigr]\cdot b_h(1-b_h) \cdot x^{(i)} \\
+&= -x^{(i)}\cdot b_h(1-b_h)\sum_{j=1}^m \hat{y}_k^{(j)}(1-\hat{y}_k^{(j)})(y_k^{(j)}-\hat{y}_k^{(j)}) w_{hj}
+\end{align*}</script><p>记 $g_j=\hat{y}_k^{(j)}(1-\hat{y}_k^{(j)})(y_k^{(j)}-\hat{y}_k^{(j)})$，有：</p>
+<script type="math/tex; mode=display">
+\frac{\partial E_k}{\partial v_{ih}} = -x^{(i)}\cdot b_h(1-b_h)\sum_{j=1}^mw_{hj}g_j</script><p>记 $e_h=b_h(1-b_h)\sum\limits_{j=1}^mw_{hj}g_j$，有：</p>
+<script type="math/tex; mode=display">
+\frac{\partial E_k}{\partial v_{ih}}=-e_h x^{(i)}</script><p>即：</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+\triangle v_{ih} &= -\eta\frac{\partial E_k}{\partial v_{ih}} \\
+&= -\eta \cdot (-e_h x^{(i)}) \\
+&= \eta e_h x^{(i)}
+\end{align*}</script><h2 id="隐藏层阈值-triangle-gamma-h"><a href="#隐藏层阈值-triangle-gamma-h" class="headerlink" title="隐藏层阈值 $\triangle \gamma_h$"></a>隐藏层阈值 $\triangle \gamma_h$</h2><p>对于损失函数 $E_k$，给定学习率 $\eta$，有：</p>
+<script type="math/tex; mode=display">
+\triangle \gamma_h = -\eta\frac{\partial E_k}{\partial \gamma_h}</script><p>仿照输出层连接权的拆分过程，可将求导部分进行拆分，有：</p>
+<script type="math/tex; mode=display">
+\frac{\partial E_k}{\partial \gamma_h} = \bigl[ -\sum_{j=1}^m \frac{\partial E_k}{\partial \hat{y}_k^{(j)}} \cdot \frac{\partial \hat{y}_k^{(j)}}{\partial \beta_j} \cdot \frac{\partial \beta_j}{\partial b_h}\bigr] \cdot \frac{\partial b_h}{\partial \gamma_h}</script><p>进一步，考虑到 $b_h$ 为隐藏层第 $h$ 个神经元的输出，$\beta_j$ 为输出层第 $j$ 个神经元收到的输入，$\hat{y}_k^{(j)}$ 为第 $k$ 个训练样本的第 $j$ 个输出单元的输出，$E_k$ 为网络的损失函数，即：</p>
+<script type="math/tex; mode=display">
+\begin{matrix}
+\beta_j=\sum\limits_{h=1}^Hw_{hj}b_h\\
+b_h = f(\alpha_h-\gamma_h)\\
+\hat{y}_k^{(j)}=f(\beta_j-\theta_j)\\
+E_k=\frac{1}{2}\sum\limits_{j=1}^m(\hat{y}_k^{(j)}-y_k^{(j)})^2
+\end{matrix}</script><p>因此，有：</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+\frac{\partial E_k}{\partial \gamma_h} &= \bigl[ \sum_{j=1}^m \frac{\partial E_k}{\partial \hat{y}_k^{(j)}} \cdot \frac{\partial \hat{y}_k^{(j)}}{\partial \beta_j} \cdot \frac{\partial \beta_j}{\partial b_h}\bigr] \cdot \frac{\partial b_h}{\partial \gamma_h} \\
+&= \bigl[ \sum_{j=1}^m \frac{\partial \frac{1}{2}\sum\limits_{j=1}^m(\hat{y}_k^{(j)}-y_k^{(j)})^2}{\partial \hat{y}_k^{(j)}} \cdot \frac{\partial f(\beta_j-\theta_j)}{\partial \beta_j} \cdot w_{hj} \bigr] \cdot [-f'_{\gamma_h}(\alpha_h-\gamma_h)] \\
+&= \bigl[ \sum_{j=1}^m(\hat{y}_k^{(j)}-y_k^{(j)}) \cdot f'_{\beta_j}(\beta_j-\theta_j)\cdot w_{hj} \bigr] \cdot [-f'_{\gamma_h}(\alpha_h-\gamma_h)] \\
+\end{align*}</script><p>由于激活函数 $f(\cdot)$ 为 sigmoid 函数，其导数为：</p>
+<script type="math/tex; mode=display">
+f'(x)=f(x)(1-f(x))</script><p>故有：</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+\frac{\partial E_k}{\partial \gamma_h} &= \bigl[ \sum_{j=1}^m(\hat{y}_k^{(j)}-y_k^{(j)}) \cdot f'_{\beta_j}(\beta_j-\theta_j)\cdot w_{hj} \bigr] \cdot [-f'_{\gamma_h}(\alpha_h-\gamma_h)] \\
+&=  \bigl[\sum_{j=1}^m (\hat{y}_k^{(j)}-y_k^{(j)}) \cdot f(\beta_j-\theta_j)\cdot(1-f(\beta_j-\theta_j)) \cdot w_{hj} \bigr] \cdot [-f'_{\gamma_h}(\alpha_h-\gamma_h)]  \\
+&= \bigl[ \sum_{j=1}^m (\hat{y}_k^{(j)}-y_k^{(j)})\hat{y}_k^{(j)}(1-\hat{y}_k^{(j)}) \cdot w_{hj} \bigr] \cdot [-f'_{\gamma_h}(\alpha_h-\gamma_h)]  \\
+&= \bigl[ \sum_{j=1}^m (\hat{y}_k^{(j)}-y_k^{(j)})\hat{y}_k^{(j)}(1-\hat{y}_k^{(j)}) \cdot w_{hj} \bigr]\cdot f(\alpha_h-\gamma_h)\cdot [-f'_{\gamma_h}(\alpha_h-\gamma_h)] \\
+&= -\bigl[ \sum_{j=1}^m (\hat{y}_k^{(j)}-y_k^{(j)})\hat{y}_k^{(j)}(1-\hat{y}_k^{(j)}) \cdot w_{hj} \bigr]\cdot b_h(1-b_h)\\
+&= b_h(1-b_h)\sum_{j=1}^m \hat{y}_k^{(j)}(1-\hat{y}_k^{(j)})(y_k^{(j)}-\hat{y}_k^{(j)}) w_{hj}
+\end{align*}</script><p>记 $g_j=\hat{y}_k^{(j)}(1-\hat{y}_k^{(j)})(y_k^{(j)}-\hat{y}_k^{(j)})$，有：</p>
+<script type="math/tex; mode=display">
+\frac{\partial E_k}{\partial \gamma_h} =  b_h(1-b_h)\sum_{j=1}^mw_{hj}g_j</script><p>记 $e_h=b_h(1-b_h)\sum\limits_{j=1}^mw_{hj}g_j$，有：</p>
+<script type="math/tex; mode=display">
+\frac{\partial E_k}{\partial \gamma_h}=e_h</script><p>即：</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+\triangle \gamma_h &= -\eta\frac{\partial E_k}{\partial v_{ih}} \\
+&= -\eta \cdot e_h\\
+\end{align*}</script><p><a href="#back">点击返回</a></p>
+</hidden></hidden>
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>感谢您对我的支持，让我继续努力分享有用的技术与知识点！</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/wechatpay.jpg" alt="Alex_McAvoy 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/alipay.jpg" alt="Alex_McAvoy 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Alex_McAvoy
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://alex-mcavoy.github.io/artificial-intelligence/deep-learning/437097cd.html" title="反向传播算法">https://alex-mcavoy.github.io/artificial-intelligence/deep-learning/437097cd.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/artificial-intelligence/" rel="tag"># 人工智能</a>
+              <a href="/tags/deep-learning/" rel="tag"># 深度学习</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/artificial-intelligence/machine-learning/c3f7cdb7.html" rel="prev" title="多层感知机">
+      <i class="fa fa-chevron-left"></i> 多层感知机
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/artificial-intelligence/machine-learning/280b588e.html" rel="next" title="支持向量机概述">
+      支持向量机概述 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【概述】"><span class="nav-number">1.</span> <span class="nav-text">【概述】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【符号假设】"><span class="nav-number">2.</span> <span class="nav-text">【符号假设】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【损失函数】"><span class="nav-number">3.</span> <span class="nav-text">【损失函数】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【参数更新估计式】"><span class="nav-number">4.</span> <span class="nav-text">【参数更新估计式】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【算法流程】"><span class="nav-number">5.</span> <span class="nav-text">【算法流程】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【过拟合】"><span class="nav-number">6.</span> <span class="nav-text">【过拟合】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【附：详细推导】"><span class="nav-number">7.</span> <span class="nav-text">【附：详细推导】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#输出层连接权-triangle-w-hj"><span class="nav-number">7.1.</span> <span class="nav-text">输出层连接权 $\triangle w_{hj}$</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#输出层阈值-triangle-theta-j"><span class="nav-number">7.2.</span> <span class="nav-text">输出层阈值 $\triangle \theta_j$</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#隐藏层连接权-triangle-v-ih"><span class="nav-number">7.3.</span> <span class="nav-text">隐藏层连接权 $\triangle v_{ih}$</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#隐藏层阈值-triangle-gamma-h"><span class="nav-number">7.4.</span> <span class="nav-text">隐藏层阈值 $\triangle \gamma_h$</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">  
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Alex_McAvoy"
+      src="/assets/img/head.jpg">
+  <p class="site-author-name" itemprop="name">Alex_McAvoy</p>
+  <div class="site-description" itemprop="description">想要成为渔夫的猎手</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">600</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">60</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">65</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Alex-McAvoy" title="GitHub → https://github.com/Alex-McAvoy" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/u011815404" title="CSDN → https://blog.csdn.net/u011815404" rel="noopener" target="_blank"><i class="fas fa-copyright fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+<!-- 访客地图 -->
+<script type="text/javascript" src="//rf.revolvermaps.com/0/0/5.js?i=50n58yo58ow&amp;m=0&amp;c=ff0000&amp;cr1=ffffff&amp;s=140" async="async"></script>
+
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdz20172133" title="https://blog.csdn.net/sdz20172133" rel="noopener" target="_blank">神仙队友</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://pxlsdz.gitee.io/" title="https://pxlsdz.gitee.io/" rel="noopener" target="_blank">神仙队友blog2</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdau_fangshifeng" title="https://blog.csdn.net/sdau_fangshifeng" rel="noopener" target="_blank">酷头</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://bycore.net" title="https://bycore.net" rel="noopener" target="_blank">凉了的某饼同学</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://kris-cn.github.io/" title="http://kris-cn.github.io/" rel="noopener" target="_blank">翟孙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://deng.fun/" title="http://deng.fun/" rel="noopener" target="_blank">芙蓉姐姐</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/wentong_Xu" title="https://blog.csdn.net/wentong_Xu" rel="noopener" target="_blank">小黑贱胖子</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.yuheng.tech/" title="https://www.yuheng.tech/" rel="noopener" target="_blank">咸于</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/lanshan1111" title="https://blog.csdn.net/lanshan1111" rel="noopener" target="_blank">肥硕硕</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdauguanweihong" title="https://blog.csdn.net/sdauguanweihong" rel="noopener" target="_blank">管少</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_41661919" title="https://blog.csdn.net/qq_41661919" rel="noopener" target="_blank">俊杰</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_40859951" title="https://blog.csdn.net/qq_40859951" rel="noopener" target="_blank">峰哥</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/LSD20164388" title="https://blog.csdn.net/LSD20164388" rel="noopener" target="_blank">狗冬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37868325" title="https://blog.csdn.net/qq_37868325" rel="noopener" target="_blank">妍大佬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://sanshuiii.github.io/" title="https://sanshuiii.github.io/" rel="noopener" target="_blank">sanshuiii</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://zjpzhao.github.io/" title="https://zjpzhao.github.io/" rel="noopener" target="_blank">brain</a>
+        </li>
+    </ul>
+  </div>
+
+		
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+  
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Alex_McAvoy</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+</br>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script><script src="/js/bookmark.js"></script>
+
+
+
+  
+
+
+
+
+  <script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '48fd73a538d3fa927f65',
+      clientSecret: '56618aefeee90bac3c20de8d51bb0b985d67252d',
+      repo        : 'Gitalk-Comment',
+      owner       : 'Alex-McAvoy',
+      admin       : ['Alex-McAvoy'],
+      id          : '63b6bd74331cfc012b34b4c7e1204f96',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+  
+  <!-- 鼠标单击粒子特效 -->
+  <script type="text/javascript" src="/js/cursor-effects.js"></script>
+  <!-- 多级目录 -->
+  <script type="text/javascript" src="/js/category.js"></script>
+  
+</body>
+</html>
