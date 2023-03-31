@@ -39,7 +39,7 @@
 <meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/41-4.png">
 <meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/41-5.png">
 <meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/41-6.png">
-<meta property="og:updated_time" content="2023-03-29T02:21:44.087Z">
+<meta property="og:updated_time" content="2023-03-31T08:12:43.273Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="特征构建与核方法">
 <meta name="twitter:description" content="References:  对核函数(kernel)最通俗易懂的理解 机器学习笔记029 | 核函数 核方法、核技巧和核函数 【ML系列】“非线性”二元分类   【Cover 定理】在实际应用中，分类问题有许多是线性不可分的">
@@ -250,7 +250,7 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>4.3k</span>
+              <span>4.9k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
@@ -291,7 +291,7 @@
 <p>回到一维中，使用 Logistic 回归可以得到分界线方程：$\theta_1+\theta_2x+\theta_3x^2=0$，经过梯度下降优化后，可以得到曲线 $x^2-x=0$</p>
 <p><img width="400" src="/images/ml/41-6.png"></p>
 <p>也就是说，多项式回归通过将数据从低维映射到高维，将原本线性不可分的情况变成了线性可分的情况</p>
-<p>提升维度后，原本非线性的数据变成线性可分的数据，这在数学上是有严格证明的，即<strong>Cover 定理</strong>：当空间的维数 $D$ 越大时，在该空间的 $n$ 个数据点间的线性可分的概率就越大</p>
+<p>提升维度后，原本非线性的数据变成线性可分的数据，这在数学上是有严格证明的，即<strong>Cover 定理：当空间的维数 $D$ 越大时，在该空间的 $n$ 个数据点间的线性可分的概率就越大</strong></p>
 <p>需要的是，Cover 定理描述的是线性可分的概率，并非提供了提升维度就一定可以线性可分的依据</p>
 <h1 id="【特征构建】"><a href="#【特征构建】" class="headerlink" title="【特征构建】"></a>【特征构建】</h1><p>根据 Cover 定理，在面对低维且线性不可分的数据时，可以将数据从低维空间映射到高维空间从而提升线性可分的概率</p>
 <p>举例来说，对于向量 $\mathbf{x}=[1\quad x_1\quad x_2]$，使用多项式平方映射后，有：</p>
@@ -351,10 +351,19 @@ K(\mathbf{x},\mathbf{z})=\phi(\mathbf{x})\cdot\phi(\mathbf{z})</script><p>即正
 <ul>
 <li>线性核函数：  $K(\mathbf{x},\mathbf{z})=\mathbf{x}\cdot\mathbf{z}$</li>
 <li>多项式核函数：$K(\mathbf{x},\mathbf{z})=(\mathbf{x}\cdot\mathbf{z}+1)^p$，其中 $p\geq 1$ 为多项式的次数</li>
-<li>高斯核函数：$K(\mathbf{x},\mathbf{z})=\exp(-\frac{1}{2\sigma}||\mathbf{x}-\mathbf{z}||^2_2)$，其中 $\sigma&gt;0$ 为带宽</li>
+<li>高斯（径向基）核函数：$K(\mathbf{x},\mathbf{z})=\exp(-\frac{1}{2\sigma}||\mathbf{x}-\mathbf{z}||^2_2)$，其中 $\sigma&gt;0$ 为带宽</li>
 <li>拉普拉斯核函数：$K(\mathbf{x},\mathbf{z})=\exp(-\frac{1}{\sigma}||\mathbf{x}-\mathbf{z}||_2)$，其中 $\sigma&gt;0$ 为带宽</li>
 <li>Sigmoid 核函数：$K(\mathbf{x},\mathbf{z})=\text{sigmoid}(\beta\mathbf{x}\cdot\mathbf{z}+\theta)$，其中 $\beta&gt;0,\theta&lt;0$</li>
 </ul>
+<h1 id="【表示定理】"><a href="#【表示定理】" class="headerlink" title="【表示定理】"></a>【表示定理】</h1><p>设 $\mathcal{H}$ 为核函数 $K(\mathbf{x},\mathbf{z})$ 对应的再生核希尔伯特空间，$||h||_{\mathcal{H}}$ 为再生核希尔伯特空间中关于 $h$ 的范数，对任意单调递增函数 $f(x)$ 和任意非负损失函数 $L(\mathbf{x})$，对于优化问题：</p>
+<script type="math/tex; mode=display">
+\min_{h\in\mathcal{H}} \quad F(h) = f(||h||_{\mathcal{H}}) 
++ L(h(\mathbf{x}_1),h(\mathbf{x}_2),\cdots,h(\mathbf{x}_n))</script><p>的解可以写为：</p>
+<script type="math/tex; mode=display">
+h^*(\mathbf{x}) = \sum_{i=1}^n \lambda_iK(\mathbf{x},\mathbf{x}_i)</script><p>上述定理即为<strong>表示定理（Representer Theorem）</strong>，其说明了在高维甚至无限维的正则化泛函可以由数据样本张成的有限维空间表示，这避免了直接在高维空间进行优化</p>
+<p>表示定理对损失函数没有任何限制，只要求正则化项 $f(x)$ 单调递增，甚至不要求 $f(x)$ 是凸函数</p>
+<p>也就是说，对于一般的损失函数和正则化项，优化问题 $F(h)$ 的最优解 $h^*(\mathbf{x})$ 都可以表示为核函数 $K(\mathbf{x},\mathbf{z})$ 的线性组合</p>
+<p>由此，发展出一系列的基于核函数的核方法，即通过引入核函数进行核化，将线性学习模型扩展为非线性学习模型，最常见的就是非线性支持向量机和核线性判别分析</p>
 
     </div>
 
@@ -476,7 +485,7 @@ K(\mathbf{x},\mathbf{z})=\phi(\mathbf{x})\cdot\phi(\mathbf{z})</script><p>即正
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【Cover-定理】"><span class="nav-number">1.</span> <span class="nav-text">【Cover 定理】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【特征构建】"><span class="nav-number">2.</span> <span class="nav-text">【特征构建】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【核函数】"><span class="nav-number">3.</span> <span class="nav-text">【核函数】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【正定核】"><span class="nav-number">4.</span> <span class="nav-text">【正定核】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#再生核与再生核希尔伯特空间"><span class="nav-number">4.1.</span> <span class="nav-text">再生核与再生核希尔伯特空间</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#正定核"><span class="nav-number">4.2.</span> <span class="nav-text">正定核</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【常用核函数】"><span class="nav-number">5.</span> <span class="nav-text">【常用核函数】</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【Cover-定理】"><span class="nav-number">1.</span> <span class="nav-text">【Cover 定理】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【特征构建】"><span class="nav-number">2.</span> <span class="nav-text">【特征构建】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【核函数】"><span class="nav-number">3.</span> <span class="nav-text">【核函数】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【正定核】"><span class="nav-number">4.</span> <span class="nav-text">【正定核】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#再生核与再生核希尔伯特空间"><span class="nav-number">4.1.</span> <span class="nav-text">再生核与再生核希尔伯特空间</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#正定核"><span class="nav-number">4.2.</span> <span class="nav-text">正定核</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【常用核函数】"><span class="nav-number">5.</span> <span class="nav-text">【常用核函数】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【表示定理】"><span class="nav-number">6.</span> <span class="nav-text">【表示定理】</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -492,7 +501,7 @@ K(\mathbf{x},\mathbf{z})=\phi(\mathbf{x})\cdot\phi(\mathbf{z})</script><p>即正
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">599</span>
+          <span class="site-state-item-count">600</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>

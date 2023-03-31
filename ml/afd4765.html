@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.9.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/img/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/assets/img/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/pace-js@1/themes/blue/pace-theme-minimal.css">
+  <script src="//cdn.jsdelivr.net/npm/pace-js@1/pace.min.js"></script>
+
+
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"alex-mcavoy.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":16,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":true,"color":"#ff0000","save":"manual"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":true},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.json"};
+  </script>
+
+  <meta name="description" content="References:  [ML] 支持向量回归 | SVR | SVM SVR（Support Vactor Regression）支持向量回归机   【引入】支持向量机是针对二分类问题提出的，其通过最大化间隔来找到一个分离超平面，使得绝大多数样本点位于两个决策边界的外侧">
+<meta name="keywords" content="机器学习">
+<meta property="og:type" content="article">
+<meta property="og:title" content="支持向量回归">
+<meta property="og:url" content="https://alex-mcavoy.github.io/ml/afd4765.html">
+<meta property="og:site_name" content="Alex_McAvoy">
+<meta property="og:description" content="References:  [ML] 支持向量回归 | SVR | SVM SVR（Support Vactor Regression）支持向量回归机   【引入】支持向量机是针对二分类问题提出的，其通过最大化间隔来找到一个分离超平面，使得绝大多数样本点位于两个决策边界的外侧">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/43-1.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/43-2.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/43-3.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/43-4.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/ml/43-5.png">
+<meta property="og:updated_time" content="2023-03-31T08:38:15.815Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="支持向量回归">
+<meta name="twitter:description" content="References:  [ML] 支持向量回归 | SVR | SVM SVR（Support Vactor Regression）支持向量回归机   【引入】支持向量机是针对二分类问题提出的，其通过最大化间隔来找到一个分离超平面，使得绝大多数样本点位于两个决策边界的外侧">
+<meta name="twitter:image" content="https://alex-mcavoy.github.io/images/ml/43-1.png">
+
+<link rel="canonical" href="https://alex-mcavoy.github.io/ml/afd4765.html">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>支持向量回归 | Alex_McAvoy</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Alex_McAvoy</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">想要成为渔夫的猎手</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+
+	
+	
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/ml/afd4765.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/assets/img/head.jpg">
+      <meta itemprop="name" content="Alex_McAvoy">
+      <meta itemprop="description" content="想要成为渔夫的猎手">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Alex_McAvoy">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          支持向量回归
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-08-21 19:35:00" itemprop="dateCreated datePublished" datetime="2019-08-21T19:35:00+08:00">2019-08-21</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/ml/" itemprop="url" rel="index"><span itemprop="name">机器学习</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>15k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>13 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <blockquote>
+<p>References:</p>
+<ul>
+<li><a href="https://zhuanlan.zhihu.com/p/150681231" target="_blank" rel="noopener">[ML] 支持向量回归 | SVR | SVM</a></li>
+<li><a href="https://www.jianshu.com/p/399ddcac2178" target="_blank" rel="noopener">SVR（Support Vactor Regression）支持向量回归机</a></li>
+</ul>
+</blockquote>
+<h1 id="【引入】"><a href="#【引入】" class="headerlink" title="【引入】"></a>【引入】</h1><p>支持向量机是针对二分类问题提出的，其通过最大化间隔来找到一个分离超平面，使得绝大多数样本点位于两个决策边界的外侧</p>
+<p>而<strong>支持向量回归（Support Vector Regression）</strong>是支持向量机的一种改进，用于解决回归问题，其同样是考虑最大化间隔，但是考虑的是两个决策边界之间的点，使尽可能多的样本点位于间隔内</p>
+<p>换句话说，SVM 要使超平面到最近的样本点的间隔最大，SVR 则要使超平面到最远的样本点的间隔最小</p>
+<p><img src="/images/ml/43-1.png"></p>
+<h1 id="【假设形式】"><a href="#【假设形式】" class="headerlink" title="【假设形式】"></a>【假设形式】</h1><p>对于给定的容量为 $n$ 的训练集 $D=\{(\mathbf{x_1},y_1),(\mathbf{x_2},y_2),…,(\mathbf{x_n},y_n)\}$，第 $i$ 组样本中的输入 $\mathbf{x_i}$ 具有 $m$ 个特征值，即：$\mathbf{x_i}=(x_i^{(1)},x_i^{(2)},…,x_i^{(m)})\in \mathbb{R}^m$，输出 $y_i\in \mathcal{Y}$，支持向量机学习到的模型为 $f(\mathbf{x})=\boldsymbol{\omega}\cdot \mathbf{x} +\theta$，使得 $f(\mathbf{x_i})\simeq y_i$</p>
+<p>假设能容忍 $f(\mathbf{x}_i)$ 与 $y_i$ 间最多有 $\varepsilon$ 的偏差，即仅当 $f(\mathbf{x}_i)$ 与 $y_i$ 之间差距的绝对值大于 $\varepsilon$ 时才计算损失，这相当于以 $f(\mathbf{x})$ 为中心，构建了一个宽度为 $2\varepsilon$ 的间隔带，若训练样本落于该间隔带，则认为预测正确</p>
+<p><img src="/images/ml/43-2.png"></p>
+<p>由此，可给出支持向量回归的优化问题：</p>
+<script type="math/tex; mode=display">
+\begin{matrix}
+\min\limits_{\boldsymbol{\omega},\theta} && \frac{1}{2} ||\boldsymbol{\omega}||_2^2 \\
+s.t. && | y_i-(\boldsymbol{\omega}\cdot \mathbf{x}_i+\theta) | \leq \varepsilon,&& i=1,2,\cdots,n
+\end{matrix}</script><p>其中，$\varepsilon&gt;0$ 是间隔带大小</p>
+<p>通过求解最优化问题，可以得到超平面：</p>
+<script type="math/tex; mode=display">
+S:\boldsymbol{\omega}^*\cdot\mathbf{x}+\theta^* = 0</script><p>以及相应的回归函数：</p>
+<script type="math/tex; mode=display">
+f(\mathbf{x}) = \boldsymbol{\omega}^*\cdot\mathbf{x} + \theta^*</script><h1 id="【原始问题】"><a href="#【原始问题】" class="headerlink" title="【原始问题】"></a>【原始问题】</h1><p>为每个样本点 $(\mathbf{x}_i,y_i)$ 引入松弛变量 $\xi_i$ 和 $\hat{\xi_i}$，即每个样本点分别到两个决策边界的距离</p>
+<p><img width="400" src="/images/ml/43-3.png"></p>
+<p>此时，支持向量回归的优化问题可写为：</p>
+<script type="math/tex; mode=display">
+\begin{matrix}
+\min\limits_{\boldsymbol{\omega},\theta,\xi_i,\hat{\xi_i}} && \frac{1}{2} ||\boldsymbol{\omega}||_2^2 +C\sum\limits_{i=1}^n (\xi_i+\hat{\xi_i}) \\
+s.t. &&  y_i-(\boldsymbol{\omega}\cdot \mathbf{x}_i+\theta) \leq \varepsilon + \xi_i \\
+&& (\boldsymbol{\omega}\cdot \mathbf{x}_i+\theta)-y_i\leq \varepsilon+\hat{\xi_i} \\
+&& \xi_i\geq 0 \\
+&& \hat{\xi_i}\geq 0,&& i=1,2,\cdots,n
+\end{matrix}</script><p>即为支持向量回归的原始问题，其中，$C$ 为正则化常数</p>
+<p>可以发现，支持向量回归只对间隔外的样本进行惩罚，当样本点位于间隔内，不计算其损失</p>
+<h1 id="【对偶问题】"><a href="#【对偶问题】" class="headerlink" title="【对偶问题】"></a>【对偶问题】</h1><h2 id="对偶问题的转化"><a href="#对偶问题的转化" class="headerlink" title="对偶问题的转化"></a>对偶问题的转化</h2><p>为求解支持向量回归的原始问题：</p>
+<script type="math/tex; mode=display">
+\begin{matrix}
+\min\limits_{\boldsymbol{\omega},\theta,\xi_i,\hat{\xi_i}} && \frac{1}{2} ||\boldsymbol{\omega}||_2^2 +C\sum\limits_{i=1}^n (\xi_i+\hat{\xi_i}) \\
+s.t. &&  y_i-(\boldsymbol{\omega}\cdot \mathbf{x}_i+\theta) \leq \varepsilon + \xi_i \\
+&& (\boldsymbol{\omega}\cdot \mathbf{x}_i+\theta)-y_i\leq \varepsilon+\hat{\xi_i} \\
+&& \xi_i\geq 0 \\
+&& \hat{\xi_i}\geq 0,&& i=1,2,\cdots,n
+\end{matrix}</script><p>应用拉格朗日对偶性，通过求解对偶问题来得到原始问题的最优解</p>
+<p>首先，构建拉格朗日函数，即为每个不等式约束引入拉格朗日乘子 $\lambda_i\geq0$、$\hat{\lambda_i}\geq 0$、$\mu_i\geq 0$、$\hat{\mu_i}\geq 0$，即：</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+L(\boldsymbol{\omega},\theta,\boldsymbol{\xi},\boldsymbol{\hat{\xi}},\boldsymbol{\lambda},\boldsymbol{\hat{\lambda}},\boldsymbol{\mu},\boldsymbol{\hat{\mu}}) 
+=& \frac{1}{2} ||\boldsymbol{\omega}||_2^2 + C\sum_{i=1}^n (\xi_i+\hat{\xi_i}) + \sum_{i=1}^n \lambda_i \big( y_i-(\boldsymbol{\omega}\cdot \mathbf{x}_i+\theta)-\varepsilon-\xi_i \big) \\
+&+\sum_{i=1}^n \hat{\lambda_i} \big( (\boldsymbol{\omega}\cdot \mathbf{x}_i+\theta)-y_i-\varepsilon-\hat{\xi_i} \big)  
+-\sum_{i=1}^n\mu_i\xi_i - \sum_{i=1}^n\hat{u_i}\hat{\xi_i} \\
+\end{align*}</script><p>其中，$\boldsymbol{\lambda}=(\lambda_1,\lambda_2,\dots,\lambda_n)^T$、$\hat{\boldsymbol{\lambda}}=(\hat{\lambda_1},\hat{\lambda_2},\dots,\hat{\lambda_n})^T$、$\boldsymbol{\mu}=(\mu_1,\mu_2,\dots,\mu_n)^T$、$\hat{\boldsymbol{\mu}}=(\hat{\mu_1},\hat{\mu_2},\dots,\hat{\mu_n})^T$ 为拉格朗日乘子向量</p>
+<p>此时，根据拉格朗日对偶性，原始问题的对偶问题就变为极大极小问题，即：</p>
+<script type="math/tex; mode=display">
+\max_{\boldsymbol{\lambda},\hat{\boldsymbol{\lambda}},\boldsymbol{\mu},\hat{\boldsymbol{\mu}}} \min_{\boldsymbol{\omega},\theta,\boldsymbol{\xi},\hat{\boldsymbol{\xi}}} L(\boldsymbol{\omega},\theta,\boldsymbol{\xi},\boldsymbol{\hat{\xi}},\boldsymbol{\lambda},\boldsymbol{\hat{\lambda}},\boldsymbol{\mu},\boldsymbol{\hat{\mu}})</script><p>因此，为了得到对偶问题的解，就要先求拉格朗日函数 $L(\boldsymbol{\omega},\theta,\boldsymbol{\xi},\boldsymbol{\hat{\xi}},\boldsymbol{\lambda},\boldsymbol{\hat{\lambda}},\boldsymbol{\mu},\boldsymbol{\hat{\mu}})$ 对 $\boldsymbol{\omega}$、$\theta$、$\boldsymbol{\xi}$、$\hat{\boldsymbol{\xi}}$ 的极小，再求对 $\boldsymbol{\lambda}$、$\hat{\boldsymbol{\lambda}}$、$\boldsymbol{\mu}$、$\hat{\boldsymbol{\mu}}$ 的极大</p>
+<p>注：关于拉格朗日函数与拉格朗日对偶性，详见 <a href="https://alex-mcavoy.github.io/mathematics/convex-optimization/763e2d04.html">拉格朗日乘子法与对偶性</a></p>
+<h2 id="对偶问题中的极小问题"><a href="#对偶问题中的极小问题" class="headerlink" title="对偶问题中的极小问题"></a>对偶问题中的极小问题</h2><p>对于对偶问题中的极小问题：</p>
+<script type="math/tex; mode=display">
+\min_{\boldsymbol{\omega},\theta,\boldsymbol{\xi},\hat{\boldsymbol{\xi}}} L(\boldsymbol{\omega},\theta,\boldsymbol{\xi},\boldsymbol{\hat{\xi}},\boldsymbol{\lambda},\boldsymbol{\hat{\lambda}},\boldsymbol{\mu},\boldsymbol{\hat{\mu}})</script><p>令拉格朗日函数 $L(\boldsymbol{\omega},\theta,\boldsymbol{\xi},\boldsymbol{\hat{\xi}},\boldsymbol{\lambda},\boldsymbol{\hat{\lambda}},\boldsymbol{\mu},\boldsymbol{\hat{\mu}})$ 分别对 $\boldsymbol{\omega}$、$\theta$、$\boldsymbol{\xi}$、$\hat{\boldsymbol{\xi}}$ 求偏导，并令其等于 $0$，即：</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+\triangledown_{\boldsymbol{\omega}} L(\boldsymbol{\omega},\theta,\boldsymbol{\xi},\boldsymbol{\hat{\xi}},\boldsymbol{\lambda},\boldsymbol{\hat{\lambda}},\boldsymbol{\mu},\boldsymbol{\hat{\mu}})
+&= \boldsymbol{\omega} - \sum_{i=1}^n (\lambda_i-\hat{\lambda_i}) \mathbf{x}_i = 0 \\
+\triangledown_{\boldsymbol{\theta}} L(\boldsymbol{\omega},\theta,\boldsymbol{\xi},\boldsymbol{\hat{\xi}},\boldsymbol{\lambda},\boldsymbol{\hat{\lambda}},\boldsymbol{\mu},\boldsymbol{\hat{\mu}})
+&=\sum_{i=1}^n (\lambda_i-\hat{\lambda_i})  = 0 \\
+\triangledown_{\boldsymbol{\xi_i}} L(\boldsymbol{\omega},\theta,\boldsymbol{\xi},\boldsymbol{\hat{\xi}},\boldsymbol{\lambda},\boldsymbol{\hat{\lambda}},\boldsymbol{\mu},\boldsymbol{\hat{\mu}})
+&=C -\lambda_i -\mu_i = 0 \\
+\triangledown_{\boldsymbol{\hat{\xi_i}}} L(\boldsymbol{\omega},\theta,\boldsymbol{\xi},\boldsymbol{\hat{\xi}},\boldsymbol{\lambda},\boldsymbol{\hat{\lambda}},\boldsymbol{\mu},\boldsymbol{\hat{\mu}})
+&=C -\hat{\lambda_i} -\hat{\mu_i} = 0 \\
+\end{align*}</script><p>可得：</p>
+<script type="math/tex; mode=display">
+\begin{gather*}
+\boldsymbol{\omega} = \sum_{i=1}^n (\lambda_i-\hat{\lambda_i}) \mathbf{x}_i \\
+\sum_{i=1}^n (\lambda_i-\hat{\lambda_i})  = 0 \\
+C=\lambda_i+\mu_i \\
+C=\hat{\lambda_i}+\hat{\mu_i} \\
+\end{gather*}</script><p>将上式带回拉格朗日函数 $L(\boldsymbol{\omega},\theta,\boldsymbol{\xi},\boldsymbol{\hat{\xi}},\boldsymbol{\lambda},\boldsymbol{\hat{\lambda}},\boldsymbol{\mu},\boldsymbol{\hat{\mu}})$ 中，有：</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+&L(\boldsymbol{\omega},\theta,\boldsymbol{\xi},\boldsymbol{\hat{\xi}},\boldsymbol{\lambda},\boldsymbol{\hat{\lambda}},\boldsymbol{\mu},\boldsymbol{\hat{\mu}}) \\
+=& \frac{1}{2} ||\boldsymbol{\omega}||_2^2 + C\sum_{i=1}^n (\xi_i+\hat{\xi_i}) + \sum_{i=1}^n \lambda_i \big( y_i-(\boldsymbol{\omega}\cdot \mathbf{x}_i+\theta)-\varepsilon-\xi_i \big) \\
+&+\sum_{i=1}^n \hat{\lambda_i} \big( (\boldsymbol{\omega}\cdot \mathbf{x}_i+\theta)-y_i-\varepsilon-\hat{\xi_i} \big)  
+-\sum_{i=1}^n\mu_i\xi_i - \sum_{i=1}^n\hat{u_i}\hat{\xi_i} \\
+
+=& \frac{1}{2} \sum_{i=1}^n\sum_{j=1}^m(\lambda_i-\hat{\lambda_i})(\lambda_j-\hat{\lambda_j})\mathbf{x}_i\cdot\mathbf{x}_j + \sum_{i=1}^n ( C\xi_i + C\hat{\xi_i} ) \\
+&+ \sum_{i=1}^n \lambda_iy_i - \sum_{i=1}^n\lambda_i\boldsymbol{\omega}\cdot\mathbf{x}_i-\theta\sum_{i=1}^n \lambda_i - \varepsilon\sum_{i=1}^n \lambda_i - \sum_{i=1}^n\lambda_i\xi_i \\
+&- \sum_{i=1}^n \hat{\lambda_i}y_i + \sum_{i=1}^n\hat{\lambda_i}\boldsymbol{\omega}\cdot\mathbf{x}_i + \theta\sum_{i=1}^n \hat{\lambda_i} - \varepsilon\sum_{i=1}^n \hat{\lambda_i} - \sum_{i=1}^n\hat{\lambda_i}\hat{\xi_i} \\
+&- \sum_{i=1}^n\mu_i\xi_i - \sum_{i=1}^n\hat{u_i}\hat{\xi_i} \\
+
+=& \frac{1}{2} \sum_{i=1}^n\sum_{j=1}^m(\lambda_i-\hat{\lambda_i})(\lambda_j-\hat{\lambda_j})\mathbf{x}_i\cdot\mathbf{x}_j-\sum_{i=1}^n(\lambda_i-\hat{\lambda_i})\boldsymbol{\omega}\cdot \mathbf{x}_i \\
+&+ \sum_{i=1}^n (\lambda_i-\hat{\lambda_i})y_i-\theta\sum_{i=1}^n(\lambda_i-\hat{\lambda_i})-\varepsilon\sum_{i=1}^n(\lambda_i+\hat{\lambda_i}) \\
+&+ \sum_{i=1}^n \Big( (\lambda_i+\mu_i)\xi_i + (\hat{\lambda_i}+\hat{\mu_i})\hat{\xi_i} \Big) -\sum_{i=1}^n(\mu_i\xi_i +\lambda_i\xi_i + \hat{\lambda_i}\hat{\xi_i} + \hat{u_i}\hat{\xi_i}) \\
+
+=& -\frac{1}{2} \sum_{i=1}^n\sum_{j=1}^m(\lambda_i-\hat{\lambda_i})(\lambda_j-\hat{\lambda_j})\mathbf{x}_i\cdot\mathbf{x}_j + \sum_{i=1}^n (\lambda_i-\hat{\lambda_i})y_i - \varepsilon\sum_{i=1}^n(\lambda_i+\hat{\lambda_i})
+\end{align*}</script><p>故有：</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+\min_{\boldsymbol{\omega},\theta,\boldsymbol{\xi},\hat{\boldsymbol{\xi}}} L(\boldsymbol{\omega},\theta,\boldsymbol{\xi},\boldsymbol{\hat{\xi}},\boldsymbol{\lambda},\boldsymbol{\hat{\lambda}},\boldsymbol{\mu},\boldsymbol{\hat{\mu}})
+=&  -\frac{1}{2} \sum_{i=1}^n\sum_{j=1}^m(\lambda_i-\hat{\lambda_i})(\lambda_j-\hat{\lambda_j})\mathbf{x}_i\cdot\mathbf{x}_j \\
+&+ \sum_{i=1}^n (\lambda_i-\hat{\lambda_i})y_i - \varepsilon\sum_{i=1}^n(\lambda_i+\hat{\lambda_i})
+\end{align*}</script><h2 id="对偶问题中的极大问题"><a href="#对偶问题中的极大问题" class="headerlink" title="对偶问题中的极大问题"></a>对偶问题中的极大问题</h2><p>对于对偶问题中的极大问题：</p>
+<script type="math/tex; mode=display">
+\max_{\boldsymbol{\lambda},\hat{\boldsymbol{\lambda}},\boldsymbol{\mu},\hat{\boldsymbol{\mu}}} \min_{\boldsymbol{\omega},\theta,\boldsymbol{\xi},\hat{\boldsymbol{\xi}}} L(\boldsymbol{\omega},\theta,\boldsymbol{\xi},\boldsymbol{\hat{\xi}},\boldsymbol{\lambda},\boldsymbol{\hat{\lambda}},\boldsymbol{\mu},\boldsymbol{\hat{\mu}})</script><p>即为对偶问题，有：</p>
+<script type="math/tex; mode=display">
+\begin{matrix}
+\max\limits_{\boldsymbol{\lambda},\hat{\boldsymbol{\lambda}}} && -\frac{1}{2} \sum\limits_{i=1}^n\sum\limits_{j=1}^m(\lambda_i-\hat{\lambda_i})(\lambda_j-\hat{\lambda_j})\mathbf{x}_i\cdot\mathbf{x}_j 
++ \sum\limits_{i=1}^n (\lambda_i-\hat{\lambda_i})y_i - \varepsilon\sum\limits_{i=1}^n(\lambda_i+\hat{\lambda_i}) \\
+s.t. && \sum\limits_{i=1}^n(\lambda_i-\hat{\lambda_i})= 0 \\
+&& 0\leq \lambda_i,\hat{\lambda_i} \leq C,\quad  i=1,2,\cdots,n
+\end{matrix}</script><p>假设上述的对偶问题对 $\boldsymbol{\lambda}$、$\hat{\boldsymbol{\lambda}}$、$\boldsymbol{\xi}$、$\hat{\boldsymbol{\xi}}$ 的一个解为 $\boldsymbol{\lambda}^* = (\lambda_1^*,\lambda_2^*,\cdots,\lambda_n^*)^T$， $\hat{\boldsymbol{\lambda}}^* = (\hat{\lambda_1}^*,\hat{\lambda_2}^*,\cdots,\hat{\lambda_n}^*)^T$、$\boldsymbol{\xi}^* = (\xi_1^*,\xi_2^*,\cdots,\xi_n^*)^T$， $\hat{\boldsymbol{\xi}}^* = (\hat{\xi_1}^*,\hat{\xi_2}^*,\cdots,\hat{\xi_n}^*)^T$、</p>
+<p>可以发现，对偶问题满足 KKT 条件，即：</p>
+<script type="math/tex; mode=display">
+\begin{gather*}
+\lambda_i^* \big( \boldsymbol{\omega}\cdot\mathbf{x}+\theta)-y_i -\varepsilon-\xi_i^* \big) = 0 \\
+\hat{\lambda_i^*} \big( \boldsymbol{\omega}\cdot\mathbf{x}+\theta)-y_i -\varepsilon-\hat{\xi_i^*} \big) = 0 \\
+\lambda_i^*\hat{\lambda_i^*} = 0 \\
+\xi_i^*\hat{\xi_i^*} = 0 \\
+(C-\lambda_i^*)\xi_i^* = 0 \\
+(C-\hat{\lambda_i^*})\hat{\xi_i^*} = 0
+\end{gather*}</script><p>故而有：</p>
+<script type="math/tex; mode=display">
+\boldsymbol{\omega}^* = \sum_{i=1}^n (\lambda_i-\hat{\lambda_i})\mathbf{x}_i</script><p>可以看出，当且仅当 $(\boldsymbol{\omega}\cdot\mathbf{x}+\theta)-y_i -\varepsilon-\xi_i^* =0$ 时，$\lambda_i^*$ 可取非零值，当且仅当 $(\boldsymbol{\omega}\cdot\mathbf{x}+\theta)-y_i -\varepsilon-\hat{\xi_i}^* =0$ 时，$\hat{\lambda_i}^*$ 可取非零值，换言之，仅当样本 $(\mathbf{x}_i,y_i)$ 不落于 $\varepsilon$ 间隔带时，相应的 $\lambda_i$ 和 $\hat{\lambda_i}$ 才可取非零值</p>
+<p>此外，约束 $(\boldsymbol{\omega}\cdot\mathbf{x}+\theta)-y_i -\varepsilon-\xi_i^* =0$ 和 $(\boldsymbol{\omega}\cdot\mathbf{x}+\theta)-y_i -\varepsilon-\hat{\xi_i}^* =0$ 不能同时成立，否则有 $\xi_i^*=\hat{\xi_i^*}=\varepsilon$，因此 $\lambda_i$ 和 $\hat{\lambda_i}$ 中至少有一个为零，即 $\lambda_i\hat{\lambda_i}$</p>
+<p>而对于每个样本 $(\mathbf{x}_i,y_i)$，都有 $(C-\lambda_i^*)\xi_i^* = 0$ 且 $(\boldsymbol{\omega}\cdot\mathbf{x}+\theta)-y_i -\varepsilon-\xi_i^* =0$，于是在得到 $\lambda_i^*$ 后，若存在 $0&lt;\lambda_i^*&lt;C$，那么必有 $\xi_i^*=0$，进而对此 $i$ 有：</p>
+<script type="math/tex; mode=display">
+\theta^*= y_i+\varepsilon - \sum_{j=1}^n(\lambda_i^*-\hat{\lambda_i^*})\mathbf{x}_j\cdot\mathbf{x}_i</script><p>理论上来说，可以任意选取满足 $0&lt;\lambda_i^*&lt;C$ 的样本，通过上式得到 $\theta$，但在实际应用中，常选取所有的满足 $0&lt;\lambda_i^*&lt;C$ 的样本，求取相应的 $\theta$ 后求其平均值 $\overline{\theta}$</p>
+<p>故而，当 $\lambda_i-\hat{\lambda_i}\neq0$ 时，有回归函数：</p>
+<script type="math/tex; mode=display">
+f(\mathbf{x}) = \sum_{i=1}^n(\lambda_i-\hat{\lambda_i})(\mathbf{x}_i\cdot\mathbf{x}) + \overline{\theta}</script><h1 id="【非线性支持向量回归】"><a href="#【非线性支持向量回归】" class="headerlink" title="【非线性支持向量回归】"></a>【非线性支持向量回归】</h1><p>对于回归函数：</p>
+<script type="math/tex; mode=display">
+f(\mathbf{x}) = \sum_{i=1}^n(\lambda_i-\hat{\lambda_i})(\mathbf{x}_i\cdot\mathbf{x}) + \overline{\theta}</script><p>若考虑到非线性问题，可以参照非线性支持向量机的思路，使用核方法进行特征构建，引入核函数即可，故非线性 SVR 可表示为：</p>
+<script type="math/tex; mode=display">
+f(\mathbf{x}) = \sum_{i=1}^n(\lambda_i-\hat{\lambda_i})K(\mathbf{x}_i,\mathbf{x}) + \overline{\theta}</script><p>关于核方法，详见：<a href="https://alex-mcavoy.github.io/ml/d69d1bb1.html">特征构建与核方法</a></p>
+<h1 id="【sklearn-实现】"><a href="#【sklearn-实现】" class="headerlink" title="【sklearn 实现】"></a>【sklearn 实现】</h1><h2 id="线性支持向量回归"><a href="#线性支持向量回归" class="headerlink" title="线性支持向量回归"></a>线性支持向量回归</h2><p>以 <code>sklearn</code> 中的波士顿房价数据集为例，实现线性支持向量回归</p>
+<p><img src="/images/ml/43-4.png"></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"><span class="keyword">import</span> pandas <span class="keyword">as</span> pd</span><br><span class="line"><span class="keyword">import</span> matplotlib.pyplot <span class="keyword">as</span> plt</span><br><span class="line"><span class="keyword">from</span> sklearn.datasets <span class="keyword">import</span> load_boston</span><br><span class="line"><span class="keyword">from</span> sklearn.model_selection <span class="keyword">import</span> train_test_split</span><br><span class="line"><span class="keyword">from</span> sklearn.svm <span class="keyword">import</span> LinearSVR</span><br><span class="line"><span class="keyword">from</span> sklearn.metrics <span class="keyword">import</span> mean_squared_error</span><br><span class="line"><span class="keyword">from</span> sklearn.metrics <span class="keyword">import</span> mean_squared_error</span><br><span class="line"><span class="keyword">from</span> sklearn.metrics <span class="keyword">import</span> mean_absolute_error</span><br><span class="line"><span class="keyword">from</span> sklearn.metrics <span class="keyword">import</span> r2_score</span><br><span class="line"></span><br><span class="line"><span class="comment"># 特征提取</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">deal_data</span><span class="params">()</span>:</span></span><br><span class="line">    boston = load_boston()  <span class="comment"># sklearn的波士顿房价数据集</span></span><br><span class="line">    df = pd.DataFrame(boston.data, columns=boston.feature_names)</span><br><span class="line">    df[<span class="string">'result'</span>] = boston.target</span><br><span class="line">    data = np.array(df)</span><br><span class="line">    <span class="keyword">return</span> data[:, :<span class="number">-1</span>], data[:, <span class="number">-1</span>]</span><br><span class="line"></span><br><span class="line"><span class="comment"># 模型训练</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">train_model</span><span class="params">(features, labels)</span>:</span>  </span><br><span class="line">    <span class="comment"># 建立线性支持向量回归模型</span></span><br><span class="line">    model = LinearSVR(random_state=<span class="number">0</span>, tol=<span class="number">1e-05</span>)</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 训练</span></span><br><span class="line">    model.fit(features, labels)</span><br><span class="line">    <span class="keyword">return</span> model</span><br><span class="line"></span><br><span class="line"><span class="comment"># 模型评估</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">estimate_model</span><span class="params">(y_true, y_pred)</span>:</span></span><br><span class="line">    MSE = mean_squared_error(y_true, y_pred)</span><br><span class="line">    RMSE = np.sqrt(MSE)</span><br><span class="line">    MAE = mean_absolute_error(y_true, y_pred)</span><br><span class="line">    R2 = r2_score(y_true, y_pred)</span><br><span class="line">    indicators = &#123;<span class="string">"MSE"</span>: MSE, <span class="string">"RMSE"</span>:RMSE, <span class="string">"MAE"</span>:MAE, <span class="string">"R2"</span>:R2&#125;</span><br><span class="line">    <span class="keyword">return</span> indicators</span><br><span class="line"></span><br><span class="line"><span class="comment"># 可视化</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">visualization</span><span class="params">(y_true, y_pred, model)</span>:</span></span><br><span class="line">    <span class="comment"># 绘图</span></span><br><span class="line">    plt.plot(range(y_true.shape[<span class="number">0</span>]), y_true, <span class="string">"b-"</span>) </span><br><span class="line">    plt.plot(range(y_true.shape[<span class="number">0</span>]), y_pred, <span class="string">"r-."</span>)</span><br><span class="line">    plt.legend([<span class="string">"original value"</span>, <span class="string">"predicted value"</span>])</span><br><span class="line">    </span><br><span class="line">    plt.show()</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:</span><br><span class="line">    <span class="comment"># 特征提取</span></span><br><span class="line">    x, y = deal_data()</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 简单交叉验证</span></span><br><span class="line">    x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=<span class="number">0.3</span>, random_state=<span class="number">0</span>)</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 模型训练</span></span><br><span class="line">    model = train_model(x_train, y_train)</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 预测结果</span></span><br><span class="line">    y_pred = model.predict(x_test) <span class="comment"># predict()输入输出均为二维</span></span><br><span class="line">    print(<span class="string">"y test:"</span>, y_test[:<span class="number">10</span>]) <span class="comment"># 测试集y值</span></span><br><span class="line">    print(<span class="string">"y pred:"</span>, y_pred[:<span class="number">10</span>]) <span class="comment"># 预测y值</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 模型评估</span></span><br><span class="line">    indicators = estimate_model(y_test, y_pred)</span><br><span class="line">    print(<span class="string">"MSE:"</span>, indicators[<span class="string">"MSE"</span>])</span><br><span class="line">    print(<span class="string">"RMSE:"</span>, indicators[<span class="string">"RMSE"</span>])</span><br><span class="line">    print(<span class="string">"MAE:"</span>, indicators[<span class="string">"MAE"</span>])</span><br><span class="line">    print(<span class="string">"R2:"</span>, indicators[<span class="string">"R2"</span>])</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 可视化</span></span><br><span class="line">    visualization(y_test, y_pred, model)</span><br></pre></td></tr></table></figure>
+<h2 id="非线性支持向量回归"><a href="#非线性支持向量回归" class="headerlink" title="非线性支持向量回归"></a>非线性支持向量回归</h2><p>以 <code>sklearn</code> 中的波士顿房价数据集为例，实现线性支持向量回归</p>
+<p><img src="/images/ml/43-5.png"></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"><span class="keyword">import</span> pandas <span class="keyword">as</span> pd</span><br><span class="line"><span class="keyword">import</span> matplotlib.pyplot <span class="keyword">as</span> plt</span><br><span class="line"><span class="keyword">from</span> sklearn.datasets <span class="keyword">import</span> load_boston</span><br><span class="line"><span class="keyword">from</span> sklearn.model_selection <span class="keyword">import</span> train_test_split</span><br><span class="line"><span class="keyword">from</span> sklearn.svm <span class="keyword">import</span> SVR</span><br><span class="line"><span class="keyword">from</span> sklearn.metrics <span class="keyword">import</span> mean_squared_error</span><br><span class="line"><span class="keyword">from</span> sklearn.metrics <span class="keyword">import</span> mean_squared_error</span><br><span class="line"><span class="keyword">from</span> sklearn.metrics <span class="keyword">import</span> mean_absolute_error</span><br><span class="line"><span class="keyword">from</span> sklearn.metrics <span class="keyword">import</span> r2_score</span><br><span class="line"></span><br><span class="line"><span class="comment"># 特征提取</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">deal_data</span><span class="params">()</span>:</span></span><br><span class="line">    boston = load_boston()  <span class="comment"># sklearn的波士顿房价数据集</span></span><br><span class="line">    df = pd.DataFrame(boston.data, columns=boston.feature_names)</span><br><span class="line">    df[<span class="string">'result'</span>] = boston.target</span><br><span class="line">    data = np.array(df)</span><br><span class="line">    <span class="keyword">return</span> data[:, :<span class="number">-1</span>], data[:, <span class="number">-1</span>]</span><br><span class="line"></span><br><span class="line"><span class="comment"># 模型训练</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">train_model</span><span class="params">(features, labels)</span>:</span>  </span><br><span class="line">    <span class="comment"># 建立非线性SVR模型</span></span><br><span class="line">    <span class="comment"># kernel可选：</span></span><br><span class="line">    <span class="comment">#  - linear：线性核函数，与LinearSVR效果一致，但速度较慢</span></span><br><span class="line">    <span class="comment">#  - poly：多项式核函数，gamma为多项式的系数，degree为多项式的次数，coef0为多项式截距</span></span><br><span class="line">    <span class="comment">#  - rbf：高斯核函数，gamma为1/2σ</span></span><br><span class="line">    <span class="comment">#  - sigmoid：sigmoid核函数，coef0为多项式截距</span></span><br><span class="line">    model = SVR(kernel=<span class="string">'rbf'</span>, degree=<span class="number">3</span>, C=<span class="number">1.0</span>, epsilon=<span class="number">0.2</span>)</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 训练</span></span><br><span class="line">    model.fit(features, labels)</span><br><span class="line">    <span class="keyword">return</span> model</span><br><span class="line"></span><br><span class="line"><span class="comment"># 模型评估</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">estimate_model</span><span class="params">(y_true, y_pred)</span>:</span></span><br><span class="line">    MSE = mean_squared_error(y_true, y_pred)</span><br><span class="line">    RMSE = np.sqrt(MSE)</span><br><span class="line">    MAE = mean_absolute_error(y_true, y_pred)</span><br><span class="line">    R2 = r2_score(y_true, y_pred)</span><br><span class="line">    indicators = &#123;<span class="string">"MSE"</span>: MSE, <span class="string">"RMSE"</span>:RMSE, <span class="string">"MAE"</span>:MAE, <span class="string">"R2"</span>:R2&#125;</span><br><span class="line">    <span class="keyword">return</span> indicators</span><br><span class="line"></span><br><span class="line"><span class="comment"># 可视化</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">visualization</span><span class="params">(y_true, y_pred, model)</span>:</span></span><br><span class="line">    <span class="comment"># 绘图</span></span><br><span class="line">    plt.plot(range(y_true.shape[<span class="number">0</span>]), y_true, <span class="string">"b-"</span>) </span><br><span class="line">    plt.plot(range(y_true.shape[<span class="number">0</span>]), y_pred, <span class="string">"r-."</span>)</span><br><span class="line">    plt.legend([<span class="string">"original value"</span>, <span class="string">"predicted value"</span>])</span><br><span class="line">    </span><br><span class="line">    plt.show()</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:</span><br><span class="line">    <span class="comment"># 特征提取</span></span><br><span class="line">    x, y = deal_data()</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 简单交叉验证</span></span><br><span class="line">    x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=<span class="number">0.3</span>,random_state=<span class="number">0</span>)</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 模型训练</span></span><br><span class="line">    model = train_model(x_train, y_train)</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 预测结果</span></span><br><span class="line">    y_pred = model.predict(x_test) <span class="comment"># predict()输入输出均为二维</span></span><br><span class="line">    print(<span class="string">"y test:"</span>, y_test[:<span class="number">10</span>]) <span class="comment"># 测试集y值</span></span><br><span class="line">    print(<span class="string">"y pred:"</span>, y_pred[:<span class="number">10</span>]) <span class="comment"># 预测y值</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 模型评估</span></span><br><span class="line">    indicators = estimate_model(y_test, y_pred)</span><br><span class="line">    print(<span class="string">"MSE:"</span>, indicators[<span class="string">"MSE"</span>])</span><br><span class="line">    print(<span class="string">"RMSE:"</span>, indicators[<span class="string">"RMSE"</span>])</span><br><span class="line">    print(<span class="string">"MAE:"</span>, indicators[<span class="string">"MAE"</span>])</span><br><span class="line">    print(<span class="string">"R2:"</span>, indicators[<span class="string">"R2"</span>])</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 可视化</span></span><br><span class="line">    visualization(y_test, y_pred, model)</span><br></pre></td></tr></table></figure>
+
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>感谢您对我的支持，让我继续努力分享有用的技术与知识点！</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/wechatpay.jpg" alt="Alex_McAvoy 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/alipay.jpg" alt="Alex_McAvoy 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Alex_McAvoy
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://alex-mcavoy.github.io/ml/afd4765.html" title="支持向量回归">https://alex-mcavoy.github.io/ml/afd4765.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/ml/" rel="tag"># 机器学习</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/ml/7fdaae18.html" rel="prev" title="非线性支持向量机">
+      <i class="fa fa-chevron-left"></i> 非线性支持向量机
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/notes/computer-networks/7c4ca347.html" rel="next" title="计算机网络概述">
+      计算机网络概述 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【引入】"><span class="nav-number">1.</span> <span class="nav-text">【引入】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【假设形式】"><span class="nav-number">2.</span> <span class="nav-text">【假设形式】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【原始问题】"><span class="nav-number">3.</span> <span class="nav-text">【原始问题】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【对偶问题】"><span class="nav-number">4.</span> <span class="nav-text">【对偶问题】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#对偶问题的转化"><span class="nav-number">4.1.</span> <span class="nav-text">对偶问题的转化</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#对偶问题中的极小问题"><span class="nav-number">4.2.</span> <span class="nav-text">对偶问题中的极小问题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#对偶问题中的极大问题"><span class="nav-number">4.3.</span> <span class="nav-text">对偶问题中的极大问题</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【非线性支持向量回归】"><span class="nav-number">5.</span> <span class="nav-text">【非线性支持向量回归】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【sklearn-实现】"><span class="nav-number">6.</span> <span class="nav-text">【sklearn 实现】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#线性支持向量回归"><span class="nav-number">6.1.</span> <span class="nav-text">线性支持向量回归</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#非线性支持向量回归"><span class="nav-number">6.2.</span> <span class="nav-text">非线性支持向量回归</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">  
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Alex_McAvoy"
+      src="/assets/img/head.jpg">
+  <p class="site-author-name" itemprop="name">Alex_McAvoy</p>
+  <div class="site-description" itemprop="description">想要成为渔夫的猎手</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">600</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">59</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">64</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Alex-McAvoy" title="GitHub → https://github.com/Alex-McAvoy" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/u011815404" title="CSDN → https://blog.csdn.net/u011815404" rel="noopener" target="_blank"><i class="fas fa-copyright fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+<!-- 访客地图 -->
+<script type="text/javascript" src="//rf.revolvermaps.com/0/0/5.js?i=50n58yo58ow&amp;m=0&amp;c=ff0000&amp;cr1=ffffff&amp;s=140" async="async"></script>
+
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdz20172133" title="https://blog.csdn.net/sdz20172133" rel="noopener" target="_blank">神仙队友</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://pxlsdz.gitee.io/" title="https://pxlsdz.gitee.io/" rel="noopener" target="_blank">神仙队友blog2</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdau_fangshifeng" title="https://blog.csdn.net/sdau_fangshifeng" rel="noopener" target="_blank">酷头</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://bycore.net" title="https://bycore.net" rel="noopener" target="_blank">凉了的某饼同学</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://kris-cn.github.io/" title="http://kris-cn.github.io/" rel="noopener" target="_blank">翟孙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://deng.fun/" title="http://deng.fun/" rel="noopener" target="_blank">芙蓉姐姐</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/wentong_Xu" title="https://blog.csdn.net/wentong_Xu" rel="noopener" target="_blank">小黑贱胖子</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.yuheng.tech/" title="https://www.yuheng.tech/" rel="noopener" target="_blank">咸于</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/lanshan1111" title="https://blog.csdn.net/lanshan1111" rel="noopener" target="_blank">肥硕硕</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdauguanweihong" title="https://blog.csdn.net/sdauguanweihong" rel="noopener" target="_blank">管少</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_41661919" title="https://blog.csdn.net/qq_41661919" rel="noopener" target="_blank">俊杰</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_40859951" title="https://blog.csdn.net/qq_40859951" rel="noopener" target="_blank">峰哥</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/LSD20164388" title="https://blog.csdn.net/LSD20164388" rel="noopener" target="_blank">狗冬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37868325" title="https://blog.csdn.net/qq_37868325" rel="noopener" target="_blank">妍大佬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://sanshuiii.github.io/" title="https://sanshuiii.github.io/" rel="noopener" target="_blank">sanshuiii</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://zjpzhao.github.io/" title="https://zjpzhao.github.io/" rel="noopener" target="_blank">brain</a>
+        </li>
+    </ul>
+  </div>
+
+		
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+  
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Alex_McAvoy</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+</br>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script><script src="/js/bookmark.js"></script>
+
+
+
+  
+
+
+
+
+  <script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '48fd73a538d3fa927f65',
+      clientSecret: '56618aefeee90bac3c20de8d51bb0b985d67252d',
+      repo        : 'Gitalk-Comment',
+      owner       : 'Alex-McAvoy',
+      admin       : ['Alex-McAvoy'],
+      id          : 'b68d035e2227b3b6d092eb1389a96c24',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+  
+  <!-- 鼠标单击粒子特效 -->
+  <script type="text/javascript" src="/js/cursor-effects.js"></script>
+  <!-- 多级目录 -->
+  <script type="text/javascript" src="/js/category.js"></script>
+  
+</body>
+</html>
