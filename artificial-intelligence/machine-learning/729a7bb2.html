@@ -34,7 +34,7 @@
 <meta property="og:description" content="Reference  回归树（Regression Tree） Regression Tree 回归树 决策树(分类树、回归树） 【机器学习】决策树（上）——ID3、C4.5、CART（非常详细） 决策树—ID3、C4.5、CART   【概述】对于 ID3 和 C4.5 来说，它们只能用来解决分类为问题，因此都是分类决策树">
 <meta property="og:locale" content="zh-CN">
 <meta property="og:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/machine-learning/32-1.png">
-<meta property="og:updated_time" content="2023-03-31T12:43:23.058Z">
+<meta property="og:updated_time" content="2023-04-05T14:17:04.089Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="决策树的 CART 生成算法">
 <meta name="twitter:description" content="Reference  回归树（Regression Tree） Regression Tree 回归树 决策树(分类树、回归树） 【机器学习】决策树（上）——ID3、C4.5、CART（非常详细） 决策树—ID3、C4.5、CART   【概述】对于 ID3 和 C4.5 来说，它们只能用来解决分类为问题，因此都是分类决策树">
@@ -249,14 +249,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>3.8k</span>
+              <span>3.9k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>3 分钟</span>
+              <span>4 分钟</span>
             </span>
 
         </div>
@@ -304,14 +304,14 @@ Gini(G,A)=\frac{|D_1|}{|D|}Gini(D_1)+\frac{|D_2|}{|D|}Gini(D_2)</script><p>Step2
 <p>回归问题的目标是构造一个函数 $f(\mathbf{x})$ 能够拟合数据集 $D$ 中的元素，使得均方误差 MSE 最小，即：</p>
 <script type="math/tex; mode=display">
 \min \quad \frac{1}{n}\sum_{i=1}^n (f(\mathbf{x}_i)-y_i)^2</script><p>一棵<strong>回归树</strong>对应着整个特征空间上递归地二分类的划分，在每一个划分单元上都有一个输出值，下面用数学语言来进行描述：</p>
-<p>假设对于给定训练集 $D=\{(\mathbf{x}_1,y_1),(\mathbf{x}_2,y_2),…,(\mathbf{x}_n,y_n)\}$，用该训练集构建好的一棵 CART 回归树有 $M$ 个叶结点，这意味着将输入空间划分为 $M$ 个单元 $R_1,R_2,…,R_M$，且 CART 最多会有 $M$ 个不同的预测值，即每一个叶结点都对应一个单元 $R_m$，同时该单元输出一个预测值</p>
-<p>用 $c_m$ 表示第 $m$ 个叶结点的预测值，其一般是该叶结点所含训练集样本输出的均值，即：</p>
+<p>假设对于给定训练集 $D=\{(\mathbf{x}_1,y_1),(\mathbf{x}_2,y_2),…,(\mathbf{x}_n,y_n)\}$，用该训练集构建好的一棵 CART 回归树有 $K$ 个叶结点，这意味着将输入空间划分为 $K$ 个单元 $R_1,R_2,…,R_K$，且 CART 最多会有 $K$ 个不同的预测值，即每一个叶结点都对应一个单元 $R_k$，同时该单元输出一个预测值</p>
+<p>用 $c_k$ 表示第 $k$ 个叶结点的预测值，其一般是该叶结点所含训练集样本输出的均值，即：</p>
 <script type="math/tex; mode=display">
-c_m = \text{average} (y_i|\mathbf{x}_i\in R_m)</script><p>则回归树的模型表示为：</p>
+c_k = \text{average} (y_i|\mathbf{x}_i\in R_k)</script><p>则回归树的模型表示为：</p>
 <script type="math/tex; mode=display">
-f(\mathbf{x}_i)=\sum_{m=1}^Mc_mI(\mathbf{x}_i\in R_m)</script><p>此时，CART 最小化 MSE 公式如下：</p>
+f(\mathbf{x}_i)=\sum_{j=1}^Kc_k\mathbb{I}(\mathbf{x}_i\in R_k)</script><p>此时，CART 最小化 MSE 公式如下：</p>
 <script type="math/tex; mode=display">
-\min \quad \frac{1}{n}\sum_{m=1}^M\sum_{\mathbf{x}_i\in R_m}(c_m-y_i)^2</script><h2 id="划分过程"><a href="#划分过程" class="headerlink" title="划分过程"></a>划分过程</h2><p>根据 CART 是二叉树的特征，在每一次划分中，都需要进行一次特征选择，同时将该特征空间一分为二的切分，使得模型在训练集上 MSE 最小，即每个叶结点的 MSE 之和最小</p>
+\min \quad \frac{1}{n}\sum_{k=1}^K\sum_{\mathbf{x}_i\in R_k}(c_k-y_i)^2</script><h2 id="划分过程"><a href="#划分过程" class="headerlink" title="划分过程"></a>划分过程</h2><p>根据 CART 是二叉树的特征，在每一次划分中，都需要进行一次特征选择，同时将该特征空间一分为二的切分，使得模型在训练集上 MSE 最小，即每个叶结点的 MSE 之和最小</p>
 <p>也就是说，要确定两方面的内容：</p>
 <ol>
 <li>选择哪一个特征来进行划分</li>
@@ -331,8 +331,8 @@ R_2(j,s)=\{\mathbf{x}_i|x_i^{(j)}>s\}
 <p>此时，对于最小化公式中的 $c_1$ 和 $c_2$，取最优值：</p>
 <script type="math/tex; mode=display">
 \left\{\begin{array}{rl}
-\hat{c_1}=ave(y_i|\mathbf{x}_i\in R_1) \\
-\hat{c_2}=ave(y_i|\mathbf{x}_i\in R_2)
+\hat{c_1}=\text{ave}(y_i|\mathbf{x}_i\in R_1) \\
+\hat{c_2}=\text{ave}(y_i|\mathbf{x}_i\in R_2)
 \end{array}\right.</script><p>之后，对两个子空间 $R_1$、$R_2$ 重复上述划分过程，直到满足停止条件为止，生成一棵决策树</p>
 <h2 id="最小二乘回归树生成算法"><a href="#最小二乘回归树生成算法" class="headerlink" title="最小二乘回归树生成算法"></a>最小二乘回归树生成算法</h2><p>按照上述过程生成的决策树，称为<strong>最小二乘回归树（Least Squares Regression tree）</strong>，下面给出最小二乘回归树生成算法：</p>
 <p>输入：训练集 $D$</p>
@@ -349,12 +349,12 @@ R_2(j,s)=\{\mathbf{x}_i|x_i^{(j)}>s\}
 \end{array}\right.</script><p>3.根据划分的 $R_1$、$R_2$ 区域，确定相应的输出值</p>
 <script type="math/tex; mode=display">
 \left\{\begin{array}{rl}
-\hat{c_1}=ave(y_i|\mathbf{x}_i\in R_1) \\
-\hat{c_2}=ave(y_i|\mathbf{x}_i\in R_2)
+\hat{c_1}=\text{ave}(y_i|\mathbf{x}_i\in R_1) \\
+\hat{c_2}=\text{ave}(y_i|\mathbf{x}_i\in R_2)
 \end{array}\right.</script><p>4.递归的对两个子区域执行步骤 1、2、3，直到满足停止条件</p>
-<p>5.将输入空间划分为 $M$ 个区域 $R_1,R_2,…,R_M$，生成决策树</p>
+<p>5.将输入空间划分为 $K$ 个区域 $R_1,R_2,…,R_K$，生成决策树</p>
 <script type="math/tex; mode=display">
-f(\mathbf{x}_i)=\sum_{m=1}^M\hat{c_m}I(\mathbf{x}_i\in R_m)</script><h1 id="【CART-剪枝】"><a href="#【CART-剪枝】" class="headerlink" title="【CART 剪枝】"></a>【CART 剪枝】</h1><p>CART 算法使用的剪枝策略是代价复杂度剪枝策略，其由两步组成：</p>
+f(\mathbf{x}_i)=\sum_{k=1}^K\hat{c_k}\mathbb{I}(\mathbf{x}_i\in R_k)</script><h1 id="【CART-剪枝】"><a href="#【CART-剪枝】" class="headerlink" title="【CART 剪枝】"></a>【CART 剪枝】</h1><p>CART 算法使用的剪枝策略是代价复杂度剪枝策略，其由两步组成：</p>
 <ol>
 <li>从生成算法产生的决策树 $T_0$ 底端开始不断剪枝，直到 $T_0$ 的根结点，形成一个子树序列 $\{T_0,T_1,…,T_n\}$</li>
 <li>在独立的验证数据集上，对子树序列进行测试，从中选择最优子树</li>
@@ -502,7 +502,7 @@ f(\mathbf{x}_i)=\sum_{m=1}^M\hat{c_m}I(\mathbf{x}_i\in R_m)</script><h1 id="【C
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">605</span>
+          <span class="site-state-item-count">609</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>

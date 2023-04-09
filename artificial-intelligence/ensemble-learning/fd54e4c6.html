@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.9.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/img/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/assets/img/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/pace-js@1/themes/blue/pace-theme-minimal.css">
+  <script src="//cdn.jsdelivr.net/npm/pace-js@1/pace.min.js"></script>
+
+
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"alex-mcavoy.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":16,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":true,"color":"#ff0000","save":"manual"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":true},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.json"};
+  </script>
+
+  <meta name="description" content="References：  【机器学习】西瓜书集成学习的误差-分歧分解公式推导 集成学习多样性的数学分析 —— 误差分歧分解   【误差-分歧分解】单一样本">
+<meta name="keywords" content="人工智能,集成学习">
+<meta property="og:type" content="article">
+<meta property="og:title" content="集成学习多样性">
+<meta property="og:url" content="https://alex-mcavoy.github.io/artificial-intelligence/ensemble-learning/fd54e4c6.html">
+<meta property="og:site_name" content="Alex_McAvoy">
+<meta property="og:description" content="References：  【机器学习】西瓜书集成学习的误差-分歧分解公式推导 集成学习多样性的数学分析 —— 误差分歧分解   【误差-分歧分解】单一样本">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2023-04-08T09:24:25.618Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="集成学习多样性">
+<meta name="twitter:description" content="References：  【机器学习】西瓜书集成学习的误差-分歧分解公式推导 集成学习多样性的数学分析 —— 误差分歧分解   【误差-分歧分解】单一样本">
+
+<link rel="canonical" href="https://alex-mcavoy.github.io/artificial-intelligence/ensemble-learning/fd54e4c6.html">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>集成学习多样性 | Alex_McAvoy</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Alex_McAvoy</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">想要成为渔夫的猎手</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+
+	
+	
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/artificial-intelligence/ensemble-learning/fd54e4c6.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/assets/img/head.jpg">
+      <meta itemprop="name" content="Alex_McAvoy">
+      <meta itemprop="description" content="想要成为渔夫的猎手">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Alex_McAvoy">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          集成学习多样性
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-07-31 21:17:00" itemprop="dateCreated datePublished" datetime="2020-07-31T21:17:00+08:00">2020-07-31</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/artificial-intelligence/" itemprop="url" rel="index"><span itemprop="name">人工智能</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/artificial-intelligence/ensemble-learning/" itemprop="url" rel="index"><span itemprop="name">集成学习</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>5.9k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>5 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <blockquote>
+<p>References：</p>
+<ul>
+<li><a href="https://blog.csdn.net/weixin_38705903/article/details/103671482" target="_blank" rel="noopener">【机器学习】西瓜书集成学习的误差-分歧分解公式推导</a></li>
+<li><a href="https://www.cnblogs.com/Amadues-blogs/p/13044134.html" target="_blank" rel="noopener">集成学习多样性的数学分析 —— 误差分歧分解</a></li>
+</ul>
+</blockquote>
+<h1 id="【误差-分歧分解】"><a href="#【误差-分歧分解】" class="headerlink" title="【误差-分歧分解】"></a>【误差-分歧分解】</h1><h2 id="单一样本"><a href="#单一样本" class="headerlink" title="单一样本"></a>单一样本</h2><h3 id="分歧"><a href="#分歧" class="headerlink" title="分歧"></a>分歧</h3><p>设个体学习器 $G_1(\mathbf{x}),G_2(\mathbf{x}),\cdots,G_T(\mathbf{x})$ 通过<strong>加权平均法</strong>结合产生的强学习器 $f(\mathbf{x})$ 用于完成回归任务：</p>
+<script type="math/tex; mode=display">
+f: \mathbb{R}^m\rightarrow \mathbb{R}</script><p>对于样本 $\mathbf{x}_i$，定义个体学习器 $G_t(\mathbf{x})$ 的<strong>分歧（Ambiguity）</strong>为：</p>
+<script type="math/tex; mode=display">
+A(G_t | \mathbf{x}_i) 
+= \big(G_t(\mathbf{x}_i)-f(\mathbf{x}_i)\big)^2</script><p>那么，个体学习器针对样本 $\mathbf{x}_i$ 的加权分歧为：</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+\overline{A}(G|\mathbf{x}_i) 
+&= \sum_{t=1}^T \omega_t A(G_t|\mathbf{x}_i) \\
+&= \sum_{t=1}^T \omega_t \big(G_t(\mathbf{x}_i)-f(\mathbf{x}_i)\big)^2
+\end{align*}</script><p>其中，$\omega_t$ 为个体学习器 $G_t(\mathbf{x})$ 的系数，即每个个体学习器在强学习器中所占的比重</p>
+<p>其表征了个体学习器在样本 $\mathbf{x}_i$ 上的不一致性，即在一定程度上反映了个体学习器的多样性</p>
+<h3 id="误差"><a href="#误差" class="headerlink" title="误差"></a>误差</h3><p>针对样本 $\mathbf{x}_i$，个体学习器 $G_t(\mathbf{x})$ 的平方误差为：</p>
+<script type="math/tex; mode=display">
+\text{Error}(G_t|\mathbf{x}_i) = \big( y_i - G_t(\mathbf{x}_i) \big)^2</script><p>强学习器 $f(\mathbf{x})$ 的平方误差为：</p>
+<script type="math/tex; mode=display">
+\text{Error}(f|\mathbf{x}_i) = \big( y_i - f(\mathbf{x}_i) \big)^2</script><p>令 $\overline{E}(G|\mathbf{x})$ 代表个体学习器对样本 $\mathbf{x}_i$ 的平方误差的加权均值，即：</p>
+<script type="math/tex; mode=display">
+\overline{E}(G|\mathbf{x}_i) =\sum_{t=1}^T \omega_{t} \text{Error}(G_t|\mathbf{x}_i)</script><h3 id="分歧与误差的关系"><a href="#分歧与误差的关系" class="headerlink" title="分歧与误差的关系"></a>分歧与误差的关系</h3><p>对于训练集 $D$ 上的任一样本 $\mathbf{x}_i$，有：</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+&\overline{E}(G|\mathbf{x}_i)-\overline{A}(G|\mathbf{x}_i) \\
+&= \sum_{t=1}^T \omega_t\text{Error}(G_t|\mathbf{x}_i)-\sum_{t=1}^T \omega_t \big(G_t(\mathbf{x}_i)-f(\mathbf{x}_i)\big)^2 \\
+&= \sum_{t=1}^T \omega_t \Big[ \big( y_i - G_t(\mathbf{x}_i) \big)^2- \big(G_t(\mathbf{x}_i)-f(\mathbf{x}_i)\big)^2\Big] \\
+&= \sum_{t=1}^T \omega_t \Big( y_i^2-2y_iG_t(\mathbf{x}_i) + G_t(\mathbf{x}_i)^2 -G_t(\mathbf{x}_i)^2+2G_t(\mathbf{x}_i)f(\mathbf{x}_i)-f(\mathbf{x}_i)^2 \Big) \\
+&= \sum_{t=1}^T \omega_t \Big[ y_i^2+2G_t(\mathbf{x}_i)\big(f(\mathbf{x}_i)-y_i\big) - f(\mathbf{x}_i)^2 \Big] \\
+&= y_i^2\sum_{t=1}^T \omega_t  + 2\big(f(\mathbf{x}_i)-y_i\big)\sum_{t=1}^T\omega_tG_t(\mathbf{x}_i) - f(\mathbf{x}_i)^2\sum_{t=1}^T\omega_t
+\end{align*}</script><p>由于 $\sum\limits_{t=1}^T\omega_t=1$，故有：</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+&\overline{E}(G|\mathbf{x}_i)-\overline{A}(G|\mathbf{x}_i) \\
+&= y_i^2\sum_{t=1}^T \omega_t  + 2\big(f(\mathbf{x}_i)-y_i\big)\sum_{t=1}^T\omega_tG_t(\mathbf{x}_i) - f(\mathbf{x}_i)^2\sum_{t=1}^T\omega_t \\
+&=  y_i^2 + 2\big(f(\mathbf{x}_i)-y_i\big)\sum_{t=1}^T\omega_tG_t(\mathbf{x}_i) - f(\mathbf{x}_i)^2 \\
+\end{align*}</script><p>由于采用的是加权平均法，有 $f(\mathbf{x})=\sum\limits_{t=1}^T\omega_t G_t(\mathbf{x})$，故可得：</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+&\overline{E}(G|\mathbf{x}_i)-\overline{A}(G|\mathbf{x}_i) \\
+&=  y_i^2 + 2\big(f(\mathbf{x}_i)-y_i\big)\sum_{t=1}^T\omega_tG_t(\mathbf{x}_i) - f(\mathbf{x}_i)^2 \\
+&= y_i^2 + 2\big(f(\mathbf{x}_i)-y_i\big)f(\mathbf{x}_i) -f(\mathbf{x}_i)^2 \\
+&= y_i^2 -2y_if(\mathbf{x}_i)+2f(\mathbf{x}_i)^2-f(\mathbf{x}_i)^2 \\
+&= y_i^2 -2y_if(\mathbf{x}_i)+f(\mathbf{x}_i)^2 \\
+&= \big(y_i-f(\mathbf{x}_i)\big)^2
+\end{align*}</script><p>而对于样本 $\mathbf{x}_i$，强学习器 $f(\mathbf{x})$ 的平方误差为：</p>
+<script type="math/tex; mode=display">
+\text{Error}(f|\mathbf{x}_i) = \big( y_i - f(\mathbf{x}_i) \big)^2</script><p>故有：</p>
+<script type="math/tex; mode=display">
+\overline{E}(G|\mathbf{x}_i)-\overline{A}(G|\mathbf{x}_i) = \text{Error}(f|\mathbf{x}_i)</script><p>即：</p>
+<script type="math/tex; mode=display">
+\overline{A}(G|\mathbf{x}_i) = \overline{E}(G|\mathbf{x}_i) - \text{Error}(f|\mathbf{x}_i)</script><h2 id="样本集"><a href="#样本集" class="headerlink" title="样本集"></a>样本集</h2><h3 id="分歧-1"><a href="#分歧-1" class="headerlink" title="分歧"></a>分歧</h3><p>由于 $\mathbf{x}_i$ 是样本集 $D$ 中的任一样本，对于 $D$ 中的样本，令 $p(\mathbf{x})$ 表示样本的概率密度，那么在样本集 $D$ 上，个体学习器 $G_t(\mathbf{x})$ 在全样本上的分歧为：</p>
+<script type="math/tex; mode=display">
+{A}(G_t) = \int_D A(G_t|\mathbf{x})p(\mathbf{x}) d \mathbf{x}</script><p>那么，个体学习器在全样本上的加权分歧为：</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+\overline{A}(G) 
+&= \sum_{t=1}^T \omega_t A(G_t) \\
+&= \sum_{t=1}^T \omega_t \int_D A(G_t|\mathbf{x})p(\mathbf{x}) d \mathbf{x}
+\end{align*}</script><h3 id="泛化误差"><a href="#泛化误差" class="headerlink" title="泛化误差"></a>泛化误差</h3><p>对于全样本集 $D$，个体学习器 $G_t(\mathbf{x})$ 在全样本上的泛化误差为：</p>
+<script type="math/tex; mode=display">
+\text{Error}(G_t) = \int_D E(G_t|\mathbf{x})p(\mathbf{x})d\mathbf{x}</script><p>强学习器 $f(\mathbf{x})$ 的泛化误差为：</p>
+<script type="math/tex; mode=display">
+\text{Error}(f) = \int_D E(f|\mathbf{x})p(\mathbf{x})d\mathbf{x}</script><p>全样本集上对个体学习器的加权泛化误差为：</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+\overline{E}(G) 
+&= \sum_{t=1}^T \omega_t \text{Error}(G_t) \\
+&= \sum_{t=1}^T \omega_t \int_D E(G_t|\mathbf{x})p(\mathbf{x})d\mathbf{x}
+\end{align*}</script><h3 id="分歧与误差的关系-1"><a href="#分歧与误差的关系-1" class="headerlink" title="分歧与误差的关系"></a>分歧与误差的关系</h3><p>根据单一样本上分歧与误差的关系，对于全样本集 $D$，有：</p>
+<script type="math/tex; mode=display">
+\sum_{t=1}^T \omega_t \int A(G_t|\mathbf{x})p(\mathbf{x})d\mathbf{x}
+= \sum_{t=1}^T\omega_t \int E(G_t|\mathbf{x})p(\mathbf{x})d\mathbf{x} - \int E(f|\mathbf{x})p(\mathbf{x})d\mathbf{x}</script><p>即：</p>
+<script type="math/tex; mode=display">
+\overline{A}(G) = \overline{E}(G)  -\text{Error}(f)</script><p>将上式进行变换，即有：</p>
+<script type="math/tex; mode=display">
+\text{Error}(f)= \overline{E}(G)  - \overline{A}(G)</script><p>其被称为<strong>误差-分歧分解（Error-Ambiguity Decomposition）</strong>，其将泛化误差、误差、分歧联系到了一起，同时指出了个体学习器的准确率越高、多样性越大，则集成越好</p>
+<p>遗憾的是，在实际应用中，很难直接对泛化误差 $\overline{E}(G) - \overline{A}(G)$ 进行优化，不仅是由于它们是定义在整个样本空间上，还因为 $\overline{A}(G)$ 不是一个可直接操作的多样性度量，其仅是在强学习器构造好后才进行估计</p>
+<p>此外，需要注意的是，上面的推导过程只适用于回归，难以将其推广到分类任务上去</p>
+<h1 id="【多样性度量】"><a href="#【多样性度量】" class="headerlink" title="【多样性度量】"></a>【多样性度量】</h1><p>多样性度量是用于度量集成这种个体分类器的多样性，即估算个体学习器的多样化程度</p>
+<p>对于给定的容量为 $n$ 的训练集 $D=\{(\mathbf{x}_1,y_1),(\mathbf{x}_2,y_2),…,(\mathbf{x}_n,y_n)\}$，第 $i$ 组样本中的输入 $\mathbf{x}_i$ 具有 $m$ 个特征值，即：$\mathbf{x}_i=(x_i^{(1)},x_i^{(2)},…,x_i^{(m)})\in \mathbb{R}^m$，输出 $y_i\in\mathcal{Y}=\{-1,+1\}$</p>
+<p>分类器 $G_i(\mathbf{x})$ 和 $G_j(\mathbf{x})$ 的预测结果列联表为：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:center"></th>
+<th style="text-align:center">$G_i(\mathbf{x})=+1$</th>
+<th style="text-align:center">$G_i(\mathbf{x})=-1$</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">$G_j(\mathbf{x})=+1$</td>
+<td style="text-align:center">$a$</td>
+<td style="text-align:center">$c$</td>
+</tr>
+<tr>
+<td style="text-align:center">$G_j(\mathbf{x})=-1$</td>
+<td style="text-align:center">$b$</td>
+<td style="text-align:center">$d$</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>其中，$a$ 表示 $G_i(\mathbf{x})$ 与 $G_j(\mathbf{x})$ 均预测为正类的样本数，$b$ 表示 $G_i(\mathbf{x})$ 预测为正类 $G_j(\mathbf{x})$ 预测为负类的样本数，$c$ 表示 $G_i(\mathbf{x})$ 预测为负类 $G_j(\mathbf{x})$ 预测为正类的样本数，$d$ 表示 $G_i(\mathbf{x})$ 与 $G_j(\mathbf{x})$ 均预测为负类的样本数，且 $a+b+c+d=n$</p>
+<p>根据列联表，给出如下常见的多样性度量</p>
+<p>1）不合度量（Disagreement Measure）</p>
+<script type="math/tex; mode=display">
+\text{dis}_{ij} = \frac{b+c}{n}</script><p>$\text{dis}_{ij}\in [0,1]$，值越大多样性越大</p>
+<p>2）相关系数（Correlation Coefficient）</p>
+<script type="math/tex; mode=display">
+\rho_{ij} = \frac{ad-bc}{\sqrt{(a+b)(a+c)(c+d)(b+d)}}</script><p>$\rho_{ij}\in [-1,1]$，若 $G_i(\mathbf{x})$ 与 $G_j(\mathbf{x})$ 无关，则 $\rho_{ij}=0$，若 $G_i(\mathbf{x})$ 与 $G_j(\mathbf{x})$ 正相关，则值为正，否则为负</p>
+<p>3）Q-统计量（Q-statistic）</p>
+<script type="math/tex; mode=display">
+Q_{ij} = \frac{ad-bc}{ad+bc}</script><p>$Q_{ij}$ 与 $\rho_{ij}$ 符号相同，且 $|Q_{ij}|\geq |\rho_{ij}|$</p>
+<p>4）k-统计量（k-statistic）</p>
+<script type="math/tex; mode=display">
+k=\frac{p_1-p_2}{1-p_2}</script><p>其中，$p_1$ 是两个分类器取得一致的概率，$p_2$ 是两个分类器偶然达成一致的概率，它们可由数据集 $D$ 估算，即：</p>
+<script type="math/tex; mode=display">
+\begin{gather*}
+p_1=\frac{a+d}{m} \\
+p_2 = \frac{(a+b)(a+c)+(c+d)(b+d)}{n^2}
+\end{gather*}</script><p>若 $G_i(\mathbf{x})$ 与 $G_j(\mathbf{x})$ 在 $D$ 上完全一致，则 $k=1$，若它们是偶然一致，则 $k=0$</p>
+<p>通常来说，$k$ 为非负值，仅在 $G_i(\mathbf{x})$ 与 $G_j(\mathbf{x})$ 达成一致的概率低于偶然性的情况下取负值</p>
+<h1 id="【多样性增强】"><a href="#【多样性增强】" class="headerlink" title="【多样性增强】"></a>【多样性增强】</h1><p>要在个体学习器足够好的情况下，增强多样性，从整个算法学习过程上来考虑，有：</p>
+<ul>
+<li>输入：如果每个学习器学习不同的样本，那么可以学习出相对来说不同的个体学习器，可以随机划分训练样本，或利用不同的属性子集训练出不同的个体学习器</li>
+<li>模型：考虑异质集成，训练出不同的组件学习器</li>
+<li>输出：依据标签的特性来进行划分，得到不同的个体学习器</li>
+</ul>
+<p>从以上三点来考虑，有以下五种方法：</p>
+<ol>
+<li><strong>训练样本扰动</strong>：从原始训练样本中产生不同的样本子集，然后利用不同的样本子集训练不同的个体学习器</li>
+<li><strong>输入属性扰动</strong>：从初始属性集中抽取出若干个属性子集，然后利用不同的属性子集训练出不同的个体学习器，需要注意的是，若数据只包含少量属性，或则该方法不适用</li>
+<li><strong>算法参数扰动</strong>：通过随机设置不同的参数来训练差别较大的个体学习器</li>
+<li><strong>输出标记扰动</strong>：对训练样本的类别标记稍作变动，也可对输出进行转化</li>
+<li><strong>混合扰动</strong>：在同一个集成算法中同时使用上述多种扰动方法</li>
+</ol>
+
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>感谢您对我的支持，让我继续努力分享有用的技术与知识点！</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/wechatpay.jpg" alt="Alex_McAvoy 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/alipay.jpg" alt="Alex_McAvoy 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Alex_McAvoy
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://alex-mcavoy.github.io/artificial-intelligence/ensemble-learning/fd54e4c6.html" title="集成学习多样性">https://alex-mcavoy.github.io/artificial-intelligence/ensemble-learning/fd54e4c6.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/artificial-intelligence/" rel="tag"># 人工智能</a>
+              <a href="/tags/ensemble-learning/" rel="tag"># 集成学习</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/artificial-intelligence/ensemble-learning/4f81e78a.html" rel="prev" title="集成学习结合策略">
+      <i class="fa fa-chevron-left"></i> 集成学习结合策略
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/artificial-intelligence/ensemble-learning/ce6ccc0b.html" rel="next" title="Bagging 袋装法与随机森林">
+      Bagging 袋装法与随机森林 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【误差-分歧分解】"><span class="nav-number">1.</span> <span class="nav-text">【误差-分歧分解】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#单一样本"><span class="nav-number">1.1.</span> <span class="nav-text">单一样本</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#分歧"><span class="nav-number">1.1.1.</span> <span class="nav-text">分歧</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#误差"><span class="nav-number">1.1.2.</span> <span class="nav-text">误差</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#分歧与误差的关系"><span class="nav-number">1.1.3.</span> <span class="nav-text">分歧与误差的关系</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#样本集"><span class="nav-number">1.2.</span> <span class="nav-text">样本集</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#分歧-1"><span class="nav-number">1.2.1.</span> <span class="nav-text">分歧</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#泛化误差"><span class="nav-number">1.2.2.</span> <span class="nav-text">泛化误差</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#分歧与误差的关系-1"><span class="nav-number">1.2.3.</span> <span class="nav-text">分歧与误差的关系</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【多样性度量】"><span class="nav-number">2.</span> <span class="nav-text">【多样性度量】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【多样性增强】"><span class="nav-number">3.</span> <span class="nav-text">【多样性增强】</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">  
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Alex_McAvoy"
+      src="/assets/img/head.jpg">
+  <p class="site-author-name" itemprop="name">Alex_McAvoy</p>
+  <div class="site-description" itemprop="description">想要成为渔夫的猎手</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">609</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">62</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">67</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Alex-McAvoy" title="GitHub → https://github.com/Alex-McAvoy" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/u011815404" title="CSDN → https://blog.csdn.net/u011815404" rel="noopener" target="_blank"><i class="fas fa-copyright fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+<!-- 访客地图 -->
+<script type="text/javascript" src="//rf.revolvermaps.com/0/0/5.js?i=50n58yo58ow&amp;m=0&amp;c=ff0000&amp;cr1=ffffff&amp;s=140" async="async"></script>
+
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdz20172133" title="https://blog.csdn.net/sdz20172133" rel="noopener" target="_blank">神仙队友</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://pxlsdz.gitee.io/" title="https://pxlsdz.gitee.io/" rel="noopener" target="_blank">神仙队友blog2</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdau_fangshifeng" title="https://blog.csdn.net/sdau_fangshifeng" rel="noopener" target="_blank">酷头</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://bycore.net" title="https://bycore.net" rel="noopener" target="_blank">凉了的某饼同学</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://kris-cn.github.io/" title="http://kris-cn.github.io/" rel="noopener" target="_blank">翟孙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://deng.fun/" title="http://deng.fun/" rel="noopener" target="_blank">芙蓉姐姐</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/wentong_Xu" title="https://blog.csdn.net/wentong_Xu" rel="noopener" target="_blank">小黑贱胖子</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.yuheng.tech/" title="https://www.yuheng.tech/" rel="noopener" target="_blank">咸于</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/lanshan1111" title="https://blog.csdn.net/lanshan1111" rel="noopener" target="_blank">肥硕硕</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdauguanweihong" title="https://blog.csdn.net/sdauguanweihong" rel="noopener" target="_blank">管少</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_41661919" title="https://blog.csdn.net/qq_41661919" rel="noopener" target="_blank">俊杰</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_40859951" title="https://blog.csdn.net/qq_40859951" rel="noopener" target="_blank">峰哥</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/LSD20164388" title="https://blog.csdn.net/LSD20164388" rel="noopener" target="_blank">狗冬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37868325" title="https://blog.csdn.net/qq_37868325" rel="noopener" target="_blank">妍大佬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://sanshuiii.github.io/" title="https://sanshuiii.github.io/" rel="noopener" target="_blank">sanshuiii</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://zjpzhao.github.io/" title="https://zjpzhao.github.io/" rel="noopener" target="_blank">brain</a>
+        </li>
+    </ul>
+  </div>
+
+		
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+  
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Alex_McAvoy</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+</br>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script><script src="/js/bookmark.js"></script>
+
+
+
+  
+
+
+
+
+  <script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '48fd73a538d3fa927f65',
+      clientSecret: '56618aefeee90bac3c20de8d51bb0b985d67252d',
+      repo        : 'Gitalk-Comment',
+      owner       : 'Alex-McAvoy',
+      admin       : ['Alex-McAvoy'],
+      id          : '48a5dfbde0cf933c6008ee0abde84e25',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+  
+  <!-- 鼠标单击粒子特效 -->
+  <script type="text/javascript" src="/js/cursor-effects.js"></script>
+  <!-- 多级目录 -->
+  <script type="text/javascript" src="/js/category.js"></script>
+  
+</body>
+</html>
