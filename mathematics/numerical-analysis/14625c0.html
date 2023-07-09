@@ -35,7 +35,9 @@
 <meta property="og:locale" content="zh-CN">
 <meta property="og:image" content="https://alex-mcavoy.github.io/images/mathematics/numerical-analysis/01-1.png">
 <meta property="og:image" content="https://alex-mcavoy.github.io/images/mathematics/numerical-analysis/01-2.png">
-<meta property="og:updated_time" content="2023-03-31T13:19:55.605Z">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/mathematics/numerical-analysis/01-3.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/mathematics/numerical-analysis/01-4.png">
+<meta property="og:updated_time" content="2023-06-21T07:38:49.421Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="梯度下降法">
 <meta name="twitter:description" content="Reference  梯度下降法 —— 经典的优化方法 梯度下降算法（Gradient Descent)的原理和实现步骤 详解梯度下降法（干货篇） 什么是梯度下降 梯度下降算法原理讲解——机器学习 随机梯度下降（stochastic gradient descent，SGD） 梯度下降法(Gradient Descent)优化函数的详解（3）小批量随机梯度下降法（mini-batch SGD ）">
@@ -250,7 +252,7 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>3.1k</span>
+              <span>3.6k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
@@ -297,7 +299,7 @@
 <script type="math/tex; mode=display">
 \bigtriangledown J(x,y,z) = \left \langle \frac{\partial J}{\partial x}, \frac{\partial J}{\partial y}, \frac{\partial J}{\partial z} \right \rangle = \left \langle 15,1,-3 \right \rangle</script><h1 id="【梯度下降法的一般形式】"><a href="#【梯度下降法的一般形式】" class="headerlink" title="【梯度下降法的一般形式】"></a>【梯度下降法的一般形式】</h1><p>首先给出梯度下降法的一般形式：</p>
 <script type="math/tex; mode=display">
-\boldsymbol{\theta_{k+1}}=\boldsymbol{\theta_k} - \alpha \bigtriangledown J(\boldsymbol{\theta})</script><p>该公式的含义为：对于当前点 $\boldsymbol{\theta_k}$，要从这个点走向关于 $\boldsymbol{\theta}$ 的函数 $J(\boldsymbol{\theta})$ 的最小值点，前进的方向是函数 $J(\boldsymbol{\theta})$ 的梯度的反方向，行走一段距离的步长为 $\alpha$，到达的点即为 $\boldsymbol{\theta_k}$</p>
+\boldsymbol{\theta_{k+1}}=\boldsymbol{\theta_k} - \alpha \bigtriangledown_k J(\boldsymbol{\theta})</script><p>该公式的含义为：对于当前点 $\boldsymbol{\theta_k}$，要从这个点走向关于 $\boldsymbol{\theta}$ 的函数 $J(\boldsymbol{\theta})$ 的最小值点，前进的方向是函数 $J(\boldsymbol{\theta})$ 的梯度的反方向，行走一段距离的步长为 $\alpha$，到达的点即为 $\boldsymbol{\theta_k}$</p>
 <p>步长 $\alpha$ 在机器学习中又被称为<strong>学习率（Learning Rate）</strong>，意味着可以通过控制 $\alpha$ 来控制每一步走的距离</p>
 <p>$\alpha$ 的设置不能太小，太小会导致收敛慢，也不能设置太大，太大会导致错过最优解，通常来说，需要从小到大，分别测试，来选出一个最优解</p>
 <p>当我们到达最优点或局部最优点时，其梯度为 $0$，此时无论步长 $\alpha$ 为多大，都不会再进行更新</p>
@@ -312,23 +314,33 @@ for & \quad i=1,...,n: \notag \\
 \end{align}</script><p>SGD 从概率意义上来说，单个样本的梯度是对整个数据集合梯度的无偏估计，但是由于存在着一定的不确定性，即下降路径容易受到训练数据自身噪音的影响，因此在每次迭代更新时并不一定是向最优方向进行的</p>
 <p>同时，学习率 $\alpha$ 不能设置过大，不然容易在最优解附近出现震荡，始终无法解决最优解，但从另一个角度来看，这种在最优解附近出现震荡的路径，在损失的优化路线在损失函数局部极小值较多时，能够有效避免模型陷入局部最优解</p>
 <p>虽然 SGD 不是每次迭代得到的损失函数都向着全局最优方向，但是整体方向是向全局最优解前进的，最终的结果往往是在全局最优解附近，这种方法相比于 BGD 来说，收敛的更快，虽然不是全局最优，但很多时候是可以接受的</p>
-<h2 id="批量梯度下降法-BGD"><a href="#批量梯度下降法-BGD" class="headerlink" title="批量梯度下降法 BGD"></a>批量梯度下降法 BGD</h2><p><strong>批量梯度下降（Batch Gradient Descent，BGD）</strong>认为，对于 $\boldsymbol{\theta}$ 的更新，数据集中的所有样本的损失函数都有贡献，因此，BGD 是计算数据集中所有样本的损失函数的总和后再进行更新</p>
+<h2 id="批量梯度下降法-BGD"><a href="#批量梯度下降法-BGD" class="headerlink" title="批量梯度下降法 BGD"></a>批量梯度下降法 BGD</h2><p><strong>批量梯度下降（Batch Gradient Descent，BGD）</strong>认为，对于 $\boldsymbol{\theta}$ 的更新，训练集中的所有样本的损失函数都有贡献，因此，BGD 是计算训练集中所有样本的损失函数的总和后再进行更新，即每一步梯度下降都需要对整个训练集进行处理</p>
 <p>其一般形式为：</p>
 <script type="math/tex; mode=display">
 \begin{align}
 &Repeat\:until\:convergence: \notag \\
 &\quad \boldsymbol{\theta_{k+1}} = \boldsymbol{\theta_k} - \alpha \frac{1}{n} \Big[\sum_{i=1}^n \big(f(\mathbf{x_i};\boldsymbol{\theta})-y_i\big) \Big] \cdot x_i^{(j)},j = 0,1,...,m \notag
-\end{align}</script><p>BGD 每迭代更新一次参数，都要使用到数据集中的所有样本，其下降方向是最优方向，学习率 $\alpha$ 可以设置的比 SGD 大，但计算量大、速度慢，且不支持在线学习</p>
+\end{align}</script><p>BGD 每迭代更新一次参数，都要使用到数据集中的所有样本，其下降方向是最优方向，学习率 $\alpha$ 可以设置的比 SGD 大，但当训练集很大时，由于计算量大，处理速度会比较慢，且不支持在线学习</p>
+<p>一般来说，当训练样本数量 $n\leq 2000$ 时，常选用该方法进行优化</p>
 <h2 id="小批量梯度下降法-MBGD"><a href="#小批量梯度下降法-MBGD" class="headerlink" title="小批量梯度下降法 MBGD"></a>小批量梯度下降法 MBGD</h2><p><strong>小批量梯度下降（Mini-Batch Gradient Descent，MBGD）</strong>是为克服 SGD、BGD 两种方法的缺点而出现的，其采用了一种折中手段</p>
-<p>MBGD 将数据分为若干批次，按批次更新参数，每一批次中的一组数据共同决定了本次梯度的方向，这样下降起来就不容易跑偏，减少了随机性，同时因为每一批的样本数相较整个数据集来说少了很多，计算量也不是很大，在数据量较大的项目中，可以明显地减少梯度计算的时间</p>
+<p>MBGD 将数据分为若干批次，按批次更新参数，每一批次中的一组数据共同决定了本次梯度的方向，即每次对训练集进行训练时，只处理 $b$ 个样本</p>
+<p>这样下降起来就不容易跑偏，减少了随机性，同时因为每一批的样本数相较整个数据集来说少了很多，计算量也不是很大，在数据量较大的项目中，可以明显地减少梯度计算的时间</p>
 <p>其一般形式为：</p>
 <script type="math/tex; mode=display">
 \begin{align}
 for & \quad i=1,...,n: \notag \\
 &Repeat\:until\:convergence: \notag \\
-&\quad \boldsymbol{\theta_{k+1}} = \boldsymbol{\theta_k} - \alpha \frac{1}{b} \Big[\sum_{k=i}^{i+b-1} \big(f(\mathbf{x_k};\boldsymbol{\theta})-y_k\big) \Big] \cdot x_k^{(j)},,j = 0,1,...,m \notag \\
+&\quad \boldsymbol{\theta_{k+1}} = \boldsymbol{\theta_k} - \alpha \frac{1}{b} \Big[\sum_{k=i}^{i+b-1} \big(f(\mathbf{x_k};\boldsymbol{\theta})-y_k\big) \Big] \cdot x_k^{(j)},j = 0,1,...,m \notag \\
 &\quad i=i+b \notag
-\end{align}</script><p>其中，$b$ 为<strong>批大小（Batch Size）</strong>，即选取的样本数量，一般根据数据集的数据量的实际情况进行选取</p>
+\end{align}</script><p>其中，$b$ 为<strong>批大小（Batch Size）</strong>，即选取的样本数量，与计算机的信息存储方式相适应，代码在 $b=2^x$ 时运行速度较快，因此典型的大小为 $2^5,2^6,2^7,2^8,2^9$</p>
+<p>一般来说，当训练样本数量 $n\geq 2000$ 时，常选用该方法进行优化</p>
+<h1 id="【各梯度下降法的对比】"><a href="#【各梯度下降法的对比】" class="headerlink" title="【各梯度下降法的对比】"></a>【各梯度下降法的对比】</h1><p>对于 MBGD 来说，当处理的批次大小 $b=1$ 时，即为 SGD</p>
+<p>SGD 每轮对<strong>一个训练样本</strong>执行一次梯度下降，每一轮训练速度快，但<strong>丢失了向量化带来的计算加速</strong>，同时其噪声较高，需要适当的减少学习率，代价函数总体趋势向全局最小值靠近，但永远不会收敛，不断的在最小值附近波动</p>
+<p>BGD 每轮对<strong>所有训练样本</strong>执行一次梯度下降，每一轮训练速度慢，但相对来说噪声较低，代价函数总是向减小的方向下降</p>
+<p>MBGD 每轮对<strong>固定大小的训练样本</strong>执行一次梯度下降，每一轮训练速度适中，代价函数总体趋势向全局最小值靠近</p>
+<p><img src="/images/mathematics/numerical-analysis/01-3.png" width="500/"></p>
+<p>BGD 和 MBGD 的代价函数变化趋势如下图：</p>
+<p><img src="/images/mathematics/numerical-analysis/01-4.png" witdh="300/"></p>
 
     </div>
 
@@ -452,7 +464,7 @@ for & \quad i=1,...,n: \notag \\
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【概述】"><span class="nav-number">1.</span> <span class="nav-text">【概述】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【梯度】"><span class="nav-number">2.</span> <span class="nav-text">【梯度】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【梯度下降法的一般形式】"><span class="nav-number">3.</span> <span class="nav-text">【梯度下降法的一般形式】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【常见的梯度下降法】"><span class="nav-number">4.</span> <span class="nav-text">【常见的梯度下降法】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#随机梯度下降法-SGD"><span class="nav-number">4.1.</span> <span class="nav-text">随机梯度下降法 SGD</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#批量梯度下降法-BGD"><span class="nav-number">4.2.</span> <span class="nav-text">批量梯度下降法 BGD</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#小批量梯度下降法-MBGD"><span class="nav-number">4.3.</span> <span class="nav-text">小批量梯度下降法 MBGD</span></a></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【概述】"><span class="nav-number">1.</span> <span class="nav-text">【概述】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【梯度】"><span class="nav-number">2.</span> <span class="nav-text">【梯度】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【梯度下降法的一般形式】"><span class="nav-number">3.</span> <span class="nav-text">【梯度下降法的一般形式】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【常见的梯度下降法】"><span class="nav-number">4.</span> <span class="nav-text">【常见的梯度下降法】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#随机梯度下降法-SGD"><span class="nav-number">4.1.</span> <span class="nav-text">随机梯度下降法 SGD</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#批量梯度下降法-BGD"><span class="nav-number">4.2.</span> <span class="nav-text">批量梯度下降法 BGD</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#小批量梯度下降法-MBGD"><span class="nav-number">4.3.</span> <span class="nav-text">小批量梯度下降法 MBGD</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【各梯度下降法的对比】"><span class="nav-number">5.</span> <span class="nav-text">【各梯度下降法的对比】</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -468,7 +480,7 @@ for & \quad i=1,...,n: \notag \\
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">609</span>
+          <span class="site-state-item-count">628</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>

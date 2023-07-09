@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.9.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/img/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/assets/img/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/pace-js@1/themes/blue/pace-theme-minimal.css">
+  <script src="//cdn.jsdelivr.net/npm/pace-js@1/pace.min.js"></script>
+
+
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"alex-mcavoy.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":16,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":true,"color":"#ff0000","save":"manual"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":true},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.json"};
+  </script>
+
+  <meta name="description" content="【指数加权平均】指数加权平均（Exponentially Weight Average）是一种常用的序列数据处理方式，通常用于序列分析，例如金融序列分析、温度变化序列分析等 其过程如下：">
+<meta name="keywords" content="数学,数值分析">
+<meta property="og:type" content="article">
+<meta property="og:title" content="梯度下降法的优化算法">
+<meta property="og:url" content="https://alex-mcavoy.github.io/mathematics/numerical-analysis/3c75a2e1.html">
+<meta property="og:site_name" content="Alex_McAvoy">
+<meta property="og:description" content="【指数加权平均】指数加权平均（Exponentially Weight Average）是一种常用的序列数据处理方式，通常用于序列分析，例如金融序列分析、温度变化序列分析等 其过程如下：">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/mathematics/numerical-analysis/10-1.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/mathematics/numerical-analysis/10-2.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/mathematics/numerical-analysis/10-3.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/mathematics/numerical-analysis/10-3.png">
+<meta property="og:updated_time" content="2023-06-21T15:27:06.075Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="梯度下降法的优化算法">
+<meta name="twitter:description" content="【指数加权平均】指数加权平均（Exponentially Weight Average）是一种常用的序列数据处理方式，通常用于序列分析，例如金融序列分析、温度变化序列分析等 其过程如下：">
+<meta name="twitter:image" content="https://alex-mcavoy.github.io/images/mathematics/numerical-analysis/10-1.png">
+
+<link rel="canonical" href="https://alex-mcavoy.github.io/mathematics/numerical-analysis/3c75a2e1.html">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>梯度下降法的优化算法 | Alex_McAvoy</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Alex_McAvoy</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">想要成为渔夫的猎手</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+
+	
+	
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/mathematics/numerical-analysis/3c75a2e1.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/assets/img/head.jpg">
+      <meta itemprop="name" content="Alex_McAvoy">
+      <meta itemprop="description" content="想要成为渔夫的猎手">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Alex_McAvoy">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          梯度下降法的优化算法
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2023-06-19 21:01:00" itemprop="dateCreated datePublished" datetime="2023-06-19T21:01:00+08:00">2023-06-19</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/mathematics/" itemprop="url" rel="index"><span itemprop="name">数学</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/mathematics/numerical-analysis/" itemprop="url" rel="index"><span itemprop="name">数值分析</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>4.3k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>4 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="【指数加权平均】"><a href="#【指数加权平均】" class="headerlink" title="【指数加权平均】"></a>【指数加权平均】</h1><p><strong>指数加权平均（Exponentially Weight Average）</strong>是一种常用的序列数据处理方式，通常用于序列分析，例如金融序列分析、温度变化序列分析等</p>
+<p>其过程如下：</p>
+<script type="math/tex; mode=display">
+S_t=\left\{ \begin{array}{cc}
+Y_1, & t=1 \\
+\beta S_{t-1}+(1-\beta) Y_t,& t>1
+\end{array}
+\right.</script><p>其中，$Y_t$ 为 $t$ 下的实际值，$S_t$ 为 $t$ 下加权平均后的值，$\beta$ 为偏差修正值</p>
+<p>假设给定一个序列，例如某地一百天每天的气温值，图中蓝色的点代表真实数据</p>
+<p><img width="600" src="/images/mathematics/numerical-analysis/10-1.png"></p>
+<p>这样的气温值的变化可以理解为优化的过程波动较大、异常较多，使用指数加权平均可以使波动变得平缓一些</p>
+<p><img width="600" src="/images/mathematics/numerical-analysis/10-2.png"></p>
+<p>假设 $\beta=0.9$，那么对于这一百天的温度 $Y_i$，有：</p>
+<script type="math/tex; mode=display">
+\begin{gather*}
+S_1 = Y_1 \\
+S_2 = 0.9S_1 + 0.1Y_2 \\
+S_3 = 0.9S_2 + 0.1Y_3 \\
+\vdots \\
+S_{100} = 0.9S_{99} + 0.1Y_{100}
+\end{gather*}</script><p>那么对于第 $100$ 天的结果，合并后有：</p>
+<script type="math/tex; mode=display">
+S_{100} = 0.1 Y_{100} + 0.1 * 0.9 Y_{9} + 0.1 *(0.9)^2Y_{98}+\cdots+0.1*(0.9)^{99} Y_1</script><p>相当于第 $100$ 天的结果占较大比重，之前的 $99$ 天对结果的影响逐步降低</p>
+<p>$\beta$ 被称为<strong>偏差修正（Bias Correction）</strong>，其越大相当于求取平均利用的实际值越多，曲线就会越平滑且越滞后</p>
+<p>如下图所示，当取 $\beta=0.98$ 时，得到图中更为平滑的绿色曲线，当取 $\beta=0.5$ 时，得到图中噪点更多的黄色曲线</p>
+<p><img width="600" src="/images/mathematics/numerical-analysis/10-3.png"></p>
+<p>上述点的数据，可以理解成梯度下降的过程，通过指数加权平均，可以在每一次迭代中优化计算出的梯度值</p>
+<h1 id="【动量梯度下降】"><a href="#【动量梯度下降】" class="headerlink" title="【动量梯度下降】"></a>【动量梯度下降】</h1><p><strong>动量梯度下降（Gradient Descent with Momentum）</strong>是计算梯度的<strong>指数加权平均数</strong>，并利用该值来更新参数值</p>
+<p>对于梯度下降法，其一般形式为：</p>
+<script type="math/tex; mode=display">
+\boldsymbol{\theta}_{k+1} = \boldsymbol{\theta}_{k} -\alpha \triangledown_k J(\boldsymbol{\theta})</script><p>可以看到，每次更新仅与当前梯度 $ \triangledown_k J(\boldsymbol{\theta})$ 相关，不涉及之前的梯度，那么对于 $n$ 次梯度下降中求得的梯度序列：</p>
+<script type="math/tex; mode=display">
+\{ 
+ \triangledown_1 J(\boldsymbol{\theta}), 
+ \triangledown_2 J(\boldsymbol{\theta}),
+\cdots,
+ \triangledown_n J(\boldsymbol{\theta})
+\}</script><p>其对应的动量梯度为：</p>
+<script type="math/tex; mode=display">
+\begin{gather*}
+S_0 = 0 \\
+S_1 = \beta S_0 + (1-\beta)  \triangledown_1 J(\boldsymbol{\theta}) \\
+S_2 = \beta S_1 + (1-\beta)  \triangledown_2 J(\boldsymbol{\theta}) \\
+\vdots \\
+S_n = \beta S_{n-1} + (1-\beta)  \triangledown_n J(\boldsymbol{\theta}) \\
+\end{gather*}</script><p>那么，动量梯度下降法的更新过程为：</p>
+<script type="math/tex; mode=display">
+\boldsymbol{\theta}_{k+1} = \boldsymbol{\theta}_{k} -\alpha S_k</script><p>当前后梯度方向一致时，动量梯度下降能够加速学习，而前后梯度方向不一致时，动量梯度下降能够抑制震荡</p>
+<p>可以将动量梯度下降形象的理解为：将小球从一定高度扔下，其在下落时由于加速度的存在会越来越快，但由于 $\beta$ 的存在，使其不会一直加速运行，而是限定在一个范围内</p>
+<p>如下图所示，蓝色的箭头代表使用随机梯度下降的过程，红色或者紫色的箭头代表使用动量梯度下降的过程，其通过累加过去的梯度值来减少抵达最小值路径上的摆动</p>
+<p><img width="600" src="/images/mathematics/numerical-analysis/10-3.png"></p>
+<h1 id="【RMSProp-算法】"><a href="#【RMSProp-算法】" class="headerlink" title="【RMSProp 算法】"></a>【RMSProp 算法】</h1><p><strong>RMSProp（Root Mean Square Prop）</strong>算法是在对动量梯度下降法的基础上，引入平方和平方根</p>
+<p>对于梯度下降法，其一般形式为：</p>
+<script type="math/tex; mode=display">
+\boldsymbol{\theta}_{k+1} = \boldsymbol{\theta}_{k} -\alpha \triangledown_k J(\boldsymbol{\theta})</script><p>对于 $n$ 次梯度下降中求得的梯度序列：</p>
+<script type="math/tex; mode=display">
+\{ 
+ \triangledown_1 J(\boldsymbol{\theta}), 
+ \triangledown_2 J(\boldsymbol{\theta}),
+\cdots,
+ \triangledown_n J(\boldsymbol{\theta})
+\}</script><p>其对应的动量梯度引入平方和后，有：</p>
+<script type="math/tex; mode=display">
+\begin{gather*}
+V_0 = 0 \\
+V_1 = \beta V_0 + (1-\beta)  (\triangledown_1 J(\boldsymbol{\theta}))^2 \\
+V_2 = \beta V_1 + (1-\beta)  (\triangledown_2 J(\boldsymbol{\theta}))^2 \\
+\vdots \\
+V_n = \beta V_{n-1} + (1-\beta)  (\triangledown_n J(\boldsymbol{\theta}))^2 \\
+\end{gather*}</script><p>进一步，在动量梯度下降法的更新过程的基础上引入平方根，此时梯度更新方程为：</p>
+<script type="math/tex; mode=display">
+\boldsymbol{\theta}_{k+1} = \boldsymbol{\theta}_{k} -\alpha \frac{\triangledown_k J(\boldsymbol{\theta})}{\sqrt{V+\varepsilon}}</script><p>其中，$\varepsilon$ 是一极小的数，防止分母太小导致不稳定</p>
+<p>RMSProp 算法之所以引入平方和平方根，是考虑到 $\triangledown_k J(\boldsymbol{\theta})$ 较大时造成的下降摆动，在引入平方和后，当 $\triangledown_k J(\boldsymbol{\theta})$ 较大时，$(\triangledown_k J(\boldsymbol{\theta}))^2$ 更大，使得 $V_k$ 较小，进而使得 $\frac{\triangledown_k J(\boldsymbol{\theta})}{\sqrt{V_k+\varepsilon}}$ 变得非常小，使得每次梯度更新缓慢下降，进一步减少抵达最小值路径上的摆动，同时，其允许使用一个较大的学习率 $\alpha$ 来加快学习速度</p>
+<h1 id="【Adam-算法】"><a href="#【Adam-算法】" class="headerlink" title="【Adam 算法】"></a>【Adam 算法】</h1><p>动量梯度下降法将下降梯度限定在一个较大的范围内，虽然能够减少抵达最小值路径上的摆动，但可能由于限制过小使得最终结果在收敛值附近摆动</p>
+<p>而 RMSProp 算法在动量梯度下降法的基础上引入平方和，使得每次梯度更新缓慢下降，进一步减少抵达最小值路径上的摆动，但这可能造成更新梯度过小，使得收敛速度变慢</p>
+<p><strong>自适应矩估计（Adaptive Moment Estimation，Adam）</strong>算法是动量梯度下降法和 RMSProp 算法的结合，其不仅有效解决了抵达最小路径上的摆动，而且还提高了更新梯度，有效提高了收敛速度</p>
+<p>对于梯度下降法，其一般形式为：</p>
+<script type="math/tex; mode=display">
+\boldsymbol{\theta}_{k+1} = \boldsymbol{\theta}_{k} -\alpha \triangledown_k J(\boldsymbol{\theta})</script><p>对于 $n$ 次梯度下降中求得的梯度序列：</p>
+<script type="math/tex; mode=display">
+\{ 
+ \triangledown_1 J(\boldsymbol{\theta}), 
+ \triangledown_2 J(\boldsymbol{\theta}),
+\cdots,
+ \triangledown_n J(\boldsymbol{\theta})
+\}</script><p>先计算对应的动量梯度：</p>
+<script type="math/tex; mode=display">
+\begin{gather*}
+S_0 = 0 \\
+S_1 = \beta_1 S_0 + (1-\beta_1)  \triangledown_1 J(\boldsymbol{\theta}) \\
+S_2 = \beta_1 S_1 + (1-\beta_1)  \triangledown_2 J(\boldsymbol{\theta}) \\
+\vdots \\
+S_n = \beta_1 S_{n-1} + (1-\beta_1)  \triangledown_n J(\boldsymbol{\theta}) \\
+\end{gather*}</script><p>然后计算引入平方和后的动量梯度：</p>
+<script type="math/tex; mode=display">
+\begin{gather*}
+V_0 = 0 \\
+V_1 = \beta_2 V_0 + (1-\beta_2)  (\triangledown_1 J(\boldsymbol{\theta}))^2 \\
+V_2 = \beta_2 V_1 + (1-\beta_2)  (\triangledown_2 J(\boldsymbol{\theta}))^2 \\
+\vdots \\
+V_n = \beta_2 V_{n-1} + (1-\beta_2)  (\triangledown_n J(\boldsymbol{\theta}))^2 \\
+\end{gather*}</script><p>进一步，在两种动量梯度的基础上，求<strong>偏差较正项( Bias-correction Term)</strong>，其通过滑动平均值的思想来增大动量梯度，从而完成对动量梯度的修正，即有：</p>
+<script type="math/tex; mode=display">
+\begin{gather*}
+S^{\text{corrected}}_k = \frac{S_k}{1-(\beta_1)^k} \\
+V^{\text{corrected}}_k = \frac{V_k}{1-(\beta_2)^k} \\
+\end{gather*}</script><p>于是，最终的梯度更新方程为：</p>
+<script type="math/tex; mode=display">
+\boldsymbol{\theta}_{k+1} = \boldsymbol{\theta}_{k} -\alpha \frac{S_k^{\text{corrected}}}{\sqrt{V_k^{\text{corrected}}}+\varepsilon}</script><p>需要注意的是，除了 $\alpha$ 为超参外，Adam 算法中涉及到两个偏差修正值 $\beta_1$ 和 $\beta_2$，以及一个保证分母不会太小而导致不稳定极小数 $\varepsilon$，对于这三个超参，Adam 算法的作者建议取 $\beta_1=0.9,\beta_2=0.999,\varepsilon=10^{-8}$</p>
+
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>感谢您对我的支持，让我继续努力分享有用的技术与知识点！</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/wechatpay.jpg" alt="Alex_McAvoy 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/alipay.jpg" alt="Alex_McAvoy 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Alex_McAvoy
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://alex-mcavoy.github.io/mathematics/numerical-analysis/3c75a2e1.html" title="梯度下降法的优化算法">https://alex-mcavoy.github.io/mathematics/numerical-analysis/3c75a2e1.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/mathematics/" rel="tag"># 数学</a>
+              <a href="/tags/numerical-analysis/" rel="tag"># 数值分析</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/artificial-intelligence/deep-learning/7685c479.html" rel="prev" title="局部最优问题与鞍点问题">
+      <i class="fa fa-chevron-left"></i> 局部最优问题与鞍点问题
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/artificial-intelligence/deep-learning/716ef21e.html" rel="next" title="深度学习的过拟合与欠拟合问题">
+      深度学习的过拟合与欠拟合问题 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【指数加权平均】"><span class="nav-number">1.</span> <span class="nav-text">【指数加权平均】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【动量梯度下降】"><span class="nav-number">2.</span> <span class="nav-text">【动量梯度下降】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【RMSProp-算法】"><span class="nav-number">3.</span> <span class="nav-text">【RMSProp 算法】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【Adam-算法】"><span class="nav-number">4.</span> <span class="nav-text">【Adam 算法】</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">  
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Alex_McAvoy"
+      src="/assets/img/head.jpg">
+  <p class="site-author-name" itemprop="name">Alex_McAvoy</p>
+  <div class="site-description" itemprop="description">想要成为渔夫的猎手</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">628</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">62</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">67</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Alex-McAvoy" title="GitHub → https://github.com/Alex-McAvoy" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/u011815404" title="CSDN → https://blog.csdn.net/u011815404" rel="noopener" target="_blank"><i class="fas fa-copyright fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+<!-- 访客地图 -->
+<script type="text/javascript" src="//rf.revolvermaps.com/0/0/5.js?i=50n58yo58ow&amp;m=0&amp;c=ff0000&amp;cr1=ffffff&amp;s=140" async="async"></script>
+
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdz20172133" title="https://blog.csdn.net/sdz20172133" rel="noopener" target="_blank">神仙队友</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://pxlsdz.gitee.io/" title="https://pxlsdz.gitee.io/" rel="noopener" target="_blank">神仙队友blog2</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdau_fangshifeng" title="https://blog.csdn.net/sdau_fangshifeng" rel="noopener" target="_blank">酷头</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://bycore.net" title="https://bycore.net" rel="noopener" target="_blank">凉了的某饼同学</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://kris-cn.github.io/" title="http://kris-cn.github.io/" rel="noopener" target="_blank">翟孙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://deng.fun/" title="http://deng.fun/" rel="noopener" target="_blank">芙蓉姐姐</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/wentong_Xu" title="https://blog.csdn.net/wentong_Xu" rel="noopener" target="_blank">小黑贱胖子</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.yuheng.tech/" title="https://www.yuheng.tech/" rel="noopener" target="_blank">咸于</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/lanshan1111" title="https://blog.csdn.net/lanshan1111" rel="noopener" target="_blank">肥硕硕</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdauguanweihong" title="https://blog.csdn.net/sdauguanweihong" rel="noopener" target="_blank">管少</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_41661919" title="https://blog.csdn.net/qq_41661919" rel="noopener" target="_blank">俊杰</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_40859951" title="https://blog.csdn.net/qq_40859951" rel="noopener" target="_blank">峰哥</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/LSD20164388" title="https://blog.csdn.net/LSD20164388" rel="noopener" target="_blank">狗冬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37868325" title="https://blog.csdn.net/qq_37868325" rel="noopener" target="_blank">妍大佬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://sanshuiii.github.io/" title="https://sanshuiii.github.io/" rel="noopener" target="_blank">sanshuiii</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://zjpzhao.github.io/" title="https://zjpzhao.github.io/" rel="noopener" target="_blank">brain</a>
+        </li>
+    </ul>
+  </div>
+
+		
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+  
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Alex_McAvoy</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+</br>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script><script src="/js/bookmark.js"></script>
+
+
+
+  
+
+
+
+
+  <script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '48fd73a538d3fa927f65',
+      clientSecret: '56618aefeee90bac3c20de8d51bb0b985d67252d',
+      repo        : 'Gitalk-Comment',
+      owner       : 'Alex-McAvoy',
+      admin       : ['Alex-McAvoy'],
+      id          : '3747199b695d28297b51afdce0d4f05d',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+  
+  <!-- 鼠标单击粒子特效 -->
+  <script type="text/javascript" src="/js/cursor-effects.js"></script>
+  <!-- 多级目录 -->
+  <script type="text/javascript" src="/js/category.js"></script>
+  
+</body>
+</html>
