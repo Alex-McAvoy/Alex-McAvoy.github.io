@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.9.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/img/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/assets/img/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/pace-js@1/themes/blue/pace-theme-minimal.css">
+  <script src="//cdn.jsdelivr.net/npm/pace-js@1/pace.min.js"></script>
+
+
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"alex-mcavoy.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":16,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":true,"color":"#ff0000","save":"manual"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":true},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.json"};
+  </script>
+
+  <meta name="description" content="【概述】统计推断的两大基本问题，一类是估计问题，另一类即假设检验问题 在总体的分布函数完全未知或只知其形式，但不知其参数的情况下，为推断总体的某些未知特性，提出某些关于总体的假设，例如提出总体服从泊松分布的假设，又如正态总体提出数学期望等于 $\mu_0$ 的假设等">
+<meta name="keywords" content="数学,数理统计">
+<meta property="og:type" content="article">
+<meta property="og:title" content="假设检验">
+<meta property="og:url" content="https://alex-mcavoy.github.io/mathematics/mathematical-statistics/5b2073a5.html">
+<meta property="og:site_name" content="Alex_McAvoy">
+<meta property="og:description" content="【概述】统计推断的两大基本问题，一类是估计问题，另一类即假设检验问题 在总体的分布函数完全未知或只知其形式，但不知其参数的情况下，为推断总体的某些未知特性，提出某些关于总体的假设，例如提出总体服从泊松分布的假设，又如正态总体提出数学期望等于 $\mu_0$ 的假设等">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2023-08-28T14:06:03.492Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="假设检验">
+<meta name="twitter:description" content="【概述】统计推断的两大基本问题，一类是估计问题，另一类即假设检验问题 在总体的分布函数完全未知或只知其形式，但不知其参数的情况下，为推断总体的某些未知特性，提出某些关于总体的假设，例如提出总体服从泊松分布的假设，又如正态总体提出数学期望等于 $\mu_0$ 的假设等">
+
+<link rel="canonical" href="https://alex-mcavoy.github.io/mathematics/mathematical-statistics/5b2073a5.html">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>假设检验 | Alex_McAvoy</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Alex_McAvoy</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">想要成为渔夫的猎手</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+
+	
+	
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/mathematics/mathematical-statistics/5b2073a5.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/assets/img/head.jpg">
+      <meta itemprop="name" content="Alex_McAvoy">
+      <meta itemprop="description" content="想要成为渔夫的猎手">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Alex_McAvoy">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          假设检验
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2023-08-28 19:57:00" itemprop="dateCreated datePublished" datetime="2023-08-28T19:57:00+08:00">2023-08-28</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/mathematics/" itemprop="url" rel="index"><span itemprop="name">数学</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/mathematics/mathematical-statistics/" itemprop="url" rel="index"><span itemprop="name">数理统计</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>3.2k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>3 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="【概述】"><a href="#【概述】" class="headerlink" title="【概述】"></a>【概述】</h1><p>统计推断的两大基本问题，一类是估计问题，另一类即假设检验问题</p>
+<p>在总体的分布函数完全未知或只知其形式，但不知其参数的情况下，为推断总体的某些未知特性，提出某些关于总体的假设，例如提出总体服从泊松分布的假设，又如正态总体提出数学期望等于 $\mu_0$ 的假设等</p>
+<p>需要的根据样本对所提出的假设作出接受还是拒绝的决策，作出决策的这一过程，即<strong>假设检验</strong></p>
+<p>简单来说，假设检验就是先对总体参数提出一个假设值，然后利用样本信息来判断这一假设是否成立</p>
+<p>处理参数的假设检验问题步骤如下：</p>
+<ol>
+<li>根据实际问题，提出原假设 $H_0$ 与备择假设 $H_1$</li>
+<li>给定显著性水平 $\alpha$ 与样本容量 $n$</li>
+<li>确定检验统计量与拒绝域形式</li>
+<li>按 $P\{当 H_0 为真拒绝 H_0\}\leq \alpha$ 求出拒绝域</li>
+<li>取样，根据样本观察值作出决策，是接受 $H_0$ 还是拒绝 $H_0$</li>
+</ol>
+<h1 id="【原假设与备择假设】"><a href="#【原假设与备择假设】" class="headerlink" title="【原假设与备择假设】"></a>【原假设与备择假设】</h1><p>在假设检验时，通常会设置两个互斥的假设：</p>
+<ul>
+<li><strong>原假设</strong> $H_0$：一般是想要拒绝的假设，其设置一般为 $=,\geq,\leq$</li>
+<li><strong>备择假设</strong> $H_1$：一般是想要接受的假设，其设置一般为 $\neq,&gt;,&lt;$</li>
+</ul>
+<hr>
+<p>例如：某车间用一台包装机包装葡萄糖，袋装糖的净重是一个随机变量，其服从正态分布，当机器正常时，其均值为 $0.5kg$，标准差为 $0.015kg$，某日开工后为检验包装机是否正常，随机地抽取它所包装的糖 $9$ 袋，称得净重为（kg）</p>
+<script type="math/tex; mode=display">
+\begin{array}{}
+0.497 & 0.506 & 0.518 & 0.524 & 0.498 & 0.511 & 0.520 & 0.515 & 0.512
+\end{array}</script><p>问该机器是否正常？</p>
+<p>以 $\mu,\sigma$ 分别表示这一天袋装糖的净重总体 $X$ 的均值和标准差，由于长期实践表明标准差比较稳定，故设 $\sigma=0.015$，那么就有 $X\sim N(\mu,0.015)$，此时 $\mu$ 未知</p>
+<p>问题是根据样本值来判断 $\mu=0.5$ 还是 $\mu\neq0.5$，为此提出两个相互对立的假设：</p>
+<script type="math/tex; mode=display">
+H_0:\mu=\mu_0=0.5 \quad 
+H_1:\mu=\mu_0</script><p>然后，给出一个合理的法则，根据这一法则，利用已知样本作出决策是接受 $H_0$（拒绝 $H_1$），还是拒绝 $H_0$（接受 $H_1$）</p>
+<p>如果作出的决策是接受 $H_0$，就认为 $\mu=\mu_0=0.5$，即认为机器工作是正常的，否则认为机器工作是不正常的</p>
+<h1 id="【两类错误与显著性检验】"><a href="#【两类错误与显著性检验】" class="headerlink" title="【两类错误与显著性检验】"></a>【两类错误与显著性检验】</h1><p>通过样本数据来判断总体参数的假设是否成立，但样本是随机的，因而有可能出现小概率的错误，这种错误分两种：</p>
+<ul>
+<li><strong>弃真错误</strong>（第 Ⅰ 类错误、$\alpha$ 错误）：原假设实际上是真的，但通过样本估计总体后，拒绝了原假设</li>
+<li><strong>取伪错误</strong>（第 Ⅱ 类错误、$\beta$ 错误）：原假设实际上是假的，但通过样本估计总体后，接受了原假设</li>
+</ul>
+<p>对于弃真错误来说，将这中错误的概率记为 $P\{当 H_0 为真拒绝 \}$，由于无法排除犯这种错误的可能性，因此自然希望将犯这类错误的概率控制在一定限度之内，即给出一个较小的数 $\alpha,0&lt;\alpha&lt;1$，使犯这类错误的概率不超过 $\alpha$，即：</p>
+<script type="math/tex; mode=display">
+P\{当 H_0 为真拒绝 \}\leq \alpha</script><p>这个 $\alpha$ 被称为<strong>显著性水平</strong>，在假设检验之前通常会规定这个值的大小</p>
+<p>同理，对于取伪错误来说，有：</p>
+<script type="math/tex; mode=display">
+P\{当 H_0 为假接受 \}\leq \beta</script><p>这也是原假设一般都是想要拒绝的假设的原因，因为原假设被拒绝，如果出错的话，只会犯弃真错误，而犯弃真错误的概率已经被规定的显著性水平所控制了，这样对统计者来说更容易控制，将错误影响降到最小</p>
+<p>在确定检验法则时，应尽可能使犯两类错误的概率都较小，但一般来说，当样本容量固定时，若减少犯一类错误的概率，则犯另一类错误的概率往往增大，若要使犯两类错误的概率都减小，除非增加样本容量</p>
+<p>在给定样本容量的情况下，一般来说，总是控制犯第 Ⅰ 类错误的概率，使它不大于 $\alpha$，$\alpha$ 的大小视具体情况而定，通常取 $0.1,0.05,0.01,0.005$ 等值</p>
+<p>这种只对犯第 Ⅰ 类错误的概率加以控制，而不考虑犯第 Ⅱ 类错误的概率的检验，称为<strong>显著性检验</strong></p>
+<hr>
+<p>接上例，在给出原假设 $H_0$ 和备择假设 $H_1$ 后，可以发现要检验的假设涉及总体均值 $\mu$，那么首先能够想到的就是能否借助样本均值 $\overline{X}$ 这一统计量进行判断</p>
+<p>由于 $\overline{X}$ 是 $\mu$ 的无偏估计，$\overline{X}$ 的观察值 $\overline{x}$ 的大小在一定程度上反映了 $\mu$ 的大小，为此若假设 $H_0$ 为真，那么观察值 $\overline{x}$ 与 $\mu_0$ 的偏差 $|\overline{x}-\mu_0|$ 一般不应太大，若 $|\overline{x}-\mu_0|$ 过大，就怀疑 $H_0$ 的正确性而拒绝 $H_0$</p>
+<p>同时，考虑到当 $H_0$ 为真时，有 $\frac{\overline{X}-\mu_0}{\sigma/\sqrt{n}}\sim N(0,1)$，而衡量 $|\overline{x}-\mu_0|$ 的大小可归结为衡量 $\frac{\overline{X}-\mu_0}{\sigma/\sqrt{n}}$ 的大小，为此可设定一个正数 $k$，当观察值 $\overline{x}$ 满足 $\frac{\overline{X}-\mu_0}{\sigma/\sqrt{n}}\geq k$ 时就拒绝 $H_0$，反之就接受 $H_0$</p>
+<p>为确定常数 $k$，给出显著性水平 $\alpha$，那么有：</p>
+<script type="math/tex; mode=display">
+P\{当H_0为真拒绝H_0\} = P_{\mu_0}\Bigg\{\Bigg|\frac{\overline{X}-\mu_0}{\sigma/\sqrt{n}} \Bigg| \geq k \Bigg\} =\alpha</script><p>由于当 $H_0$ 为真时，$Z=\frac{\overline{X}-\mu_0}{\sigma/\sqrt{n}}\sim N(0,1)$，那么由标准正态分布分位点的定义可得：</p>
+<script type="math/tex; mode=display">
+k=z_{\frac{\alpha}{2}}</script><p>因而，若<strong>检验统计量</strong> $Z=\frac{\overline{X}-\mu_0}{\sigma/\sqrt{n}}$ 的观察值满足：</p>
+<script type="math/tex; mode=display">
+|z| = \Bigg| \frac{\overline{x}-\mu_0}{\sigma/\sqrt{n}} \Bigg| \geq k = z_{\frac{\alpha}{2}}</script><p>此时 $\overline{x}$ 与 $\mu_0$ 的差异是显著的，那么拒绝 $H_0$，反之， $\overline{x}$ 与 $\mu_0$ 的差异是不显著，接受 $H_0$</p>
+<p>在本例中，若给出显著性水平 $\alpha=0.05$，那么有 $k=z_{0.05/2}=z_{0.025}=1.96$，又已知 $n=9,\sigma=0.015$，由样本可得 $\overline{x}=0.511$，故有</p>
+<script type="math/tex; mode=display">
+\Bigg| \frac{\overline{x}-\mu_0}{\sigma/\sqrt{n}} \Bigg| =2.2 > 1.96</script><p>于是拒绝 $H_0$，认为这天包装机工作不正常</p>
+<h1 id="【拒绝域与临界点】"><a href="#【拒绝域与临界点】" class="headerlink" title="【拒绝域与临界点】"></a>【拒绝域与临界点】</h1><p>当检验统计量取某个区域 $C$ 中的值时，拒绝原假设 $H_0$，则称 $C$ 为<strong>拒绝域</strong>，拒绝域的边界点称为<strong>临界点</strong></p>
+<p>在上例中，拒绝域为：</p>
+<script type="math/tex; mode=display">
+|z| \geq z_{\frac{\alpha}{2}}</script><p>临界点为：</p>
+<script type="math/tex; mode=display">
+z=-z_{\frac{\alpha}{2}} \quad
+z=z_{\frac{\alpha}{2}}</script><h1 id="【双边检验与单边检验】"><a href="#【双边检验与单边检验】" class="headerlink" title="【双边检验与单边检验】"></a>【双边检验与单边检验】</h1><p>形如上例中的备择假设 $H_1:\mu=\mu_0$，表示 $\mu$ 可能大于 $\mu_0$，也可能小于 $\mu_0$，这种假设称为<strong>双边备择假设</strong>，其假设检验被称为<strong>双边假设检验</strong></p>
+<p>而形如</p>
+<script type="math/tex; mode=display">
+H_0:\mu\leq\mu_0 \quad
+H_1:\mu>\mu_0</script><p>的假设检验，称为<strong>右边检验</strong></p>
+<p>类似的，形如</p>
+<script type="math/tex; mode=display">
+H_0:\mu\geq\mu_0 \quad
+H_1:\mu<\mu_0</script><p>的假设检验，称为<strong>左边检验</strong></p>
+<p>右边检验和左边检验，统称为<strong>单边检验</strong></p>
+
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>感谢您对我的支持，让我继续努力分享有用的技术与知识点！</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/wechatpay.jpg" alt="Alex_McAvoy 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/alipay.jpg" alt="Alex_McAvoy 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Alex_McAvoy
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://alex-mcavoy.github.io/mathematics/mathematical-statistics/5b2073a5.html" title="假设检验">https://alex-mcavoy.github.io/mathematics/mathematical-statistics/5b2073a5.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/mathematics/" rel="tag"># 数学</a>
+              <a href="/tags/mathematical-statistics/" rel="tag"># 数理统计</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/mathematics/mathematical-statistics/f2fd2430.html" rel="prev" title="正态总体均值与方差的区间估计">
+      <i class="fa fa-chevron-left"></i> 正态总体均值与方差的区间估计
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/mathematics/mathematical-statistics/6f9d7545.html" rel="next" title="贝叶斯统计">
+      贝叶斯统计 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【概述】"><span class="nav-number">1.</span> <span class="nav-text">【概述】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【原假设与备择假设】"><span class="nav-number">2.</span> <span class="nav-text">【原假设与备择假设】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【两类错误与显著性检验】"><span class="nav-number">3.</span> <span class="nav-text">【两类错误与显著性检验】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【拒绝域与临界点】"><span class="nav-number">4.</span> <span class="nav-text">【拒绝域与临界点】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【双边检验与单边检验】"><span class="nav-number">5.</span> <span class="nav-text">【双边检验与单边检验】</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">  
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Alex_McAvoy"
+      src="/assets/img/head.jpg">
+  <p class="site-author-name" itemprop="name">Alex_McAvoy</p>
+  <div class="site-description" itemprop="description">想要成为渔夫的猎手</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">645</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">63</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">71</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Alex-McAvoy" title="GitHub → https://github.com/Alex-McAvoy" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/u011815404" title="CSDN → https://blog.csdn.net/u011815404" rel="noopener" target="_blank"><i class="fas fa-copyright fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+<!-- 访客地图 -->
+<script type="text/javascript" src="//rf.revolvermaps.com/0/0/5.js?i=50n58yo58ow&amp;m=0&amp;c=ff0000&amp;cr1=ffffff&amp;s=140" async="async"></script>
+
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdz20172133" title="https://blog.csdn.net/sdz20172133" rel="noopener" target="_blank">神仙队友</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://pxlsdz.gitee.io/" title="https://pxlsdz.gitee.io/" rel="noopener" target="_blank">神仙队友blog2</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdau_fangshifeng" title="https://blog.csdn.net/sdau_fangshifeng" rel="noopener" target="_blank">酷头</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://bycore.net" title="https://bycore.net" rel="noopener" target="_blank">凉了的某饼同学</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://kris-cn.github.io/" title="http://kris-cn.github.io/" rel="noopener" target="_blank">翟孙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://deng.fun/" title="http://deng.fun/" rel="noopener" target="_blank">芙蓉姐姐</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/wentong_Xu" title="https://blog.csdn.net/wentong_Xu" rel="noopener" target="_blank">小黑贱胖子</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.yuheng.tech/" title="https://www.yuheng.tech/" rel="noopener" target="_blank">咸于</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/lanshan1111" title="https://blog.csdn.net/lanshan1111" rel="noopener" target="_blank">肥硕硕</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdauguanweihong" title="https://blog.csdn.net/sdauguanweihong" rel="noopener" target="_blank">管少</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_41661919" title="https://blog.csdn.net/qq_41661919" rel="noopener" target="_blank">俊杰</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_40859951" title="https://blog.csdn.net/qq_40859951" rel="noopener" target="_blank">峰哥</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/LSD20164388" title="https://blog.csdn.net/LSD20164388" rel="noopener" target="_blank">狗冬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37868325" title="https://blog.csdn.net/qq_37868325" rel="noopener" target="_blank">妍大佬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://sanshuiii.github.io/" title="https://sanshuiii.github.io/" rel="noopener" target="_blank">sanshuiii</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://zjpzhao.github.io/" title="https://zjpzhao.github.io/" rel="noopener" target="_blank">brain</a>
+        </li>
+    </ul>
+  </div>
+
+		
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+  
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Alex_McAvoy</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+</br>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script><script src="/js/bookmark.js"></script>
+
+
+
+  
+
+
+
+
+  <script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '48fd73a538d3fa927f65',
+      clientSecret: '56618aefeee90bac3c20de8d51bb0b985d67252d',
+      repo        : 'Gitalk-Comment',
+      owner       : 'Alex-McAvoy',
+      admin       : ['Alex-McAvoy'],
+      id          : '110ecec88baa92e5d2fe9350a914bed1',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+  
+  <!-- 鼠标单击粒子特效 -->
+  <script type="text/javascript" src="/js/cursor-effects.js"></script>
+  <!-- 多级目录 -->
+  <script type="text/javascript" src="/js/category.js"></script>
+  
+</body>
+</html>

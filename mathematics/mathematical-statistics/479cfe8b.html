@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.9.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/img/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/assets/img/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/pace-js@1/themes/blue/pace-theme-minimal.css">
+  <script src="//cdn.jsdelivr.net/npm/pace-js@1/pace.min.js"></script>
+
+
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"alex-mcavoy.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":16,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":true,"color":"#ff0000","save":"manual"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":true},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.json"};
+  </script>
+
+  <meta name="description" content="References：  贝叶斯统计 走进贝叶斯统计（二）—— 共轭先验分布 贝叶斯统计（2）——进阶   【共轭先验分布】贝叶斯统计的一个核心特点在于，能够设定一个描绘对目标参数经验判断的先验分布，然后将经验判断加入到后续的推理与预测中">
+<meta name="keywords" content="数学,数理统计">
+<meta property="og:type" content="article">
+<meta property="og:title" content="共轭先验分布">
+<meta property="og:url" content="https://alex-mcavoy.github.io/mathematics/mathematical-statistics/479cfe8b.html">
+<meta property="og:site_name" content="Alex_McAvoy">
+<meta property="og:description" content="References：  贝叶斯统计 走进贝叶斯统计（二）—— 共轭先验分布 贝叶斯统计（2）——进阶   【共轭先验分布】贝叶斯统计的一个核心特点在于，能够设定一个描绘对目标参数经验判断的先验分布，然后将经验判断加入到后续的推理与预测中">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2023-08-29T18:05:32.181Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="共轭先验分布">
+<meta name="twitter:description" content="References：  贝叶斯统计 走进贝叶斯统计（二）—— 共轭先验分布 贝叶斯统计（2）——进阶   【共轭先验分布】贝叶斯统计的一个核心特点在于，能够设定一个描绘对目标参数经验判断的先验分布，然后将经验判断加入到后续的推理与预测中">
+
+<link rel="canonical" href="https://alex-mcavoy.github.io/mathematics/mathematical-statistics/479cfe8b.html">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>共轭先验分布 | Alex_McAvoy</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Alex_McAvoy</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">想要成为渔夫的猎手</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+
+	
+	
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/mathematics/mathematical-statistics/479cfe8b.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/assets/img/head.jpg">
+      <meta itemprop="name" content="Alex_McAvoy">
+      <meta itemprop="description" content="想要成为渔夫的猎手">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Alex_McAvoy">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          共轭先验分布
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2023-08-29 20:53:00" itemprop="dateCreated datePublished" datetime="2023-08-29T20:53:00+08:00">2023-08-29</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/mathematics/" itemprop="url" rel="index"><span itemprop="name">数学</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/mathematics/mathematical-statistics/" itemprop="url" rel="index"><span itemprop="name">数理统计</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>4k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>4 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <blockquote>
+<p>References：</p>
+<ul>
+<li><a href="https://zhuanlan.zhihu.com/p/38553838" target="_blank" rel="noopener">贝叶斯统计</a></li>
+<li><a href="https://zhuanlan.zhihu.com/p/401626004" target="_blank" rel="noopener">走进贝叶斯统计（二）—— 共轭先验分布</a></li>
+<li><a href="https://zhuanlan.zhihu.com/p/437603522" target="_blank" rel="noopener">贝叶斯统计（2）——进阶</a></li>
+</ul>
+</blockquote>
+<h1 id="【共轭先验分布】"><a href="#【共轭先验分布】" class="headerlink" title="【共轭先验分布】"></a>【共轭先验分布】</h1><p>贝叶斯统计的一个核心特点在于，能够设定一个描绘对目标参数经验判断的先验分布，然后将经验判断加入到后续的推理与预测中</p>
+<p>但由于任何的分布都可以作为经验分布，因此在计算过程中，难免会遇到由于复杂的先验分布而导致的计算困难问题，为简化计算量，提出了<strong>共轭分布（Conjugate Distribution）</strong>这一概念，即先验分布和后验分布同属一类的分布</p>
+<p>现假设投掷一枚硬币 $1$ 次，随机变量 $X=0,1$ 分别代表出现正面朝下、朝上的结果，且 $X$ 服从参数为 $\theta$ 的伯努利分布 $X\sim B(1,\theta)$，同时假设目前没有关于 $\theta$ 的任何经验</p>
+<p>在这种情况下，设定一个 $p(\theta)$ 为均匀分布 $p(\theta)=1$ 可能是一个较为合理的选择</p>
+<p>现在，给定一个观察值 $x$，由于给定 $\theta$ 下伯努利分布的似然函数为：</p>
+<script type="math/tex; mode=display">
+p(x|\theta) = \theta^x(1-\theta)^{1-x}</script><p>那么，利用贝叶斯推断中参数更新先验分布的方法，可以得到 $\theta$ 的后验分布：</p>
+<script type="math/tex; mode=display">
+p(\theta|x) = \frac{\theta^x(1-\theta)^{1-x}}{\int_{0}^{1} \theta^x (1-\theta)^{1-x}d\theta}</script><p>根据定义可以发现：$\theta$ 的后验分布属于贝塔分布 $Be(\alpha,\beta)$，如果用来更新分布的数据 $x=1$，那么计算得到的 $\theta$ 的后验分布为 $Be(2,1)$，如果用来更新分布的数据 $x=0$，那么计算得到的 $\theta$ 的后验分布为 $Be(1,2)$，此外 $Be(1,1)=1$，实际上就是均匀分布</p>
+<p>也就是说，参数 $\theta$ 的先验分布 $p(\theta)$ 和后验分布 $p(x|\theta)$ 都属于 $Be(\alpha,\beta)$ 分布</p>
+<p>这样类似的情况在贝叶斯统计中很多，称这样的先验分布和后验分布为共轭分布，称能够更新出共轭后验分布的先验分布为这个似然函数的<strong>共轭先验（Conjugate Prior）</strong></p>
+<p>关于贝塔分布的详细内容，可见：<a href="https://alex-mcavoy.github.io/mathematics/probability-theory/2424b658.html">常见概率分布</a></p>
+<h1 id="【共轭先验分布的选择】"><a href="#【共轭先验分布的选择】" class="headerlink" title="【共轭先验分布的选择】"></a>【共轭先验分布的选择】</h1><p>从上例中可以进一步得出，在给定服从伯努利分布 $B(1,\theta)$ 的数据样本 $X=(x_1,x_2,\cdots,x_n)$ 与某个共轭先验分布 $\theta\sim Be(\alpha,\beta)$ 时，一定可推出后验分布</p>
+<script type="math/tex; mode=display">
+p(\theta|X) = Be(\alpha +\sum_{i=1}^n x_i,\beta+n-\sum_{i=1}^n x_i)</script><p>也就是说，永远可以从贝塔分布更新到贝塔分布</p>
+<p>换句话说，共轭分布使得先验分布和后验分布的形式相同，一方面相同形式的分布能够符合直观，另一方面是可以形成一个<strong>先验链（Priori Chain）</strong>，即现在的后验分布可以作为下一次计算的先验分布，如果形式相同，就可以形成一个链条，便于对后验分布进行更新</p>
+<p>那么关键问题就是，如何选取合适的共轭先验分布？</p>
+<p>一般来说，共轭先验分布应满足以下两点：</p>
+<ol>
+<li>描绘对目标参数的经验判断</li>
+<li>量化对这个经验判断的信心</li>
+</ol>
+<p>举例来说，我们知道投掷一枚硬币正面朝上的概率约为 $0.5$，因此在直觉上会希望先验分布的数学期望 $E(\theta)=0.5$</p>
+<p>在贝塔分布中，有 $EX=\frac{\alpha}{\alpha+\beta}$，那么对数学期望的这个要求，就相当于要求贝塔分布的两个参数满足 $\alpha=\beta$，此时实际上有非常多的选择</p>
+<p>从 $\theta$ 的后验分布</p>
+<script type="math/tex; mode=display">
+p(\theta|X) = Be(\alpha +\sum_{i=1}^n x_i,\beta+n-\sum_{i=1}^n x_i)</script><p>中可以发现，当引入 $n$ 个数据来更新参数 $\theta$ 时，$\alpha+\beta$ 的总和实际上增加了 $n$</p>
+<p>那么可以通过设定先验分布中 $\alpha+\beta$ 的大小来量化对经验判断的信心，例如设定 $\alpha+\beta=1$，即对经验判断的信息“价值一个数据”，此时就可得到合适的共轭先验分布</p>
+<script type="math/tex; mode=display">
+p(\theta) = Be(0.5,0.5)</script><p>在贝叶斯统计中，称这样一个量化经验判断的信心的值为<strong>有效样本量（Effect Sample Size）</strong>，这个值是人为确定的，其也一定程度上决定了需要使用多少数据才能够有效地影响参数的后验分布</p>
+<p>进一步组，在知道使用 $n$ 个数据更新共轭先验分布 $Be(\alpha,\beta)$ 后，可以得到 $\theta$ 的后验数学期望为：</p>
+<script type="math/tex; mode=display">
+E(\theta) = \frac{\alpha+\sum\limits_{i=1}^n x_i}{\alpha+\beta+n}</script><p>更进一步，可将后验数学期望整理为：</p>
+<script type="math/tex; mode=display">
+E(\theta) = \frac{\alpha+\beta}{\alpha+\beta+n}\cdot \frac{\alpha}{\alpha+\beta} + \frac{n}{\alpha+\beta+n}\cdot\frac{1}{n}\sum_{i=1}^n x_i</script><p>可以看到，参数 $\theta$ 的后验数学期望实际上等价于：</p>
+<script type="math/tex; mode=display">
+\frac{\alpha+\beta}{\alpha+\beta+n}\cdot 先验数学期望 + \frac{n}{\alpha+\beta+n}\cdot 样本均值</script><p>也就是说，在该例中，当确定了先验分布，即确定有效样本量后，如果用于更新的数据量 $n&lt;\alpha+\beta$，那么后验数学期望会更多取决于设定的先验分布，反之，后验数学期望会更多地取决于样本数据</p>
+<p>这个现象的现实意义在于：当对经验判断非常有信心时，便需要更多的数据来“撼动”这样的先验判断</p>
+<p>需要注意的是，共轭先验分布有诸多可能，并非仅有贝塔分布为共轭先验分布</p>
+<h1 id="【实例】"><a href="#【实例】" class="headerlink" title="【实例】"></a>【实例】</h1><p>下面给出一个使用共轭先验分布进行贝叶斯推断的例子</p>
+<p>假设有一枚硬币，并且想要推断出扔硬币得到正面的概率 $P(H)$ 是多少</p>
+<p>现用 $\theta$ 表示这个概率，通过反复扔这枚硬币可以得到一个由正面或反面结果组成的观测序列 $D$</p>
+<p>同时假设在开始扔硬币前，对 $\theta$ 的分布 $P(\theta)$ 有如下的先验猜想：$\theta$ 可以是 $0$ 到 $1$ 范围内的任何取值，且符合连续均匀分布，即 $\theta=0$ 说明该硬币两面都不是头像，$\theta=1$ 说明该硬币两面都是头像，$\theta=0.5$ 说明该硬币一面头像一面非头像且质地均匀</p>
+<p>在这个先验猜想下，$\theta$ 的先验概率密度为 $0\sim 1$ 之间的一条水平线</p>
+<image width="400" src="/images/mathematics/mathematical-statistics/10-1.png">
+
+<p>当投掷该硬币时，得到正面的概率为 $\theta$，得到反面的概率为 $1-\theta$，因此若投掷 $n$ 次，得到 $m\leq n$ 次正面的概率实际上是一二项分布，且满足：</p>
+<script type="math/tex; mode=display">
+P(D|\theta) = \left(\begin{array}{c}n\\m\end{array}\right)
+\theta^m(1-\theta)^{n-m}</script><p>而当 $Beta(1,1)=1$ 时，实际上就是均匀分布，那么当先验满足参数为 $\alpha$ 和 $\beta$ 的贝塔分布时，由贝叶斯定理可知，后验概率满足：</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+P(\theta|D)
+&\propto P(\theta)P(D|\theta) \\
+&\propto \theta^{\alpha-1}(1-\theta)^{\beta-1}\times \theta^m (1-\theta)^{n-m} \\
+&\propto \theta^{\alpha+m-1}(1-\theta)^{\beta+n-m-1}
+\end{align*}</script><p>可见此时后验概率满足 $\alpha+m$ 和 $\beta+n-m$ 的贝塔分布</p>
+<p>可见，先验概率和后验概率两者均属于贝塔分布，它们是共轭分布</p>
+<p>下面开始掷硬币，假设扔了两次后，得到两次头像，即 $n=m=2$，根据贝叶斯推断，可得关于 $\theta$ 的更新后的后验概率密度函数为 $Be(3,1)$，如下图所示，当连续看到两次为头像时，开始倾向于认为 $\theta$ 的取值越是接近 $1$ 越是有可能的</p>
+<image width="400" src="/images/mathematics/mathematical-statistics/10-2.png">
+
+<p>假设扔了 $10$ 次后得到 $8$ 次正面，扔了 $20$ 次后得到了 $11$ 次正面，根据结果，不断更新 $\theta$ 的后验分布，当 $10$ 次中有 $8$ 次正面时，$\theta$ 的后验概率密度函数为 $Be(9,3)$，此时会认为这个硬币很有可能是不公平的，即正面和反面出现的概率不同，而当 $20$ 次中出现 $11$ 次正面时，$\theta$ 的后验概率密度函数为 $Be(12,10)$，认知会再次根据新的结果得到修正，开始认为这个硬币可能是公平的了</p>
+<image width="400" src="/images/mathematics/mathematical-statistics/10-3.png">
+
+<p>随着继续试验，假设扔了 $50$ 次后得到 $27$ 次正面，扔了 $500$ 次后得到 $232$ 次正面，不断更新 $\theta$ 的后验分布，$\theta$ 的后验概率密度函数分别为 $Be(28,24)$ 和 $Be(233,269)$，随着越来越多的新结果的出现，对于 $\theta$ 的不确定性的认知越来越清晰，对于 $\theta$ 的不同取值的信心越来越高</p>
+<p>如下图所示，随着 $\theta$ 的后验分布 $P(\theta|D)$ 越来越窄（$\theta$ 的标准差越来越小），就越来越有把握说 $\theta$ 最有可能的取值是 $0.5$ 附近</p>
+<image width="400" src="/images/mathematics/mathematical-statistics/10-4.png">
+
+<p>这个例子完美的展示了贝叶斯推断的强大，一开始对于未知量 $\theta$ 的猜测有非常大的不确定性（先验是 $U(0,1)$），而随着越来越多的观测值的出现，通过迭代使用贝叶斯定理，逐步细化、完善对 $\theta$ 的不确定性的认知，最终得到了关于 $\theta$ 的不确定性的非常自信的后验分布，即：$\theta$ 的分布以 $0.5$ 为中心，标准差非常小，它最有可能的取值就是 $0.5$</p>
+</image></image></image></image>
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>感谢您对我的支持，让我继续努力分享有用的技术与知识点！</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/wechatpay.jpg" alt="Alex_McAvoy 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/alipay.jpg" alt="Alex_McAvoy 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Alex_McAvoy
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://alex-mcavoy.github.io/mathematics/mathematical-statistics/479cfe8b.html" title="共轭先验分布">https://alex-mcavoy.github.io/mathematics/mathematical-statistics/479cfe8b.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/mathematics/" rel="tag"># 数学</a>
+              <a href="/tags/mathematical-statistics/" rel="tag"># 数理统计</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/mathematics/mathematical-statistics/6f9d7545.html" rel="prev" title="贝叶斯统计">
+      <i class="fa fa-chevron-left"></i> 贝叶斯统计
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/mathematics/mathematical-statistics/2124d3d6.html" rel="next" title="先验预测分布与后验预测分布">
+      先验预测分布与后验预测分布 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【共轭先验分布】"><span class="nav-number">1.</span> <span class="nav-text">【共轭先验分布】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【共轭先验分布的选择】"><span class="nav-number">2.</span> <span class="nav-text">【共轭先验分布的选择】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【实例】"><span class="nav-number">3.</span> <span class="nav-text">【实例】</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">  
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Alex_McAvoy"
+      src="/assets/img/head.jpg">
+  <p class="site-author-name" itemprop="name">Alex_McAvoy</p>
+  <div class="site-description" itemprop="description">想要成为渔夫的猎手</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">645</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">63</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">71</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Alex-McAvoy" title="GitHub → https://github.com/Alex-McAvoy" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/u011815404" title="CSDN → https://blog.csdn.net/u011815404" rel="noopener" target="_blank"><i class="fas fa-copyright fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+<!-- 访客地图 -->
+<script type="text/javascript" src="//rf.revolvermaps.com/0/0/5.js?i=50n58yo58ow&amp;m=0&amp;c=ff0000&amp;cr1=ffffff&amp;s=140" async="async"></script>
+
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdz20172133" title="https://blog.csdn.net/sdz20172133" rel="noopener" target="_blank">神仙队友</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://pxlsdz.gitee.io/" title="https://pxlsdz.gitee.io/" rel="noopener" target="_blank">神仙队友blog2</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdau_fangshifeng" title="https://blog.csdn.net/sdau_fangshifeng" rel="noopener" target="_blank">酷头</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://bycore.net" title="https://bycore.net" rel="noopener" target="_blank">凉了的某饼同学</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://kris-cn.github.io/" title="http://kris-cn.github.io/" rel="noopener" target="_blank">翟孙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://deng.fun/" title="http://deng.fun/" rel="noopener" target="_blank">芙蓉姐姐</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/wentong_Xu" title="https://blog.csdn.net/wentong_Xu" rel="noopener" target="_blank">小黑贱胖子</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.yuheng.tech/" title="https://www.yuheng.tech/" rel="noopener" target="_blank">咸于</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/lanshan1111" title="https://blog.csdn.net/lanshan1111" rel="noopener" target="_blank">肥硕硕</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdauguanweihong" title="https://blog.csdn.net/sdauguanweihong" rel="noopener" target="_blank">管少</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_41661919" title="https://blog.csdn.net/qq_41661919" rel="noopener" target="_blank">俊杰</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_40859951" title="https://blog.csdn.net/qq_40859951" rel="noopener" target="_blank">峰哥</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/LSD20164388" title="https://blog.csdn.net/LSD20164388" rel="noopener" target="_blank">狗冬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37868325" title="https://blog.csdn.net/qq_37868325" rel="noopener" target="_blank">妍大佬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://sanshuiii.github.io/" title="https://sanshuiii.github.io/" rel="noopener" target="_blank">sanshuiii</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://zjpzhao.github.io/" title="https://zjpzhao.github.io/" rel="noopener" target="_blank">brain</a>
+        </li>
+    </ul>
+  </div>
+
+		
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+  
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Alex_McAvoy</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+</br>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script><script src="/js/bookmark.js"></script>
+
+
+
+  
+
+
+
+
+  <script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '48fd73a538d3fa927f65',
+      clientSecret: '56618aefeee90bac3c20de8d51bb0b985d67252d',
+      repo        : 'Gitalk-Comment',
+      owner       : 'Alex-McAvoy',
+      admin       : ['Alex-McAvoy'],
+      id          : '0428b25ef66d496d27c29b73a2d1826c',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+  
+  <!-- 鼠标单击粒子特效 -->
+  <script type="text/javascript" src="/js/cursor-effects.js"></script>
+  <!-- 多级目录 -->
+  <script type="text/javascript" src="/js/category.js"></script>
+  
+</body>
+</html>
