@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.9.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/img/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/assets/img/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/pace-js@1/themes/blue/pace-theme-minimal.css">
+  <script src="//cdn.jsdelivr.net/npm/pace-js@1/pace.min.js"></script>
+
+
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"alex-mcavoy.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":16,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":true,"color":"#ff0000","save":"manual"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":true},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.json"};
+  </script>
+
+  <meta name="description" content="References：  浅谈「Gibbs采样」 走进贝叶斯统计（六）—— 吉布斯抽样 （Gibbs Sampling） 满条件分布 贝叶斯统计 | 第六章第二部分  二阶段吉布斯抽样 贝叶斯统计 | 第六章第三部分 多阶段吉布斯抽样   【引入】在 Metropolis-Hasting 算法 中介绍了 MH 算法，其保证能够从正则化常数 $c$ 未知的后样本分布 $P(\theta|X)\pr">
+<meta name="keywords" content="数学,数理统计">
+<meta property="og:type" content="article">
+<meta property="og:title" content="吉布斯采样">
+<meta property="og:url" content="https://alex-mcavoy.github.io/mathematics/mathematical-statistics/8181bbd6.html">
+<meta property="og:site_name" content="Alex_McAvoy">
+<meta property="og:description" content="References：  浅谈「Gibbs采样」 走进贝叶斯统计（六）—— 吉布斯抽样 （Gibbs Sampling） 满条件分布 贝叶斯统计 | 第六章第二部分  二阶段吉布斯抽样 贝叶斯统计 | 第六章第三部分 多阶段吉布斯抽样   【引入】在 Metropolis-Hasting 算法 中介绍了 MH 算法，其保证能够从正则化常数 $c$ 未知的后样本分布 $P(\theta|X)\pr">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2023-09-01T13:57:54.705Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="吉布斯采样">
+<meta name="twitter:description" content="References：  浅谈「Gibbs采样」 走进贝叶斯统计（六）—— 吉布斯抽样 （Gibbs Sampling） 满条件分布 贝叶斯统计 | 第六章第二部分  二阶段吉布斯抽样 贝叶斯统计 | 第六章第三部分 多阶段吉布斯抽样   【引入】在 Metropolis-Hasting 算法 中介绍了 MH 算法，其保证能够从正则化常数 $c$ 未知的后样本分布 $P(\theta|X)\pr">
+
+<link rel="canonical" href="https://alex-mcavoy.github.io/mathematics/mathematical-statistics/8181bbd6.html">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>吉布斯采样 | Alex_McAvoy</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Alex_McAvoy</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">想要成为渔夫的猎手</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+
+	
+	
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/mathematics/mathematical-statistics/8181bbd6.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/assets/img/head.jpg">
+      <meta itemprop="name" content="Alex_McAvoy">
+      <meta itemprop="description" content="想要成为渔夫的猎手">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Alex_McAvoy">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          吉布斯采样
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2023-01-08 15:35:00" itemprop="dateCreated datePublished" datetime="2023-01-08T15:35:00+08:00">2023-01-08</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/mathematics/" itemprop="url" rel="index"><span itemprop="name">数学</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/mathematics/mathematical-statistics/" itemprop="url" rel="index"><span itemprop="name">数理统计</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>3k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>3 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <blockquote>
+<p>References：</p>
+<ul>
+<li><a href="https://zhuanlan.zhihu.com/p/25072161" target="_blank" rel="noopener">浅谈「Gibbs采样」</a></li>
+<li><a href="https://zhuanlan.zhihu.com/p/416670115" target="_blank" rel="noopener">走进贝叶斯统计（六）—— 吉布斯抽样 （Gibbs Sampling）</a></li>
+<li><a href="https://loner.net.cn/post/%E6%BB%A1%E6%9D%A1%E4%BB%B6%E5%88%86%E5%B8%83/" target="_blank" rel="noopener">满条件分布</a></li>
+<li><a href="https://zhuanlan.zhihu.com/p/138210962" target="_blank" rel="noopener">贝叶斯统计 | 第六章第二部分  二阶段吉布斯抽样</a></li>
+<li><a href="https://zhuanlan.zhihu.com/p/139560616" target="_blank" rel="noopener">贝叶斯统计 | 第六章第三部分 多阶段吉布斯抽样</a></li>
+</ul>
+</blockquote>
+<h1 id="【引入】"><a href="#【引入】" class="headerlink" title="【引入】"></a>【引入】</h1><p>在 <a href="https://alex-mcavoy.github.io/mathematics/mathematical-statistics/662122a5.html">Metropolis-Hasting 算法</a> 中介绍了 MH 算法，其保证能够从正则化常数 $c$ 未知的后样本分布 $P(\theta|X)\propto P(X|\theta)P(\theta)$ 中抽取样本，从而通过样本分析后验分布的各类性质，并进行统计推断</p>
+<p>但之前介绍的都是基于单变量场景 $P(\theta|X)\propto P(X|\theta)$，那么对于随机变量 $X$ 服从具有参数 $\Theta=(\theta_1,\theta_2,\cdots,\theta_n)$ 的分布 $X\sim P(X|\Theta)$，且 $\Theta$ 的先验分布为 $p(\theta_1,\theta_2,\cdots,\theta_n)$ 的情况，该如何对这个多维目标分布抽样？</p>
+<p>设 $\{x_1,x_2,\cdots,x_n\}$ 是从该分布抽取出的一组样本，那么通过贝叶斯定理计算得到的需要进行抽样的目标后验分布为：</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+&p(\theta_1,\theta_2,\cdots,\theta_n|x_1,x_2,\cdots,x_n) \\
+=& \frac{p(x_1,x_2,\cdots,x_n|\theta_1,\theta_2,\cdots,\theta_n) p(\theta_1,\theta_2,\cdots,\theta_n)}{\int_{-\infty}^{+\infty} \int_{-\infty}^{+\infty} \cdots \int_{-\infty}^{+\infty} p(x_1,x_2,\cdots,x_n|\theta_1,\theta_2,\cdots,\theta_n) p(\theta_1,\theta_2,\cdots,\theta_n) d\theta_1 d\theta_2 \cdots d\theta_n} \\
+\propto & p(x_1,x_2,\cdots,x_n|\theta_1,\theta_2,\cdots,\theta_n) p(\theta_1,\theta_2,\cdots,\theta_n)
+\end{align*}</script><p>此时，在已知 $X\sim P(X|\Theta)$ 和 $\Theta$ 的先验分布 $p(\theta_1,\theta_2,\cdots,\theta_n)$ 的情况下，能想到的对 $\Theta$ 的抽样方案有两种：</p>
+<ol>
+<li>在多维的角度下，直接对 $\Theta$ 进行抽样</li>
+<li>对 $\Theta$ 的每一个维度 $\theta_i$ 逐一进行一维的抽样</li>
+</ol>
+<p>其中，第一种方案就是将 MH 算法推广到多维的场景下使用，第二种方案即<strong>吉布斯采样（Gibbs Sampling）</strong>，此时核心问题是：如何对 $\Theta$ 中每一个维度 $\theta_i$ 进行抽样？</p>
+<h1 id="【抽样思路】"><a href="#【抽样思路】" class="headerlink" title="【抽样思路】"></a>【抽样思路】</h1><p>根据概率的乘法公式，对于联合概率分布 $p(\theta_1,\theta_2,\cdots,\theta_n)$，能够表示为如下形式：</p>
+<script type="math/tex; mode=display">
+p(\theta_1,\theta_2,\cdots,\theta_n)
+= p(\theta_1|\theta_2,\cdots,\theta_n) \cdots p(\theta_{n-1}|\theta_n) p(\theta_n)</script><p>也就是说，只要先从 $p(\theta_n)$ 中抽取出某个具体的 $\theta_n^{(0)}$，就能根据 $\theta_n^{(0)}$ 与 $p(\theta_{n-1}|\theta_n)$ 抽取出 $\theta_{n-1}^{(0)}$，以此类推，直到抽取出 $\theta_1^{(0)}$</p>
+<p>在这个方法下，虽然得到的 $\theta_i$ 是相互独立的，但整个抽取过程极其复杂：要将所有的条件分布的形式计算出来，并用它们进行抽样，而这种方式在高维情况下几乎不可行</p>
+<p>因此，需要另辟蹊径，找到一种抽取 $\theta_i$ 的方式</p>
+<h1 id="【满条件分布】"><a href="#【满条件分布】" class="headerlink" title="【满条件分布】"></a>【满条件分布】</h1><p>设随机向量 $X=(X_1,X_2,\cdots,X_n)\sim p(\mathbf{x})$，其中 $\mathbf{x}=(x_1,x_2,\cdots,x_n)$，那么条件概率分布：</p>
+<script type="math/tex; mode=display">
+p (x_i|x_1,x_2,\cdots,x_{i-1},x_{i+1},\cdots,x_n),\quad i=1,2,\cdots,n</script><p>为<strong>满条件分布（Full Conditional Distribution）</strong></p>
+<p>吉布斯采样正是通过满条件分布来对每一个维度的 $\theta_i$ 进行抽样，对于 $\theta_1,\theta_2,\cdots,\theta_n$，其满条件分布为：</p>
+<script type="math/tex; mode=display">
+p(\theta_i|\theta_1,\theta_2,\cdots,\theta_i,\theta_{i+1},\cdots,\theta_n) = \frac{p(\theta_1,\theta_2,\cdots,\theta_n)}{p(\theta_1,\theta_2,\cdots,\theta_i,\theta_{i+1},\cdots,\theta_n)},
+\quad i=1,2,\cdots,n</script><h1 id="【算法流程】"><a href="#【算法流程】" class="headerlink" title="【算法流程】"></a>【算法流程】</h1><p>综上所述，吉布斯采样的算法流程如下</p>
+<p>已知：随机变量 $X$ 服从的分布 $P(X|\Theta)$，样本 $\{x_1,x_2,\cdots,x_n\}$，分布参数 $\Theta$ 的先验分布 $p(\theta_1,\theta_2)$</p>
+<p>算法步骤：</p>
+<p>Step 1：算法初始化，随机取得第一个样本  $\Theta^{(1)}=(\theta_1^{(1)},\theta_2^{(1)},\cdots,\theta_n^{(1)})$</p>
+<p>Step 2：利用 $\Theta^{(j)}$，根据满条件分布：</p>
+<script type="math/tex; mode=display">
+p(\theta_i|\theta_1,\theta_2,\cdots,\theta_i,\theta_{i+1},\cdots,\theta_n) = \frac{p(\theta_1,\theta_2,\cdots,\theta_n)}{p(\theta_1,\theta_2,\cdots,\theta_i,\theta_{i+1},\cdots,\theta_n)}
+\quad i=1,2,\cdots,n</script><p>抽取出 $\Theta^{(j+1)}=\{\theta_1^{(j+1)},\theta_2^{(j+1)},\cdots,\theta_n^{(j+1)}\}$</p>
+<p>Step 3：循环 Step 2，直到抽取到的 $\Theta$ 样本量符合预期</p>
+<hr>
+<p>在抽样过程中，每一个样本 $\Theta^{(j)}$ 总会受到前一个样本 $\Theta^{(j-1)}$ 的影响，因此通过吉布斯采样得到的样本序列 $\{\Theta^{(1)},\Theta^{(2)},\cdots,\Theta^{(n)}\}$ 是一马尔科夫链</p>
+<p>在此基础上，与 MH 算法类似，利用马尔科夫链的相关性质能证明：吉布斯采样算法下得到的马尔科夫链品平稳分布 $\pi(\Theta)$ 就是目标联合分布 $P(\Theta)$</p>
+
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>感谢您对我的支持，让我继续努力分享有用的技术与知识点！</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/wechatpay.jpg" alt="Alex_McAvoy 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/alipay.jpg" alt="Alex_McAvoy 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Alex_McAvoy
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://alex-mcavoy.github.io/mathematics/mathematical-statistics/8181bbd6.html" title="吉布斯采样">https://alex-mcavoy.github.io/mathematics/mathematical-statistics/8181bbd6.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/mathematics/" rel="tag"># 数学</a>
+              <a href="/tags/mathematical-statistics/" rel="tag"># 数理统计</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/mathematics/mathematical-statistics/662122a5.html" rel="prev" title="Metropolis-Hasting 算法">
+      <i class="fa fa-chevron-left"></i> Metropolis-Hasting 算法
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/mathematics/mathematical-statistics/5877bf64.html" rel="next" title="马尔科夫链蒙特卡罗法">
+      马尔科夫链蒙特卡罗法 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【引入】"><span class="nav-number">1.</span> <span class="nav-text">【引入】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【抽样思路】"><span class="nav-number">2.</span> <span class="nav-text">【抽样思路】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【满条件分布】"><span class="nav-number">3.</span> <span class="nav-text">【满条件分布】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【算法流程】"><span class="nav-number">4.</span> <span class="nav-text">【算法流程】</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">  
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Alex_McAvoy"
+      src="/assets/img/head.jpg">
+  <p class="site-author-name" itemprop="name">Alex_McAvoy</p>
+  <div class="site-description" itemprop="description">想要成为渔夫的猎手</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">648</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">63</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">71</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Alex-McAvoy" title="GitHub → https://github.com/Alex-McAvoy" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/u011815404" title="CSDN → https://blog.csdn.net/u011815404" rel="noopener" target="_blank"><i class="fas fa-copyright fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+<!-- 访客地图 -->
+<script type="text/javascript" src="//rf.revolvermaps.com/0/0/5.js?i=50n58yo58ow&amp;m=0&amp;c=ff0000&amp;cr1=ffffff&amp;s=140" async="async"></script>
+
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdz20172133" title="https://blog.csdn.net/sdz20172133" rel="noopener" target="_blank">神仙队友</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://pxlsdz.gitee.io/" title="https://pxlsdz.gitee.io/" rel="noopener" target="_blank">神仙队友blog2</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdau_fangshifeng" title="https://blog.csdn.net/sdau_fangshifeng" rel="noopener" target="_blank">酷头</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://bycore.net" title="https://bycore.net" rel="noopener" target="_blank">凉了的某饼同学</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://kris-cn.github.io/" title="http://kris-cn.github.io/" rel="noopener" target="_blank">翟孙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://deng.fun/" title="http://deng.fun/" rel="noopener" target="_blank">芙蓉姐姐</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/wentong_Xu" title="https://blog.csdn.net/wentong_Xu" rel="noopener" target="_blank">小黑贱胖子</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.yuheng.tech/" title="https://www.yuheng.tech/" rel="noopener" target="_blank">咸于</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/lanshan1111" title="https://blog.csdn.net/lanshan1111" rel="noopener" target="_blank">肥硕硕</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdauguanweihong" title="https://blog.csdn.net/sdauguanweihong" rel="noopener" target="_blank">管少</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_41661919" title="https://blog.csdn.net/qq_41661919" rel="noopener" target="_blank">俊杰</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_40859951" title="https://blog.csdn.net/qq_40859951" rel="noopener" target="_blank">峰哥</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/LSD20164388" title="https://blog.csdn.net/LSD20164388" rel="noopener" target="_blank">狗冬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37868325" title="https://blog.csdn.net/qq_37868325" rel="noopener" target="_blank">妍大佬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://sanshuiii.github.io/" title="https://sanshuiii.github.io/" rel="noopener" target="_blank">sanshuiii</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://zjpzhao.github.io/" title="https://zjpzhao.github.io/" rel="noopener" target="_blank">brain</a>
+        </li>
+    </ul>
+  </div>
+
+		
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+  
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Alex_McAvoy</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+</br>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script><script src="/js/bookmark.js"></script>
+
+
+
+  
+
+
+
+
+  <script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '48fd73a538d3fa927f65',
+      clientSecret: '56618aefeee90bac3c20de8d51bb0b985d67252d',
+      repo        : 'Gitalk-Comment',
+      owner       : 'Alex-McAvoy',
+      admin       : ['Alex-McAvoy'],
+      id          : '97271f8f401a54aff3f9ecb8d727fb46',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+  
+  <!-- 鼠标单击粒子特效 -->
+  <script type="text/javascript" src="/js/cursor-effects.js"></script>
+  <!-- 多级目录 -->
+  <script type="text/javascript" src="/js/category.js"></script>
+  
+</body>
+</html>
