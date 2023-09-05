@@ -33,7 +33,7 @@
 <meta property="og:site_name" content="Alex_McAvoy">
 <meta property="og:description" content="References：  马尔可夫链蒙特卡罗算法（MCMC） 走进贝叶斯统计（四）—— 蒙特卡洛方法 蒙特卡罗方法详解   【概述】虽然共轭先验能够极大地简化贝叶斯统计推断过程中的计算难度，但它不一定能够很好地描绘对目标参数 $\theta$ 的经验判断">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2023-09-01T09:33:31.187Z">
+<meta property="og:updated_time" content="2023-09-05T03:16:38.773Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="蒙特卡罗法">
 <meta name="twitter:description" content="References：  马尔可夫链蒙特卡罗算法（MCMC） 走进贝叶斯统计（四）—— 蒙特卡洛方法 蒙特卡罗方法详解   【概述】虽然共轭先验能够极大地简化贝叶斯统计推断过程中的计算难度，但它不一定能够很好地描绘对目标参数 $\theta$ 的经验判断">
@@ -247,14 +247,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>3.9k</span>
+              <span>5.8k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>4 分钟</span>
+              <span>5 分钟</span>
             </span>
 
         </div>
@@ -276,7 +276,7 @@
 </blockquote>
 <h1 id="【概述】"><a href="#【概述】" class="headerlink" title="【概述】"></a>【概述】</h1><p>虽然共轭先验能够极大地简化贝叶斯统计推断过程中的计算难度，但它不一定能够很好地描绘对目标参数 $\theta$ 的经验判断</p>
 <p>然而，能够准确描绘对目标参数 $\theta$ 的经验判断的非共轭先验分布 $p(\theta)$ 又往往容易产生极其复杂、难以计算性质的后验分布</p>
-<p>这时候，<strong>蒙特卡洛方法（Monte-Carlo Method）</strong>的重要性便得以凸显，其是一种能够帮助我们了解这些复杂的后验分布性质的数值模拟方法，它帮助贝叶斯统计摆脱了计算上的束缚，能够随心所欲地选取先验分布 </p>
+<p>这时候，<strong>蒙特卡洛方法（Monte Carlo Method）</strong>的重要性便得以凸显，其是一种从概率模型的随机抽样中进行近似数值计算的方法，它帮助贝叶斯统计摆脱了计算上的束缚，能够随心所欲地选取先验分布 </p>
 <h1 id="【蒙特卡罗法】"><a href="#【蒙特卡罗法】" class="headerlink" title="【蒙特卡罗法】"></a>【蒙特卡罗法】</h1><p>假设有一个半径 $r=1$ 的圆和一个边长为 $1$ 的正方形，圆的面积为 $\pi r^2=\pi$，那么正方形内部的相切圆的面积为整个圆的 $\frac{1}{4}$，即 $\frac{\pi}{4}$，正方形的面积为 $1$</p>
 <p>下面不断的向正方形中随机打点，这些点有一定的概率落在相切圆中，一定的概率落在相切圆外，显然落在相切圆中的概率是：</p>
 <script type="math/tex; mode=display">
@@ -296,83 +296,128 @@ P(落在相切圆中的概率) = \frac{S_{圆}}{S_{正方}} = \frac{\pi}{4}</scr
 <p>如下图所示，当采样的样本量越大，便越能够逼近目标的分布，因此就可以通过样本来得到目标分布的期望、方差等相关信息</p>
 <image width="500" src="/images/mathematics/mathematical-statistics/12-2.png">
 
-<p>但关键问题是：假设已知目标分布 $p(y)$ 的具体形式，那么该如何对目标分布进行采样？</p>
-<p>对于那些通过计算得到的形式较为罕见的后验分布 $p(y)$，一个直观而可行的方法是利用该分布的累积分布函数 $F(Y)$ 与均匀分布 $U(0,1)$ 的采样函数进行采样</p>
-<p>对于随机变量 $Y$，其分布函数为 $F(Y)$，那么对于任意 $u\in [0,1]$，有：</p>
+<p>但关键问题是：假设已知目标分布 $X\sim p(x)$ 的具体形式，那么该如何对目标分布进行采样？</p>
+<p>对于那些通过计算得到的形式较为罕见的后验分布 $p(x)$，一个直观而可行的方法是利用该分布的累积分布函数 $F(X)$ 与均匀分布 $U(0,1)$ 的采样函数进行采样</p>
+<p>对于随机变量 $X$，其分布函数为 $F(X)$，那么对于任意 $u\in [0,1]$，有：</p>
 <script type="math/tex; mode=display">
 \begin{align*}
 P(U\leq u) 
-&= P(F(Y)\leq u) \\
-&= P(Y\leq F^{-1}(u)) \\
+&= P(F(X)\leq u) \\
+&= P(X\leq F^{-1}(u)) \\
 &= F(F^{-1}(u)) \\
 &= u
-\end{align*}</script><p>即，$F(Y)\sim U(0,1)$</p>
-<p>也就是说，通过该分布的累积分布函数的反函数 $F^{-1}$，与从均匀分布 $U(0,1)$ 中采样得到的样本 $u$，可以得到目标分布 $p(y)$ 的样本，即：</p>
+\end{align*}</script><p>即，$F(X)\sim U(0,1)$</p>
+<p>也就是说，通过该分布的累积分布函数的反函数 $F^{-1}$，与从均匀分布 $U(0,1)$ 中采样得到的样本 $u$，可以得到目标分布 $p(x)$ 的样本，即：</p>
 <script type="math/tex; mode=display">
-y = F^{-1}(u)</script><p>但在大多数情况下，连目标分布的累积分布函数 $F(Y)$ 的形式都难以写出，就更别说求出累积分布函数 $F(Y)$ 以及它的反函数 $F^{-1}$ 了</p>
+x = F^{-1}(u)</script><p>但在大多数情况下，连目标分布的累积分布函数 $F(X)$ 的形式都难以写出，就更别说求出累积分布函数 $F(X)$ 以及它的反函数 $F^{-1}$ 了</p>
 <p>因此，找到一个能够对<strong>任意分布</strong>都有效的<strong>采样方法</strong>非常重要，所以蒙特卡罗法的核心是<strong>随机抽样（Random Sampling）</strong></p>
-<h1 id="【拒绝采样法】"><a href="#【拒绝采样法】" class="headerlink" title="【拒绝采样法】"></a>【拒绝采样法】</h1><h2 id="算法流程"><a href="#算法流程" class="headerlink" title="算法流程"></a>算法流程</h2><p><strong>拒绝采样法（Rejection Sampling）</strong>是一种随机抽样方法，其能够对任意分布进行有效的采样</p>
-<p>在对概率密度函数为 $f(y)$ 的目标分布进行抽样时，需要找到任意的一个能够直接进行采样的分布 $g(y)$ 与一个常数 $c$，要求 $c$ 对所有的 $y$ 都满足 $\frac{f(y)}{g(y)}\leq c$，即 $c$ 一定要大于函数 $h(y)=\frac{f(y)}{g(y)}$ 的上界</p>
-<p>之后，在采样过程中，循环如下步骤：</p>
-<ol>
-<li>从可直接进行采样的分布 $g(y)$ 中采样一个样本 $y_i$</li>
-<li>从均匀分布 $U(0,1)$ 中采样一个随机数 $u_i$</li>
-<li>若有 $u_i\leq \frac{f(y_i)}{c \cdot  g(y_i)}$，则视为采样成功，即将 $y_i$ 视为从目标分布 $f(y)$ 中采样的样本，否则视为采样失败，从步骤 1 重新开始采样</li>
-</ol>
-<p>拒绝采样算法流程图如下图所示</p>
-<image src="/images/mathematics/mathematical-statistics/12-3.png">
+<p>一般的蒙特卡罗法有直接采样法、接受-拒绝采样法、重要性采样法等，这里仅介绍基于接受-拒绝采样法的蒙特卡罗法</p>
+<h1 id="【接受-拒绝采样法】"><a href="#【接受-拒绝采样法】" class="headerlink" title="【接受-拒绝采样法】"></a>【接受-拒绝采样法】</h1><h2 id="基本思路"><a href="#基本思路" class="headerlink" title="基本思路"></a>基本思路</h2><p><strong>接受-拒绝采样法（Accept-reject Sampling Method）</strong>是一种随机抽样方法，其能够对任意分布进行有效的采样</p>
+<p>若已知目标分布 $X\sim p(x)$ 的具体形式，现在想要得到该概率分布的随机样本，以对这个概率分布进行分析</p>
+<p>假设 $p(x)$ 无法直接进行抽样，那么需要找一个可以直接抽样的分布，其被称为<strong>提议分布（Proposal Distribution）</strong></p>
+<p>设 $q(x)$ 为提议分布的概率密度函数，且满足 $c\cdot q(x)\geq p(x),c&gt;0$，即：</p>
+<script type="math/tex; mode=display">
+\frac{p(x)}{q(x)}\leq c,\quad c>0</script><p>即常数 $c$ 一定大于等于 $\frac{p(x)}{q(x)}$ 的上界</p>
+<p>之后，对 $q(x)$ 进行抽样，假设得到的结果是 $x^{*}$，按照 $\frac{p(x^{*})}{c\cdot q(x^{*})}$ 的比例，随机决定是否接受 $x^{*}$</p>
+<image width="500" src="/images/mathematics/mathematical-statistics/12-3.png">
 
-<p>需要注意的有三点：</p>
+<p>如图所示，直观上落在 $p(x)$ 的范围内就接受，落在 $p(x)$ 的范围外就拒绝，也就是说，接受-拒绝采样法实际上是按照 $p(x)$ 的涵盖面积占 $c\cdot q(x)$ 的涵盖面积的比例进行抽样</p>
+<p>在接受-拒绝采样法中，需要注意的有以下几点：</p>
 <ol>
 <li>理论上可能出现 $c=\infty$ 的情况，但在常规的应用场景下，这种情况很难发生</li>
-<li>对于分布 $g(y)$ 的选取可以是任意的，一般选择最简单的均匀分布即可完成采样</li>
-<li>分布 $g(y)$ 的选取能够影响采样的效率，若选取不当，采样便很容易失败，反之，若选取得当，采样的效率即可提高</li>
+<li>对于提议分布 $q(x)$ 的选取可以是任意的，一般选择最简单的均匀分布即可</li>
+<li>提议分布 $q(x)$ 的选取能够影响采样的效率，若 $p(x)$ 的涵盖体积占 $c\cdot q(x)$ 的涵盖体积的比例很低，会导致拒绝的比例很高，采样效率很低</li>
+<li>在高维空间进行抽样时，即使目标分布 $p(x)$ 和提议分布 $q(x)$ 很接近，但两者涵盖的高维体积差异可能会很大</li>
 </ol>
-<h2 id="证明"><a href="#证明" class="headerlink" title="证明"></a>证明</h2><p>从拒绝采用法的算法流程来看，存在一个极为重要的点，即：为什么从任意选取的分布 $g(y)$ 中采样得到的 $y_i$，一旦满足 $u_i\leq \frac{f(y_i)}{c \cdot  g(y_i)}$ 时，即将 $y_i$ 视为从目标分布 $f(y)$ 中采取的样本？</p>
-<p>下面开始证明从上述的拒绝采样法生成的样本 $y_i$ 服从目标分布 $f(y)$</p>
-<p>若要证明从上述采样方法生成的样本 $y_i$ 服从目标分布 $f(y)$，就等价于在已知 $y_i\sim g(y)$ 的情况下，证明：</p>
+<h2 id="算法流程"><a href="#算法流程" class="headerlink" title="算法流程"></a>算法流程</h2><p>基于接受-拒绝采样法的蒙特卡罗法算法流程如下</p>
+<p>输入：抽样的目标分布的概率密度函数 $p(x)$</p>
+<p>输出：满足目标分布 $p(x)$ 的随机样本 $x_1,x_2,\cdots,x_n$</p>
+<p>参数：样本数 $n$</p>
+<p>算法流程：</p>
+<p>Step 1：选择概率密度为 $q(x)$ 的概率分布作为提议分布，使其对任一 $x$ 满足</p>
 <script type="math/tex; mode=display">
-F(y_i) = P(Y\leq y_i| u_i\leq \frac{f(y_i)}{c\cdot g(y_i)})</script><p>其中，$F(Y)$ 为 $f(y)$ 的累积分布函数，$u_i$ 是从均匀分布 $U(0,1)$ 中采样一个随机数</p>
-<p>根据贝叶斯公式 $P(A|B)=\frac{P(B|A)P(A)}{P(B)}$，可以将 $P(Y\leq y_i| u\leq \frac{f(y_i)}{c\cdot g(y_i)})$ 转化为：</p>
+\frac{p(x)}{q(x)}\leq c,\quad c>0</script><p>Step 2： 在提议分布 $q(x)$ 中随机抽样，得到样本 $x^{*}$</p>
+<p>Step 3：从分布 $U(0,1)$ 中采样一个随机数 $u$</p>
+<p>Step 4：若有 $u\leq \frac{p(x^{*})}{c\cdot q(x^{*})}$，则将 $x^{*}$ 视为从目标分布 $p(x)$ 中采样得到的样本，否则视为采样失败，回到 Step 2，重新开始采样</p>
+<p>Step 5：当得到 $n$ 个随机样本时，算法结束</p>
+<h2 id="证明"><a href="#证明" class="headerlink" title="证明"></a>证明</h2><p>从基于接受-拒绝采样法的蒙特卡罗法的算法流程来看，存在一个极为重要的点，即：为什么从任意选取的提议分布 $q(x)$ 中采样得到的 $x^{*}$，一旦满足 $u\leq \frac{f(x^{*})}{c \cdot g(x^{*})}$ 时，即将 $x^{*}$ 视为从目标分布 $p(x)$ 中采取的样本？</p>
+<p>下面开始证明从上述的接受-拒绝采样法生成的样本 $x^{*}$ 服从目标分布 $p(x)$</p>
+<p>若要证明从上述采样方法生成的样本 $x^{*}$ 服从目标分布 $p(x)$，就等价于在已知 $x^{*}\sim q(x)$ 的情况下，证明：</p>
 <script type="math/tex; mode=display">
-P(Y\leq y_i| u_i\leq \frac{f(y_i)}{c\cdot g(y_i)}) 
-= \frac{P( u_i\leq \frac{f(y_i)}{c\cdot g(y_i)} | Y\leq y_i) P(Y\leq y_i)}{P(u_i\leq \frac{f(y_i)}{c\cdot g(y_i)})}</script><p>下面，只需分析等式右边的三个函数，以证明其组合等于 $F(y_i)$ 即可</p>
-<p>1）对于 $P(u_i\leq \frac{f(y_i)}{c\cdot g(y_i)})$，根据全概率公式，有：</p>
+F(x^{*}) = P(X\leq x^{*}| u\leq \frac{p(x^{*})}{c\cdot q(x^{*})})</script><p>其中，$F(X)$ 为 $p(x)$ 的累积分布函数，$u$ 是从均匀分布 $U(0,1)$ 中采样一个随机数</p>
+<p>根据贝叶斯公式 $P(A|B)=\frac{P(B|A)P(A)}{P(B)}$，可以将 $P(X\leq x^{*}| u\leq \frac{p(x^{*})}{c\cdot q(x^{*})})$ 转化为：</p>
 <script type="math/tex; mode=display">
-P(u_i\leq \frac{f(y_i)}{c\cdot g(y_i)}) = \int P(u_i\leq \frac{f(y_i)}{c\cdot g(y_i)}|Y=y_i)P(Y=y_i) dy</script><p>由于 $y_i$ 是从分布 $g(y)$ 中抽样得到的，故 $P(Y=y_i)=g(y)$</p>
-<p>同时，在抽样得到一个具体数值 $Y=y_i$ 后，采样成功的条件概率即为：</p>
+P(X\leq x^{*}| u\leq \frac{p(x^{*})}{c\cdot q(x^{*})}) 
+= \frac{P( u\leq \frac{p(x^{*})}{c\cdot q(x^{*})} | X\leq x^{*}) P(X\leq x^{*})}{P(u\leq \frac{p(x^{*})}{c\cdot q(x^{*})})}</script><p>下面，只需分析等式右边的三个函数，以证明其组合等于 $F(x^{*})$ 即可</p>
+<p>1）对于 $P(u\leq \frac{p(x^{*})}{c\cdot q(x^{*})})$，根据全概率公式，有：</p>
 <script type="math/tex; mode=display">
-P(u_i\leq \frac{f(y_i)}{c\cdot g(y_i)}|Y=y_i) = \frac{f(y_i)}{c\cdot g(y_i)}</script><p>故而可以得到：</p>
+P(u\leq \frac{p(x^{*})}{c\cdot q(x^{*})}) = \int P(u\leq \frac{p(x^{*})}{c\cdot q(x^{*})}|X=x^{*})P(X=x^{*}) dx</script><p>由于 $x^{*}$ 是从提议分布 $q(x^{*})$ 中抽样得到的，故 $P(X=x^{*})=q(x^{*})$</p>
+<p>同时，在抽样得到一个具体数值 $X=x^{*}$ 后，采样成功的条件概率即为：</p>
+<script type="math/tex; mode=display">
+P(u\leq \frac{p(x^{*})}{c\cdot q(x^{*})}|X=x^{*}) = \frac{p(x^{*})}{c\cdot q(x^{*})}</script><p>故而可以得到：</p>
 <script type="math/tex; mode=display">
 \begin{align*}
-P(u_i\leq \frac{f(y_i)}{c\cdot g(y_i)})
-&= \int P(u_i\leq \frac{f(y_i)}{c\cdot g(y_i)}|Y=y_i)P(Y=y_i)dy \\
-&= \int \frac{f(y_i)}{c\cdot g(y_i)} g(y_i) dy \\
-&= \int \frac{f(y_i)}{c} dy \\
+P(u\leq \frac{p(x^{*})}{c\cdot q(x^{*})})
+&= \int P(u\leq \frac{p(x^{*})}{c\cdot q(x^{*})}|X=x^{*})P(X=x^{*})dx \\
+&= \int \frac{p(x^{*})}{c\cdot q(x^{*})} q(x^{*}) dx \\
+&= \int \frac{p(x^{*})}{c} dx \\
 &= \frac{1}{c}
-\end{align*} \tag{1}</script><p> 2）对于 $P(Y\leq y_i)$，已知 $y_i \sim g(y)$，故有：</p>
+\end{align*} \tag{1}</script><p> 2）对于 $P(X\leq x^{*})$，已知 $x^{*} \sim q(x^{*})$，故有：</p>
 <script type="math/tex; mode=display">
-P(Y\leq y_i) = G(y_i) \tag{2}</script><p>其中，$G(Y)$ 为 $g(y)$ 的累积分布函数</p>
-<p>3）对于 $P( u_i\leq \frac{f(y_i)}{c\cdot g(y_i)} | Y\leq y_i) $，根据条件概率公式，有：</p>
+P(X\leq x^{*}) = G(x^{*}) \tag{2}</script><p>其中，$G(Y)$ 为 $q(x)$ 的累积分布函数</p>
+<p>3）对于 $P( u\leq \frac{p(x^{*})}{c\cdot q(x^{*})} | X\leq x^{*}) $，根据条件概率公式，有：</p>
 <script type="math/tex; mode=display">
 \begin{align*}
-P( u_i\leq \frac{f(y_i)}{c\cdot g(y_i)} | Y\leq y_i)
-&= \frac{P(u_i\leq \frac{f(y_i)}{c\cdot g(y_i)},Y\leq y_i)}{P(Y\leq y_i)} \\
-&= \frac{P(u_i\leq \frac{f(y_i)}{c\cdot g(y_i)},Y\leq y_i)}{G(y_i)} \\
-&= \int_{-\infty}^{y_i} \frac{P(u_i\leq \frac{f(y_i)}{c\cdot g(y_i)}|Y=w\leq y_i)}{G(y_i)} g(w) dw \\
-&= \frac{1}{G(y_i)} \int_{-\infty}^{y} \frac{f(w)}{c\cdot g(w)} g(w) dw \\
-&= \frac{1}{c\cdot G(y_i)}F(y_i)
+P( u\leq \frac{p(x^{*})}{c\cdot q(x^{*})} | X\leq x^{*})
+&= \frac{P(u\leq \frac{p(x^{*})}{c\cdot q(x^{*})},X\leq x^{*})}{P(X\leq x^{*})} \\
+&= \frac{P(u\leq \frac{p(x^{*})}{c\cdot q(x^{*})},X\leq x^{*})}{G(x^{*})} \\
+&= \int_{-\infty}^{x^{*}} \frac{P(u\leq \frac{p(x^{*})}{c\cdot q(x^{*})}|X=w\leq x^{*})}{G(x^{*})} g(w) dw \\
+&= \frac{1}{G(x^{*})} \int_{-\infty}^{x^{*}} \frac{p(w)}{c\cdot q(w)} g(w) dw \\
+&= \frac{1}{c\cdot G(x^{*})}F(x^{*})
 \end{align*} \tag{3}</script><p>结合式 $(1),(2),(3)$，即可得到：</p>
 <script type="math/tex; mode=display">
 \begin{align*}
-P(Y\leq y_i| u_i\leq \frac{f(y_i)}{c\cdot g(y_i)}) 
-&= \frac{P( u_i\leq \frac{f(y_i)}{c\cdot g(y_i)} | Y\leq y_i) P(Y\leq y_i)}{P(u_i\leq \frac{f(y_i)}{c\cdot g(y_i)})} \\
-&= \frac{G(y_i) \frac{1}{c\cdot G(y_i)} F(y_i)}{\frac{1}{c} } \\
-&= F(y_i)
+P(X\leq x^{*}| u\leq \frac{p(x^{*})}{c\cdot q(x^{*})}) 
+&= \frac{P( u\leq \frac{q(x^{*})}{c\cdot q(x^{*})} | X\leq x^{*}) P(X\leq x^{*})}{P(u\leq \frac{p(y_i)}{c\cdot q(x^{*})})} \\
+&= \frac{G(x^{*}) \frac{1}{c\cdot G(x^{*})} F(x^{*})}{\frac{1}{c} } \\
+&= F(x^{*})
 \end{align*}</script><p>即：</p>
 <script type="math/tex; mode=display">
-P(Y\leq y_i| u_i\leq \frac{f(y_i)}{c\cdot g(y_i)})  = F(y_i)</script><p>即通过拒绝采样法生成的样本 $y_i$，服从目标分布 $f(y)$</p>
-</image></image></image>
+P(X\leq x^{*}| u\leq \frac{p(x^{*})}{c\cdot q(x^{*})})  = F(x^{*})</script><p>即通过拒绝采样法生成的样本 $x^{*}$，服从目标分布 $p(x)$</p>
+<h1 id="【应用】"><a href="#【应用】" class="headerlink" title="【应用】"></a>【应用】</h1><h2 id="数学期望估计"><a href="#数学期望估计" class="headerlink" title="数学期望估计"></a>数学期望估计</h2><p>通过蒙特卡罗法采样得到的样本，可用于进行<strong>数学期望估计（Estimation of Mathematical Expectation）</strong></p>
+<p>设随机变量 $X\sim p(x)$，$f(x)$ 是定义在 $X\in \mathcal{X}$ 上的函数，现要求函数 $f(x)$ 关于概率密度函数 $p(x)$ 的数学期望 $E_{p(x)}[f(x)]$</p>
+<p>针对该问题，使用蒙特卡罗法独立地抽取服从分布 $p(x)$ 的 $n$ 个样本 $x_1,x_2,\cdots,x_n$，然后计算函数 $f(x)$ 的样本均值</p>
+<script type="math/tex; mode=display">
+\hat{f_n} = \frac{1}{n}\sum_{i=1}^n f(x_i)</script><p>作为数学期望 $E_{p(x)}[f(x)]$ 的近似值</p>
+<p>根据大数定理可知，当样本容量增大时，样本均值以概率 $1$ 收敛于数学期望，即：</p>
+<script type="math/tex; mode=display">
+\hat{f_n} \rightarrow E_{p(x)}[f(x)],\quad n\rightarrow \infty</script><p>由此，即可得到数学期望的近似计算方法</p>
+<script type="math/tex; mode=display">
+E_{p(x)}[f(x)] \approx  \frac{1}{n}\sum_{i=1}^n f(x_i)</script><h2 id="定积分计算"><a href="#定积分计算" class="headerlink" title="定积分计算"></a>定积分计算</h2><p>蒙特卡罗法也可用于定积分的近似计算，称为<strong>蒙特卡罗积分（Monte Carlo Integration）</strong></p>
+<p>假设有一个函数 $h(x)$，现要计算该函数的积分</p>
+<script type="math/tex; mode=display">
+\int_{\mathcal{X}} h(x) dx</script><p>若能将 $h(x)$ 分解为一个函数 $f(x)$ 和一个概率密度函数 $p(x)$ 的乘积，那么有：</p>
+<script type="math/tex; mode=display">
+\int_{\mathcal{X}} h(x) dx 
+= \int_{\mathcal{X}} f(x)p(x)dx 
+=E_{p(x)}[f(x)]</script><p>即函数 $h(x)$ 的积分可表示为函数 $f(x)$ 关于概率密度函数 $p(x)$ 的数学期望</p>
+<p>实际上，给定一个概率密度函数 $p(x)$，只需取 $f(x)=\frac{h(x)}{p(x)}$ 即可得到上述公式，也就是说，任何一个函数的积分都可以表示为某个函数的数学期望的形式</p>
+<p>而函数的数学期望又可以通过函数的样本均值估计，于是，就可以利用样本均值来近似计算积分</p>
+<script type="math/tex; mode=display">
+\int_{\mathcal{X}} h(x) dx 
+=E_{p(x)}[f(x)]
+\approx \frac{1}{n}\sum_{i=1}^n f(x_i)</script><hr>
+<p>例如：用蒙特卡罗积分求 $\int_{0}^1 e^{-\frac{x^2}{2}}dx$</p>
+<p>假设随机变量 $X$ 在 $(0,1)$ 区间内遵循均匀分布，则有： </p>
+<script type="math/tex; mode=display">
+\begin{align*}
+f(x) &= e^{-\frac{x^2}{2}} \\
+p(x) &= 1(0<x<1)
+\end{align*}</script><p>使用蒙特卡罗法，在 $(0,1)$ 区间内按均匀分布抽取 $10$ 个样本 $x_1,x_2,\cdots,x_{10}$，然后计算样本的函数均值</p>
+<script type="math/tex; mode=display">
+\hat{f_{10}} = \frac{1}{10}\sum_{i=1}^{10} e^{-\frac{x_i^2}{x}} =0.832</script><p>作为积分的近似，随机样本数越大，计算就越精确</p>
+<image width="400" src="/images/mathematics/mathematical-statistics/12-4.png">
+</image></image></image></image>
     </div>
 
     
@@ -494,7 +539,7 @@ P(Y\leq y_i| u_i\leq \frac{f(y_i)}{c\cdot g(y_i)})  = F(y_i)</script><p>即通�
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【概述】"><span class="nav-number">1.</span> <span class="nav-text">【概述】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【蒙特卡罗法】"><span class="nav-number">2.</span> <span class="nav-text">【蒙特卡罗法】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【拒绝采样法】"><span class="nav-number">3.</span> <span class="nav-text">【拒绝采样法】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#算法流程"><span class="nav-number">3.1.</span> <span class="nav-text">算法流程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#证明"><span class="nav-number">3.2.</span> <span class="nav-text">证明</span></a></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【概述】"><span class="nav-number">1.</span> <span class="nav-text">【概述】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【蒙特卡罗法】"><span class="nav-number">2.</span> <span class="nav-text">【蒙特卡罗法】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【接受-拒绝采样法】"><span class="nav-number">3.</span> <span class="nav-text">【接受-拒绝采样法】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#基本思路"><span class="nav-number">3.1.</span> <span class="nav-text">基本思路</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#算法流程"><span class="nav-number">3.2.</span> <span class="nav-text">算法流程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#证明"><span class="nav-number">3.3.</span> <span class="nav-text">证明</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【应用】"><span class="nav-number">4.</span> <span class="nav-text">【应用】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#数学期望估计"><span class="nav-number">4.1.</span> <span class="nav-text">数学期望估计</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#定积分计算"><span class="nav-number">4.2.</span> <span class="nav-text">定积分计算</span></a></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -510,7 +555,7 @@ P(Y\leq y_i| u_i\leq \frac{f(y_i)}{c\cdot g(y_i)})  = F(y_i)</script><p>即通�
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">648</span>
+          <span class="site-state-item-count">650</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
