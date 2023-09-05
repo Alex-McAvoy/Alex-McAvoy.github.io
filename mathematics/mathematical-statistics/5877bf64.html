@@ -25,18 +25,18 @@
     var CONFIG = {"hostname":"alex-mcavoy.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":16,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":true,"color":"#ff0000","save":"manual"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":true},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.json"};
   </script>
 
-  <meta name="description" content="References：  马尔可夫蒙特卡罗 MCMC 原理及经典实现 走进贝叶斯统计（七）—— Metropolis-Hasting算法、Gibbs抽样与马尔可夫链   【概述】马尔科夫链蒙特卡罗法（Markov Chain Monte Carlo，MCMC）是从概率分布中抽样以构建最大可能分布的一类方法，其核心思想是：设计一个具有给定平稳概率分布的马尔科夫链模型，然后根据遍历理论，用采样器的随">
+  <meta name="description" content="References：  马尔可夫蒙特卡罗 MCMC 原理及经典实现 马尔可夫链蒙特卡罗算法（MCMC）   【概述】对于对某概率分布进行随机抽样，或求函数关于该概率分布的数学期望等问题，使用蒙特卡罗法即可解决">
 <meta name="keywords" content="数学,数理统计">
 <meta property="og:type" content="article">
 <meta property="og:title" content="马尔科夫链蒙特卡罗法">
 <meta property="og:url" content="https://alex-mcavoy.github.io/mathematics/mathematical-statistics/5877bf64.html">
 <meta property="og:site_name" content="Alex_McAvoy">
-<meta property="og:description" content="References：  马尔可夫蒙特卡罗 MCMC 原理及经典实现 走进贝叶斯统计（七）—— Metropolis-Hasting算法、Gibbs抽样与马尔可夫链   【概述】马尔科夫链蒙特卡罗法（Markov Chain Monte Carlo，MCMC）是从概率分布中抽样以构建最大可能分布的一类方法，其核心思想是：设计一个具有给定平稳概率分布的马尔科夫链模型，然后根据遍历理论，用采样器的随">
+<meta property="og:description" content="References：  马尔可夫蒙特卡罗 MCMC 原理及经典实现 马尔可夫链蒙特卡罗算法（MCMC）   【概述】对于对某概率分布进行随机抽样，或求函数关于该概率分布的数学期望等问题，使用蒙特卡罗法即可解决">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2023-09-02T18:16:55.903Z">
+<meta property="og:updated_time" content="2023-09-05T15:29:23.226Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="马尔科夫链蒙特卡罗法">
-<meta name="twitter:description" content="References：  马尔可夫蒙特卡罗 MCMC 原理及经典实现 走进贝叶斯统计（七）—— Metropolis-Hasting算法、Gibbs抽样与马尔可夫链   【概述】马尔科夫链蒙特卡罗法（Markov Chain Monte Carlo，MCMC）是从概率分布中抽样以构建最大可能分布的一类方法，其核心思想是：设计一个具有给定平稳概率分布的马尔科夫链模型，然后根据遍历理论，用采样器的随">
+<meta name="twitter:description" content="References：  马尔可夫蒙特卡罗 MCMC 原理及经典实现 马尔可夫链蒙特卡罗算法（MCMC）   【概述】对于对某概率分布进行随机抽样，或求函数关于该概率分布的数学期望等问题，使用蒙特卡罗法即可解决">
 
 <link rel="canonical" href="https://alex-mcavoy.github.io/mathematics/mathematical-statistics/5877bf64.html">
 
@@ -218,7 +218,7 @@
               </span>
               <span class="post-meta-item-text">发表于</span>
 
-              <time title="创建时间：2023-01-09 21:55:00" itemprop="dateCreated datePublished" datetime="2023-01-09T21:55:00+08:00">2023-01-09</time>
+              <time title="创建时间：2023-01-09 13:55:00" itemprop="dateCreated datePublished" datetime="2023-01-09T13:55:00+08:00">2023-01-09</time>
             </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -247,14 +247,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>1.2k</span>
+              <span>1.7k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>1 分钟</span>
+              <span>2 分钟</span>
             </span>
 
         </div>
@@ -270,67 +270,40 @@
 <p>References：</p>
 <ul>
 <li><a href="https://zhuanlan.zhihu.com/p/392917306" target="_blank" rel="noopener">马尔可夫蒙特卡罗 MCMC 原理及经典实现</a></li>
-<li><a href="https://zhuanlan.zhihu.com/p/415760346" target="_blank" rel="noopener">走进贝叶斯统计（七）—— Metropolis-Hasting算法、Gibbs抽样与马尔可夫链</a></li>
+<li><a href="https://zhuanlan.zhihu.com/p/37121528" target="_blank" rel="noopener">马尔可夫链蒙特卡罗算法（MCMC）</a></li>
 </ul>
 </blockquote>
-<h1 id="【概述】"><a href="#【概述】" class="headerlink" title="【概述】"></a>【概述】</h1><p><strong>马尔科夫链蒙特卡罗法（Markov Chain Monte Carlo，MCMC）</strong>是从概率分布中抽样以构建最大可能分布的一类方法，其核心思想是：设计一个具有给定平稳概率分布的马尔科夫链模型，然后根据遍历理论，用采样器的随机状态的经验测度来近似平稳分布</p>
+<h1 id="【概述】"><a href="#【概述】" class="headerlink" title="【概述】"></a>【概述】</h1><p>对于对某概率分布进行随机抽样，或求函数关于该概率分布的数学期望等问题，使用蒙特卡罗法即可解决</p>
+<p>而基于拒绝采样法的蒙特卡罗法的使用要求有两点：</p>
+<ol>
+<li>概率密度函数可积</li>
+<li>累积分布函数有反函数</li>
+</ol>
+<p>也就是说，当面临无法得到具体形式的非共轭后验分布、随机变量是多元的、随机变量各分量不独立等情况时，就无法使用蒙特卡罗法了</p>
+<p>例如：假设参数 $\theta$ 的先验分布为某定义域 $\theta\in[0,1]$，均值 $\mu=\frac{1}{2}$，正则化系数为 $\alpha$ 的截尾正态分布，后验分布 $P(\theta|X)$ 具备如下形式：</p>
+<script type="math/tex; mode=display">
+p(\theta|x) = \frac{\theta^{x}(1-\theta)^{1-x}\cdot \frac{\alpha}{\sqrt{2\pi}}e^{-\frac{(\theta-\frac{1}{2})^2}{2\sigma^2}}}{\int_{0}^{1} \theta^{x} (1-\theta)^{1-x} \cdot \frac{\alpha}{\sqrt{2\pi}}e^{-\frac{(\theta-\frac{1}{2})^2}{2\sigma^2}} d\theta}</script><p>显然，虽然知道这个后验分布 $P(\theta|X)$ 的形式，但无法解出分母</p>
+<p>为解决该类问题，出现了<strong>马尔科夫链蒙特卡罗法（Markov Chain Monte Carlo，MCMC）</strong>，其是从概率分布中抽样以构建最大可能分布的一类方法，核心思想是：设计一个具有给定平稳概率分布的马尔科夫链模型，然后根据遍历理论，用采样器的随机状态的经验测度来近似平稳分布</p>
 <p>简单来说，这类方法生成的序列都是马尔科夫链，每个值都只与自己前后的几个值有关，同时，用随机化的方法来解决确定性问题，从已知概率分布中采样出一系列符合目标分布的样本</p>
 <p>MCMC 的出现使得许多贝叶斯统计问题的求解成为可能，在机器学习、深度学习等领域有广泛的应用，是诸多复杂算法求解的基础</p>
 <p>MCMC 有两种基本算法：</p>
 <ul>
-<li><a href="https://alex-mcavoy.github.io/mathematics/mathematical-statistics/662122a5.html">Metropolis-Hasting 算法</a> </li>
+<li><a href="https://alex-mcavoy.github.io/mathematics/mathematical-statistics/662122a5.html">Metropolis Hasting 算法</a> </li>
 <li><a href="https://alex-mcavoy.github.io/mathematics/mathematical-statistics/8181bbd6.html">吉布斯采样</a></li>
 </ul>
-<h1 id="【MH-算法与吉布斯采样法的关系】"><a href="#【MH-算法与吉布斯采样法的关系】" class="headerlink" title="【MH 算法与吉布斯采样法的关系】"></a>【MH 算法与吉布斯采样法的关系】</h1><p>从 MH 算法的采样流程中可知，从某个值 $X_{last}$ 到某个新的值 $X_{new}$ 的概率，既需要考虑使用提议分布 $J(X_{new}|X_{last})$ 抽取出 $X_{new}$ 的概率，又要考虑 $\gamma$ 接受的概率</p>
-<p>考虑到通过 MH 算法得到的采样序列是马尔科夫链，那么对于其概率转移矩阵，有：</p>
+<h1 id="【基本思想】"><a href="#【基本思想】" class="headerlink" title="【基本思想】"></a>【基本思想】</h1><p>假设多元随机变量 $x\in \mathcal{X}$，其概率密度函数为 $p(x)$，$f(x)$ 是定义在 $x\in\mathcal{X}$ 上的函数，目标是获得概率分布 $p(x)$ 的样本集合，以及求函数 $f(x)$ 的数学期望 $E_{p(x)}[f(x)]$</p>
+<p>MCMC 的基本思想是：</p>
+<p>1）在随机变量 $x\in \mathcal{X}$ 的状态空间 $S$ 上构造一个满足遍历定理的马尔可夫链 $\{X_t,t\geq0\}$，使其平稳分布就是抽样的目标分布 $p(x)$</p>
+<p>2）从状态空间的某一点 $x_0$ 出发，用构造的马尔可夫链进行随机游走，产生样本序列 $x_0,x_1,\cdots,x_t,\cdots$</p>
+<p>3）根据马尔可夫链的遍历定理，当时间趋于无穷时，样本的分布趋于平稳分布，样本的函数均值趋于函数的数学期望</p>
+<p>确定正整数 $m,n(m&lt;n)$，得到样本集合 $\{x_{m+1},x_{m+2},\cdots,x_n\}$，并求函数 $f(x)$ 的遍历均值</p>
 <script type="math/tex; mode=display">
-P(X_{new},X_{last}) = J(X_{new}|X_{last}) \min \{1,\frac{P(X_{new})J(X_{last}|X_{new})}{P(X_{last})J(X_{new}|X_{last})}\}</script><p>称为 MH 算法的<strong>转移核</strong></p>
-<p>而对于吉布斯采样而言，其可以当做是 MH 的一个特例，即：可以将全条件分布 <script type="math/tex">P(X_{new}^{(j)}|X_{new}^{(<j)},X_{last}^{(>j)})</script> 理解为 MH 算法的提议分布 <script type="math/tex">J(X_{new}^{(j)}|X_{last}^{(j)})</script></p>
-<p>因此，有如下表示：</p>
-<script type="math/tex; mode=display">
-J(X_{new}^{(j)}|X_{last}^{(j)}) 
-= P(X_{new}^{(<j)}|X_{new}^{(j)},X_{last}^{(>j)},X_{last}^{(j)})
-= P(X_{new}^{(j)}|X_{new}^{(<j)},X_{last}^{(>j)})</script><p>结合 MH 算法的转移核，与构造出来的吉布斯采样的提议分布 $J(X_{new}^{(j)}|X_{last}^{(j)})$，可以得到吉布斯采样下的转移核：</p>
-<script type="math/tex; mode=display">
-P(X_{new}^{(j)},X_{last}^{(j)}) 
-= P(X_{new}^{(j)}|X_{last}^{(>j)},X_{new}^{(<j)}) 
-\min \{ 1, \frac{P(X_{new}^{(j)})P(X_{last}^{(j)}|X_{last}^{(>j)},X_{new}^{(<j)})}{P(X_{last}^{(j)}) P(X_{new}^{(j)}|X_{last}^{(>j)},X_{new}^{(<j)})} \}</script><p>在这里，对于 <script type="math/tex">\frac{P(X_{new}^{(j)})P(X_{last}^{(j)}|X_{last}^{(>j)},X_{new}^{(<j)})}{P(X_{last}^{(j)}) P(X_{new}^{(j)}|X_{last}^{(>j)},X_{new}^{(<j)})}</script> 来说，其是可以被化简的，记 $X_{last}^{(&gt;j)},X_{new}^{(&lt;j)} = X^{(-j)}$，有：</p>
-<script type="math/tex; mode=display">
-\frac{P(X_{new}^{(j)})P(X_{last}^{(j)}|X_{last}^{(>j)},X_{new}^{(<j)})}{P(X_{last}^{(j)}) P(X_{new}^{(j)}|X_{last}^{(>j)},X_{new}^{(<j)})}
-
-= \frac{P(X_{new}^{(j)}|X^{(-j)}) P(X^{(-j)}) P(X_{last}^{(j)}|X^{(-j)})}{P(X_{last}^{(j)}|X^{(-j)}) P(X^{(-j)}) P(X_{new}^{(j)}|X^{(-j)})}
-= 1</script><p>即：</p>
-<script type="math/tex; mode=display">
-\min\{1,
-\frac{P(X_{new}^{(j)})P(X_{last}^{(j)}|X_{last}^{(>j)},X_{new}^{(<j)})}{P(X_{last}^{(j)}) P(X_{new}^{(j)}|X_{last}^{(>j)},X_{new}^{(<j)})}
-\} = 1</script><p>故有：</p>
-<script type="math/tex; mode=display">
-P(X_{new}^{(j)},X_{last}^{(j)}) = P(X_{new}^{(j)}|X_{last}^{(>j)},X_{new}^{(<j)})</script><p>此时，成功将吉布斯采样法与 MH 算法整合到一起</p>
-<p>综上，可以得到结论：在 MH 算法中，可以取的提议分布是任意的，而将其设定为全条件分布时，MH 算法便成为了吉布斯采样法</p>
-<h1 id="【有效性证明】"><a href="#【有效性证明】" class="headerlink" title="【有效性证明】"></a>【有效性证明】</h1><h2 id="引入"><a href="#引入" class="headerlink" title="引入"></a>引入</h2><p>对于 MCMC 来说，首要问题就是有效性的证明，即它们为何能够有效？</p>
-<p>上文中证明了吉布斯采样法是 MH 算法的一种特殊形式，那么直接证明 MH 算法的有效性就相当于证明吉布斯采样法的有效性</p>
-<p>MH 算法生成的采样序列是一个马尔科夫链，而有效性的证明，就是证明：目标分布 $p_0(x)$ 是由 MH 算法采样得到的马尔科夫链的平稳分布</p>
-<p>此外，一个马尔科夫链有多种平稳分布是可能的，同时也需要证明：MH 算法生成的平稳分布是唯一的</p>
-<p>通常而言，在 MH 算法中使用常用的提议分布 $J(X_{new}|X_{last})$（如正态分布、均匀分布），即可构造出不可约的、非周期的、正常返的马尔科夫链，从而有唯一分布</p>
-<p>因此，只需证明：目标分布 $p_0(x)$ 是由 MH 算法采样得到的马尔科夫链的平稳分布</p>
-<p>关于马尔科夫链的状态，见：<a href="https://alex-mcavoy.github.io/mathematics/stochastic-process/9e146555.html">齐次马尔科夫链的状态</a></p>
-<h2 id="证明"><a href="#证明" class="headerlink" title="证明"></a>证明</h2><p>对于 MH 算法生成的马尔科夫链，设其转移核为 $P$，那么从 $a$ 状态到 $b$ 状态的转移概率为：</p>
-<script type="math/tex; mode=display">
-\begin{align*}
-p_{ab} 
-&= J(b|a) \min \{ 1,\frac{p_0(b)J(a|b)}{p_0(a)J(b|a)} \} \\
-&= \min \{J(b|a), \frac{p_0(b)J(a|b)}{p_0(a)} \}
-\end{align*}</script><p>同理，从状态 $b$ 到状态 $a$ 的转移概率为：</p>
-<script type="math/tex; mode=display">
-p_{ba} = \min\{ J(a|b),\frac{p_0(a)J(b|a)}{p_0(b)} \}</script><p>即有：</p>
-<script type="math/tex; mode=display">
-\begin{align*}
-p_0(a)p_{ab} = \min\{ J(b|a)p_0(a),p_0(b)J(a|b) \} \\
-p_0(b)p_{ba} = \min\{ J(a|b)p_0(b),p_0(a)J(b|a) \}
-\end{align*}</script><p>二者相等</p>
-<p>根据马尔科夫链的平稳分布定理，此时 $p_0(x)$ 为该马尔科夫链的平稳分布</p>
-<p>即目标分布 $p_0(x)$ 是 MH 算法采样得到的马尔科夫链的平稳分布</p>
-<p>关于马尔科夫链的平稳分布定理，见：<a href="https://alex-mcavoy.github.io/mathematics/stochastic-process/4cdefd51.html">马尔科夫链的转移概率与概率分布</a></p>
+\hat{E}f = \frac{1}{n-m} \sum_{i=m+1}^n f(x_i)</script><p>此时，得到的样本集合 $\{x_{m+1},x_{m+2},\cdots,x_{n}\}$ 就是目标概率分布的抽样结果，得到的函数均值就是要计算的数学期望，从时刻 $0$ 到时刻 $m$ 为止的时间段，被称为<strong>燃烧期</strong></p>
+<p>关于遍历定理，详见：<a href="https://alex-mcavoy.github.io/mathematics/stochastic-process/9e146555.html">马尔可夫链的状态</a></p>
+<hr>
+<p>由于马尔可夫链 $\{X_t,t\geq0\}$ 满足遍历定理，因此随机游走的起始点并不影响得到的结果，即从不同的起始点出发，都会收敛到同一平稳分布</p>
+<p>同时，对于马尔可夫链蒙特卡罗法中的得到的样本序列，相邻的样本点是相关的，而非独立的，因此在需要独立样本时，可以在该样本序列中再次进行随机抽样，将得到的子样本集合作为独立样本集合</p>
+<p>马尔可夫链蒙特卡罗法比基于接受-拒绝法的蒙特卡罗法更容易实现、效率更高，因为 MCMC 仅需定义马尔可夫链而不需定义提议分布，虽然燃烧期的样本需要抛弃，但不需要大量拒绝样本</p>
 
     </div>
 
@@ -387,12 +360,12 @@ p_0(b)p_{ba} = \min\{ J(a|b)p_0(b),p_0(a)J(b|a) \}
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/mathematics/mathematical-statistics/8181bbd6.html" rel="prev" title="吉布斯采样">
-      <i class="fa fa-chevron-left"></i> 吉布斯采样
+    <a href="/mathematics/mathematical-statistics/b9d621e5.html" rel="prev" title="蒙特卡罗法">
+      <i class="fa fa-chevron-left"></i> 蒙特卡罗法
     </a></div>
       <div class="post-nav-item">
-    <a href="/nvidia/cuda-spring-bootcamp/1c5747fe.html" rel="next" title="NVIDIA CUDA2023春训营（一）GPU 与 CUDA 简介">
-      NVIDIA CUDA2023春训营（一）GPU 与 CUDA 简介 <i class="fa fa-chevron-right"></i>
+    <a href="/mathematics/mathematical-statistics/662122a5.html" rel="next" title="Metropolis Hasting 算法">
+      Metropolis Hasting 算法 <i class="fa fa-chevron-right"></i>
     </a></div>
     </div>
       </footer>
@@ -453,7 +426,7 @@ p_0(b)p_{ba} = \min\{ J(a|b)p_0(b),p_0(a)J(b|a) \}
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【概述】"><span class="nav-number">1.</span> <span class="nav-text">【概述】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【MH-算法与吉布斯采样法的关系】"><span class="nav-number">2.</span> <span class="nav-text">【MH 算法与吉布斯采样法的关系】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【有效性证明】"><span class="nav-number">3.</span> <span class="nav-text">【有效性证明】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#引入"><span class="nav-number">3.1.</span> <span class="nav-text">引入</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#证明"><span class="nav-number">3.2.</span> <span class="nav-text">证明</span></a></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【概述】"><span class="nav-number">1.</span> <span class="nav-text">【概述】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【基本思想】"><span class="nav-number">2.</span> <span class="nav-text">【基本思想】</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -469,7 +442,7 @@ p_0(b)p_{ba} = \min\{ J(a|b)p_0(b),p_0(a)J(b|a) \}
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">650</span>
+          <span class="site-state-item-count">651</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
