@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.9.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/img/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/assets/img/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/pace-js@1/themes/blue/pace-theme-minimal.css">
+  <script src="//cdn.jsdelivr.net/npm/pace-js@1/pace.min.js"></script>
+
+
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"alex-mcavoy.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":16,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":true,"color":"#ff0000","save":"manual"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":true},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.json"};
+  </script>
+
+  <meta name="description" content="References：  贝叶斯网络，看完这篇我终于理解了(附代码)！ 概率图模型之贝叶斯网络 机器学习之贝叶斯网络 贝叶斯网络(Bayesian Network)   【概述】贝叶斯网络（Bayesian Network）借助 DAG 来刻画特征间的依赖关系，并使用条件概率表（Conditional Probability Table，CPT）来描述特征的联合概率分布">
+<meta name="keywords" content="人工智能,机器学习,监督学习">
+<meta property="og:type" content="article">
+<meta property="og:title" content="贝叶斯网络">
+<meta property="og:url" content="https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/64831aee.html">
+<meta property="og:site_name" content="Alex_McAvoy">
+<meta property="og:description" content="References：  贝叶斯网络，看完这篇我终于理解了(附代码)！ 概率图模型之贝叶斯网络 机器学习之贝叶斯网络 贝叶斯网络(Bayesian Network)   【概述】贝叶斯网络（Bayesian Network）借助 DAG 来刻画特征间的依赖关系，并使用条件概率表（Conditional Probability Table，CPT）来描述特征的联合概率分布">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/machine-learning/30-1.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/machine-learning/30-2.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/machine-learning/30-3.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/machine-learning/30-4.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/machine-learning/30-5.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/machine-learning/30-6.png">
+<meta property="og:updated_time" content="2023-09-06T08:06:43.749Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="贝叶斯网络">
+<meta name="twitter:description" content="References：  贝叶斯网络，看完这篇我终于理解了(附代码)！ 概率图模型之贝叶斯网络 机器学习之贝叶斯网络 贝叶斯网络(Bayesian Network)   【概述】贝叶斯网络（Bayesian Network）借助 DAG 来刻画特征间的依赖关系，并使用条件概率表（Conditional Probability Table，CPT）来描述特征的联合概率分布">
+<meta name="twitter:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/machine-learning/30-1.png">
+
+<link rel="canonical" href="https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/64831aee.html">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>贝叶斯网络 | Alex_McAvoy</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Alex_McAvoy</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">想要成为渔夫的猎手</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+
+	
+	
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/64831aee.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/assets/img/head.jpg">
+      <meta itemprop="name" content="Alex_McAvoy">
+      <meta itemprop="description" content="想要成为渔夫的猎手">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Alex_McAvoy">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          贝叶斯网络
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-07-24 13:59:00" itemprop="dateCreated datePublished" datetime="2019-07-24T13:59:00+08:00">2019-07-24</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/artificial-intelligence/" itemprop="url" rel="index"><span itemprop="name">人工智能</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/artificial-intelligence/machine-learning/" itemprop="url" rel="index"><span itemprop="name">机器学习</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>5.3k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>5 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <blockquote>
+<p>References：</p>
+<ul>
+<li><a href="https://zhuanlan.zhihu.com/p/73415944" target="_blank" rel="noopener">贝叶斯网络，看完这篇我终于理解了(附代码)！</a></li>
+<li><a href="https://zhuanlan.zhihu.com/p/30139208" target="_blank" rel="noopener">概率图模型之贝叶斯网络</a></li>
+<li><a href="https://zhuanlan.zhihu.com/p/539980922" target="_blank" rel="noopener">机器学习之贝叶斯网络</a></li>
+<li><a href="https://blog.csdn.net/gdp12315_gu/article/details/50002195" target="_blank" rel="noopener">贝叶斯网络(Bayesian Network)</a></li>
+</ul>
+</blockquote>
+<h1 id="【概述】"><a href="#【概述】" class="headerlink" title="【概述】"></a>【概述】</h1><p><strong>贝叶斯网络（Bayesian Network）</strong>借助 DAG 来刻画特征间的依赖关系，并使用<strong>条件概率表（Conditional Probability Table，CPT）</strong>来描述特征的联合概率分布</p>
+<p>一般而言，一个贝叶斯网络 $B$ 由结构 $G$ 与参数 $\Theta$ 来表示，即 $B= &lt; G,\Theta &gt;$</p>
+<p>其中，结构 $G$ 是一个 DAG，其中每个结点对应一个特征，若两个特征间存在依赖关系，则根据依赖关系建立一条有向边；参数 $\Theta$ 描述了依赖关系，假设特征 $x^{(j)}$ 在结构 $G$ 中的父结点集为 $\pi^{(j)}$，则 $\Theta$ 包含了每个特征的条件概率表，即</p>
+<script type="math/tex; mode=display">
+\Theta_{x^{(j)}|\pi^{(j)}}=P_B(X^{(j)}=x^{(j)}|\pi^{(j)})</script><h1 id="【贝叶斯网络结构】"><a href="#【贝叶斯网络结构】" class="headerlink" title="【贝叶斯网络结构】"></a>【贝叶斯网络结构】</h1><h2 id="条件独立性"><a href="#条件独立性" class="headerlink" title="条件独立性"></a>条件独立性</h2><p>对于贝叶斯网络来说，由于其是一个图结构，因此若每两个特征结点都存在一条边，那么所构建的贝叶斯网络将是一个全连接 DAG，这就意味着模型十分复杂，可能会出现过拟合</p>
+<p>为避免过拟合的发生，贝叶斯网络假设每个特征结点与其非子结点独立，由此有效地表达了特征间的条件独立性</p>
+<p>也就是说，贝叶斯网络 $B= &lt; G,\Theta &gt;$ 将特征 $X^{(1)},X^{(2)},…,X^{(n)}$ 的联合概率分布定义为：</p>
+<script type="math/tex; mode=display">
+P_B(X^{(1)}=x^{(1)},...,X^{(n)}=x^{(n)}) = \prod_{i=1}^n P(X^{(i)}=x^{(i)}|X^{(i+1)}=x^{(i+1)},...,X^{(n)}=x^{(n)})</script><p><img width="300" src="/images/artificial-intelligence/machine-learning/30-1.png"></p>
+<p>如上图，联合概率分布表示为：</p>
+<script type="math/tex; mode=display">
+P(x^{(1)},x^{(2)},x^{(3)},x^{(4)},x^{(5)})=P(x^{(1)})P(x^{(2)})P(x^{(3)}|x^{(1)})P(x^{(4)}|x^{(1)},x^{(2)})P(x^{(5)}|x^{(2)})</script><p>显然，在给定 $x^{(1)}$ 的情况下，$x^{(3)}$ 和 $x^{(4)}$ 独立；在给定 $x^{(2)}$ 的情况下，$x^{(4)}$ 和 $x^{(5)}$ 独立</p>
+<p>此时，可以简记为：</p>
+<script type="math/tex; mode=display">
+\begin{matrix}
+x^{(3)}\perp x^{(4)}|x^{(1)} & x^{(4)}\perp x^{(5)}|x^{(2)} 
+\end{matrix}</script><h2 id="独立性结构"><a href="#独立性结构" class="headerlink" title="独立性结构"></a>独立性结构</h2><h3 id="同父结构"><a href="#同父结构" class="headerlink" title="同父结构"></a>同父结构</h3><p><strong>同父结构（Common parent structure）</strong>，又称<strong>尾对尾结构（Tail-to-tail Structure）</strong></p>
+<p>其在给定父特征 $x^{(1)}$ 的取值下，其将子特征结点 $x^{(2)}$ 和 $x^{(3)}$ <strong>阻断（Blocked）</strong>， $x^{(2)}$ 和 $x^{(3)}$ 彼此条件独立</p>
+<p><img width="300" src="/images/artificial-intelligence/machine-learning/30-2.png"></p>
+<h3 id="顺序结构"><a href="#顺序结构" class="headerlink" title="顺序结构"></a>顺序结构</h3><p><strong>顺序结构（Sequence Structure）</strong>，又称<strong>头对尾结构（Head-to-tail Structure）</strong></p>
+<p>其在给定子特征 $x^{(2)}$ 的取值下，其将父特征结点 $x^{(1)}$ 与其子特征结点 $x^{(3)}$ <strong>阻断（blocked）</strong>， $x^{(1)}$ 和 $x^{(3)}$ 彼此条件独立</p>
+<p>但若</p>
+<p><img width="300" src="/images/artificial-intelligence/machine-learning/30-3.png"></p>
+<h3 id="V-型结构"><a href="#V-型结构" class="headerlink" title="V 型结构"></a>V 型结构</h3><p><strong>V 型结构（V-structure）</strong>，又称<strong>头对头结构（Head-to-Head Structure）</strong></p>
+<p>其在给定子特征 $x^{(3)}$ 的取值下，父特征结点 $x^{(1)}$ 和 $x^{(2)}$ 必不独立；但若子特征 $x^{(3)}$ 的取值未知， $x^{(1)}$ 和 $x^{(2)}$ 却是独立的</p>
+<p><img width="300" src="/images/artificial-intelligence/machine-learning/30-4.png"></p>
+<h2 id="边际独立性"><a href="#边际独立性" class="headerlink" title="边际独立性"></a>边际独立性</h2><p>在 V 型结构中，子特征的取值确定与否，会对其两个父特征的独立性发生影响</p>
+<p>简单来说，当 $x^{(3)}$ 发生时， $x^{(1)}$ 发生与否与 $x^{(2)}$  发生与否是无关的，即：</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+P(x^{(1)},x^{(2)}) &= \sum_{x^{(3)}}P(x^{(1)},x^{(2)},x^{(3)}) \\
+&= \sum_{x^{(3)}}P(x^{(3)}|x^{(1)},x^{(2)})P(x^{(1)})P(x^{(2)}) \\
+&= P(x^{(1)})P(x^{(2)})
+\end{align*}</script><p>这种情况，被称为<strong>边际独立性（Marginal Independence）</strong>，记为：$x^{(1)}\amalg x^{(2)}$</p>
+<p>实际上，这种情况并非 V 型结构所独有，例如在同父结构中，条件独立性 $x^{(2)}\perp x^{(3)}|x^{(1)}$ 成立，但若 $x^{(1)}$ 的取值未知，则边际独立性 $x^{(2)}\amalg  x^{(3)}$ 不成立</p>
+<h2 id="条件独立性分析"><a href="#条件独立性分析" class="headerlink" title="条件独立性分析"></a>条件独立性分析</h2><p>为分析 DAG 中的条件独立性，使用<strong>有向分离（Directed Separation）</strong>，将有向图转为无向图，其步骤如下：</p>
+<ol>
+<li>找出有向图中所有的 V 型结构</li>
+<li>在所有的 V 型结构的两个父结点间加一条无向边</li>
+<li>将所有有向边改为无向边</li>
+</ol>
+<p>由此产生的无向图称为<strong>道德图（Moral graph）</strong>，其含义是子结点的父结点间应该建立牢靠的关系，否则是不道德的，由此，令父结点相连接的过程，称为<strong>道德化（Moralization）</strong></p>
+<p>假定道德图中存在变量 $x$ 与 $y$，以及变量集合 $z=\{z_i\}$，若变量 $x$ 与 $y$ 在图上可被变量集合 $z$ 分开，即将 $z$ 去除后 $x$ 与 $y$ 分属两连通分支，则称为变量 $x$ 与 $y$ 被变量集合 $z$ 有向分离， 条件独立关系 $x\perp y|z$ 成立</p>
+<p><img width="300" src="/images/artificial-intelligence/machine-learning/30-5.png"></p>
+<p>如上图所示，在上图的道德图中，可以轻易的找出所有的条件独立关系：</p>
+<script type="math/tex; mode=display">
+\begin{matrix}
+x^{(3)}\perp x^{(2)}|x^{(1)} & x^{(5)}\perp x^{(1)}|x^{(2)} \\
+x^{(3)}\perp x^{(4)}|x^{(1)} & x^{(5)}\perp x^{(3)}|x^{(2)} \\
+x^{(3)}\perp x^{(5)}|x^{(1)} & x^{(5)}\perp x^{(4)}|x^{(2)}
+\end{matrix}</script><h2 id="贝叶斯网络中的马尔可夫毯"><a href="#贝叶斯网络中的马尔可夫毯" class="headerlink" title="贝叶斯网络中的马尔可夫毯"></a>贝叶斯网络中的马尔可夫毯</h2><p>在随机变量的全集 $U$，对于给定的变量 $X\in U$ 和变量集 $MB\subset U,X\notin MB$，如果满足：</p>
+<script type="math/tex; mode=display">
+X\perp \{U-MB-\{X\}\} | MB</script><p>则称满足上述条件的最小变量集 $MB$ 为变量 $X$ 的<strong>马尔可夫毯（Markov Blanket）</strong></p>
+<hr>
+<p>在贝叶斯网络中，一个结点的马尔可夫毯是一个结点集，在这个集合中的结点在给定的条件下，条件独立于其他所有结点</p>
+<p>简单来说，一个结点的马尔可夫毯是它的父结点、子结点、兄弟结点</p>
+<p>如下图，结点 $T$ 的马尔可夫毯为：$MB(T)=\{x^{(1)},x^{(2)},x^{(4)},x^{(6)},x^{(7)}\}$</p>
+<p><img width="500" src="/images/artificial-intelligence/machine-learning/30-6.png"></p>
+<p>马尔可夫毯是用于<strong>特征选择</strong>的一种冗余性分析工具，对于目标特征来说，其马尔可夫毯包含了该特征的所有信息，非马尔可夫毯则包含了目标特征的冗余特征</p>
+<p>因此，通过发现目标特征的马尔可夫毯，可以准确地确定目标特征的冗余特征，从而降低特征空间的维数</p>
+<p>也就是说，如果要了解某特征的分布情况，仅需了解其马尔可夫毯的信息即可，不需对整个数据集了解</p>
+<h1 id="【贝叶斯网络学习】"><a href="#【贝叶斯网络学习】" class="headerlink" title="【贝叶斯网络学习】"></a>【贝叶斯网络学习】</h1><h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>在网络结构已知，即特征间的依赖关系已知的情况下，贝叶斯网络只需要对训练样本进行统计，估计出每个结点的条件概率表即可</p>
+<p>但在实际应用中，往往不知道网络结构，因此贝叶斯网络学习的首要任务就是通过训练集来找出结构最为合适的贝叶斯网络</p>
+<p>目前，最常用的方法是<strong>评分搜索（Score Search）</strong>，该方法定义了一个<strong>评分函数（Score Function）</strong>，通过该函数来寻找结构最优的贝叶斯网络</p>
+<h2 id="最小描述长度准则"><a href="#最小描述长度准则" class="headerlink" title="最小描述长度准则"></a>最小描述长度准则</h2><p>目前常用的评分函数都是基于信息论准则的，其将学习问题视为一个数据压缩任务，试图找到一个可以用最短编码长度来描述训练数据的模型，此时，编码长度包括：模型自身所需的字节长度、使用该模型描述数据所需的字节长度</p>
+<p>对于贝叶斯网络学习而言，每个贝叶斯网络即为一个模型，其描述了训练集在该模型上的概率分布，对于那些在训练集中经常出现的样本，存在一套编码机制，使得这些经常出现的样本有着更短的编码</p>
+<p>由此，应该选择综合编码长度最短的模型，这就是<strong>最小描述长度（Minimal Description Length，MDL）准则</strong></p>
+<h2 id="评分函数最小化"><a href="#评分函数最小化" class="headerlink" title="评分函数最小化"></a>评分函数最小化</h2><p>给定由 $P(X,Y)$ 独立同分布产生的训练数据集 $T=\{(\mathbf{x_1},y_1),(\mathbf{x_2},y_2),…,(\mathbf{x_N},y_N)\}$，对于每一样本对 $(\mathbf{x_i},y_i)$，输入 $\mathbf{x_i}=(x_i^{(1)},x_i^{(2)},…,x_i^{(n)})^T\in \mathcal{X}$，输出 $y_i\in\mathcal{Y}$</p>
+<p>那么，贝叶斯网络 $B= &lt; G,\Theta &gt;$ 在 $T$ 上的评分函数为：</p>
+<script type="math/tex; mode=display">
+s(B|T)=f(\theta)|B|-LL(B|T)</script><p>其中，$|B|$ 为贝叶斯网络的参数个数，$f(\theta)$ 描述了每个参数 $\theta$ 所需的字节数，显然，$f(\theta)|B|$ 计算了编码整个贝叶斯网络 $B$ 所需要的字节数</p>
+<p>而 $LL(B|T)$ 为贝叶斯网络的对数似然，其计算了贝叶斯网络 $B$ 对应的概率分布 $P_B$ 对训练集 $T$ 的描述程度，即：</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+LL(B|T) &= \sum_{i=1}^{N}\log P_B(\mathbf{x_i},y_i) \\
+&= \sum_{i=1}^{N}\log P_B(X^{(1)}=x^{(1)}_i,...,X^{(n)}=x^{(n)}_i,Y=y_i) \\
+&= \sum_{i=1}^{N}\log\prod_{j=1}^n P(X^{(j)}=x^{(j)}_i|X^{(j+1)}=x^{(j+1)}_i,...,X^{(n)}=x^{(n)}_i,Y=y_i)
+\end{align*}</script><p>可以发现，学习任务转为了优化任务，即寻找一个贝叶斯网络 $B$，使得评分函数 $s(B|T)$ 最小</p>
+<p>若贝叶斯网络 $B = &lt; G,\Theta &gt;$ 的网络结构 $G$ 固定，那么评分函数 $s(B|T)$ 的第一项 $f(\theta)|B|$ 为常数，此时，最小化评分函数 $s(B|T)$ 等价于对参数 $\Theta$ 进行极大似然估计，即求：</p>
+<script type="math/tex; mode=display">
+\Theta_{x^{(j)}|\pi^{(j)}}=P_B(X^{(j)}=x^{(j)}|\pi^{(j)})</script><p>而参数 $\Theta_{x^{(j)}|\pi^{(j)}}$ 可以直接在训练集 $T$ 上通过经验估计获得，即：</p>
+<script type="math/tex; mode=display">
+\theta_{x^{(j)}|\pi^{(j)}}=\hat{P_T}(x^{(j)}|\pi^{(j)})</script><p>因此，为最小化评分函数 $s(B|T)$，只需要对所有可能的网络结构空间中进行搜索最优的贝叶斯网络结构，而网络的 $\Theta$ 参数可以直接在训练集上计算得到</p>
+<p>但在所有可能的网络结构空间中搜索最优网络结构是一个 NP 难问题，难以快速求解，为此，常通过以下两种策略在有限时间内求得近似解：</p>
+<ul>
+<li>贪心法：从某个网络结构出发，每次调整一条边，直到评分函数值不再降低</li>
+<li>约束法：对网络结构施加约束条件来削减搜索空间（半朴素贝叶斯可视为贝叶斯网络的特例，其将网络结构限定为树形结构）</li>
+</ul>
+<h2 id="AIC-与-BIC"><a href="#AIC-与-BIC" class="headerlink" title="AIC 与 BIC"></a>AIC 与 BIC</h2><p>当每个参数用 $1$ 字节描述时，有 $f(\theta)=1$，此时得到的评分函数称为<strong>赤池信息准则（Akaike Information Criterion，AIC）评分函数</strong>，即：</p>
+<script type="math/tex; mode=display">
+AIC(B|T)=|B|-LL(B|T)</script><p>当每个参数用 $\frac{1}{2}\log N$ 个字节描述时，有 $f(\theta)=\frac{1}{2}\log N$，此时得到的评分函数称为<strong>贝叶斯信息准则（Bayesian Informatica Criterion，BIC）评分函数</strong>，即：</p>
+<script type="math/tex; mode=display">
+BIC(B|T)=\frac{1}{2}|B|\log N-LL(B|T)</script><p>当不对贝叶斯网络进行编码长度的计算时，有 $f(\theta)=0$，此时得到的评分函数退化为<strong>负对数似然函数</strong>，学习任务退化为极大似然估计，即：</p>
+<script type="math/tex; mode=display">
+s(B|T)=-LL(B|T)</script><h1 id="【贝叶斯网络的预测】"><a href="#【贝叶斯网络的预测】" class="headerlink" title="【贝叶斯网络的预测】"></a>【贝叶斯网络的预测】</h1><p>在贝叶斯网络训练好后即可进行<strong>查询（Query）</strong>，即通过某些特征的观测值来推测其他特征的取值，这样通过已知特征观测值来推测预测值的过程称为<strong>推断（Inference）</strong>，其中已知观测值称为<strong>证据（Evidence）</strong></p>
+<p>最理想的情况是，直接根据贝叶斯网络定义的联合概率分布来精确计算后验概率，但当网络结点较多、图为稠密图时，这样的推断是 NP 难的，难以进行精确推断，为此，通常进行<strong>近似推断</strong>，即通过降低精度要求，在有限时间内求得近似解</p>
+<p>在实际应用中，贝叶斯网络的近似推断通常使用<strong>吉布斯采样（Gibbs Sampling）</strong>完成</p>
+
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>感谢您对我的支持，让我继续努力分享有用的技术与知识点！</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/wechatpay.jpg" alt="Alex_McAvoy 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/alipay.jpg" alt="Alex_McAvoy 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Alex_McAvoy
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/64831aee.html" title="贝叶斯网络">https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/64831aee.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/artificial-intelligence/" rel="tag"># 人工智能</a>
+              <a href="/tags/machine-learning/" rel="tag"># 机器学习</a>
+              <a href="/tags/supervised-learning/" rel="tag"># 监督学习</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/artificial-intelligence/machine-learning/cb24fd43.html" rel="prev" title="半朴素贝叶斯">
+      <i class="fa fa-chevron-left"></i> 半朴素贝叶斯
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/mathematics/convex-optimization/90a5934.html" rel="next" title="EM 算法">
+      EM 算法 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【概述】"><span class="nav-number">1.</span> <span class="nav-text">【概述】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【贝叶斯网络结构】"><span class="nav-number">2.</span> <span class="nav-text">【贝叶斯网络结构】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#条件独立性"><span class="nav-number">2.1.</span> <span class="nav-text">条件独立性</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#独立性结构"><span class="nav-number">2.2.</span> <span class="nav-text">独立性结构</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#同父结构"><span class="nav-number">2.2.1.</span> <span class="nav-text">同父结构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#顺序结构"><span class="nav-number">2.2.2.</span> <span class="nav-text">顺序结构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#V-型结构"><span class="nav-number">2.2.3.</span> <span class="nav-text">V 型结构</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#边际独立性"><span class="nav-number">2.3.</span> <span class="nav-text">边际独立性</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#条件独立性分析"><span class="nav-number">2.4.</span> <span class="nav-text">条件独立性分析</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#贝叶斯网络中的马尔可夫毯"><span class="nav-number">2.5.</span> <span class="nav-text">贝叶斯网络中的马尔可夫毯</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【贝叶斯网络学习】"><span class="nav-number">3.</span> <span class="nav-text">【贝叶斯网络学习】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#概述"><span class="nav-number">3.1.</span> <span class="nav-text">概述</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#最小描述长度准则"><span class="nav-number">3.2.</span> <span class="nav-text">最小描述长度准则</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#评分函数最小化"><span class="nav-number">3.3.</span> <span class="nav-text">评分函数最小化</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#AIC-与-BIC"><span class="nav-number">3.4.</span> <span class="nav-text">AIC 与 BIC</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【贝叶斯网络的预测】"><span class="nav-number">4.</span> <span class="nav-text">【贝叶斯网络的预测】</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">  
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Alex_McAvoy"
+      src="/assets/img/head.jpg">
+  <p class="site-author-name" itemprop="name">Alex_McAvoy</p>
+  <div class="site-description" itemprop="description">想要成为渔夫的猎手</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">652</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">63</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">71</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Alex-McAvoy" title="GitHub → https://github.com/Alex-McAvoy" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/u011815404" title="CSDN → https://blog.csdn.net/u011815404" rel="noopener" target="_blank"><i class="fas fa-copyright fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+<!-- 访客地图 -->
+<script type="text/javascript" src="//rf.revolvermaps.com/0/0/5.js?i=50n58yo58ow&amp;m=0&amp;c=ff0000&amp;cr1=ffffff&amp;s=140" async="async"></script>
+
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdz20172133" title="https://blog.csdn.net/sdz20172133" rel="noopener" target="_blank">神仙队友</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://pxlsdz.gitee.io/" title="https://pxlsdz.gitee.io/" rel="noopener" target="_blank">神仙队友blog2</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdau_fangshifeng" title="https://blog.csdn.net/sdau_fangshifeng" rel="noopener" target="_blank">酷头</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://bycore.net" title="https://bycore.net" rel="noopener" target="_blank">凉了的某饼同学</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://kris-cn.github.io/" title="http://kris-cn.github.io/" rel="noopener" target="_blank">翟孙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://deng.fun/" title="http://deng.fun/" rel="noopener" target="_blank">芙蓉姐姐</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/wentong_Xu" title="https://blog.csdn.net/wentong_Xu" rel="noopener" target="_blank">小黑贱胖子</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.yuheng.tech/" title="https://www.yuheng.tech/" rel="noopener" target="_blank">咸于</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/lanshan1111" title="https://blog.csdn.net/lanshan1111" rel="noopener" target="_blank">肥硕硕</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdauguanweihong" title="https://blog.csdn.net/sdauguanweihong" rel="noopener" target="_blank">管少</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_41661919" title="https://blog.csdn.net/qq_41661919" rel="noopener" target="_blank">俊杰</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_40859951" title="https://blog.csdn.net/qq_40859951" rel="noopener" target="_blank">峰哥</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/LSD20164388" title="https://blog.csdn.net/LSD20164388" rel="noopener" target="_blank">狗冬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37868325" title="https://blog.csdn.net/qq_37868325" rel="noopener" target="_blank">妍大佬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://sanshuiii.github.io/" title="https://sanshuiii.github.io/" rel="noopener" target="_blank">sanshuiii</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://zjpzhao.github.io/" title="https://zjpzhao.github.io/" rel="noopener" target="_blank">brain</a>
+        </li>
+    </ul>
+  </div>
+
+		
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+  
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Alex_McAvoy</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+</br>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script><script src="/js/bookmark.js"></script>
+
+
+
+  
+
+
+
+
+  <script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '48fd73a538d3fa927f65',
+      clientSecret: '56618aefeee90bac3c20de8d51bb0b985d67252d',
+      repo        : 'Gitalk-Comment',
+      owner       : 'Alex-McAvoy',
+      admin       : ['Alex-McAvoy'],
+      id          : '5515614d6cc9a7320cad3df3f4754d26',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+  
+  <!-- 鼠标单击粒子特效 -->
+  <script type="text/javascript" src="/js/cursor-effects.js"></script>
+  <!-- 多级目录 -->
+  <script type="text/javascript" src="/js/category.js"></script>
+  
+</body>
+</html>
