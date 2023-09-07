@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.9.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/img/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/assets/img/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/pace-js@1/themes/blue/pace-theme-minimal.css">
+  <script src="//cdn.jsdelivr.net/npm/pace-js@1/pace.min.js"></script>
+
+
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"alex-mcavoy.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":16,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":true,"color":"#ff0000","save":"manual"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":true},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.json"};
+  </script>
+
+  <meta name="description" content="【概述】对于隐马尔可夫模型的概率计算问题，即：给定隐马尔可夫模型 $\lambda=(A,B,\pi)$ 和观测序列 $O=(o_1,o_2,\cdots,o_T)$，计算在模型 $\lambda$ 下观测序列 $O$ 出现的概率 $P(O|\lambda)$ 有以下两种概率计算方法：">
+<meta name="keywords" content="人工智能,机器学习,监督学习">
+<meta property="og:type" content="article">
+<meta property="og:title" content="隐马尔可夫模型观测序列的概率计算">
+<meta property="og:url" content="https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/84c1b09d.html">
+<meta property="og:site_name" content="Alex_McAvoy">
+<meta property="og:description" content="【概述】对于隐马尔可夫模型的概率计算问题，即：给定隐马尔可夫模型 $\lambda=(A,B,\pi)$ 和观测序列 $O=(o_1,o_2,\cdots,o_T)$，计算在模型 $\lambda$ 下观测序列 $O$ 出现的概率 $P(O|\lambda)$ 有以下两种概率计算方法：">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/machine-learning/47-1.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/machine-learning/47-2.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/machine-learning/47-3.png">
+<meta property="og:updated_time" content="2023-09-07T16:29:51.366Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="隐马尔可夫模型观测序列的概率计算">
+<meta name="twitter:description" content="【概述】对于隐马尔可夫模型的概率计算问题，即：给定隐马尔可夫模型 $\lambda=(A,B,\pi)$ 和观测序列 $O=(o_1,o_2,\cdots,o_T)$，计算在模型 $\lambda$ 下观测序列 $O$ 出现的概率 $P(O|\lambda)$ 有以下两种概率计算方法：">
+<meta name="twitter:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/machine-learning/47-1.png">
+
+<link rel="canonical" href="https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/84c1b09d.html">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>隐马尔可夫模型观测序列的概率计算 | Alex_McAvoy</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Alex_McAvoy</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">想要成为渔夫的猎手</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+
+	
+	
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/84c1b09d.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/assets/img/head.jpg">
+      <meta itemprop="name" content="Alex_McAvoy">
+      <meta itemprop="description" content="想要成为渔夫的猎手">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Alex_McAvoy">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          隐马尔可夫模型观测序列的概率计算
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-09-08 17:24:00" itemprop="dateCreated datePublished" datetime="2019-09-08T17:24:00+08:00">2019-09-08</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/artificial-intelligence/" itemprop="url" rel="index"><span itemprop="name">人工智能</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/artificial-intelligence/machine-learning/" itemprop="url" rel="index"><span itemprop="name">机器学习</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>5.3k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>5 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="【概述】"><a href="#【概述】" class="headerlink" title="【概述】"></a>【概述】</h1><p>对于隐马尔可夫模型的概率计算问题，即：给定隐马尔可夫模型 $\lambda=(A,B,\pi)$ 和观测序列 $O=(o_1,o_2,\cdots,o_T)$，计算在模型 $\lambda$ 下观测序列 $O$ 出现的概率 $P(O|\lambda)$</p>
+<p>有以下两种概率计算方法：</p>
+<ul>
+<li><strong>直接计算法</strong>：暴力算法，时间复杂度 $O(N^2T)$</li>
+<li><strong>前向后向法（Forward-Backward Algorithm）</strong>：前向计算法与后向计算法的统称，本质上是动态规划算法，时间复杂度 $O(N^2T)$</li>
+</ul>
+<h1 id="【直接计算法】"><a href="#【直接计算法】" class="headerlink" title="【直接计算法】"></a>【直接计算法】</h1><p>直接计算法即按概率公式直接计算，其基本思路是：列举所有可能的长度为 $T$ 的状态序列 $I$，求各状态序列 $I$ 与观测序列 $O$  联合概率 $P(O,I|\lambda)$，然后对所有可能的状态序列求和，得到 $P(O|\lambda)$</p>
+<p>状态序列 $I=(i_1,i_2,\cdots,i_T)$ 的概率为：</p>
+<script type="math/tex; mode=display">
+P(I|\lambda) = \pi_{i_1} a_{i_1,i_2} a_{i_2,i_3} \cdots a_{i_{T-1},i_T}</script><p>对固定的状态序列 $I=(i_1,i_2,\cdots,i_T)$，观测序列 $O=(o_1,o_2,\cdots,o_T)$ 的概率为：</p>
+<script type="math/tex; mode=display">
+P(O|I,\lambda) = b_{i_1}(o_1) b_{i_2}(o_2) \cdots b_{i_T}(o_T)</script><p>观测序列 $O$ 与状态序列 $I$ 同时出现的联合概率为：</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+P(O,I|\lambda) 
+&= P(O|I,\lambda) P(I|\lambda) \\
+&= \pi_{i_1}b_{i_1}(o_1) * a_{i_1,i_2} b_{i_2}(o_2) * \cdots * a_{i_{T-1},i_T} b_{i_T}(o_T) 
+\end{align*}</script><p>然后，对所有可能的状态序列 $I$ 求和，得到观测序列 $O$ 的概率 $P(O|\lambda)$，即：</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+P(O|I,\lambda) 
+&= \sum_{I} P(O|I,\lambda) P(I|\lambda) \\
+&= \sum_{i_1,i_2,\cdots,i_T} \pi_{i_1}b_{i_1}(o_1) * a_{i_1,i_2} b_{i_2}(o_2) * \cdots * a_{i_{T-1},i_T} b_{i_T}(o_T) 
+\end{align*}</script><p>但是，直接利用上述公式进行计算的计算量很大，是 $O(TN^T)$ 阶的，随着 $T$ 的增长时间复杂度会呈爆炸式增长，故而该方法在计算上不可行</p>
+<h1 id="【前向计算法】"><a href="#【前向计算法】" class="headerlink" title="【前向计算法】"></a>【前向计算法】</h1><h2 id="前向概率"><a href="#前向概率" class="headerlink" title="前向概率"></a>前向概率</h2><p>对于给定的隐马尔可夫模型 $\lambda=(A,B,\lambda)$，定义到时刻 $t$ 的部分观测序列为 $o_1,o_2,\cdots,o_t$ 且状态为 $q_i$ 的概率为<strong>前向概率</strong>，记作：</p>
+<script type="math/tex; mode=display">
+\alpha_t(i) = P(o_1,o_2,\cdots,o_t,i_t = q_i|\lambda)</script><h2 id="前向概率的递推公式"><a href="#前向概率的递推公式" class="headerlink" title="前向概率的递推公式"></a>前向概率的递推公式</h2><p>对于到时刻 $t$ 观测到 $o_1,o_2,\cdots,o_t$ 并在时刻 $t$ 处于状态 $q_j$ 的前向概率 $\alpha_t(j)$，那么结合转移概率 $a_{ji}$，可求得到时刻 $t$ 观测到 $o_1,o_2,\cdots,o_t$ 并在时刻 $t$ 处于状态 $q_j$ 而在 $t+1$ 时刻到达状态 $q_i$ 的联合概率，即：</p>
+<script type="math/tex; mode=display">
+\alpha_t(j) a_{ji},\quad i=1,2,\cdots,N</script><p>对在 $t$ 时刻所有可能的 $N$ 个状态 $q_j$ 求和，可得到到时刻 $t$ 观测到 $o_1,o_2,\cdots,o_t$ 并在 $t+1$ 时刻处于状态 $q_i$ 的联合概率，即：</p>
+<script type="math/tex; mode=display">
+\sum_{j=1}^N \alpha_t(j) a_{ji},\quad i=1,2,\cdots,N</script><p><img width="300" src="/images/artificial-intelligence/machine-learning/47-1.png"></p>
+<p>那么，将这个联合概率与观测概率 $b_i(o_{t+1})$ 相乘，即可得到到时刻 $t+1$ 观测到 $o_1,o_2,\cdots,o_t,o_{t+1}$ 并在时刻 $t+1$ 处于状态 $q_i$ 的前向概率 $\alpha_{t+1}(i)$，即：</p>
+<script type="math/tex; mode=display">
+\alpha_{t+1}(i) = \bigg[ \sum_{j=1}^N \alpha_t(j) a_{ji} \bigg] b_i(o_{t+1}),\quad i=1,2,\cdots,N</script><p>上式即<strong>前向概率的递推公式</strong></p>
+<h2 id="观测序列概率的计算"><a href="#观测序列概率的计算" class="headerlink" title="观测序列概率的计算"></a>观测序列概率的计算</h2><p>由于到时刻 $T$ 的观测序列为 $o_1,o_2,\cdots,o_T$ 且状态为 $q_i$ 的前向概率为：</p>
+<script type="math/tex; mode=display">
+\alpha_T(i) = P(o_1,o_2,\cdots,o_t,i_T = q_i|\lambda)</script><p>故在模型 $\lambda$ 下观测序列 $O$ 出现的概率 $P(O|\lambda)$ 为：</p>
+<script type="math/tex; mode=display">
+P(O|\lambda) = \sum_{i=1}^N \alpha_T(i)</script><h2 id="算法流程"><a href="#算法流程" class="headerlink" title="算法流程"></a>算法流程</h2><p>综上所述，给出观测序列概率的前向计算法的算法流程</p>
+<p>输入：隐马尔可夫模型 $\lambda=(A,B,\pi)$，观测序列 $O=(o_1,o_2,\cdots,o_T)$</p>
+<p>输出：观测序列概率 $P(O|\lambda)$</p>
+<p>算法步骤如下：</p>
+<p>Step 1：算法初始化，对初始时刻 $t=1$，根据初始概率分布 $\pi$ 与观测概率 $b_i(o_1)$，求得初始时刻的状态 $i_1=q_i$ 和观测 $o_1$ 的联合概率，即初始前向概率：</p>
+<script type="math/tex; mode=display">
+\alpha_1(i) = \pi_i b_i(o_1), \quad i=1,2,\cdots,N</script><p>Step 2：根据前向概率的递推公式进行递推</p>
+<p>对 $t=1,2,\cdots,T-1$，有：</p>
+<script type="math/tex; mode=display">
+\alpha_{t+1}(i) = \bigg[ \sum_{j=1}^N \alpha_t(j) a_{ji} \bigg] b_i(o_{t+1}),\quad i=1,2,\cdots,N</script><p>Step 3：计算在模型 $\lambda$ 下观测序列 $O$ 出现的概率</p>
+<script type="math/tex; mode=display">
+P(O|\lambda) = \sum_{i=1}^N \alpha_T(i)</script><hr>
+<p>如下图所示，前向计算法实际是基于状态序列的路径结构，递推计算 $P(O|\lambda)$</p>
+<p><img width="300" src="/images/artificial-intelligence/machine-learning/47-2.png"></p>
+<p>其高效之处在于局部计算前向概率，然后利用路径结构将前向概率递推到全局，进而得到 $P(O|\lambda)$</p>
+<p>具体来说，在初始时刻 $t=1$，计算 $\alpha_1(i)$ 的 $N$ 个值（$i=1,2,\cdots,N$），在各时刻 $t=1,2,\cdots,T-1$，计算 $\alpha_{t+1}(i)$ 的 $N$ 个值（$i=1,2,\cdots,N$），并且每个 $\alpha_{t+1}(i)$ 的计算利用前一时刻 $N$ 个 $\alpha_t(j)$，减小计算量的原因就在于每一次计算都引用了之前的结果，避免了重复计算</p>
+<p>这样，利用前向概率计算 $P(O|\lambda)$ 的计算量是 $O(N^2T)$ 阶的</p>
+<h1 id="【后向计算法】"><a href="#【后向计算法】" class="headerlink" title="【后向计算法】"></a>【后向计算法】</h1><h2 id="后向概率"><a href="#后向概率" class="headerlink" title="后向概率"></a>后向概率</h2><p>对于给定的隐马尔可夫模型 $\lambda=(A,B,\lambda)$，定义在 $t$ 时刻状态为 $q_i$ 的条件下，从 $t+1$ 到 $T$ 的部分观测序列为 $o_{t+1},o_{t+2},\cdots,o_T$ 的概率为<strong>后向概率</strong>，记作：</p>
+<script type="math/tex; mode=display">
+\beta_t(i) = P(o_{t+1},o_{t+2},\cdots,o_T|i_t = q_i,\lambda)</script><h2 id="后向概率的递推公式"><a href="#后向概率的递推公式" class="headerlink" title="后向概率的递推公式"></a>后向概率的递推公式</h2><p>为计算在 $t$ 时刻状态为 $q_i$ 条件下 $t+1$ 时刻后的观测序列为 $o_{t+1},o_{t+2},\cdots,o_T$ 的后向概率 $\beta_t(i)$，只需考虑在 $t+1$ 时刻所有可能的 $N$ 个状态 $q_j$ 的转移概率 $a_{ij}$，在该状态下的观测 $o_{t+1}$ 的观测概率 $b_j(o_{t+1})$，以及在状态 $q_j$ 后的观测序列的后向概率 $\beta_{t+1}(j)$，即有：</p>
+<script type="math/tex; mode=display">
+\beta_{t}(i) =  \sum_{j=1}^N a_{ji} b_j(o_{t+1}) \beta_{t+1}(j),\quad i=1,2,\cdots,N</script><p><img width="300" src="/images/artificial-intelligence/machine-learning/47-3.png"></p>
+<p>上式即<strong>后向概率的递推公式</strong></p>
+<h2 id="观测序列概率的计算-1"><a href="#观测序列概率的计算-1" class="headerlink" title="观测序列概率的计算"></a>观测序列概率的计算</h2><p>由于在 $t=1$ 时刻状态为 $q_i$ 的条件下，从 $2$ 到 $T$ 的部分观测序列为 $o_{2},o_{3},\cdots,o_T$ 的后向概率为：</p>
+<script type="math/tex; mode=display">
+\beta_1(i) = P(o_{2},o_{3},\cdots,o_T|i_1 = q_i,\lambda)</script><p>那么结合初始概率 $\pi_i$ 与观测概率 $b_i(o_1)$，可得到在模型 $\lambda$ 下观测序列 $O$ 出现的概率 $P(O|\lambda)$ 为：</p>
+<script type="math/tex; mode=display">
+P(O|\lambda) = \sum_{i=1}^N \pi_i b_i(o_1) \beta_1(i)</script><h2 id="算法流程-1"><a href="#算法流程-1" class="headerlink" title="算法流程"></a>算法流程</h2><p>综上所述，给出观测序列概率的后向计算法的算法流程</p>
+<p>输入：隐马尔可夫模型 $\lambda=(A,B,\pi)$，观测序列 $O=(o_1,o_2,\cdots,o_T)$</p>
+<p>输出：观测序列概率 $P(O|\lambda)$</p>
+<p>算法步骤如下：</p>
+<p>Step 1：算法初始化，对最终时刻 $t=T$ 的所有状态 $q_i$ 规定</p>
+<script type="math/tex; mode=display">
+\beta_T(i)=1,\quad i=1,2,\cdots,N</script><p>Step 2：根据后向概率的递推公式进行递推</p>
+<p>对 $t=T-1,T-2,\cdots,1$，有：</p>
+<script type="math/tex; mode=display">
+\beta_{t}(i) =  \sum_{j=1}^N a_{ji} b_j(o_{t+1}) \beta_{t+1}(j),\quad i=1,2,\cdots,N</script><p>Step 3：计算在模型 $\lambda$ 下观测序列 $O$ 出现的概率</p>
+<script type="math/tex; mode=display">
+P(O|\lambda) = \sum_{i=1}^N \pi_i b_i(o_1) \beta_1(i)</script><h1 id="【概率与期望值的计算】"><a href="#【概率与期望值的计算】" class="headerlink" title="【概率与期望值的计算】"></a>【概率与期望值的计算】</h1><h2 id="前向后向概率递推公式"><a href="#前向后向概率递推公式" class="headerlink" title="前向后向概率递推公式"></a>前向后向概率递推公式</h2><p>根据前向概率与后向概率的定义，可以将观测序列概率 $P(O|\lambda)$ 统一写成：</p>
+<script type="math/tex; mode=display">
+P(O|\lambda) = \sum_{i=1}^N \sum_{j=1}^N \alpha_t(i) a_{ij} b_j(o_{t+1}) \beta_{t+1}(j), 
+\quad t=1,2,\cdots,T-1</script><p>上式即<strong>前向后向概率递推公式</strong></p>
+<p>当 $t=1$ 时，即为：</p>
+<script type="math/tex; mode=display">
+P(O|\lambda) = \sum_{i=1}^N \pi_i b_i(o_1) \beta_1(i)</script><p>当 $t=T-1$ 时，即为：</p>
+<script type="math/tex; mode=display">
+P(O|\lambda) = \sum_{i=1}^N \alpha_T(i)</script><h2 id="单一状态计算公式"><a href="#单一状态计算公式" class="headerlink" title="单一状态计算公式"></a>单一状态计算公式</h2><p>记 $\gamma_t(i)=P(i_t=q_i|O,\lambda)$ 为在给定模型 $\lambda$ 和观测序列 $O$ 的条件下，在 $t$ 时刻处于状态 $q_i$ 的概率</p>
+<p>根据前向概率 $\alpha_t(i)$ 与后向概率 $\beta_t(i)$ 的定义，有：</p>
+<script type="math/tex; mode=display">
+P(i_t=q_i,O|\lambda) = \alpha_t(i) \beta_t(i)</script><p>故有：</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+\gamma_t(i)
+&= P(i_t=q_i|O,\lambda) \\
+&= \frac{P(i_t=q_i,O|\lambda)}{P(O|\lambda)} \\
+&= \frac{\alpha_t(i) \beta_t(i)}{\sum\limits_{j=1}^N \alpha_t(j) \beta_t(j)}
+\end{align*}</script><h2 id="双状态计算公式"><a href="#双状态计算公式" class="headerlink" title="双状态计算公式"></a>双状态计算公式</h2><p>记 $\xi_t(i,j)=P(i_t=q_t,i_{t+1}=q_j|O,\lambda)$ 为在给定模型 $\lambda$ 和观测序列 $O$ 的条件下，在 $t$ 时刻处于状态 $q_i$ 且在 $t+1$ 时刻处于状态 $q_j$ 的概率</p>
+<p>根据前向概率 $\alpha_t(i)$ 与后向概率 $\beta_t(i)$ 的定义，有：</p>
+<script type="math/tex; mode=display">
+P(i_t=q_i,i_{t+1}=q_j,O|\lambda) = \alpha_t(i) a_{ij} b_j(o_{t+1}) \beta_{t+1}(j)</script><p>故有：</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+\xi_t(i,j)
+=& P(i_t=q_t,i_{t+1}=q_j|O,\lambda) \\
+=& \frac{P(i_t=q_i,i_{t+1}=q_j,O|\lambda)}{P(O|\lambda)} \\
+=& \frac{P(i_t=q_i,i_{t+1}=q_j,O|\lambda)}{\sum\limits_{i=1}^N \sum\limits_{j=1}^N P(i_t=q_i,i_{t+1}=q_j,O|\lambda)} \\
+=& \frac{\alpha_t(i) a_{ij} b_j(o_{t+1}) \beta_{t+1}(j)}{\sum\limits_{i=1}^N \sum\limits_{j=1}^N \alpha_t(i) a_{ij} b_j(o_{t+1}) \beta_{t+1}(j)} \\
+\end{align*}</script><h2 id="期望值的计算"><a href="#期望值的计算" class="headerlink" title="期望值的计算"></a>期望值的计算</h2><p>将 $\gamma_t(i)$ 和 $\xi_t(i,j)$ 对各个时刻 $t$ 求和，可以得到一些期望值</p>
+<p>在观测序列 $O$ 下，状态 $i$ 出现的期望值为：</p>
+<script type="math/tex; mode=display">
+\sum_{t=1}^T \gamma_t(i)</script><p>在观测序列 $O$ 下，由状态 $i$ 转移的期望值为：</p>
+<script type="math/tex; mode=display">
+\sum_{t=1}^{T-1} \gamma_t(i)</script><p>在观测序列 $O$ 下，由状态 $i$ 转移到状态 $j$ 的期望值为：</p>
+<script type="math/tex; mode=display">
+\sum_{t=1}^{T-1} \xi_t(i,j)</script>
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>感谢您对我的支持，让我继续努力分享有用的技术与知识点！</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/wechatpay.jpg" alt="Alex_McAvoy 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/alipay.jpg" alt="Alex_McAvoy 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Alex_McAvoy
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/84c1b09d.html" title="隐马尔可夫模型观测序列的概率计算">https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/84c1b09d.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/artificial-intelligence/" rel="tag"># 人工智能</a>
+              <a href="/tags/machine-learning/" rel="tag"># 机器学习</a>
+              <a href="/tags/supervised-learning/" rel="tag"># 监督学习</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/artificial-intelligence/machine-learning/ac38a68c.html" rel="prev" title="隐马尔可夫模型">
+      <i class="fa fa-chevron-left"></i> 隐马尔可夫模型
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/artificial-intelligence/machine-learning/8852e00e.html" rel="next" title="隐马尔可夫模型的学习">
+      隐马尔可夫模型的学习 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【概述】"><span class="nav-number">1.</span> <span class="nav-text">【概述】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【直接计算法】"><span class="nav-number">2.</span> <span class="nav-text">【直接计算法】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【前向计算法】"><span class="nav-number">3.</span> <span class="nav-text">【前向计算法】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#前向概率"><span class="nav-number">3.1.</span> <span class="nav-text">前向概率</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#前向概率的递推公式"><span class="nav-number">3.2.</span> <span class="nav-text">前向概率的递推公式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#观测序列概率的计算"><span class="nav-number">3.3.</span> <span class="nav-text">观测序列概率的计算</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#算法流程"><span class="nav-number">3.4.</span> <span class="nav-text">算法流程</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【后向计算法】"><span class="nav-number">4.</span> <span class="nav-text">【后向计算法】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#后向概率"><span class="nav-number">4.1.</span> <span class="nav-text">后向概率</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#后向概率的递推公式"><span class="nav-number">4.2.</span> <span class="nav-text">后向概率的递推公式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#观测序列概率的计算-1"><span class="nav-number">4.3.</span> <span class="nav-text">观测序列概率的计算</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#算法流程-1"><span class="nav-number">4.4.</span> <span class="nav-text">算法流程</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【概率与期望值的计算】"><span class="nav-number">5.</span> <span class="nav-text">【概率与期望值的计算】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#前向后向概率递推公式"><span class="nav-number">5.1.</span> <span class="nav-text">前向后向概率递推公式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#单一状态计算公式"><span class="nav-number">5.2.</span> <span class="nav-text">单一状态计算公式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#双状态计算公式"><span class="nav-number">5.3.</span> <span class="nav-text">双状态计算公式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#期望值的计算"><span class="nav-number">5.4.</span> <span class="nav-text">期望值的计算</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">  
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Alex_McAvoy"
+      src="/assets/img/head.jpg">
+  <p class="site-author-name" itemprop="name">Alex_McAvoy</p>
+  <div class="site-description" itemprop="description">想要成为渔夫的猎手</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">657</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">63</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">71</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Alex-McAvoy" title="GitHub → https://github.com/Alex-McAvoy" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/u011815404" title="CSDN → https://blog.csdn.net/u011815404" rel="noopener" target="_blank"><i class="fas fa-copyright fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+<!-- 访客地图 -->
+<script type="text/javascript" src="//rf.revolvermaps.com/0/0/5.js?i=50n58yo58ow&amp;m=0&amp;c=ff0000&amp;cr1=ffffff&amp;s=140" async="async"></script>
+
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdz20172133" title="https://blog.csdn.net/sdz20172133" rel="noopener" target="_blank">神仙队友</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://pxlsdz.gitee.io/" title="https://pxlsdz.gitee.io/" rel="noopener" target="_blank">神仙队友blog2</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdau_fangshifeng" title="https://blog.csdn.net/sdau_fangshifeng" rel="noopener" target="_blank">酷头</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://bycore.net" title="https://bycore.net" rel="noopener" target="_blank">凉了的某饼同学</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://kris-cn.github.io/" title="http://kris-cn.github.io/" rel="noopener" target="_blank">翟孙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://deng.fun/" title="http://deng.fun/" rel="noopener" target="_blank">芙蓉姐姐</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/wentong_Xu" title="https://blog.csdn.net/wentong_Xu" rel="noopener" target="_blank">小黑贱胖子</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.yuheng.tech/" title="https://www.yuheng.tech/" rel="noopener" target="_blank">咸于</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/lanshan1111" title="https://blog.csdn.net/lanshan1111" rel="noopener" target="_blank">肥硕硕</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdauguanweihong" title="https://blog.csdn.net/sdauguanweihong" rel="noopener" target="_blank">管少</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_41661919" title="https://blog.csdn.net/qq_41661919" rel="noopener" target="_blank">俊杰</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_40859951" title="https://blog.csdn.net/qq_40859951" rel="noopener" target="_blank">峰哥</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/LSD20164388" title="https://blog.csdn.net/LSD20164388" rel="noopener" target="_blank">狗冬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37868325" title="https://blog.csdn.net/qq_37868325" rel="noopener" target="_blank">妍大佬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://sanshuiii.github.io/" title="https://sanshuiii.github.io/" rel="noopener" target="_blank">sanshuiii</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://zjpzhao.github.io/" title="https://zjpzhao.github.io/" rel="noopener" target="_blank">brain</a>
+        </li>
+    </ul>
+  </div>
+
+		
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+  
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Alex_McAvoy</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+</br>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script><script src="/js/bookmark.js"></script>
+
+
+
+  
+
+
+
+
+  <script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '48fd73a538d3fa927f65',
+      clientSecret: '56618aefeee90bac3c20de8d51bb0b985d67252d',
+      repo        : 'Gitalk-Comment',
+      owner       : 'Alex-McAvoy',
+      admin       : ['Alex-McAvoy'],
+      id          : 'a838d69263f6b4b44fdde05170f7538c',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+  
+  <!-- 鼠标单击粒子特效 -->
+  <script type="text/javascript" src="/js/cursor-effects.js"></script>
+  <!-- 多级目录 -->
+  <script type="text/javascript" src="/js/category.js"></script>
+  
+</body>
+</html>
