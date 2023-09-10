@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.9.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/img/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/assets/img/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/pace-js@1/themes/blue/pace-theme-minimal.css">
+  <script src="//cdn.jsdelivr.net/npm/pace-js@1/pace.min.js"></script>
+
+
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"alex-mcavoy.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":16,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":true,"color":"#ff0000","save":"manual"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":true},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.json"};
+  </script>
+
+  <meta name="description" content="【概述】对于线性链条件随机场的学习问题，即：已知线性链条件随机场 $P(Y|X)$，估计 $P(Y|X)$ 的参数 其学习方法有改进的迭代尺度法(IIS)、梯度下降法、拟牛顿法等，这里仅介绍使用改进的迭代尺度法(IIS)和拟牛顿法对线性链条件随机场的学习">
+<meta name="keywords" content="人工智能,机器学习,监督学习">
+<meta property="og:type" content="article">
+<meta property="og:title" content="条件随机场的学习">
+<meta property="og:url" content="https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/786f4ea0.html">
+<meta property="og:site_name" content="Alex_McAvoy">
+<meta property="og:description" content="【概述】对于线性链条件随机场的学习问题，即：已知线性链条件随机场 $P(Y|X)$，估计 $P(Y|X)$ 的参数 其学习方法有改进的迭代尺度法(IIS)、梯度下降法、拟牛顿法等，这里仅介绍使用改进的迭代尺度法(IIS)和拟牛顿法对线性链条件随机场的学习">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2023-09-10T14:09:12.462Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="条件随机场的学习">
+<meta name="twitter:description" content="【概述】对于线性链条件随机场的学习问题，即：已知线性链条件随机场 $P(Y|X)$，估计 $P(Y|X)$ 的参数 其学习方法有改进的迭代尺度法(IIS)、梯度下降法、拟牛顿法等，这里仅介绍使用改进的迭代尺度法(IIS)和拟牛顿法对线性链条件随机场的学习">
+
+<link rel="canonical" href="https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/786f4ea0.html">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>条件随机场的学习 | Alex_McAvoy</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Alex_McAvoy</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">想要成为渔夫的猎手</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+
+	
+	
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/786f4ea0.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/assets/img/head.jpg">
+      <meta itemprop="name" content="Alex_McAvoy">
+      <meta itemprop="description" content="想要成为渔夫的猎手">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Alex_McAvoy">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          条件随机场的学习
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-09-14 14:49:00" itemprop="dateCreated datePublished" datetime="2019-09-14T14:49:00+08:00">2019-09-14</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/artificial-intelligence/" itemprop="url" rel="index"><span itemprop="name">人工智能</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/artificial-intelligence/machine-learning/" itemprop="url" rel="index"><span itemprop="name">机器学习</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>5.7k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>5 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="【概述】"><a href="#【概述】" class="headerlink" title="【概述】"></a>【概述】</h1><p>对于线性链条件随机场的学习问题，即：已知线性链条件随机场 $P(Y|X)$，估计 $P(Y|X)$ 的参数</p>
+<p>其学习方法有改进的迭代尺度法(IIS)、梯度下降法、拟牛顿法等，这里仅介绍使用改进的迭代尺度法(IIS)和拟牛顿法对线性链条件随机场的学习</p>
+<h1 id="【改进的迭代尺度法】"><a href="#【改进的迭代尺度法】" class="headerlink" title="【改进的迭代尺度法】"></a>【改进的迭代尺度法】</h1><h2 id="对数似然函数"><a href="#对数似然函数" class="headerlink" title="对数似然函数"></a>对数似然函数</h2><p>若已知训练集，那么可知经验概率分布 $\tilde{P}(X,Y)$，那么就可以通过极大化训练数据的对数似然函数来求模型参数</p>
+<p>根据极大似然估计，训练数据的对数似然函数为：</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+L({\mathbf{w}}) 
+&= L_{\tilde{P}}(P_{\mathbf{w}}) \\
+&= \log \prod_{x,y} P_{\mathbf{w}}(y|x)^{\tilde{P}(X,Y)} \\
+&= \sum_{x,y} \tilde{P}(x,y)\log P_{\mathbf{w}}(y|x)
+\end{align*}</script><p>当 $P_{\mathbf{w}}$ 是由下式给出的线性链条件随机场时</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+P(y|x) &= \frac{1}{Z(x)} \exp 
+\sum_{k=1}^K w_k f_k(y,x) \\
+Z(x) &= \sum_{y} \exp 
+\sum_{k=1}^K w_k f_k(y,x)
+\end{align*}</script><p>对数似然函数为：</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+L({\mathbf{w}}) 
+&= \sum_{x,y} \tilde{P}(x,y) \log P_{\mathbf{w}}(y|x) \\
+&= \sum_{x,y} \bigg[
+\tilde{P}(x,y) \sum_{k=1}^K w_k f_k(y,x) - \tilde{P}(x,y) \log Z_{\mathbf{w}} (x)
+\bigg] \\
+&= \sum_{j=1}^N \sum_{k=1}^K w_k f_k(y_j,x_j) - \sum_{j=1}^N \log Z_\mathbf{w}(x_j)
+\end{align*}</script><h2 id="更新方程"><a href="#更新方程" class="headerlink" title="更新方程"></a>更新方程</h2><p><a href="https://alex-mcavoy.github.io/mathematics/convex-optimization/346416ed.html">改进的迭代尺度法(IIS)</a> 是通过迭代的方法，不断优化对数似然函数改变量的下界，极大化对数似然函数</p>
+<p>假设模型的当前参数向量 $\mathbf{w}=(w_1,w_2,\cdots,w_K)^T$，向量的增量 $\boldsymbol{\delta}=(\delta_1,\delta_2,\cdots,\delta_K)^T$，则更新参数向量为：</p>
+<script type="math/tex; mode=display">
+\mathbf{w}+\boldsymbol{\delta} = (w_1+\delta_1,w_2+\delta_2,\cdots,w_K+\delta_K)^T</script><p>根据 IIS，关于转移特征 $t_k$，$\delta_k$ 的更新方程为：</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+E_{\tilde{P}}[t_k] 
+&= \sum_{x,y} \tilde{P}(x,y) \sum_{i=1}^{n+1} t_k(y_{i-1},y_i,x,i) \\
+&= \sum_{x,y} \tilde{P}(x) P(y|x) \sum_{i=1}^{n+1} t_k (y_{i-1},y_i,x,i) \exp[\delta_k T(x,y)] \\
+&k=1,2,\cdots,K_1
+\end{align*}</script><p>关于状态特征 $s_k$，$\delta_k$ 的更新方程为：</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+E_{\tilde{P}}[s_l] 
+&= \sum_{x,y} \tilde{P}(x,y) \sum_{i=1}^{n+1} s_l(y_{i},x,i) \\
+&= \sum_{x,y} \tilde{P}(x) P(y|x) \sum_{i=1}^{n} s_l(y_i,x,i) \exp[\delta_{K_1+l} T(x,y)] \\
+&l=1,2,\cdots,K_2
+\end{align*}</script><p>其中，$T(x,y)$ 是在数据 $(x,y)$ 中出现的所有特征数的总和，即：</p>
+<script type="math/tex; mode=display">
+T(x,y) = \sum_{k}f_k(y,x)=\sum_{k=1}^{K} \sum_{i=1}^{n+1} f_k(y_{i-1},y_i,x,i)</script><h2 id="算法-S"><a href="#算法-S" class="headerlink" title="算法 S"></a>算法 S</h2><p>$T(x,y)$ 是在数据 $(x,y)$ 中的特征总数，但对于不同的数据 $(x,y)$，取值可能不同，为此，定义松弛特征：</p>
+<script type="math/tex; mode=display">
+s(x,y) = S-\sum_{i=1}^{n+1}\sum_{k=1}^K f_{k}(y_{i-1},y_i,x,i)</script><p>其中，$S$ 是一个常数，选择足够大的 $S$ 时，会使得对训练集中的所有数据 $(x,y)$ 满足 $s(x,y)\geq 0$，此时特征总数 $T(x,y)=S$</p>
+<p>那么，对于转移特征 $t_k$，$\delta_k$ 的更新方程为：</p>
+<script type="math/tex; mode=display">
+\begin{gather}
+\sum\limits_{x,y} \tilde{P}(x) P(y|x) \sum\limits_{i=1}^{n+1} t_k (y_{i-1},y_i,x,i) \exp[\delta_k S] = E_{\tilde{P}}[t_k] \\
+\delta_k = \frac{1}{S} \log \frac{E_{\tilde{P}}[t_k]}{E_[t_k]}
+\end{gather}</script><p>其中，$E_{P}[t_k] $ 为：</p>
+<script type="math/tex; mode=display">
+E_{P}[t_k] = \sum_{x} \tilde{P}(x) \sum_{i=1}^{n+1} \sum_{y_{i-1},y_i} t_k(y_{i-1},y_i,x,i) \frac{\alpha_{i-1}^T(y_{i-1}|x)M_i(y_{i-1},y_i|x)\beta_i(y_i|x)}{Z(x)}</script><p>同理，对于状态特征 $s_l$，$\delta_k$ 的更新方程为：</p>
+<script type="math/tex; mode=display">
+\begin{gather}
+\sum_{x,y} \tilde{P}(x) P(y|x) \sum_{i=1}^{n} s_l(y_i,x,i) \exp[\delta_{K_1+l} S]  = E_{\tilde{P}}[s_l] \\
+\delta_{K_1+l} = \frac{1}{S} \log \frac{E_{\tilde{P}}[s_l]}{E_{P}[s_l]}
+\end{gather}</script><p>其中，$E_{P}[s_l] $ 为：</p>
+<script type="math/tex; mode=display">
+E_{P}[s_l] = \sum_{x} \tilde{P}(x) \sum_{i=1}^{n} \sum_{y_i} s_l(y_i,x,i) \frac{\alpha_{i}^T(y_{i}|x)\beta_i(y_i|x)}{Z(x)}</script><h2 id="算法-T"><a href="#算法-T" class="headerlink" title="算法 T"></a>算法 T</h2><p>在算法 S 中，需要使常数 $S$ 足够大，但这样一来，每步迭代的增量向量会变大，算法收敛会变慢</p>
+<p>为解决该问题，提出了算法 T，即对每个观测序列 $x$ 计算其特征总数最大值：</p>
+<script type="math/tex; mode=display">
+T(x) = \max_y T(x,y)</script><p>利用前向-后向递推公式，可计算出 $T(x)=t$</p>
+<p>此时，对于转移特征 $t_k$，$\delta_k$ 的更新方程为：</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+E_{\tilde{P}}[t_k] 
+&= \sum\limits_{x,y} \tilde{P}(x) P(y|x) \sum\limits_{i=1}^{n+1} t_k (y_{i-1},y_i,x,i) \exp[\delta_k T(x)]  \\
+&= \sum_{x} \tilde{P}(x) \sum_y P(y|x) \sum_{i=1}^{n+1} t_k(y_{i-1},y_i,x,i) \exp[\delta_k T(x)] \\
+&= \sum_x \tilde{P}(x) a_{k,t} \exp(\delta_k t) \\
+&= \sum_{t=0}^{T_{\max}} a_{k,t}\beta_{k}^t
+\end{align*}</script><p>其中，$a_{k,t}$ 是 $t_k$ 的期待值，$\delta_k=\log \beta_k$，$\beta_k$ 是上述多项式方程的唯一实根，可用牛顿法求得，进而求得相关的 $\delta_k$</p>
+<p>同理，关于状态特征 $s_l$，$\delta_k$ 的更新方程为：</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+E_{\tilde{P}}[s_l] 
+&= \sum\limits_{x,y} \tilde{P}(x) P(y|x) \sum\limits_{i=1}^{n} s_l (y_i,x,i) \exp[\delta_{K_1+l} T(x)]  \\
+&= \sum_{x} \tilde{P}(x) \sum_y P(y|x) \sum_{i=1}^{n} s_l(y_i,x,i) \exp[\delta_{K_{1}+l} T(x)] \\
+&= \sum_x \tilde{P}(x) b_{l,t} \exp(\delta_k t) \\
+&= \sum_{t=0}^{T_{\max}} b_{l,t}\gamma_{l}^t
+\end{align*}</script><p>其中，$b_{l,t}$ 是 $s_l$ 的期待值，$\delta_k=\log \gamma_l$，$\gamma_l$ 是上述多项式方程的唯一实根，可用牛顿法求得，进而求得相关的 $\delta_k$</p>
+<h2 id="算法流程"><a href="#算法流程" class="headerlink" title="算法流程"></a>算法流程</h2><p>综上所述，下面给出线性链条件随机场学习的改进的迭代尺度法的算法流程</p>
+<p>输入：特征函数 $t_1,t_2,\cdots,t_{K_1},s_1,s_2,\cdots,s_{K_2}$，经验分布 $\tilde{P}(x,y)$</p>
+<p>输出：参数估计值 $\hat{\mathbf{w}}$，模型 $P_{\hat{\mathbf{w}}}(y|x)$</p>
+<p>算法步骤：</p>
+<p>Step 1：算法初始化，对所有的 $k\in \{ 1,2,\cdots,K \}$，取初值 $w_k=0$</p>
+<p>Step 2：对每一 $k\in \{ 1,2,\cdots,K \}$</p>
+<p>1）当 $k=1,2,\cdots,K_1$ 时，令 $\delta_k$ 是下述方程的解</p>
+<script type="math/tex; mode=display">
+\sum_{x,y} \tilde{P}(x) P(y|x) \sum_{i=1}^{n+1} t_k (y_{i-1},y_i,x,i) \exp[\delta_k T(x,y)] = E_{\tilde{P}}[t_k]</script><p>其中，$T(x,y)$ 可采取算法 S，亦可采取算法 T</p>
+<p>2）当 $k=K_{1}+l,l=1,2,\cdots,K_2$ 时，令 $\delta_{K_1+l}$ 是下述方程的解</p>
+<script type="math/tex; mode=display">
+\sum_{x,y} \tilde{P}(x) P(y|x) \sum_{i=1}^{n} s_l(y_i,x,i) \exp[\delta_{K_1+l} T(x,y)] = E_{\tilde{P}}[s_l]</script><p>其中，$T(x,y)$ 可采取算法 S，亦可采取算法 T</p>
+<p>3）更新 $w_{k}$ 的值</p>
+<script type="math/tex; mode=display">
+w_k := w_{k}+\delta_k</script><p>Step 3：若不是所有的 $w_k$ 都收敛，重复 Step 2</p>
+<h1 id="【拟牛顿法】"><a href="#【拟牛顿法】" class="headerlink" title="【拟牛顿法】"></a>【拟牛顿法】</h1><p>线性链条件随机场的学习，还可采用牛顿法或拟牛顿法</p>
+<h2 id="目标优化函数"><a href="#目标优化函数" class="headerlink" title="目标优化函数"></a>目标优化函数</h2><p>对于线性链随机场模型：</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+P_{\mathbf{\mathbf{w}}}(y|x) &= \frac{1}{Z(x)} \exp 
+\sum_{k=1}^K w_k f_k(y,x) \\
+Z(x) &= \sum_{y} \exp 
+\sum_{k=1}^K w_k f_k(y,x)
+\end{align*}</script><p>学习的优化目标函数为：</p>
+<script type="math/tex; mode=display">
+\min_{\mathbf{w}\in \mathbb{R}^n} f(\mathbf{w}) = \sum_{x}\tilde{P}(x) \log \sum_y \exp \sum_{k=1}^K w_k f_k(x,y) - \sum_{x,y} \tilde{P}(x,y) \sum_{k=1}^{K} w_i f_i(x,y)</script><p>其梯度函数为：</p>
+<script type="math/tex; mode=display">
+g(\mathbf{w}) = \sum_{x,y} \tilde{P}(x) P_{\mathbf{w}}(y|x) f(x,y)-E_{\tilde{P}}[f]</script><h2 id="算法流程-1"><a href="#算法流程-1" class="headerlink" title="算法流程"></a>算法流程</h2><p>基于目标优化函数，下面仅给出线性链条件随机场学习的 <a href="https://alex-mcavoy.github.io/mathematics/numerical-analysis/dec32020.html">BFGS 算法</a> 的算法流程</p>
+<p>输入：特征函数 $f_1,f_2,\cdots,f_n$，经验分布 $\tilde{P}(X,Y)$</p>
+<p>输出：参数估计值 $\hat{\mathbf{w}}$，模型 $P_{\hat{\mathbf{w}}}(y|x)$</p>
+<p>算法步骤：</p>
+<p>Step 1：算法初始化，选定初始点 $\mathbf{w}^{(0)}$，取初始近似矩阵 $B_0$ 为正定对称矩阵，并令 $k=0$</p>
+<p>Step 2：计算梯度向量 $\mathbf{g_k} = g(\mathbf{w}^{(k)})$，若 $\mathbf{g_k}=0$，停止计算</p>
+<p>Step 3：由 $B_k\mathbf{p_k}=-\mathbf{g_k}$，求出搜索方向 $\mathbf{p}_k$</p>
+<p>Step 4：求步长 $\lambda_k$，使得</p>
+<script type="math/tex; mode=display">
+f(\mathbf{w}^{(k)}+\lambda_k \mathbf{p_k}) = \min_{\lambda\geq 0} f(\mathbf{w}^{(k)}+\lambda \mathbf{p_k})</script><p>Step 5：令 $\mathbf{w}^{(k+1)}=\mathbf{w}^{(k)}+\lambda_k \mathbf{p}_k$</p>
+<p>Step 6：计算 $\mathbf{g_{k+1}}=g(\mathbf{w}^{(k+1)})$，若 $\mathbf{g_{k+1}}=0$，停止计算</p>
+<p>Step 7：计算第 $k+1$ 步的近似矩阵 $B_{k+1}$</p>
+<script type="math/tex; mode=display">
+B_{k+1} = B_k + \frac{\mathbf{y_k} \mathbf{y_k}^T}{\mathbf{y_k}^T \boldsymbol{\delta_k}} - \frac{B_k\boldsymbol{\delta_k}\boldsymbol{\delta_k}^T B_k}{\boldsymbol{\delta_k}^T B_k \boldsymbol{\delta_k}}</script><p>其中，$\mathbf{y_k}$ 为两次迭代的梯度差</p>
+<script type="math/tex; mode=display">
+\mathbf{y_k}=\mathbf{g_{k+1}}-\mathbf{g_k}</script><p>$\boldsymbol{\delta_k}$ 为两次迭代估计值的差</p>
+<script type="math/tex; mode=display">
+\mathbf{\delta_k}=\mathbf{w}^{(k+1)}-\mathbf{w}^{(k)}</script>
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>感谢您对我的支持，让我继续努力分享有用的技术与知识点！</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/wechatpay.jpg" alt="Alex_McAvoy 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/alipay.jpg" alt="Alex_McAvoy 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Alex_McAvoy
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/786f4ea0.html" title="条件随机场的学习">https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/786f4ea0.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/artificial-intelligence/" rel="tag"># 人工智能</a>
+              <a href="/tags/machine-learning/" rel="tag"># 机器学习</a>
+              <a href="/tags/supervised-learning/" rel="tag"># 监督学习</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/notes/computer-networks/1748423c.html" rel="prev" title="通信基础">
+      <i class="fa fa-chevron-left"></i> 通信基础
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/artificial-intelligence/machine-learning/844b1c9d.html" rel="next" title="条件随机场的预测">
+      条件随机场的预测 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【概述】"><span class="nav-number">1.</span> <span class="nav-text">【概述】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【改进的迭代尺度法】"><span class="nav-number">2.</span> <span class="nav-text">【改进的迭代尺度法】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#对数似然函数"><span class="nav-number">2.1.</span> <span class="nav-text">对数似然函数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#更新方程"><span class="nav-number">2.2.</span> <span class="nav-text">更新方程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#算法-S"><span class="nav-number">2.3.</span> <span class="nav-text">算法 S</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#算法-T"><span class="nav-number">2.4.</span> <span class="nav-text">算法 T</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#算法流程"><span class="nav-number">2.5.</span> <span class="nav-text">算法流程</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【拟牛顿法】"><span class="nav-number">3.</span> <span class="nav-text">【拟牛顿法】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#目标优化函数"><span class="nav-number">3.1.</span> <span class="nav-text">目标优化函数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#算法流程-1"><span class="nav-number">3.2.</span> <span class="nav-text">算法流程</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">  
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Alex_McAvoy"
+      src="/assets/img/head.jpg">
+  <p class="site-author-name" itemprop="name">Alex_McAvoy</p>
+  <div class="site-description" itemprop="description">想要成为渔夫的猎手</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">662</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">63</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">71</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Alex-McAvoy" title="GitHub → https://github.com/Alex-McAvoy" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/u011815404" title="CSDN → https://blog.csdn.net/u011815404" rel="noopener" target="_blank"><i class="fas fa-copyright fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+<!-- 访客地图 -->
+<script type="text/javascript" src="//rf.revolvermaps.com/0/0/5.js?i=50n58yo58ow&amp;m=0&amp;c=ff0000&amp;cr1=ffffff&amp;s=140" async="async"></script>
+
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdz20172133" title="https://blog.csdn.net/sdz20172133" rel="noopener" target="_blank">神仙队友</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://pxlsdz.gitee.io/" title="https://pxlsdz.gitee.io/" rel="noopener" target="_blank">神仙队友blog2</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdau_fangshifeng" title="https://blog.csdn.net/sdau_fangshifeng" rel="noopener" target="_blank">酷头</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://bycore.net" title="https://bycore.net" rel="noopener" target="_blank">凉了的某饼同学</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://kris-cn.github.io/" title="http://kris-cn.github.io/" rel="noopener" target="_blank">翟孙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://deng.fun/" title="http://deng.fun/" rel="noopener" target="_blank">芙蓉姐姐</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/wentong_Xu" title="https://blog.csdn.net/wentong_Xu" rel="noopener" target="_blank">小黑贱胖子</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.yuheng.tech/" title="https://www.yuheng.tech/" rel="noopener" target="_blank">咸于</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/lanshan1111" title="https://blog.csdn.net/lanshan1111" rel="noopener" target="_blank">肥硕硕</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdauguanweihong" title="https://blog.csdn.net/sdauguanweihong" rel="noopener" target="_blank">管少</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_41661919" title="https://blog.csdn.net/qq_41661919" rel="noopener" target="_blank">俊杰</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_40859951" title="https://blog.csdn.net/qq_40859951" rel="noopener" target="_blank">峰哥</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/LSD20164388" title="https://blog.csdn.net/LSD20164388" rel="noopener" target="_blank">狗冬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37868325" title="https://blog.csdn.net/qq_37868325" rel="noopener" target="_blank">妍大佬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://sanshuiii.github.io/" title="https://sanshuiii.github.io/" rel="noopener" target="_blank">sanshuiii</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://zjpzhao.github.io/" title="https://zjpzhao.github.io/" rel="noopener" target="_blank">brain</a>
+        </li>
+    </ul>
+  </div>
+
+		
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+  
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Alex_McAvoy</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+</br>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script><script src="/js/bookmark.js"></script>
+
+
+
+  
+
+
+
+
+  <script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '48fd73a538d3fa927f65',
+      clientSecret: '56618aefeee90bac3c20de8d51bb0b985d67252d',
+      repo        : 'Gitalk-Comment',
+      owner       : 'Alex-McAvoy',
+      admin       : ['Alex-McAvoy'],
+      id          : '94ba360e41b5d10ce8751c2a88ad2f5a',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+  
+  <!-- 鼠标单击粒子特效 -->
+  <script type="text/javascript" src="/js/cursor-effects.js"></script>
+  <!-- 多级目录 -->
+  <script type="text/javascript" src="/js/category.js"></script>
+  
+</body>
+</html>
