@@ -25,22 +25,23 @@
     var CONFIG = {"hostname":"alex-mcavoy.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":16,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":true,"color":"#ff0000","save":"manual"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":true},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.json"};
   </script>
 
-  <meta name="description" content="Reference  回归树（Regression Tree） Regression Tree 回归树 决策树(分类树、回归树） 【机器学习】决策树（上）——ID3、C4.5、CART（非常详细） 决策树—ID3、C4.5、CART   【概述】对于 ID3 和 C4.5 来说，它们只能用来解决分类为问题，因此都是分类决策树">
-<meta name="keywords" content="人工智能,机器学习,监督学习">
+  <meta name="description" content="Reference  【辨析】先验概率、后验概率、似然概率 带你理解朴素贝叶斯分类算法 算法杂货铺——分类算法之朴素贝叶斯分类(Naive Bayesian classification) 贝叶斯估计 平滑处理—拉普拉斯（Laplace Smoothing） Naive Bayes classifier Additive smoothing   【概述】贝叶斯分类模型是基于贝叶斯定理与特征条件独">
+<meta name="keywords" content="人工智能,机器学习,监督学习,分类问题">
 <meta property="og:type" content="article">
-<meta property="og:title" content="决策树的 CART 生成算法">
-<meta property="og:url" content="https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/729a7bb2.html">
+<meta property="og:title" content="朴素贝叶斯">
+<meta property="og:url" content="https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/supervised-learning/f77f0066.html">
 <meta property="og:site_name" content="Alex_McAvoy">
-<meta property="og:description" content="Reference  回归树（Regression Tree） Regression Tree 回归树 决策树(分类树、回归树） 【机器学习】决策树（上）——ID3、C4.5、CART（非常详细） 决策树—ID3、C4.5、CART   【概述】对于 ID3 和 C4.5 来说，它们只能用来解决分类为问题，因此都是分类决策树">
+<meta property="og:description" content="Reference  【辨析】先验概率、后验概率、似然概率 带你理解朴素贝叶斯分类算法 算法杂货铺——分类算法之朴素贝叶斯分类(Naive Bayesian classification) 贝叶斯估计 平滑处理—拉普拉斯（Laplace Smoothing） Naive Bayes classifier Additive smoothing   【概述】贝叶斯分类模型是基于贝叶斯定理与特征条件独">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/machine-learning/33-1.png">
-<meta property="og:updated_time" content="2023-09-06T06:28:23.984Z">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/machine-learning/supervised-learning/25-1.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/machine-learning/supervised-learning/25-2.png">
+<meta property="og:updated_time" content="2023-09-19T07:28:10.082Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="决策树的 CART 生成算法">
-<meta name="twitter:description" content="Reference  回归树（Regression Tree） Regression Tree 回归树 决策树(分类树、回归树） 【机器学习】决策树（上）——ID3、C4.5、CART（非常详细） 决策树—ID3、C4.5、CART   【概述】对于 ID3 和 C4.5 来说，它们只能用来解决分类为问题，因此都是分类决策树">
-<meta name="twitter:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/machine-learning/33-1.png">
+<meta name="twitter:title" content="朴素贝叶斯">
+<meta name="twitter:description" content="Reference  【辨析】先验概率、后验概率、似然概率 带你理解朴素贝叶斯分类算法 算法杂货铺——分类算法之朴素贝叶斯分类(Naive Bayesian classification) 贝叶斯估计 平滑处理—拉普拉斯（Laplace Smoothing） Naive Bayes classifier Additive smoothing   【概述】贝叶斯分类模型是基于贝叶斯定理与特征条件独">
+<meta name="twitter:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/machine-learning/supervised-learning/25-1.png">
 
-<link rel="canonical" href="https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/729a7bb2.html">
+<link rel="canonical" href="https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/supervised-learning/f77f0066.html">
 
 
 <script id="page-configurations">
@@ -53,7 +54,7 @@
   };
 </script>
 
-  <title>决策树的 CART 生成算法 | Alex_McAvoy</title>
+  <title>朴素贝叶斯 | Alex_McAvoy</title>
   
 
 
@@ -197,7 +198,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/729a7bb2.html">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/supervised-learning/f77f0066.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/assets/img/head.jpg">
@@ -210,7 +211,7 @@
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          决策树的 CART 生成算法
+          朴素贝叶斯
         </h1>
 
         <div class="post-meta">
@@ -220,7 +221,7 @@
               </span>
               <span class="post-meta-item-text">发表于</span>
 
-              <time title="创建时间：2019-08-06 09:09:00" itemprop="dateCreated datePublished" datetime="2019-08-06T09:09:00+08:00">2019-08-06</time>
+              <time title="创建时间：2019-07-22 14:36:00" itemprop="dateCreated datePublished" datetime="2019-07-22T14:36:00+08:00">2019-07-22</time>
             </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -233,6 +234,10 @@
                   ，
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
                   <a href="/categories/artificial-intelligence/machine-learning/" itemprop="url" rel="index"><span itemprop="name">机器学习</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/artificial-intelligence/machine-learning/supervised-learning/" itemprop="url" rel="index"><span itemprop="name">监督学习</span></a>
                 </span>
             </span>
 
@@ -249,14 +254,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>3.9k</span>
+              <span>3.7k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>4 分钟</span>
+              <span>3 分钟</span>
             </span>
 
         </div>
@@ -271,99 +276,81 @@
         <blockquote>
 <p>Reference</p>
 <ul>
-<li><a href="https://www.cnblogs.com/wuliytTaotao/p/10724118.html" target="_blank" rel="noopener">回归树（Regression Tree）</a></li>
-<li><a href="https://zhuanlan.zhihu.com/p/82054400" target="_blank" rel="noopener">Regression Tree 回归树</a></li>
-<li><a href="https://blog.csdn.net/weixin_36586536/article/details/80468426" target="_blank" rel="noopener">决策树(分类树、回归树）</a></li>
-<li><a href="https://zhuanlan.zhihu.com/p/85731206" target="_blank" rel="noopener">【机器学习】决策树（上）——ID3、C4.5、CART（非常详细）</a></li>
-<li><a href="https://blog.csdn.net/choven_meng/article/details/82878018" target="_blank" rel="noopener">决策树—ID3、C4.5、CART</a></li>
+<li><a href="https://zhuanlan.zhihu.com/p/397960221?ivk_sa=1024320u" target="_blank" rel="noopener">【辨析】先验概率、后验概率、似然概率</a></li>
+<li><a href="https://zhuanlan.zhihu.com/p/26262151" target="_blank" rel="noopener">带你理解朴素贝叶斯分类算法</a></li>
+<li><a href="https://www.cnblogs.com/leoo2sk/archive/2010/09/17/naive-bayesian-classifier.html" target="_blank" rel="noopener">算法杂货铺——分类算法之朴素贝叶斯分类(Naive Bayesian classification)</a></li>
+<li><a href="https://zhuanlan.zhihu.com/p/72506771" target="_blank" rel="noopener">贝叶斯估计</a></li>
+<li><a href="https://blog.csdn.net/qq_25073545/article/details/78621019" target="_blank" rel="noopener">平滑处理—拉普拉斯（Laplace Smoothing）</a></li>
+<li><a href="https://en.wikipedia.org/wiki/Naive_Bayes_classifier" target="_blank" rel="noopener">Naive Bayes classifier</a></li>
+<li><a href="https://en.wikipedia.org/wiki/Additive_smoothing" target="_blank" rel="noopener">Additive smoothing</a></li>
 </ul>
 </blockquote>
-<h1 id="【概述】"><a href="#【概述】" class="headerlink" title="【概述】"></a>【概述】</h1><p>对于 ID3 和 C4.5 来说，它们只能用来解决分类为问题，因此都是<strong>分类决策树</strong></p>
-<p>而<strong>分类与回归树（Classification and Regression Tree，CART）</strong>既可以用于分类也可以用于回归，只是在生成决策树的过程中，所选取的特征选择的标准不同</p>
-<p>其假设决策树是二叉树，分支结点的取值为 <code>是</code> 和 <code>否</code>，左分支取值为 <code>是</code>，右分支取值为 <code>否</code></p>
-<p>其等价于递归地二分每个特征，将输入空间分为有限个单元，并在这些单元上确定预测的概率分布，即输入给定的条件下输出的条件概率分布</p>
-<p>与 C4.5 一样，CART 算法由以下两步组成：</p>
-<ol>
-<li>决策树生成：使用<strong>基尼系数</strong>或<strong>均方误差</strong>作为特征选择的标准，基于训练集生成决策树</li>
-<li>决策树剪枝：采用<strong>代价复杂度剪枝策略</strong>，利用验证集对已生成的树进行剪枝</li>
-</ol>
-<h1 id="【CART-分类树】"><a href="#【CART-分类树】" class="headerlink" title="【CART 分类树】"></a>【CART 分类树】</h1><p>使用 CART 来构建分类树的流程，与 ID3 和 C4.5 相似，只是采用了<strong>基尼指数</strong>作为特征选择的标准</p>
-<p>下面直接给出 CART 生成分类树的算法：</p>
-<p>输入：训练集 $D$</p>
-<p>输出：决策树</p>
-<p>根据训练集，从根结点开始，递归地对每个结点进行以下操作，构建一棵二叉决策树：</p>
-<p>Step1：设当前结点的训练集为 $D$，计算现有特征对该数据集的基尼指数</p>
-<p>此时，对每一个特征 $A$，对其可能取的每个值 $a$，根据样本点对 $A=a$ 的测试为 <code>是</code>、<code>否</code>，将 $D$ 分割成 $D_1$ 和 $D_2$ 两个部分，利用下式计算 $A=a$ 时的基尼指数</p>
+<h1 id="【概述】"><a href="#【概述】" class="headerlink" title="【概述】"></a>【概述】</h1><p>贝叶斯分类模型是基于贝叶斯定理与特征条件独立假设的分类模型，<strong>朴素贝叶斯（Naive Bayes）</strong>是贝叶斯分类模型中最简单、最常见的一种分类方法，该方法从概率论的角度来进行分类预测，实现简单，预测效率高</p>
+<p>贝叶斯定理、贝叶斯分类模型、朴素贝叶斯三者关系如下：</p>
+<p><img width="500" src="/images/artificial-intelligence/machine-learning/supervised-learning/25-1.png"></p>
+<p>之所以叫做朴素贝叶斯，一方面是其基于贝叶斯定理，另一方面，朴素是指其基于特征独立性假设，各特征不会相互影响，大大减少了计算概率的难度</p>
+<p>该方法的基本思想是：对于给定的训练集，当要根据多个特征对数据进行分类时，通常假设这些特征相互独立，然后利用条件概率乘法法则得到每一个分类的概率，对于给定的输入样本 $\mathbf{x}$，利用模型求出后验概率最大的作为预测输出 $y$</p>
+<h1 id="【贝叶斯公式】"><a href="#【贝叶斯公式】" class="headerlink" title="【贝叶斯公式】"></a>【贝叶斯公式】</h1><p>假设事件 $A$ 发生的概率为 $P(A)$，事件 $B$ 发生的概率为 $P(B)$，在事件 $B$ 发生的情况下，事件 $A$ 发生的概率为 $P(A|B)$，则事件 $A$ 发生的情况下事件 $B$ 发生的概率为：</p>
 <script type="math/tex; mode=display">
-Gini(G,A)=\frac{|D_1|}{|D|}Gini(D_1)+\frac{|D_2|}{|D|}Gini(D_2)</script><p>Step2：在所有可能的特征 $A$ 以及它们所有可能的切分点 $a$ 中，选择基尼指数最小的特征及其对应的切分点，作为最优特征和最优切分点</p>
-<p>根据最优特征与最优切分点，从现结点生成两个子结点，将训练集依照特征分配到两个子结点中</p>
-<p>Step3：对两个子结点递归地调用 Step1 与 Step2，直到满足停止条件</p>
-<p>Step4：生成 CART 决策树</p>
-<h1 id="【CART-回归树】"><a href="#【CART-回归树】" class="headerlink" title="【CART 回归树】"></a>【CART 回归树】</h1><h2 id="假设形式"><a href="#假设形式" class="headerlink" title="假设形式"></a>假设形式</h2><p>回归树，就是用树模型处理回归问题，此时采用<strong>均方误差</strong>作为特征选择的标准</p>
-<p>对于给定容量为 $n$ 的训练集 $D=\{(\mathbf{x}_1,y_1),(\mathbf{x}_2,y_2),…,(\mathbf{x}_n,y_n)\}$，第 $i$ 组样本中的输入 $\mathbf{x_i}$ 具有 $m$ 个特征值，即：$\mathbf{x_i}=(x_i^{(1)},x_i^{(2)},…,x_i^{(m)})\in \mathbb{R}^m$，输出为 $y_i$，其是一个连续变量</p>
-<p>回归问题的目标是构造一个函数 $f(\mathbf{x})$ 能够拟合数据集 $D$ 中的元素，使得均方误差 MSE 最小，即：</p>
+\begin{align*}
+P(B|A)
+&= \frac{P(AB)}{P(A)} \\
+&= \frac{P(A|B)P(B)}{P(A)}
+\end{align*}</script><p>其中，$P(B|A)$ 称为<strong>后验概率（Posterior Probability）</strong>，$P(A)$、$P(B)$ 称为<strong>先验概率（Prior Probability）</strong>，$P(A|B)$ 称为<strong>似然概率（Likelihood）</strong></p>
+<p>对于分类算法来说，令数据特征为事件 $A$，令类别为事件 $B$，则此时贝叶斯公式可表达为如下形式：</p>
 <script type="math/tex; mode=display">
-\min \quad \frac{1}{n}\sum_{i=1}^n (f(\mathbf{x}_i)-y_i)^2</script><p>一棵<strong>回归树</strong>对应着整个特征空间上递归地二分类的划分，在每一个划分单元上都有一个输出值，下面用数学语言来进行描述：</p>
-<p>假设对于给定训练集 $D=\{(\mathbf{x}_1,y_1),(\mathbf{x}_2,y_2),…,(\mathbf{x}_n,y_n)\}$，用该训练集构建好的一棵 CART 回归树有 $K$ 个叶结点，这意味着将输入空间划分为 $K$ 个单元 $R_1,R_2,…,R_K$，且 CART 最多会有 $K$ 个不同的预测值，即每一个叶结点都对应一个单元 $R_k$，同时该单元输出一个预测值</p>
-<p>用 $c_k$ 表示第 $k$ 个叶结点的预测值，其一般是该叶结点所含训练集样本输出的均值，即：</p>
+P(类别|特征)=\frac{P(特征|类别)P(类别)}{P(特征)}</script><p>为便于表述，记数据特征为 $\mathbb{x}$，记类别为 $c$，那么有：</p>
 <script type="math/tex; mode=display">
-c_k = \text{average} (y_i|\mathbf{x}_i\in R_k)</script><p>则回归树的模型表示为：</p>
+P(c|\mathbb{x}) = \frac{P(\mathbb{x}|c) P(c)}{P(\mathbb{x})}</script><p>进一步，对于先验概率 $P(c)$ 和 $P(\mathbb{x})$，表示类别的先验概率 $P(类别)$ 称为<strong>类先验概率（Class Prior Probability）</strong>，表示做出预测的先验概率 $P(特征)$ 称为<strong>预测先验概率（Predictor Prior Probability）</strong></p>
+<p><img width="500" src="/images/artificial-intelligence/machine-learning/supervised-learning/25-2.png"></p>
+<h1 id="【朴素贝叶斯模型】"><a href="#【朴素贝叶斯模型】" class="headerlink" title="【朴素贝叶斯模型】"></a>【朴素贝叶斯模型】</h1><p>设输入空间 $\mathcal{X}\subseteq \mathbb{R}^m $ 为 $m$ 维向量的集合，输出空间为类标记集合 $\mathcal{Y}=\{c_1,c_2,…,c_K\}$，输入为特征向量 $\mathbf{x}\in \mathcal{X}$，输出为类标记 $y\in \mathcal{Y}$，$X$ 是定义在输入空间 $\mathcal{X}$ 上的随机向量，$Y$ 是定义在输出空间 $\mathcal{Y}$ 上的随机变量，$P(X,Y)$ 是 $X$ 和 $Y$ 的联合概率分布</p>
+<p>已知给定的训练集 $T=\{(\mathbf{x_1},y_1),(\mathbf{x_2},y_2),…,(\mathbf{x_n},y_n)\}$ 由 $P(X,Y)$ 独立同分布产生，对于第 $i$ 组样本对，输入 $\mathbf{x_i}$ 具有 $m$ 个特征值，即：$\mathbf{x_i} =(x_i^{(1)},x_i^{(2)},…,x_i^{(m)})\in \mathbb{X} \subseteq  \mathbb{R}^m$，输出 $y_i\in\mathcal{Y}= \{c_1,c_2,…,c_K\}$ 为实例的类别</p>
+<p>根据训练集 $T$ 可知，类标记的先验概率分布为：</p>
 <script type="math/tex; mode=display">
-f(\mathbf{x}_i)=\sum_{j=1}^Kc_k\mathbb{I}(\mathbf{x}_i\in R_k)</script><p>此时，CART 最小化 MSE 公式如下：</p>
+P(Y=c_k),\quad k=1,2,...,K</script><p>亦可知在训练集 $T$ 上输入 $\mathbf{x}_i$ 的条件概率分布为：</p>
 <script type="math/tex; mode=display">
-\min \quad \frac{1}{n}\sum_{k=1}^K\sum_{\mathbf{x}_i\in R_k}(c_k-y_i)^2</script><h2 id="划分过程"><a href="#划分过程" class="headerlink" title="划分过程"></a>划分过程</h2><p>根据 CART 是二叉树的特征，在每一次划分中，都需要进行一次特征选择，同时将该特征空间一分为二的切分，使得模型在训练集上 MSE 最小，即每个叶结点的 MSE 之和最小</p>
-<p>也就是说，要确定两方面的内容：</p>
-<ol>
-<li>选择哪一个特征来进行划分</li>
-<li>对于指定的划分特征，选择什么样的切分点</li>
-</ol>
-<p>针对上述的两个问题，采用启发式方法，选择输入 $\mathbf{x}_i$ 的第 $j$ 个特征 $x_i^{(j)}$与其取值 $s$，作为<strong>切分变量（Splitting Variable）</strong>和<strong>切分点（Splitting Point）</strong></p>
-<p>此时，切分变量和切分点将父结点的输入空间一分为二，即：</p>
+P(X=\mathbf{x}_i|Y=c_k) = P(X^{(1)}=x_i^{(1)},...,X^{(m)}=x_i^{(m)}|Y=c_k),\quad k=1,2,...,K</script><p>对于 $P(X=\mathbf{x}_i|Y=c_k)$，假设 $\mathbf{x}$ 的各分量 $x_i^{(j)}$ 可取值的个数为 $S_j,j=1,2,…,m$，又由于 $Y$ 可取值个数为 $K$，那么参数的个数为：</p>
 <script type="math/tex; mode=display">
+K\prod _{j=1}^nS_j</script><p>可以发现，条件概率分布 $P(X=\mathbf{x_i}|Y=c_k)$ 有着指数级的参数，对其进行参数估计是不可行的，为此，作<strong>条件独立性假设</strong></p>
+<p>也就是说，假设用于分类的特征在类确定的条件下都是独立的，此时，在训练集 $T$ 上输入 $\mathbf{x}_i$ 的条件概率分布为：</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+P(X=\mathbf{x}_i|Y=c_k) =&  P(X^{(1)}=x^{(1)}_i,...,X^{(m)}=x^{(m)}_i|Y=c_k) \\
+=&\prod_{j=1}^m P(X^{(j)}=x^{(j)}|Y=c_k)
+\end{align*}</script><p>另一方面，根据全概率公式：</p>
+<script type="math/tex; mode=display">
+P(A)=\sum_{i=1}^nP(A|B_i)P(B_i)</script><p>在训练集 $T$ 上输入 $\mathbf{x}_i$ 的概率分布为：</p>
+<script type="math/tex; mode=display">
+P(X=\mathbb{x_i}) = \sum_{k=1}^K P(X=\mathbb{x}_i|Y=c_k)P(Y=c_k)</script><p>这样，根据朴素贝叶斯公式，当给定一个新的输入 $\mathbb{x}\in\mathbb{R}^m$ 时，即可计算出该输入所属类别 $c_k$ 的后验概率分布，即：</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+P(Y=c_k|X=\mathbb{x}) 
+&= \frac{P(X=\mathbb{x}|Y=c_k) P(Y=c_k)}{P(X=\mathbb{x})} \\
+&= \frac{P(Y=c_k) \prod\limits_{j=1}^m P(X^{(j)}=x^{(j)}|Y=c_k)}{\sum\limits_{k'=1}^K \Big[ P(X=\mathbb{x}|Y=c_{k'}) P(Y=c_{k'})\Big]} \\
+&= \frac{P(Y=c_k) \prod\limits_{j=1}^m P(X^{(j)}=x^{(j)}|Y=c_k)}{\sum\limits_{k'=1}^K \Bigg[ P(Y=c_{k'}) \prod\limits_{j=1}^m P(X^{(j)}=x^{(j)}|Y=c_{k'})  \Bigg] } 
+\end{align*}</script><p>由此，对于给定新的输入 $\mathbb{x}\in\mathbb{R}^m$，朴素贝叶斯分类器即可表示为：</p>
+<script type="math/tex; mode=display">
+y=\arg\max_{c_k} \frac{P(Y=c_k) \prod\limits_{j=1}^m P(X^{(j)}=x^{(j)}|Y=c_k)}{\sum\limits_{k'=1}^K \Bigg[ P(Y=c_{k'}) \prod\limits_{j=1}^m P(X^{(j)}=x^{(j)}|Y=c_{k'})  \Bigg] }</script><p>可以注意到，上式中，分母对所有的 $c_k$ 都是相同的，将分母忽略，即有：</p>
+<script type="math/tex; mode=display">
+\hat{y}=\arg\max_{c_k} P(Y=c_k) \prod\limits_{j=1}^m P(X^{(j)}=x^{(j)}|Y=c_k)</script><p>此时，模型学习意味着估计类先验概率 $P(Y=c_k)$ 与似然概率 $P(X^{(j)}=x^{(j)}|Y=c_k)$</p>
+<h1 id="【期望风险最小化与后验概率最大化】"><a href="#【期望风险最小化与后验概率最大化】" class="headerlink" title="【期望风险最小化与后验概率最大化】"></a>【期望风险最小化与后验概率最大化】</h1><p>对于分类决策函数 $\hat{y}=f(\mathbf{x})$，假设使用 0-1 损失函数：</p>
+<script type="math/tex; mode=display">
+L(y,f(x))=
 \left\{\begin{array}{rl}
-R_1(j,s)=\{\mathbf{x}_i|x_i^{(j)}\leq s\} \\
-R_2(j,s)=\{\mathbf{x}_i|x_i^{(j)}>s\}
-\end{array}\right.</script><p>进一步，寻找最优切分变量 $j$ 和最优切分点 $s$，即求解如下公式：</p>
+1, & y \neq f(x)\\
+0, & y = f(x) \end{array}\right.</script><p>对于联合分布 $P(X,Y)$，取条件期望，此时期望风险函数为：</p>
 <script type="math/tex; mode=display">
-\min_{j,s} \bigl[ \min_{c_1}\sum\limits_{\mathbf{x}_i\in R_1(j,s)}(c_1-y_i)^2+\min_{c_2}\sum\limits_{\mathbf{x}_i\in R_2(j,s)}(c_2-y_i)^2  \bigr]</script><p>该公式说明了，在要求切分点 $s$ 两边区域的均方差尽量小的同时，保证两区域的最小均方差的和是最小的</p>
-<p><img width="300" src="/images/artificial-intelligence/machine-learning/33-1.png"></p>
-<p>对于每一个特征 $j$ 进行遍历，每一个 $j$ 的取值都能通过上式得到一个最优切分点 $s$，以及此时求出的上式的值 $A_{j,s}$，最终比较所有的 $A_{j,s}$，选择其中最小的那个对应的 $(j,s)$ 作为最优切分变量和切分点，将特征空间划分为两个部分</p>
-<p>此时，对于最小化公式中的 $c_1$ 和 $c_2$，取最优值：</p>
+\begin{align*}
+R_{exp}(f) &= E[L(Y,f(X))] \\
+&= E_X\sum_{k=1}^KL(c_k,f(X))P(c_k|X)
+\end{align*}</script><p>为使期望风险最小化，只需对 $X=\mathbb{x}$ 逐个极小化，有：</p>
 <script type="math/tex; mode=display">
-\left\{\begin{array}{rl}
-\hat{c_1}=\text{ave}(y_i|\mathbf{x}_i\in R_1) \\
-\hat{c_2}=\text{ave}(y_i|\mathbf{x}_i\in R_2)
-\end{array}\right.</script><p>之后，对两个子空间 $R_1$、$R_2$ 重复上述划分过程，直到满足停止条件为止，生成一棵决策树</p>
-<h2 id="最小二乘回归树生成算法"><a href="#最小二乘回归树生成算法" class="headerlink" title="最小二乘回归树生成算法"></a>最小二乘回归树生成算法</h2><p>按照上述过程生成的决策树，称为<strong>最小二乘回归树（Least Squares Regression tree）</strong>，下面给出最小二乘回归树生成算法：</p>
-<p>输入：训练集 $D$</p>
-<p>输出：决策树 $f(\mathbf{x})$</p>
-<p>在训练集所在的输入空间中，递归地将每个区域划分为两个子区域并决定每个子区域的输出值，构建二叉决策树：</p>
-<p>1.选择最优切分变量 $j$ 和切分点 $s$，求解：</p>
-<script type="math/tex; mode=display">
-\min_{j,s} \bigl[ \min_{c_1}\sum\limits_{\mathbf{x}_i\in R_1(j,s)}(y_i-c_1)^2+\min_{c_2}\sum\limits_{\mathbf{x}_i\in R_2(j,s)}(y_i-c_2)^2  \bigr]</script><p>遍历特征 $j$，对固定的切分变量 $j$ 扫描切分点 $s$，选择使上式达到最小值的 $(j,s)$ 对</p>
-<p>2.用选定的 $(j,s)$ 对，划分区域</p>
-<script type="math/tex; mode=display">
-\left\{\begin{array}{rl}
-R_1(j,s)=\{\mathbf{x}_i|x_i^{(j)}\leq s\} \\
-R_2(j,s)=\{\mathbf{x}_i|x_i^{(j)}>s\}
-\end{array}\right.</script><p>3.根据划分的 $R_1$、$R_2$ 区域，确定相应的输出值</p>
-<script type="math/tex; mode=display">
-\left\{\begin{array}{rl}
-\hat{c_1}=\text{ave}(y_i|\mathbf{x}_i\in R_1) \\
-\hat{c_2}=\text{ave}(y_i|\mathbf{x}_i\in R_2)
-\end{array}\right.</script><p>4.递归的对两个子区域执行步骤 1、2、3，直到满足停止条件</p>
-<p>5.将输入空间划分为 $K$ 个区域 $R_1,R_2,…,R_K$，生成决策树</p>
-<script type="math/tex; mode=display">
-f(\mathbf{x}_i)=\sum_{k=1}^K\hat{c_k}\mathbb{I}(\mathbf{x}_i\in R_k)</script><h1 id="【CART-剪枝】"><a href="#【CART-剪枝】" class="headerlink" title="【CART 剪枝】"></a>【CART 剪枝】</h1><p>CART 算法使用的剪枝策略是代价复杂度剪枝策略，其由两步组成：</p>
-<ol>
-<li>从生成算法产生的决策树 $T_0$ 底端开始不断剪枝，直到 $T_0$ 的根结点，形成一个子树序列 $\{T_0,T_1,…,T_n\}$</li>
-<li>在独立的验证数据集上，对子树序列进行测试，从中选择最优子树</li>
-</ol>
-<p>关于代价复杂度剪枝的具体介绍，详见：<a href="https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/1a3614c.html">决策树的剪枝策略</a></p>
-<h1 id="【ID3-和-C4-5-无法处理回归问题的原因】"><a href="#【ID3-和-C4-5-无法处理回归问题的原因】" class="headerlink" title="【ID3 和 C4.5 无法处理回归问题的原因】"></a>【ID3 和 C4.5 无法处理回归问题的原因】</h1><p>CART 是一棵二叉树，那么只要回归树不是一棵二叉树，那么就不是 CART 树</p>
-<p>在分类问题中，ID3、C4.5 和 CART  的区别就在于特征选择的策略不同，信息增益、信息增益比、基尼指数</p>
-<p>在回归问题中，用均方误差最小的准则求解每个特征上的最优输出值，这种情况下，分类时的 ID3、C4.5、CART 之间的区别就没了，那么问题就变成每个父结点划分成多少个子结点的问题了</p>
-<p>因此，如果还是二叉树，那么就认为是 CART 回归树，否则就不是</p>
+\begin{align*}
+\hat{y} &= \arg \min_{y\in\mathcal{Y}}\sum_{k=1}^K L(c_k,y)P(c_k|X=\mathbb{x}) \\
+&= \arg \min_{y\in\mathcal{Y}}\sum_{k=1}^K P(y\neq c_k|X=\mathbb{x}) \\
+&= \arg \min_{y\in\mathcal{Y}}[1-P(y=c_k|X=\mathbb{x})] \\
+&= \arg \max_{y\in\mathcal{Y}}P(y=c_k|X=\mathbb{x})
+\end{align*}</script><p>可以发现，在朴素贝叶斯中，期望风险最小化与后验概率最大化是等价的</p>
 
     </div>
 
@@ -399,7 +386,7 @@ f(\mathbf{x}_i)=\sum_{k=1}^K\hat{c_k}\mathbb{I}(\mathbf{x}_i\in R_k)</script><h1
   </li>
   <li class="post-copyright-link">
     <strong>本文链接：</strong>
-    <a href="https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/729a7bb2.html" title="决策树的 CART 生成算法">https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/729a7bb2.html</a>
+    <a href="https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/supervised-learning/f77f0066.html" title="朴素贝叶斯">https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/supervised-learning/f77f0066.html</a>
   </li>
   <li class="post-copyright-license">
     <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
@@ -413,6 +400,7 @@ f(\mathbf{x}_i)=\sum_{k=1}^K\hat{c_k}\mathbb{I}(\mathbf{x}_i\in R_k)</script><h1
               <a href="/tags/artificial-intelligence/" rel="tag"># 人工智能</a>
               <a href="/tags/machine-learning/" rel="tag"># 机器学习</a>
               <a href="/tags/supervised-learning/" rel="tag"># 监督学习</a>
+              <a href="/tags/classification/" rel="tag"># 分类问题</a>
           </div>
 
         
@@ -421,12 +409,12 @@ f(\mathbf{x}_i)=\sum_{k=1}^K\hat{c_k}\mathbb{I}(\mathbf{x}_i\in R_k)</script><h1
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/artificial-intelligence/machine-learning/c6faa205.html" rel="prev" title="决策树的 ID3 与 C4.5 生成算法">
-      <i class="fa fa-chevron-left"></i> 决策树的 ID3 与 C4.5 生成算法
+    <a href="/artificial-intelligence/machine-learning/supervised-learning/57702c78.html" rel="prev" title="最大熵模型学习的最优化算法">
+      <i class="fa fa-chevron-left"></i> 最大熵模型学习的最优化算法
     </a></div>
       <div class="post-nav-item">
-    <a href="/artificial-intelligence/machine-learning/1a3614c.html" rel="next" title="决策树的剪枝策略">
-      决策树的剪枝策略 <i class="fa fa-chevron-right"></i>
+    <a href="/artificial-intelligence/machine-learning/supervised-learning/e2bd6f12.html" rel="next" title="朴素贝叶斯参数估计">
+      朴素贝叶斯参数估计 <i class="fa fa-chevron-right"></i>
     </a></div>
     </div>
       </footer>
@@ -487,7 +475,7 @@ f(\mathbf{x}_i)=\sum_{k=1}^K\hat{c_k}\mathbb{I}(\mathbf{x}_i\in R_k)</script><h1
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【概述】"><span class="nav-number">1.</span> <span class="nav-text">【概述】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【CART-分类树】"><span class="nav-number">2.</span> <span class="nav-text">【CART 分类树】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【CART-回归树】"><span class="nav-number">3.</span> <span class="nav-text">【CART 回归树】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#假设形式"><span class="nav-number">3.1.</span> <span class="nav-text">假设形式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#划分过程"><span class="nav-number">3.2.</span> <span class="nav-text">划分过程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#最小二乘回归树生成算法"><span class="nav-number">3.3.</span> <span class="nav-text">最小二乘回归树生成算法</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【CART-剪枝】"><span class="nav-number">4.</span> <span class="nav-text">【CART 剪枝】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【ID3-和-C4-5-无法处理回归问题的原因】"><span class="nav-number">5.</span> <span class="nav-text">【ID3 和 C4.5 无法处理回归问题的原因】</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【概述】"><span class="nav-number">1.</span> <span class="nav-text">【概述】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【贝叶斯公式】"><span class="nav-number">2.</span> <span class="nav-text">【贝叶斯公式】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【朴素贝叶斯模型】"><span class="nav-number">3.</span> <span class="nav-text">【朴素贝叶斯模型】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【期望风险最小化与后验概率最大化】"><span class="nav-number">4.</span> <span class="nav-text">【期望风险最小化与后验概率最大化】</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -503,7 +491,7 @@ f(\mathbf{x}_i)=\sum_{k=1}^K\hat{c_k}\mathbb{I}(\mathbf{x}_i\in R_k)</script><h1
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">667</span>
+          <span class="site-state-item-count">669</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -760,7 +748,7 @@ NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
       repo        : 'Gitalk-Comment',
       owner       : 'Alex-McAvoy',
       admin       : ['Alex-McAvoy'],
-      id          : 'b7a1c7dd34bc65e615b9f5184d05f11c',
+      id          : '564d28229c143b94835d454c8510870b',
         language: '',
       distractionFreeMode: true
     });
