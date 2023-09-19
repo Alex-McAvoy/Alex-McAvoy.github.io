@@ -25,20 +25,20 @@
     var CONFIG = {"hostname":"alex-mcavoy.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":16,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":true,"color":"#ff0000","save":"manual"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":true},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.json"};
   </script>
 
-  <meta name="description" content="【概述】对于线性链条件随机场的预测问题，即：已知线性链条件随机场 $P(Y|X)$ 和输入序列 $x$，求条件概率最大的输出序列 $y^{*}$，即对输入序列进行标注 条件随机场的预测算法与隐马尔可夫模型的预测算法相似，采用 Viterbi 算法，即采用动态规划求概率最大路径，一条路径对应一条状态">
-<meta name="keywords" content="人工智能,机器学习,监督学习">
+  <meta name="description" content="【概述】对于线性链条件随机场的概率计算问题，即：给定线性链条件随机场 $P(Y|X)$，输入序列 $x$ 和输出序列 $y$，计算条件概率 $P(Y_i=y_i|x)$ 和 $P(Y_{i-1}=y_{i-1},Y_i=y_i|x)$，以及相应的数学期望 与隐马尔可夫模型类似，引入前向向量与后向向量，递推的计算条件概率以及期望值，这样的算法称为前向-后向算法（Forward-backward Al">
+<meta name="keywords" content="人工智能,机器学习,监督学习,标注问题">
 <meta property="og:type" content="article">
-<meta property="og:title" content="条件随机场的预测">
-<meta property="og:url" content="https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/844b1c9d.html">
+<meta property="og:title" content="条件随机场的条件概率计算">
+<meta property="og:url" content="https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/supervised-learning/cb103a13.html">
 <meta property="og:site_name" content="Alex_McAvoy">
-<meta property="og:description" content="【概述】对于线性链条件随机场的预测问题，即：已知线性链条件随机场 $P(Y|X)$ 和输入序列 $x$，求条件概率最大的输出序列 $y^{*}$，即对输入序列进行标注 条件随机场的预测算法与隐马尔可夫模型的预测算法相似，采用 Viterbi 算法，即采用动态规划求概率最大路径，一条路径对应一条状态">
+<meta property="og:description" content="【概述】对于线性链条件随机场的概率计算问题，即：给定线性链条件随机场 $P(Y|X)$，输入序列 $x$ 和输出序列 $y$，计算条件概率 $P(Y_i=y_i|x)$ 和 $P(Y_{i-1}=y_{i-1},Y_i=y_i|x)$，以及相应的数学期望 与隐马尔可夫模型类似，引入前向向量与后向向量，递推的计算条件概率以及期望值，这样的算法称为前向-后向算法（Forward-backward Al">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2023-09-09T14:10:46.612Z">
+<meta property="og:updated_time" content="2023-09-19T14:09:42.308Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="条件随机场的预测">
-<meta name="twitter:description" content="【概述】对于线性链条件随机场的预测问题，即：已知线性链条件随机场 $P(Y|X)$ 和输入序列 $x$，求条件概率最大的输出序列 $y^{*}$，即对输入序列进行标注 条件随机场的预测算法与隐马尔可夫模型的预测算法相似，采用 Viterbi 算法，即采用动态规划求概率最大路径，一条路径对应一条状态">
+<meta name="twitter:title" content="条件随机场的条件概率计算">
+<meta name="twitter:description" content="【概述】对于线性链条件随机场的概率计算问题，即：给定线性链条件随机场 $P(Y|X)$，输入序列 $x$ 和输出序列 $y$，计算条件概率 $P(Y_i=y_i|x)$ 和 $P(Y_{i-1}=y_{i-1},Y_i=y_i|x)$，以及相应的数学期望 与隐马尔可夫模型类似，引入前向向量与后向向量，递推的计算条件概率以及期望值，这样的算法称为前向-后向算法（Forward-backward Al">
 
-<link rel="canonical" href="https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/844b1c9d.html">
+<link rel="canonical" href="https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/supervised-learning/cb103a13.html">
 
 
 <script id="page-configurations">
@@ -51,7 +51,7 @@
   };
 </script>
 
-  <title>条件随机场的预测 | Alex_McAvoy</title>
+  <title>条件随机场的条件概率计算 | Alex_McAvoy</title>
   
 
 
@@ -195,7 +195,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/844b1c9d.html">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/supervised-learning/cb103a13.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/assets/img/head.jpg">
@@ -208,7 +208,7 @@
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          条件随机场的预测
+          条件随机场的条件概率计算
         </h1>
 
         <div class="post-meta">
@@ -218,7 +218,7 @@
               </span>
               <span class="post-meta-item-text">发表于</span>
 
-              <time title="创建时间：2019-09-14 17:49:00" itemprop="dateCreated datePublished" datetime="2019-09-14T17:49:00+08:00">2019-09-14</time>
+              <time title="创建时间：2019-09-13 10:47:00" itemprop="dateCreated datePublished" datetime="2019-09-13T10:47:00+08:00">2019-09-13</time>
             </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -231,6 +231,10 @@
                   ，
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
                   <a href="/categories/artificial-intelligence/machine-learning/" itemprop="url" rel="index"><span itemprop="name">机器学习</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/artificial-intelligence/machine-learning/supervised-learning/" itemprop="url" rel="index"><span itemprop="name">监督学习</span></a>
                 </span>
             </span>
 
@@ -266,94 +270,73 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <h1 id="【概述】"><a href="#【概述】" class="headerlink" title="【概述】"></a>【概述】</h1><p>对于线性链条件随机场的预测问题，即：已知线性链条件随机场 $P(Y|X)$ 和输入序列 $x$，求条件概率最大的输出序列 $y^{*}$，即对输入序列进行标注</p>
-<p>条件随机场的预测算法与隐马尔可夫模型的预测算法相似，采用 Viterbi 算法，即采用动态规划求概率最大路径，一条路径对应一条状态</p>
-<p>关于 Viterbi 算法，详见：<a href="https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/7476b233.html">隐马尔可夫模型的预测</a></p>
-<h1 id="【基本思想】"><a href="#【基本思想】" class="headerlink" title="【基本思想】"></a>【基本思想】</h1><p>由线性链条件随机场的内积形式</p>
+        <h1 id="【概述】"><a href="#【概述】" class="headerlink" title="【概述】"></a>【概述】</h1><p>对于线性链条件随机场的概率计算问题，即：给定线性链条件随机场 $P(Y|X)$，输入序列 $x$ 和输出序列 $y$，计算条件概率 $P(Y_i=y_i|x)$ 和 $P(Y_{i-1}=y_{i-1},Y_i=y_i|x)$，以及相应的数学期望</p>
+<p>与隐马尔可夫模型类似，引入前向向量与后向向量，递推的计算条件概率以及期望值，这样的算法称为<strong>前向-后向算法（Forward-backward Algorithm）</strong></p>
+<h1 id="【前向向量与后向向量】"><a href="#【前向向量与后向向量】" class="headerlink" title="【前向向量与后向向量】"></a>【前向向量与后向向量】</h1><h2 id="前向向量"><a href="#前向向量" class="headerlink" title="前向向量"></a>前向向量</h2><p>对于线性链条件随机场的矩阵形式：</p>
 <script type="math/tex; mode=display">
 \begin{align*}
-P_{\mathbf{w}}(y|x) &= \frac{1}{Z_{\mathbf{w}}(x)} \exp \big[
-\mathbf{w}\cdot F(y,x) 
-\big ]\\
-Z_{\mathbf{w}}(x) &= \sum_{y} \exp \big[
-\mathbf{w} \cdot F(y,x)
-\big ]
-\end{align*}</script><p>可得：</p>
+P_{\mathbf{w}}(y|x) &= \frac{1}{Z_{\mathbf{w}}(x)} \prod_{i=1}^{n+1} M_i(y_{i-1},y_i|x) \\
+Z_{\mathbf{w}}(x) &= [M_1(x)M_2(x)\cdots M_{n+1}(x)]_{\text{start},\text{stop}}
+\end{align*}</script><p>对每个指标 $i=0,1,\cdots,n+1$，定义前向向量 $\alpha_i(x)$：</p>
+<script type="math/tex; mode=display">
+\alpha_0(y|x) = \left\{\begin{array}{lr}
+1, & y=\text{start} \\
+0, & y\neq \text{start}
+\end{array}\right.</script><p>有递推公式：</p>
+<script type="math/tex; mode=display">
+\alpha_i^T(y_i|x) = \alpha_{i-1}^T(y_{i-1}|x) [M_i(y_i,y_i|x)],
+\quad i=1,2,\cdots,n+1</script><p>其中，$\alpha_i(y_i|x)$ 表示在位置 $i$ 的标记是 $y_i$ 且从 $1$ 到 $i$ 的前部分标记序列的非规范化概率，$y_i$ 可取的值有 $m$ 个，故可将其写为 $m$ 维列向量形式，即：</p>
+<script type="math/tex; mode=display">
+\alpha_i^T(x) = \alpha_{i-1}^T(x) M_i(x)</script><h2 id="后向向量"><a href="#后向向量" class="headerlink" title="后向向量"></a>后向向量</h2><p>同理，对每个指标 $i=0,1,\cdots,n+1$，定义后向向量 $\beta_i(x)$：</p>
+<script type="math/tex; mode=display">
+\beta_{n+1}(y_{n+1}|x) = \left\{\begin{array}{lr}
+1, & y_{n+1}=\text{stop} \\
+0, & y_{n+1}\neq\text{stop}
+\end{array}\right.</script><p>有递推公式：</p>
+<script type="math/tex; mode=display">
+\beta_i(y_i|x) = [M_{i+1}(y_i,y_{i+1}|x)] \beta_{i+1}(y_{i+1}|x),
+\quad i=1,2,\cdots,n+1</script><p>其中，$\beta_i(y_i|x)$ 表示在位置 $i$ 的标记是 $y_i$ 且从 $i+1$ 到 $n$ 的后部分标记序列的非规范化概率，$y_i$ 可取的值有 $m$ 个，故可将其写为 $m$ 维行向量形式，即：</p>
+<script type="math/tex; mode=display">
+\beta_i(x) =  M_{i+1}(x) \beta_{i+1}(x)</script><h1 id="【概率计算】"><a href="#【概率计算】" class="headerlink" title="【概率计算】"></a>【概率计算】</h1><p>根据前向向量与后向向量的定义，可计算出标记序列在位置 $i$ 是标记 $y_i$ 的条件概率：</p>
+<script type="math/tex; mode=display">
+P(Y_i=y_i|x) = \frac{\alpha_i^T(y_i|x) \beta_i(y_i|x)}{Z(x)}</script><p>以及在位置 $i-1$ 与 $i$ 是标记 $y_{i-1}$ 和 $y_i$ 的条件概率，即：</p>
+<script type="math/tex; mode=display">
+P(Y_{i-1}=y_{i-1},Y_i=y_i|x) 
+= \frac{\alpha_{i-1}^T(y_{i-1}|x) M_i(y_{i-1},y_i|x) \beta_i(y_i|x)}{Z(x)}</script><p>其中，对于规范化因子 $Z(x)$，有：</p>
+<script type="math/tex; mode=display">
+Z(x) = \alpha_n^T(x) \mathbf{1} = \mathbf{1} \beta_1(x)</script><p>$\mathbf{1}$ 是元素均为 $1$ 的 $m$ 维列向量</p>
+<h1 id="【期望值计算】"><a href="#【期望值计算】" class="headerlink" title="【期望值计算】"></a>【期望值计算】</h1><h2 id="条件分布"><a href="#条件分布" class="headerlink" title="条件分布"></a>条件分布</h2><p>根据前向向量与后向向量的定义，对于特征函数 $f_k(y,x)$，其关于条件分布 $P(Y|X)$ 的数学期望为：</p>
 <script type="math/tex; mode=display">
 \begin{align*}
-y^{*} 
-&= \arg \max_y P_{\mathbf{w}}(y|x) \\
-&= \arg \max_y \frac{1}{Z_{\mathbf{w}}(x)} \exp \big[
-\mathbf{w}\cdot F(y,x)
-\big] \\
-&= \arg \max_y \exp \big[
-\mathbf{w}\cdot F(y,x)
-\big] \\
-&= \arg \max_y \big[
-\mathbf{w}\cdot F(y,x)
-\big] \\
-\end{align*}</script><p>故线性链条件随机场的预测问题，可转化为求非规范化概率最大的最优路径问题：</p>
+E_{P(Y|X)}[f_k] 
+&= \sum_y P(y|x) f_k(y,x) \\
+&= \sum_{i=1}^{n+1} \sum_{y_{i-1} y_i} f_k(y_{i-1},y_i,x,i) 
+\frac{\alpha_{i-1}^T(y_{i-1}|x) M_i(y_{i-1},y_i|x) \beta_i(y_i|x)}{Z(x)}\\
+&k=1,2,\cdots,K
+\end{align*}</script><p>其中，对于规范化因子 $Z(x)$​，有：</p>
 <script type="math/tex; mode=display">
-\max_y \big[
-\mathbf{w}\cdot F(y,x)
-\big]</script><p>其中，用路径表示标记序列，即有：</p>
+Z(x) = \alpha_n^T(x) \mathbf{1} = \mathbf{1} \beta_1(x)</script><p>上式为特征函数关于 $P(X|Y)$ 的数学期望的一般计算公式，对于转移特征</p>
+<script type="math/tex; mode=display">
+t_k(y_{i-1},y_i,x,i),\quad k=1,2,\cdots,K_1</script><p>可将上式中的 $f_k$ 替换为 $t_k$，对于状态特征</p>
+<script type="math/tex; mode=display">
+s_l(y_i,x,i)\quad k=K_1+l,l=1,2,\cdots,K_2</script><p>可将上式中的 $f_k$ 替换为 $s_l$</p>
+<h2 id="联合分布"><a href="#联合分布" class="headerlink" title="联合分布"></a>联合分布</h2><p>假设经验分布为 $\tilde{P}(X)$，特征函数 $f_k(y,x)$ 关于联合分布 $P(X,Y)$ 的数学期望为：</p>
 <script type="math/tex; mode=display">
 \begin{align*}
-\mathbf{w} &= (w_1,w_2,\cdots,w_K)^T \\
-F(y,x) &= (f_1(y,x),f_2(y,x),\cdots,f_K(y,x))^T \\
-f_k(y,x) &= \sum_{i=1}^n f_k(y_{i-1},y_i,x,i),\quad k=1,2,\cdots,K
-\end{align*}</script><p>为求解最优路径，可将 $\max\limits_y \big[ \mathbf{w}\cdot F(y,x) \big]$ 写为如下形式：</p>
+E_{P(X,Y)}[f_k] 
+&= \sum_{x,y} P(x,y) \sum_{i=1}^{n+1} f_k(y_{i-1},y_i,x,i) \\
+&= \sum_x \tilde{P}(x) \sum_y P(y|x) \sum_{i=1}^{n+1} f_k(y_{i-1},y_i,x,i) \\
+&= \sum_x \tilde{P}(x) \sum_{i=1}^{n+1} \sum_{y_{i-1}y_i} f_k(y_{i-1},y_i,x,i) 
+\frac{\alpha_{i-1}^T(y_{i-1}|x) M_i(y_{i-1},y_i|x) \beta_i(y_i|x)}{Z(x)} \\
+& k=1,2,\cdots,K
+\end{align*}</script><p>其中，对于规范化因子 $Z(x)$​，有：</p>
 <script type="math/tex; mode=display">
- \max_y \sum_{i=1}^n \mathbf{w} \cdot F_i(y_{i-1},y_i,x)</script><p>其中，对于局部特征向量 $F_i(y_{i-1},y_i,x)$ ，有：</p>
+Z(x) = \alpha_n^T(x) \mathbf{1} = \mathbf{1} \beta_1(x)</script><p>上式为特征函数关于 $P(X,Y)$ 的数学期望的一般计算公式，对于转移特征</p>
 <script type="math/tex; mode=display">
-F_i(y_{i-1},y_i,x) = (f_1(y_{i-1},y_i,x,i),f_2(y_{i-1},y_i,x,i),\cdots,f_K(y_{i-1},y_i,x,i))^T</script><p>下面，定义在位置 $1$ 的各标记 $j=1,2,\cdots,m$ 的非规范化概率：</p>
+t_k(y_{i-1},y_i,x,i),\quad k=1,2,\cdots,K_1</script><p>可将上式中的 $f_k$ 替换为 $t_k$，对于状态特征</p>
 <script type="math/tex; mode=display">
-\delta_1(j)= \mathbf{w} \cdot F_1(y_0=\text{start},y_1=j,x),\quad j=1,2,\cdots,m</script><p>根据定义，可得到 $\delta$ 的递推公式：</p>
-<script type="math/tex; mode=display">
-\delta_i(l) = \max_{1\leq j\leq m} \{
-\delta_{i-1}(j) + \mathbf{w} \cdot F_i(y_{i-1}=j,y_{i}=l,x)
-\},\quad l=1,2,\cdots,m</script><p>即可求出到位置 $i$ 的各标记 $l=1,2,\cdots,m$ 的非规范化概率的最大值</p>
-<p>同时，可记录非规范化概率最大值的路径，即：</p>
-<script type="math/tex; mode=display">
-\Psi_i(l) = \arg \max_{l\leq j\leq m} \{
-\delta_{i-1}(j) + \mathbf{w}\cdot F_i(y_{i-1}=j,y_i=l,x)
-\},\quad l=1,2,\cdots,m</script><p>直到 $i=n$ 时终止，此时求得非规范化概率的最大值为：</p>
-<script type="math/tex; mode=display">
-\max_y \big[
-\mathbf{w} \cdot F(y,x)
-\big] = \max_{1\leq j\leq m} \delta_n(j)</script><p>以及最优路径的终点：</p>
-<script type="math/tex; mode=display">
-y_n^{*} = \arg \max_{1\leq j\leq m} \delta_n(j)</script><p>由此最优路径返回，有：</p>
-<script type="math/tex; mode=display">
-y_i^{*} = \Psi_{i+1}(y_{i+1}^{*}),\quad i=n-1,n-2,\cdots,1</script><p>求得最优路径为：</p>
-<script type="math/tex; mode=display">
-y^{*} = (y_1^{*},y_2^{*},\cdots,y_n^{*})</script><h1 id="【算法流程】"><a href="#【算法流程】" class="headerlink" title="【算法流程】"></a>【算法流程】</h1><p>综上所属，对于线性链条件随机场预测的 Viterbi 算法流程如下</p>
-<p>输入：模型特征向量 $F(y,x)$，权值向量 $\mathbf{w}$，观测序列 $x=(x_1,x_2,\cdots,x_n)$</p>
-<p>输出：最优路径 $y^{*} = (y_1^{*},y_2^{*},\cdots,y_n^{*})$</p>
-<p>算法流程：</p>
-<p>Step 1：算法初始化</p>
-<script type="math/tex; mode=display">
-\delta_1(j)= \mathbf{w} \cdot F_1(y_0=\text{start},y_1=j,x),\quad j=1,2,\cdots,m</script><p>Step 2：对 $i=2,3,\cdots,n$ 递推</p>
-<script type="math/tex; mode=display">
-\begin{align*}
-\delta_i(l) &= \max_{1\leq j\leq m} \{
-\delta_{i-1}(j) + \mathbf{w} \cdot F_i(y_{i-1}=j,y_{i}=l,x)
-\},\quad l=1,2,\cdots,m \\
-\Psi_i(l) &= \arg \max_{l\leq j\leq m} \{
-\delta_{i-1}(j) + \mathbf{w}\cdot F_i(y_{i-1}=j,y_i=l,x)
-\},\quad l=1,2,\cdots,m
-\end{align*}</script><p>Step 3：终止</p>
-<script type="math/tex; mode=display">
-\begin{array}{c}
-\max_y \big[
-\mathbf{w} \cdot F(y,x)
-\big] = \max_{1\leq j\leq m} \delta_n(j) \\
-y_i^{*} = \Psi_{i+1}(y_{i+1}^{*}),\quad i=n-1,n-2,\cdots,1
-\end{array}</script><p>Step 4：返回路径</p>
-<script type="math/tex; mode=display">
-y_i^{*} = \Psi_{i+1}(y_{i+1}^{*}),\quad i=n-1,n-2,\cdots,1</script><p>求得最优路径为：</p>
-<script type="math/tex; mode=display">
-y^{*} = (y_1^{*},y_2^{*},\cdots,y_n^{*})</script>
+s_l(y_i,x,i)\quad k=K_1+l,l=1,2,\cdots,K_2</script><p>可将上式中的 $f_k$ 替换为 $s_l$</p>
+
     </div>
 
     
@@ -388,7 +371,7 @@ y^{*} = (y_1^{*},y_2^{*},\cdots,y_n^{*})</script>
   </li>
   <li class="post-copyright-link">
     <strong>本文链接：</strong>
-    <a href="https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/844b1c9d.html" title="条件随机场的预测">https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/844b1c9d.html</a>
+    <a href="https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/supervised-learning/cb103a13.html" title="条件随机场的条件概率计算">https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/supervised-learning/cb103a13.html</a>
   </li>
   <li class="post-copyright-license">
     <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
@@ -402,6 +385,7 @@ y^{*} = (y_1^{*},y_2^{*},\cdots,y_n^{*})</script>
               <a href="/tags/artificial-intelligence/" rel="tag"># 人工智能</a>
               <a href="/tags/machine-learning/" rel="tag"># 机器学习</a>
               <a href="/tags/supervised-learning/" rel="tag"># 监督学习</a>
+              <a href="/tags/tagging/" rel="tag"># 标注问题</a>
           </div>
 
         
@@ -410,12 +394,12 @@ y^{*} = (y_1^{*},y_2^{*},\cdots,y_n^{*})</script>
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/artificial-intelligence/machine-learning/786f4ea0.html" rel="prev" title="条件随机场的学习">
-      <i class="fa fa-chevron-left"></i> 条件随机场的学习
+    <a href="/artificial-intelligence/machine-learning/supervised-learning/783e58fc.html" rel="prev" title="条件随机场">
+      <i class="fa fa-chevron-left"></i> 条件随机场
     </a></div>
       <div class="post-nav-item">
-    <a href="/notes/computer-networks/66a2c84f.html" rel="next" title="物理层交换技术">
-      物理层交换技术 <i class="fa fa-chevron-right"></i>
+    <a href="/notes/computer-networks/1748423c.html" rel="next" title="通信基础">
+      通信基础 <i class="fa fa-chevron-right"></i>
     </a></div>
     </div>
       </footer>
@@ -476,7 +460,7 @@ y^{*} = (y_1^{*},y_2^{*},\cdots,y_n^{*})</script>
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【概述】"><span class="nav-number">1.</span> <span class="nav-text">【概述】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【基本思想】"><span class="nav-number">2.</span> <span class="nav-text">【基本思想】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【算法流程】"><span class="nav-number">3.</span> <span class="nav-text">【算法流程】</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【概述】"><span class="nav-number">1.</span> <span class="nav-text">【概述】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【前向向量与后向向量】"><span class="nav-number">2.</span> <span class="nav-text">【前向向量与后向向量】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#前向向量"><span class="nav-number">2.1.</span> <span class="nav-text">前向向量</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#后向向量"><span class="nav-number">2.2.</span> <span class="nav-text">后向向量</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【概率计算】"><span class="nav-number">3.</span> <span class="nav-text">【概率计算】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【期望值计算】"><span class="nav-number">4.</span> <span class="nav-text">【期望值计算】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#条件分布"><span class="nav-number">4.1.</span> <span class="nav-text">条件分布</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#联合分布"><span class="nav-number">4.2.</span> <span class="nav-text">联合分布</span></a></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -492,20 +476,20 @@ y^{*} = (y_1^{*},y_2^{*},\cdots,y_n^{*})</script>
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">671</span>
+          <span class="site-state-item-count">673</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">65</span>
+        <span class="site-state-item-count">66</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">74</span>
+        <span class="site-state-item-count">76</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -749,7 +733,7 @@ NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
       repo        : 'Gitalk-Comment',
       owner       : 'Alex-McAvoy',
       admin       : ['Alex-McAvoy'],
-      id          : '6547d3054476d4fc6502b16be4561399',
+      id          : '1cc9d50116159ffac99d8bf499b1eb44',
         language: '',
       distractionFreeMode: true
     });

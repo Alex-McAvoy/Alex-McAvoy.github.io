@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.9.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/img/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/assets/img/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/pace-js@1/themes/blue/pace-theme-minimal.css">
+  <script src="//cdn.jsdelivr.net/npm/pace-js@1/pace.min.js"></script>
+
+
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"alex-mcavoy.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":16,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":true,"color":"#ff0000","save":"manual"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":true},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.json"};
+  </script>
+
+  <meta name="description" content="【概述】隐马尔可夫模型（Hidden Markov Model，HMM）是由一个隐藏的马尔可夫链随机生成不可观测的状态随机序列，再由每个状态生成一个观测，由此产生观测的随机序列的过程 其中，随机生成的不可观测的状态随机序列被称为状态序列（State Sequence），每个状态生成一个观测，由此产生观测的随机序列被称为观测序列（Observation Sequence）">
+<meta name="keywords" content="人工智能,机器学习,监督学习,标注问题">
+<meta property="og:type" content="article">
+<meta property="og:title" content="隐马尔可夫模型">
+<meta property="og:url" content="https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/supervised-learning/ac38a68c.html">
+<meta property="og:site_name" content="Alex_McAvoy">
+<meta property="og:description" content="【概述】隐马尔可夫模型（Hidden Markov Model，HMM）是由一个隐藏的马尔可夫链随机生成不可观测的状态随机序列，再由每个状态生成一个观测，由此产生观测的随机序列的过程 其中，随机生成的不可观测的状态随机序列被称为状态序列（State Sequence），每个状态生成一个观测，由此产生观测的随机序列被称为观测序列（Observation Sequence）">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/machine-learning/supervised-learning/49-1.png">
+<meta property="og:updated_time" content="2023-09-19T14:05:21.598Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="隐马尔可夫模型">
+<meta name="twitter:description" content="【概述】隐马尔可夫模型（Hidden Markov Model，HMM）是由一个隐藏的马尔可夫链随机生成不可观测的状态随机序列，再由每个状态生成一个观测，由此产生观测的随机序列的过程 其中，随机生成的不可观测的状态随机序列被称为状态序列（State Sequence），每个状态生成一个观测，由此产生观测的随机序列被称为观测序列（Observation Sequence）">
+<meta name="twitter:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/machine-learning/supervised-learning/49-1.png">
+
+<link rel="canonical" href="https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/supervised-learning/ac38a68c.html">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>隐马尔可夫模型 | Alex_McAvoy</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Alex_McAvoy</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">想要成为渔夫的猎手</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+
+	
+	
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/supervised-learning/ac38a68c.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/assets/img/head.jpg">
+      <meta itemprop="name" content="Alex_McAvoy">
+      <meta itemprop="description" content="想要成为渔夫的猎手">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Alex_McAvoy">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          隐马尔可夫模型
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-09-08 15:03:00" itemprop="dateCreated datePublished" datetime="2019-09-08T15:03:00+08:00">2019-09-08</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/artificial-intelligence/" itemprop="url" rel="index"><span itemprop="name">人工智能</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/artificial-intelligence/machine-learning/" itemprop="url" rel="index"><span itemprop="name">机器学习</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/artificial-intelligence/machine-learning/supervised-learning/" itemprop="url" rel="index"><span itemprop="name">监督学习</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>3k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>3 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="【概述】"><a href="#【概述】" class="headerlink" title="【概述】"></a>【概述】</h1><p><strong>隐马尔可夫模型（Hidden Markov Model，HMM）</strong>是由一个隐藏的马尔可夫链随机生成不可观测的状态随机序列，再由每个状态生成一个观测，由此产生观测的随机序列的过程</p>
+<p>其中，随机生成的不可观测的状态随机序列被称为<strong>状态序列（State Sequence）</strong>，每个状态生成一个观测，由此产生观测的随机序列被称为<strong>观测序列（Observation Sequence）</strong></p>
+<p>标注问题是给定观测序列来预测其对应的标记序列，当隐马尔可夫模型用于标注问题时，状态即对应着标记，因此可以假设标注问题的数据是由隐马尔可夫模型生成的，从而利用隐马尔可夫模型的学习与预测算法进行标注</p>
+<h1 id="【形式定义】"><a href="#【形式定义】" class="headerlink" title="【形式定义】"></a>【形式定义】</h1><h2 id="定义"><a href="#定义" class="headerlink" title="定义"></a>定义</h2><p>隐马尔可夫模型是关于时序的概率模型，其由初始概率分布、状态转移概率分布、观测概率分布确定，形式定义如下：</p>
+<p>设 $Q$ 是所有可能的状态的集合，$V$ 是所有可能的观测的集合，即：</p>
+<script type="math/tex; mode=display">
+Q=\{q_1,q_2,\cdots,q_N\} \quad V=\{v_1,v_2,\cdots,v_M\}</script><p>其中，$N$ 是可能的状态数，$M$ 是可能的观测数</p>
+<p>又设 $I$ 是长度为 $T$ 的状态序列，$O$ 是对应的观测序列，即：</p>
+<script type="math/tex; mode=display">
+I=(i_1,i_2,\cdots,i_T) \quad O=(o_1,o_2,\cdots,o_T)</script><p>记 $A=[a_{ij}]_{N\times N}$ 为状态转移概率矩阵，其中</p>
+<script type="math/tex; mode=display">
+a_{ij} = P(i_{t+1}=q_j|i_t=q_i),\quad
+i=1,2,\cdots,N;j=1,2,\cdots,N</script><p>是在 $t$ 时刻处于状态 $q_i$ 的条件下，在 $t+1$ 时刻转移到状态 $q_j$ 的概率</p>
+<p>又记 $B=[b_j(k)]_{N\times M}$ 为观测概率矩阵，其中</p>
+<script type="math/tex; mode=display">
+b_j(k)=P(o_t=v_k|i_t=q_j),\quad
+k=1,2,\cdots,M;j=1,2,\cdots,N</script><p>是在 $t$ 时刻处于状态 $q_j$ 的条件下，生成观测 $v_k$ 的概率</p>
+<p>再记 $\pi=(\pi_i)$ 是初始状态概率向量，其中</p>
+<script type="math/tex; mode=display">
+\pi_i = P(i_1=q_i),\quad 
+i=1,2,\cdots,N</script><p>是在 $t=1$ 时刻处于状态 $q_i$ 的概率</p>
+<p>隐马尔可夫模型 $\lambda$ 即由初始状态概率向量 $\pi$、状态转移概率矩阵 $A$ 和观测概率矩阵 $B$ 来决定，即：</p>
+<script type="math/tex; mode=display">
+\lambda = (A,B,\pi)</script><p>其中，$A$、$B$、$\pi$ 被称为隐马尔可夫模型三要素，$\pi$ 与 $A$ 确定隐藏的马尔可夫链，以生成不可观测的状态序列，$B$ 确定了如何从状态生成观测，与状态序列综合确定如何生成观测序列</p>
+<h2 id="实例"><a href="#实例" class="headerlink" title="实例"></a>实例</h2><p>假设有 $4$ 个盒子，每个盒子里都装有红、白两种颜色的球，盒子中的红白球数由下表列出</p>
+<p><img src="/images/artificial-intelligence/machine-learning/supervised-learning/49-1.png"></p>
+<p>按照如下的方法抽球，产生一个球的颜色的观测序列：</p>
+<ol>
+<li>从 $4$ 个盒子里以等概率随机选取 $1$ 个盒子，从这个盒子里随机抽取 $1$ 个球，记录其颜色后，放回</li>
+<li>从当前盒子随机转移到下一个盒子，规则是：若当前是盒子 $1$，那么下一盒子一定是盒子 $2$；若当前是盒子 $2$ 或盒子 $3$，那么分别以概率 $0.4$ 和 $0.6$ 转移到左边或右边的盒子；若当前是盒子 $4$，那么各以 $0.5$ 的概率停留在盒子 $4$ 或转移到盒子 $3$</li>
+<li>确定转移的盒子后，再从这个盒子里随机抽取 $1$ 个球，记录其颜色，放回</li>
+<li>如此重复 $5$ 次，得到一个球的颜色的观测序列</li>
+</ol>
+<script type="math/tex; mode=display">
+O=(红,红,白,白,红)</script><p>在这个过程中，观察者只能观测到球的颜色序列，观测不到球是从哪个盒子取出的，即观测不到盒子的序列</p>
+<p>在这个隐马尔可夫模型的例子中，有两个随机序列，一个是盒子的序列（状态序列），一个是球的颜色的观测序列（观测序列），前者是隐藏的，后者是可观测的</p>
+<p>根据所给条件，可以明确状态集合、观测集合、序列长度，以及隐马尔可夫模型三要素</p>
+<p>盒子对应状态，状态集合为：</p>
+<script type="math/tex; mode=display">
+Q=\{盒子1,盒子2,盒子3,盒子4\},\quad N=4</script><p>球的颜色对应观测，观测集合为：</p>
+<script type="math/tex; mode=display">
+V=\{红,白\},\quad M=2</script><p>状态序列和观测序列长度 $T=5$</p>
+<p>初始概率分布为：</p>
+<script type="math/tex; mode=display">
+\pi = (0.25,0.25,0.25,0.25)^T</script><p>状态转移概率分布为：</p>
+<script type="math/tex; mode=display">
+A = \begin{bmatrix}
+0 & 1 & 0 & 0 \\
+0.4 & 0 & 0.6 & 0 \\
+0 & 0.4 & 0 & 0.6 \\
+0 & 0 & 0.5 & 0.5 \\
+\end{bmatrix}</script><p>观测概率分布为：</p>
+<script type="math/tex; mode=display">
+B = \begin{bmatrix}
+0.5 & 0.5 \\
+0.3 & 0.7 \\
+0.6 & 0.4 \\
+0.8 & 0.2 \\
+\end{bmatrix}</script><p>即隐马尔可夫模型为：</p>
+<script type="math/tex; mode=display">
+\lambda = (A,B,\pi)</script><h1 id="【两个基本假设】"><a href="#【两个基本假设】" class="headerlink" title="【两个基本假设】"></a>【两个基本假设】</h1><p>从定义可知，隐马尔可夫模型作了两个基本假设：</p>
+<p>1）齐次马尔可夫假设</p>
+<p>假设隐藏的马尔可夫链是齐次马尔可夫链，故在任意时刻 $t$ 的状态 $i_t$ 只依赖于其前一时刻的状态 $i_{t-1}$，与其他时刻的状态以及观测无关，也与时刻 $t$ 无关，即：</p>
+<script type="math/tex; mode=display">
+P(i_t|i_{t-1},o_{t-1},i_{t-2},o_{t-2},\cdots,i_1,o_1) = P(i_t|i_{t-1}),\quad
+t=1,2,\cdots,T</script><p>2）观测独立性假设</p>
+<p>假设任意时刻 $t$ 的观测 $o_t$，只依赖于该时刻的马尔可夫链的状态 $i_t$，与其他观测以及状态无关，即：</p>
+<script type="math/tex; mode=display">
+P(o_t|i_T,o_T,i_{T-1},o_{T-1},\cdots,i_{t+1},o_{t+1},i_{t},i_{t-1},o_{t-1},\cdots,i_{1},o_{1}) = P(o_t|i_t)</script><h1 id="【观测序列的生成】"><a href="#【观测序列的生成】" class="headerlink" title="【观测序列的生成】"></a>【观测序列的生成】</h1><p>根据隐马尔可夫模型的定义，可以将一个长度为 $T$ 的观测序列 $O=(o_1,o_2,\cdots,o_T)$ 的生成过程描述如下</p>
+<p>输入：隐马尔可夫模型 $\lambda=(A,B,\pi)$，观测序列长度 $T$</p>
+<p>输出：观测序列 $O=(o_1,o_2,\cdots,o_T)$</p>
+<p>算法流程：</p>
+<p>Step 1：按初始状态分布 $\pi$ 生成初始状态 $i_1$，并令 $t=1$</p>
+<p>Step 2：按状态 $i_t$ 的观测概率分布 $b_{i_t}(k)$ 生成 $t$ 时刻的观测 $o_t$</p>
+<p>Step 3：按状态 $i_t$ 的状态转移概率分布 $\{a_{i_ti_{t+1}}\}$ 产生状态 $i_{t+1}$</p>
+<p>Step 4：令 $t=t+1$</p>
+<p>Step 5：若 $t=T$，输出观测序列 $O=(o_1,o_2,\cdots,o_T)$，否则转到 Step 2</p>
+<h1 id="【三个基本问题】"><a href="#【三个基本问题】" class="headerlink" title="【三个基本问题】"></a>【三个基本问题】</h1><p>隐马尔可夫模型有三个基本问题：</p>
+<p>1）概率计算问题</p>
+<p>给定隐马尔可夫模型 $\lambda=(A,B,\pi)$ 和观测序列 $O=(o_1,o_2,\cdots,o_T)$，计算在模型 $\lambda$ 下观测序列 $O$ 出现的概率 $P(O|\lambda)$</p>
+<p>关于该问题，详见：<a href="https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/supervised-learning/84c1b09d.html">隐马尔可夫模型观测序列的概率计算</a></p>
+<p>2）学习问题</p>
+<p>已知观测序列 $O=(o_1,o_2,\cdots,o_T)$，估计模型 $\lambda(A,B,\pi)$ 的参数，使得在该模型下观测序列概率 $P(O|\lambda)$ 最大</p>
+<p>关于该问题，详见：<a href="https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/supervised-learning/8852e00e.html">隐马尔可夫模型的学习</a></p>
+<p>3）预测问题（解码问题）</p>
+<p>已知模型 $\lambda=(A,B,\pi)$ 和观测序列 $O=(o_1,o_2,\cdots,o_T)$，求对给定观测序列条件概率 $P(I|O)$ 最大的状态序列 $I=(i_1,i_2,\cdots,i_T)$，即给定观测序列 $O$，求最有可能的对应的状态序列</p>
+<p>关于该问题，详见：<a href="https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/supervised-learning/7476b233.html">隐马尔可夫模型的预测</a></p>
+
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>感谢您对我的支持，让我继续努力分享有用的技术与知识点！</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/wechatpay.jpg" alt="Alex_McAvoy 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/alipay.jpg" alt="Alex_McAvoy 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Alex_McAvoy
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/supervised-learning/ac38a68c.html" title="隐马尔可夫模型">https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/supervised-learning/ac38a68c.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/artificial-intelligence/" rel="tag"># 人工智能</a>
+              <a href="/tags/machine-learning/" rel="tag"># 机器学习</a>
+              <a href="/tags/supervised-learning/" rel="tag"># 监督学习</a>
+              <a href="/tags/tagging/" rel="tag"># 标注问题</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/notes/computer-networks/507ba1e8.html" rel="prev" title="计算机网络体系结构">
+      <i class="fa fa-chevron-left"></i> 计算机网络体系结构
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/artificial-intelligence/machine-learning/supervised-learning/84c1b09d.html" rel="next" title="隐马尔可夫模型观测序列的概率计算">
+      隐马尔可夫模型观测序列的概率计算 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【概述】"><span class="nav-number">1.</span> <span class="nav-text">【概述】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【形式定义】"><span class="nav-number">2.</span> <span class="nav-text">【形式定义】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#定义"><span class="nav-number">2.1.</span> <span class="nav-text">定义</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#实例"><span class="nav-number">2.2.</span> <span class="nav-text">实例</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【两个基本假设】"><span class="nav-number">3.</span> <span class="nav-text">【两个基本假设】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【观测序列的生成】"><span class="nav-number">4.</span> <span class="nav-text">【观测序列的生成】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【三个基本问题】"><span class="nav-number">5.</span> <span class="nav-text">【三个基本问题】</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">  
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Alex_McAvoy"
+      src="/assets/img/head.jpg">
+  <p class="site-author-name" itemprop="name">Alex_McAvoy</p>
+  <div class="site-description" itemprop="description">想要成为渔夫的猎手</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">673</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">66</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">76</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Alex-McAvoy" title="GitHub → https://github.com/Alex-McAvoy" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/u011815404" title="CSDN → https://blog.csdn.net/u011815404" rel="noopener" target="_blank"><i class="fas fa-copyright fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+<!-- 访客地图 -->
+<script type="text/javascript" src="//rf.revolvermaps.com/0/0/5.js?i=50n58yo58ow&amp;m=0&amp;c=ff0000&amp;cr1=ffffff&amp;s=140" async="async"></script>
+
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdz20172133" title="https://blog.csdn.net/sdz20172133" rel="noopener" target="_blank">神仙队友</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://pxlsdz.gitee.io/" title="https://pxlsdz.gitee.io/" rel="noopener" target="_blank">神仙队友blog2</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdau_fangshifeng" title="https://blog.csdn.net/sdau_fangshifeng" rel="noopener" target="_blank">酷头</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://bycore.net" title="https://bycore.net" rel="noopener" target="_blank">凉了的某饼同学</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://kris-cn.github.io/" title="http://kris-cn.github.io/" rel="noopener" target="_blank">翟孙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://deng.fun/" title="http://deng.fun/" rel="noopener" target="_blank">芙蓉姐姐</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/wentong_Xu" title="https://blog.csdn.net/wentong_Xu" rel="noopener" target="_blank">小黑贱胖子</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.yuheng.tech/" title="https://www.yuheng.tech/" rel="noopener" target="_blank">咸于</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/lanshan1111" title="https://blog.csdn.net/lanshan1111" rel="noopener" target="_blank">肥硕硕</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdauguanweihong" title="https://blog.csdn.net/sdauguanweihong" rel="noopener" target="_blank">管少</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_41661919" title="https://blog.csdn.net/qq_41661919" rel="noopener" target="_blank">俊杰</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_40859951" title="https://blog.csdn.net/qq_40859951" rel="noopener" target="_blank">峰哥</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/LSD20164388" title="https://blog.csdn.net/LSD20164388" rel="noopener" target="_blank">狗冬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37868325" title="https://blog.csdn.net/qq_37868325" rel="noopener" target="_blank">妍大佬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://sanshuiii.github.io/" title="https://sanshuiii.github.io/" rel="noopener" target="_blank">sanshuiii</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://zjpzhao.github.io/" title="https://zjpzhao.github.io/" rel="noopener" target="_blank">brain</a>
+        </li>
+    </ul>
+  </div>
+
+		
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+  
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Alex_McAvoy</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+</br>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script><script src="/js/bookmark.js"></script>
+
+
+
+  
+
+
+
+
+  <script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '48fd73a538d3fa927f65',
+      clientSecret: '56618aefeee90bac3c20de8d51bb0b985d67252d',
+      repo        : 'Gitalk-Comment',
+      owner       : 'Alex-McAvoy',
+      admin       : ['Alex-McAvoy'],
+      id          : '15aad883fedc4ddc18ad8e8f506adb3c',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+  
+  <!-- 鼠标单击粒子特效 -->
+  <script type="text/javascript" src="/js/cursor-effects.js"></script>
+  <!-- 多级目录 -->
+  <script type="text/javascript" src="/js/category.js"></script>
+  
+</body>
+</html>

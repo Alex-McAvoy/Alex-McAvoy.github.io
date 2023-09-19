@@ -25,27 +25,20 @@
     var CONFIG = {"hostname":"alex-mcavoy.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":16,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":true,"color":"#ff0000","save":"manual"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":true},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.json"};
   </script>
 
-  <meta name="description" content="References：  贝叶斯网络，看完这篇我终于理解了(附代码)！ 概率图模型之贝叶斯网络 机器学习之贝叶斯网络 贝叶斯网络(Bayesian Network)   【概述】贝叶斯网络（Bayesian Network）借助 DAG 来刻画特征间的依赖关系，并使用条件概率表（Conditional Probability Table，CPT）来描述特征的联合概率分布">
-<meta name="keywords" content="人工智能,机器学习,监督学习">
+  <meta name="description" content="【概述】对于线性链条件随机场的预测问题，即：已知线性链条件随机场 $P(Y|X)$ 和输入序列 $x$，求条件概率最大的输出序列 $y^{*}$，即对输入序列进行标注 条件随机场的预测算法与隐马尔可夫模型的预测算法相似，采用 Viterbi 算法，即采用动态规划求概率最大路径，一条路径对应一条状态">
+<meta name="keywords" content="人工智能,机器学习,监督学习,标注问题">
 <meta property="og:type" content="article">
-<meta property="og:title" content="贝叶斯网络">
-<meta property="og:url" content="https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/64831aee.html">
+<meta property="og:title" content="条件随机场的预测">
+<meta property="og:url" content="https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/supervised-learning/844b1c9d.html">
 <meta property="og:site_name" content="Alex_McAvoy">
-<meta property="og:description" content="References：  贝叶斯网络，看完这篇我终于理解了(附代码)！ 概率图模型之贝叶斯网络 机器学习之贝叶斯网络 贝叶斯网络(Bayesian Network)   【概述】贝叶斯网络（Bayesian Network）借助 DAG 来刻画特征间的依赖关系，并使用条件概率表（Conditional Probability Table，CPT）来描述特征的联合概率分布">
+<meta property="og:description" content="【概述】对于线性链条件随机场的预测问题，即：已知线性链条件随机场 $P(Y|X)$ 和输入序列 $x$，求条件概率最大的输出序列 $y^{*}$，即对输入序列进行标注 条件随机场的预测算法与隐马尔可夫模型的预测算法相似，采用 Viterbi 算法，即采用动态规划求概率最大路径，一条路径对应一条状态">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/machine-learning/30-1.png">
-<meta property="og:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/machine-learning/30-2.png">
-<meta property="og:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/machine-learning/30-3.png">
-<meta property="og:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/machine-learning/30-4.png">
-<meta property="og:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/machine-learning/30-5.png">
-<meta property="og:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/machine-learning/30-6.png">
-<meta property="og:updated_time" content="2023-09-06T08:06:43.749Z">
+<meta property="og:updated_time" content="2023-09-19T14:10:43.088Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="贝叶斯网络">
-<meta name="twitter:description" content="References：  贝叶斯网络，看完这篇我终于理解了(附代码)！ 概率图模型之贝叶斯网络 机器学习之贝叶斯网络 贝叶斯网络(Bayesian Network)   【概述】贝叶斯网络（Bayesian Network）借助 DAG 来刻画特征间的依赖关系，并使用条件概率表（Conditional Probability Table，CPT）来描述特征的联合概率分布">
-<meta name="twitter:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/machine-learning/30-1.png">
+<meta name="twitter:title" content="条件随机场的预测">
+<meta name="twitter:description" content="【概述】对于线性链条件随机场的预测问题，即：已知线性链条件随机场 $P(Y|X)$ 和输入序列 $x$，求条件概率最大的输出序列 $y^{*}$，即对输入序列进行标注 条件随机场的预测算法与隐马尔可夫模型的预测算法相似，采用 Viterbi 算法，即采用动态规划求概率最大路径，一条路径对应一条状态">
 
-<link rel="canonical" href="https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/64831aee.html">
+<link rel="canonical" href="https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/supervised-learning/844b1c9d.html">
 
 
 <script id="page-configurations">
@@ -58,7 +51,7 @@
   };
 </script>
 
-  <title>贝叶斯网络 | Alex_McAvoy</title>
+  <title>条件随机场的预测 | Alex_McAvoy</title>
   
 
 
@@ -202,7 +195,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/64831aee.html">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/supervised-learning/844b1c9d.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/assets/img/head.jpg">
@@ -215,7 +208,7 @@
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          贝叶斯网络
+          条件随机场的预测
         </h1>
 
         <div class="post-meta">
@@ -225,7 +218,7 @@
               </span>
               <span class="post-meta-item-text">发表于</span>
 
-              <time title="创建时间：2019-07-24 13:59:00" itemprop="dateCreated datePublished" datetime="2019-07-24T13:59:00+08:00">2019-07-24</time>
+              <time title="创建时间：2019-09-14 17:49:00" itemprop="dateCreated datePublished" datetime="2019-09-14T17:49:00+08:00">2019-09-14</time>
             </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -238,6 +231,10 @@
                   ，
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
                   <a href="/categories/artificial-intelligence/machine-learning/" itemprop="url" rel="index"><span itemprop="name">机器学习</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/artificial-intelligence/machine-learning/supervised-learning/" itemprop="url" rel="index"><span itemprop="name">监督学习</span></a>
                 </span>
             </span>
 
@@ -254,14 +251,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>5.3k</span>
+              <span>2.6k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>5 分钟</span>
+              <span>2 分钟</span>
             </span>
 
         </div>
@@ -273,113 +270,94 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <blockquote>
-<p>References：</p>
-<ul>
-<li><a href="https://zhuanlan.zhihu.com/p/73415944" target="_blank" rel="noopener">贝叶斯网络，看完这篇我终于理解了(附代码)！</a></li>
-<li><a href="https://zhuanlan.zhihu.com/p/30139208" target="_blank" rel="noopener">概率图模型之贝叶斯网络</a></li>
-<li><a href="https://zhuanlan.zhihu.com/p/539980922" target="_blank" rel="noopener">机器学习之贝叶斯网络</a></li>
-<li><a href="https://blog.csdn.net/gdp12315_gu/article/details/50002195" target="_blank" rel="noopener">贝叶斯网络(Bayesian Network)</a></li>
-</ul>
-</blockquote>
-<h1 id="【概述】"><a href="#【概述】" class="headerlink" title="【概述】"></a>【概述】</h1><p><strong>贝叶斯网络（Bayesian Network）</strong>借助 DAG 来刻画特征间的依赖关系，并使用<strong>条件概率表（Conditional Probability Table，CPT）</strong>来描述特征的联合概率分布</p>
-<p>一般而言，一个贝叶斯网络 $B$ 由结构 $G$ 与参数 $\Theta$ 来表示，即 $B= &lt; G,\Theta &gt;$</p>
-<p>其中，结构 $G$ 是一个 DAG，其中每个结点对应一个特征，若两个特征间存在依赖关系，则根据依赖关系建立一条有向边；参数 $\Theta$ 描述了依赖关系，假设特征 $x^{(j)}$ 在结构 $G$ 中的父结点集为 $\pi^{(j)}$，则 $\Theta$ 包含了每个特征的条件概率表，即</p>
-<script type="math/tex; mode=display">
-\Theta_{x^{(j)}|\pi^{(j)}}=P_B(X^{(j)}=x^{(j)}|\pi^{(j)})</script><h1 id="【贝叶斯网络结构】"><a href="#【贝叶斯网络结构】" class="headerlink" title="【贝叶斯网络结构】"></a>【贝叶斯网络结构】</h1><h2 id="条件独立性"><a href="#条件独立性" class="headerlink" title="条件独立性"></a>条件独立性</h2><p>对于贝叶斯网络来说，由于其是一个图结构，因此若每两个特征结点都存在一条边，那么所构建的贝叶斯网络将是一个全连接 DAG，这就意味着模型十分复杂，可能会出现过拟合</p>
-<p>为避免过拟合的发生，贝叶斯网络假设每个特征结点与其非子结点独立，由此有效地表达了特征间的条件独立性</p>
-<p>也就是说，贝叶斯网络 $B= &lt; G,\Theta &gt;$ 将特征 $X^{(1)},X^{(2)},…,X^{(n)}$ 的联合概率分布定义为：</p>
-<script type="math/tex; mode=display">
-P_B(X^{(1)}=x^{(1)},...,X^{(n)}=x^{(n)}) = \prod_{i=1}^n P(X^{(i)}=x^{(i)}|X^{(i+1)}=x^{(i+1)},...,X^{(n)}=x^{(n)})</script><p><img width="300" src="/images/artificial-intelligence/machine-learning/30-1.png"></p>
-<p>如上图，联合概率分布表示为：</p>
-<script type="math/tex; mode=display">
-P(x^{(1)},x^{(2)},x^{(3)},x^{(4)},x^{(5)})=P(x^{(1)})P(x^{(2)})P(x^{(3)}|x^{(1)})P(x^{(4)}|x^{(1)},x^{(2)})P(x^{(5)}|x^{(2)})</script><p>显然，在给定 $x^{(1)}$ 的情况下，$x^{(3)}$ 和 $x^{(4)}$ 独立；在给定 $x^{(2)}$ 的情况下，$x^{(4)}$ 和 $x^{(5)}$ 独立</p>
-<p>此时，可以简记为：</p>
-<script type="math/tex; mode=display">
-\begin{matrix}
-x^{(3)}\perp x^{(4)}|x^{(1)} & x^{(4)}\perp x^{(5)}|x^{(2)} 
-\end{matrix}</script><h2 id="独立性结构"><a href="#独立性结构" class="headerlink" title="独立性结构"></a>独立性结构</h2><h3 id="同父结构"><a href="#同父结构" class="headerlink" title="同父结构"></a>同父结构</h3><p><strong>同父结构（Common parent structure）</strong>，又称<strong>尾对尾结构（Tail-to-tail Structure）</strong></p>
-<p>其在给定父特征 $x^{(1)}$ 的取值下，其将子特征结点 $x^{(2)}$ 和 $x^{(3)}$ <strong>阻断（Blocked）</strong>， $x^{(2)}$ 和 $x^{(3)}$ 彼此条件独立</p>
-<p><img width="300" src="/images/artificial-intelligence/machine-learning/30-2.png"></p>
-<h3 id="顺序结构"><a href="#顺序结构" class="headerlink" title="顺序结构"></a>顺序结构</h3><p><strong>顺序结构（Sequence Structure）</strong>，又称<strong>头对尾结构（Head-to-tail Structure）</strong></p>
-<p>其在给定子特征 $x^{(2)}$ 的取值下，其将父特征结点 $x^{(1)}$ 与其子特征结点 $x^{(3)}$ <strong>阻断（blocked）</strong>， $x^{(1)}$ 和 $x^{(3)}$ 彼此条件独立</p>
-<p>但若</p>
-<p><img width="300" src="/images/artificial-intelligence/machine-learning/30-3.png"></p>
-<h3 id="V-型结构"><a href="#V-型结构" class="headerlink" title="V 型结构"></a>V 型结构</h3><p><strong>V 型结构（V-structure）</strong>，又称<strong>头对头结构（Head-to-Head Structure）</strong></p>
-<p>其在给定子特征 $x^{(3)}$ 的取值下，父特征结点 $x^{(1)}$ 和 $x^{(2)}$ 必不独立；但若子特征 $x^{(3)}$ 的取值未知， $x^{(1)}$ 和 $x^{(2)}$ 却是独立的</p>
-<p><img width="300" src="/images/artificial-intelligence/machine-learning/30-4.png"></p>
-<h2 id="边际独立性"><a href="#边际独立性" class="headerlink" title="边际独立性"></a>边际独立性</h2><p>在 V 型结构中，子特征的取值确定与否，会对其两个父特征的独立性发生影响</p>
-<p>简单来说，当 $x^{(3)}$ 发生时， $x^{(1)}$ 发生与否与 $x^{(2)}$  发生与否是无关的，即：</p>
+        <h1 id="【概述】"><a href="#【概述】" class="headerlink" title="【概述】"></a>【概述】</h1><p>对于线性链条件随机场的预测问题，即：已知线性链条件随机场 $P(Y|X)$ 和输入序列 $x$，求条件概率最大的输出序列 $y^{*}$，即对输入序列进行标注</p>
+<p>条件随机场的预测算法与隐马尔可夫模型的预测算法相似，采用 Viterbi 算法，即采用动态规划求概率最大路径，一条路径对应一条状态</p>
+<p>关于 Viterbi 算法，详见：<a href="https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/supervised-learning/7476b233.html">隐马尔可夫模型的预测</a></p>
+<h1 id="【基本思想】"><a href="#【基本思想】" class="headerlink" title="【基本思想】"></a>【基本思想】</h1><p>由线性链条件随机场的内积形式</p>
 <script type="math/tex; mode=display">
 \begin{align*}
-P(x^{(1)},x^{(2)}) &= \sum_{x^{(3)}}P(x^{(1)},x^{(2)},x^{(3)}) \\
-&= \sum_{x^{(3)}}P(x^{(3)}|x^{(1)},x^{(2)})P(x^{(1)})P(x^{(2)}) \\
-&= P(x^{(1)})P(x^{(2)})
-\end{align*}</script><p>这种情况，被称为<strong>边际独立性（Marginal Independence）</strong>，记为：$x^{(1)}\amalg x^{(2)}$</p>
-<p>实际上，这种情况并非 V 型结构所独有，例如在同父结构中，条件独立性 $x^{(2)}\perp x^{(3)}|x^{(1)}$ 成立，但若 $x^{(1)}$ 的取值未知，则边际独立性 $x^{(2)}\amalg  x^{(3)}$ 不成立</p>
-<h2 id="条件独立性分析"><a href="#条件独立性分析" class="headerlink" title="条件独立性分析"></a>条件独立性分析</h2><p>为分析 DAG 中的条件独立性，使用<strong>有向分离（Directed Separation）</strong>，将有向图转为无向图，其步骤如下：</p>
-<ol>
-<li>找出有向图中所有的 V 型结构</li>
-<li>在所有的 V 型结构的两个父结点间加一条无向边</li>
-<li>将所有有向边改为无向边</li>
-</ol>
-<p>由此产生的无向图称为<strong>道德图（Moral graph）</strong>，其含义是子结点的父结点间应该建立牢靠的关系，否则是不道德的，由此，令父结点相连接的过程，称为<strong>道德化（Moralization）</strong></p>
-<p>假定道德图中存在变量 $x$ 与 $y$，以及变量集合 $z=\{z_i\}$，若变量 $x$ 与 $y$ 在图上可被变量集合 $z$ 分开，即将 $z$ 去除后 $x$ 与 $y$ 分属两连通分支，则称为变量 $x$ 与 $y$ 被变量集合 $z$ 有向分离， 条件独立关系 $x\perp y|z$ 成立</p>
-<p><img width="300" src="/images/artificial-intelligence/machine-learning/30-5.png"></p>
-<p>如上图所示，在上图的道德图中，可以轻易的找出所有的条件独立关系：</p>
-<script type="math/tex; mode=display">
-\begin{matrix}
-x^{(3)}\perp x^{(2)}|x^{(1)} & x^{(5)}\perp x^{(1)}|x^{(2)} \\
-x^{(3)}\perp x^{(4)}|x^{(1)} & x^{(5)}\perp x^{(3)}|x^{(2)} \\
-x^{(3)}\perp x^{(5)}|x^{(1)} & x^{(5)}\perp x^{(4)}|x^{(2)}
-\end{matrix}</script><h2 id="贝叶斯网络中的马尔可夫毯"><a href="#贝叶斯网络中的马尔可夫毯" class="headerlink" title="贝叶斯网络中的马尔可夫毯"></a>贝叶斯网络中的马尔可夫毯</h2><p>在随机变量的全集 $U$，对于给定的变量 $X\in U$ 和变量集 $MB\subset U,X\notin MB$，如果满足：</p>
-<script type="math/tex; mode=display">
-X\perp \{U-MB-\{X\}\} | MB</script><p>则称满足上述条件的最小变量集 $MB$ 为变量 $X$ 的<strong>马尔可夫毯（Markov Blanket）</strong></p>
-<hr>
-<p>在贝叶斯网络中，一个结点的马尔可夫毯是一个结点集，在这个集合中的结点在给定的条件下，条件独立于其他所有结点</p>
-<p>简单来说，一个结点的马尔可夫毯是它的父结点、子结点、兄弟结点</p>
-<p>如下图，结点 $T$ 的马尔可夫毯为：$MB(T)=\{x^{(1)},x^{(2)},x^{(4)},x^{(6)},x^{(7)}\}$</p>
-<p><img width="500" src="/images/artificial-intelligence/machine-learning/30-6.png"></p>
-<p>马尔可夫毯是用于<strong>特征选择</strong>的一种冗余性分析工具，对于目标特征来说，其马尔可夫毯包含了该特征的所有信息，非马尔可夫毯则包含了目标特征的冗余特征</p>
-<p>因此，通过发现目标特征的马尔可夫毯，可以准确地确定目标特征的冗余特征，从而降低特征空间的维数</p>
-<p>也就是说，如果要了解某特征的分布情况，仅需了解其马尔可夫毯的信息即可，不需对整个数据集了解</p>
-<h1 id="【贝叶斯网络学习】"><a href="#【贝叶斯网络学习】" class="headerlink" title="【贝叶斯网络学习】"></a>【贝叶斯网络学习】</h1><h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>在网络结构已知，即特征间的依赖关系已知的情况下，贝叶斯网络只需要对训练样本进行统计，估计出每个结点的条件概率表即可</p>
-<p>但在实际应用中，往往不知道网络结构，因此贝叶斯网络学习的首要任务就是通过训练集来找出结构最为合适的贝叶斯网络</p>
-<p>目前，最常用的方法是<strong>评分搜索（Score Search）</strong>，该方法定义了一个<strong>评分函数（Score Function）</strong>，通过该函数来寻找结构最优的贝叶斯网络</p>
-<h2 id="最小描述长度准则"><a href="#最小描述长度准则" class="headerlink" title="最小描述长度准则"></a>最小描述长度准则</h2><p>目前常用的评分函数都是基于信息论准则的，其将学习问题视为一个数据压缩任务，试图找到一个可以用最短编码长度来描述训练数据的模型，此时，编码长度包括：模型自身所需的字节长度、使用该模型描述数据所需的字节长度</p>
-<p>对于贝叶斯网络学习而言，每个贝叶斯网络即为一个模型，其描述了训练集在该模型上的概率分布，对于那些在训练集中经常出现的样本，存在一套编码机制，使得这些经常出现的样本有着更短的编码</p>
-<p>由此，应该选择综合编码长度最短的模型，这就是<strong>最小描述长度（Minimal Description Length，MDL）准则</strong></p>
-<h2 id="评分函数最小化"><a href="#评分函数最小化" class="headerlink" title="评分函数最小化"></a>评分函数最小化</h2><p>给定由 $P(X,Y)$ 独立同分布产生的训练数据集 $T=\{(\mathbf{x_1},y_1),(\mathbf{x_2},y_2),…,(\mathbf{x_N},y_N)\}$，对于每一样本对 $(\mathbf{x_i},y_i)$，输入 $\mathbf{x_i}=(x_i^{(1)},x_i^{(2)},…,x_i^{(n)})^T\in \mathcal{X}$，输出 $y_i\in\mathcal{Y}$</p>
-<p>那么，贝叶斯网络 $B= &lt; G,\Theta &gt;$ 在 $T$ 上的评分函数为：</p>
-<script type="math/tex; mode=display">
-s(B|T)=f(\theta)|B|-LL(B|T)</script><p>其中，$|B|$ 为贝叶斯网络的参数个数，$f(\theta)$ 描述了每个参数 $\theta$ 所需的字节数，显然，$f(\theta)|B|$ 计算了编码整个贝叶斯网络 $B$ 所需要的字节数</p>
-<p>而 $LL(B|T)$ 为贝叶斯网络的对数似然，其计算了贝叶斯网络 $B$ 对应的概率分布 $P_B$ 对训练集 $T$ 的描述程度，即：</p>
+P_{\mathbf{w}}(y|x) &= \frac{1}{Z_{\mathbf{w}}(x)} \exp \big[
+\mathbf{w}\cdot F(y,x) 
+\big ]\\
+Z_{\mathbf{w}}(x) &= \sum_{y} \exp \big[
+\mathbf{w} \cdot F(y,x)
+\big ]
+\end{align*}</script><p>可得：</p>
 <script type="math/tex; mode=display">
 \begin{align*}
-LL(B|T) &= \sum_{i=1}^{N}\log P_B(\mathbf{x_i},y_i) \\
-&= \sum_{i=1}^{N}\log P_B(X^{(1)}=x^{(1)}_i,...,X^{(n)}=x^{(n)}_i,Y=y_i) \\
-&= \sum_{i=1}^{N}\log\prod_{j=1}^n P(X^{(j)}=x^{(j)}_i|X^{(j+1)}=x^{(j+1)}_i,...,X^{(n)}=x^{(n)}_i,Y=y_i)
-\end{align*}</script><p>可以发现，学习任务转为了优化任务，即寻找一个贝叶斯网络 $B$，使得评分函数 $s(B|T)$ 最小</p>
-<p>若贝叶斯网络 $B = &lt; G,\Theta &gt;$ 的网络结构 $G$ 固定，那么评分函数 $s(B|T)$ 的第一项 $f(\theta)|B|$ 为常数，此时，最小化评分函数 $s(B|T)$ 等价于对参数 $\Theta$ 进行极大似然估计，即求：</p>
+y^{*} 
+&= \arg \max_y P_{\mathbf{w}}(y|x) \\
+&= \arg \max_y \frac{1}{Z_{\mathbf{w}}(x)} \exp \big[
+\mathbf{w}\cdot F(y,x)
+\big] \\
+&= \arg \max_y \exp \big[
+\mathbf{w}\cdot F(y,x)
+\big] \\
+&= \arg \max_y \big[
+\mathbf{w}\cdot F(y,x)
+\big] \\
+\end{align*}</script><p>故线性链条件随机场的预测问题，可转化为求非规范化概率最大的最优路径问题：</p>
 <script type="math/tex; mode=display">
-\Theta_{x^{(j)}|\pi^{(j)}}=P_B(X^{(j)}=x^{(j)}|\pi^{(j)})</script><p>而参数 $\Theta_{x^{(j)}|\pi^{(j)}}$ 可以直接在训练集 $T$ 上通过经验估计获得，即：</p>
+\max_y \big[
+\mathbf{w}\cdot F(y,x)
+\big]</script><p>其中，用路径表示标记序列，即有：</p>
 <script type="math/tex; mode=display">
-\theta_{x^{(j)}|\pi^{(j)}}=\hat{P_T}(x^{(j)}|\pi^{(j)})</script><p>因此，为最小化评分函数 $s(B|T)$，只需要对所有可能的网络结构空间中进行搜索最优的贝叶斯网络结构，而网络的 $\Theta$ 参数可以直接在训练集上计算得到</p>
-<p>但在所有可能的网络结构空间中搜索最优网络结构是一个 NP 难问题，难以快速求解，为此，常通过以下两种策略在有限时间内求得近似解：</p>
-<ul>
-<li>贪心法：从某个网络结构出发，每次调整一条边，直到评分函数值不再降低</li>
-<li>约束法：对网络结构施加约束条件来削减搜索空间（半朴素贝叶斯可视为贝叶斯网络的特例，其将网络结构限定为树形结构）</li>
-</ul>
-<h2 id="AIC-与-BIC"><a href="#AIC-与-BIC" class="headerlink" title="AIC 与 BIC"></a>AIC 与 BIC</h2><p>当每个参数用 $1$ 字节描述时，有 $f(\theta)=1$，此时得到的评分函数称为<strong>赤池信息准则（Akaike Information Criterion，AIC）评分函数</strong>，即：</p>
+\begin{align*}
+\mathbf{w} &= (w_1,w_2,\cdots,w_K)^T \\
+F(y,x) &= (f_1(y,x),f_2(y,x),\cdots,f_K(y,x))^T \\
+f_k(y,x) &= \sum_{i=1}^n f_k(y_{i-1},y_i,x,i),\quad k=1,2,\cdots,K
+\end{align*}</script><p>为求解最优路径，可将 $\max\limits_y \big[ \mathbf{w}\cdot F(y,x) \big]$ 写为如下形式：</p>
 <script type="math/tex; mode=display">
-AIC(B|T)=|B|-LL(B|T)</script><p>当每个参数用 $\frac{1}{2}\log N$ 个字节描述时，有 $f(\theta)=\frac{1}{2}\log N$，此时得到的评分函数称为<strong>贝叶斯信息准则（Bayesian Informatica Criterion，BIC）评分函数</strong>，即：</p>
+ \max_y \sum_{i=1}^n \mathbf{w} \cdot F_i(y_{i-1},y_i,x)</script><p>其中，对于局部特征向量 $F_i(y_{i-1},y_i,x)$ ，有：</p>
 <script type="math/tex; mode=display">
-BIC(B|T)=\frac{1}{2}|B|\log N-LL(B|T)</script><p>当不对贝叶斯网络进行编码长度的计算时，有 $f(\theta)=0$，此时得到的评分函数退化为<strong>负对数似然函数</strong>，学习任务退化为极大似然估计，即：</p>
+F_i(y_{i-1},y_i,x) = (f_1(y_{i-1},y_i,x,i),f_2(y_{i-1},y_i,x,i),\cdots,f_K(y_{i-1},y_i,x,i))^T</script><p>下面，定义在位置 $1$ 的各标记 $j=1,2,\cdots,m$ 的非规范化概率：</p>
 <script type="math/tex; mode=display">
-s(B|T)=-LL(B|T)</script><h1 id="【贝叶斯网络的预测】"><a href="#【贝叶斯网络的预测】" class="headerlink" title="【贝叶斯网络的预测】"></a>【贝叶斯网络的预测】</h1><p>在贝叶斯网络训练好后即可进行<strong>查询（Query）</strong>，即通过某些特征的观测值来推测其他特征的取值，这样通过已知特征观测值来推测预测值的过程称为<strong>推断（Inference）</strong>，其中已知观测值称为<strong>证据（Evidence）</strong></p>
-<p>最理想的情况是，直接根据贝叶斯网络定义的联合概率分布来精确计算后验概率，但当网络结点较多、图为稠密图时，这样的推断是 NP 难的，难以进行精确推断，为此，通常进行<strong>近似推断</strong>，即通过降低精度要求，在有限时间内求得近似解</p>
-<p>在实际应用中，贝叶斯网络的近似推断通常使用<strong>吉布斯采样（Gibbs Sampling）</strong>完成</p>
-
+\delta_1(j)= \mathbf{w} \cdot F_1(y_0=\text{start},y_1=j,x),\quad j=1,2,\cdots,m</script><p>根据定义，可得到 $\delta$ 的递推公式：</p>
+<script type="math/tex; mode=display">
+\delta_i(l) = \max_{1\leq j\leq m} \{
+\delta_{i-1}(j) + \mathbf{w} \cdot F_i(y_{i-1}=j,y_{i}=l,x)
+\},\quad l=1,2,\cdots,m</script><p>即可求出到位置 $i$ 的各标记 $l=1,2,\cdots,m$ 的非规范化概率的最大值</p>
+<p>同时，可记录非规范化概率最大值的路径，即：</p>
+<script type="math/tex; mode=display">
+\Psi_i(l) = \arg \max_{l\leq j\leq m} \{
+\delta_{i-1}(j) + \mathbf{w}\cdot F_i(y_{i-1}=j,y_i=l,x)
+\},\quad l=1,2,\cdots,m</script><p>直到 $i=n$ 时终止，此时求得非规范化概率的最大值为：</p>
+<script type="math/tex; mode=display">
+\max_y \big[
+\mathbf{w} \cdot F(y,x)
+\big] = \max_{1\leq j\leq m} \delta_n(j)</script><p>以及最优路径的终点：</p>
+<script type="math/tex; mode=display">
+y_n^{*} = \arg \max_{1\leq j\leq m} \delta_n(j)</script><p>由此最优路径返回，有：</p>
+<script type="math/tex; mode=display">
+y_i^{*} = \Psi_{i+1}(y_{i+1}^{*}),\quad i=n-1,n-2,\cdots,1</script><p>求得最优路径为：</p>
+<script type="math/tex; mode=display">
+y^{*} = (y_1^{*},y_2^{*},\cdots,y_n^{*})</script><h1 id="【算法流程】"><a href="#【算法流程】" class="headerlink" title="【算法流程】"></a>【算法流程】</h1><p>综上所属，对于线性链条件随机场预测的 Viterbi 算法流程如下</p>
+<p>输入：模型特征向量 $F(y,x)$，权值向量 $\mathbf{w}$，观测序列 $x=(x_1,x_2,\cdots,x_n)$</p>
+<p>输出：最优路径 $y^{*} = (y_1^{*},y_2^{*},\cdots,y_n^{*})$</p>
+<p>算法流程：</p>
+<p>Step 1：算法初始化</p>
+<script type="math/tex; mode=display">
+\delta_1(j)= \mathbf{w} \cdot F_1(y_0=\text{start},y_1=j,x),\quad j=1,2,\cdots,m</script><p>Step 2：对 $i=2,3,\cdots,n$ 递推</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+\delta_i(l) &= \max_{1\leq j\leq m} \{
+\delta_{i-1}(j) + \mathbf{w} \cdot F_i(y_{i-1}=j,y_{i}=l,x)
+\},\quad l=1,2,\cdots,m \\
+\Psi_i(l) &= \arg \max_{l\leq j\leq m} \{
+\delta_{i-1}(j) + \mathbf{w}\cdot F_i(y_{i-1}=j,y_i=l,x)
+\},\quad l=1,2,\cdots,m
+\end{align*}</script><p>Step 3：终止</p>
+<script type="math/tex; mode=display">
+\begin{array}{c}
+\max_y \big[
+\mathbf{w} \cdot F(y,x)
+\big] = \max_{1\leq j\leq m} \delta_n(j) \\
+y_i^{*} = \Psi_{i+1}(y_{i+1}^{*}),\quad i=n-1,n-2,\cdots,1
+\end{array}</script><p>Step 4：返回路径</p>
+<script type="math/tex; mode=display">
+y_i^{*} = \Psi_{i+1}(y_{i+1}^{*}),\quad i=n-1,n-2,\cdots,1</script><p>求得最优路径为：</p>
+<script type="math/tex; mode=display">
+y^{*} = (y_1^{*},y_2^{*},\cdots,y_n^{*})</script>
     </div>
 
     
@@ -414,7 +392,7 @@ s(B|T)=-LL(B|T)</script><h1 id="【贝叶斯网络的预测】"><a href="#【贝
   </li>
   <li class="post-copyright-link">
     <strong>本文链接：</strong>
-    <a href="https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/64831aee.html" title="贝叶斯网络">https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/64831aee.html</a>
+    <a href="https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/supervised-learning/844b1c9d.html" title="条件随机场的预测">https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/supervised-learning/844b1c9d.html</a>
   </li>
   <li class="post-copyright-license">
     <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
@@ -428,6 +406,7 @@ s(B|T)=-LL(B|T)</script><h1 id="【贝叶斯网络的预测】"><a href="#【贝
               <a href="/tags/artificial-intelligence/" rel="tag"># 人工智能</a>
               <a href="/tags/machine-learning/" rel="tag"># 机器学习</a>
               <a href="/tags/supervised-learning/" rel="tag"># 监督学习</a>
+              <a href="/tags/tagging/" rel="tag"># 标注问题</a>
           </div>
 
         
@@ -436,12 +415,12 @@ s(B|T)=-LL(B|T)</script><h1 id="【贝叶斯网络的预测】"><a href="#【贝
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/artificial-intelligence/machine-learning/supervised-learning/cb24fd43.html" rel="prev" title="半朴素贝叶斯">
-      <i class="fa fa-chevron-left"></i> 半朴素贝叶斯
+    <a href="/artificial-intelligence/machine-learning/supervised-learning/786f4ea0.html" rel="prev" title="条件随机场的学习">
+      <i class="fa fa-chevron-left"></i> 条件随机场的学习
     </a></div>
       <div class="post-nav-item">
-    <a href="/artificial-intelligence/machine-learning/supervised-learning/8ddc7426.html" rel="next" title="决策树">
-      决策树 <i class="fa fa-chevron-right"></i>
+    <a href="/notes/computer-networks/66a2c84f.html" rel="next" title="物理层交换技术">
+      物理层交换技术 <i class="fa fa-chevron-right"></i>
     </a></div>
     </div>
       </footer>
@@ -502,7 +481,7 @@ s(B|T)=-LL(B|T)</script><h1 id="【贝叶斯网络的预测】"><a href="#【贝
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【概述】"><span class="nav-number">1.</span> <span class="nav-text">【概述】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【贝叶斯网络结构】"><span class="nav-number">2.</span> <span class="nav-text">【贝叶斯网络结构】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#条件独立性"><span class="nav-number">2.1.</span> <span class="nav-text">条件独立性</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#独立性结构"><span class="nav-number">2.2.</span> <span class="nav-text">独立性结构</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#同父结构"><span class="nav-number">2.2.1.</span> <span class="nav-text">同父结构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#顺序结构"><span class="nav-number">2.2.2.</span> <span class="nav-text">顺序结构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#V-型结构"><span class="nav-number">2.2.3.</span> <span class="nav-text">V 型结构</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#边际独立性"><span class="nav-number">2.3.</span> <span class="nav-text">边际独立性</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#条件独立性分析"><span class="nav-number">2.4.</span> <span class="nav-text">条件独立性分析</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#贝叶斯网络中的马尔可夫毯"><span class="nav-number">2.5.</span> <span class="nav-text">贝叶斯网络中的马尔可夫毯</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【贝叶斯网络学习】"><span class="nav-number">3.</span> <span class="nav-text">【贝叶斯网络学习】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#概述"><span class="nav-number">3.1.</span> <span class="nav-text">概述</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#最小描述长度准则"><span class="nav-number">3.2.</span> <span class="nav-text">最小描述长度准则</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#评分函数最小化"><span class="nav-number">3.3.</span> <span class="nav-text">评分函数最小化</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#AIC-与-BIC"><span class="nav-number">3.4.</span> <span class="nav-text">AIC 与 BIC</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【贝叶斯网络的预测】"><span class="nav-number">4.</span> <span class="nav-text">【贝叶斯网络的预测】</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【概述】"><span class="nav-number">1.</span> <span class="nav-text">【概述】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【基本思想】"><span class="nav-number">2.</span> <span class="nav-text">【基本思想】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【算法流程】"><span class="nav-number">3.</span> <span class="nav-text">【算法流程】</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -518,20 +497,20 @@ s(B|T)=-LL(B|T)</script><h1 id="【贝叶斯网络的预测】"><a href="#【贝
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">671</span>
+          <span class="site-state-item-count">673</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">65</span>
+        <span class="site-state-item-count">66</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">74</span>
+        <span class="site-state-item-count">76</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -775,7 +754,7 @@ NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
       repo        : 'Gitalk-Comment',
       owner       : 'Alex-McAvoy',
       admin       : ['Alex-McAvoy'],
-      id          : '5515614d6cc9a7320cad3df3f4754d26',
+      id          : '8d2779cb81ad3bb19d628f01c1962f7f',
         language: '',
       distractionFreeMode: true
     });

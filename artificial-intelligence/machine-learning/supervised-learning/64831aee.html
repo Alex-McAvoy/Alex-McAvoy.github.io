@@ -25,24 +25,27 @@
     var CONFIG = {"hostname":"alex-mcavoy.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":16,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":true,"color":"#ff0000","save":"manual"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":true},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.json"};
   </script>
 
-  <meta name="description" content="【概述】对于隐马尔可夫模型的概率计算问题，即：给定隐马尔可夫模型 $\lambda=(A,B,\pi)$ 和观测序列 $O=(o_1,o_2,\cdots,o_T)$，计算在模型 $\lambda$ 下观测序列 $O$ 出现的概率 $P(O|\lambda)$ 有以下两种概率计算方法：">
-<meta name="keywords" content="人工智能,机器学习,监督学习">
+  <meta name="description" content="References：  贝叶斯网络，看完这篇我终于理解了(附代码)！ 概率图模型之贝叶斯网络 机器学习之贝叶斯网络 贝叶斯网络(Bayesian Network)   【贝叶斯网络】贝叶斯网络（Bayesian Network）借助 DAG 来刻画特征间的依赖关系，并使用条件概率表（Conditional Probability Table，CPT）来描述特征的联合概率分布">
+<meta name="keywords" content="人工智能,机器学习,监督学习,标注问题">
 <meta property="og:type" content="article">
-<meta property="og:title" content="隐马尔可夫模型观测序列的概率计算">
-<meta property="og:url" content="https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/84c1b09d.html">
+<meta property="og:title" content="贝叶斯网络">
+<meta property="og:url" content="https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/supervised-learning/64831aee.html">
 <meta property="og:site_name" content="Alex_McAvoy">
-<meta property="og:description" content="【概述】对于隐马尔可夫模型的概率计算问题，即：给定隐马尔可夫模型 $\lambda=(A,B,\pi)$ 和观测序列 $O=(o_1,o_2,\cdots,o_T)$，计算在模型 $\lambda$ 下观测序列 $O$ 出现的概率 $P(O|\lambda)$ 有以下两种概率计算方法：">
+<meta property="og:description" content="References：  贝叶斯网络，看完这篇我终于理解了(附代码)！ 概率图模型之贝叶斯网络 机器学习之贝叶斯网络 贝叶斯网络(Bayesian Network)   【贝叶斯网络】贝叶斯网络（Bayesian Network）借助 DAG 来刻画特征间的依赖关系，并使用条件概率表（Conditional Probability Table，CPT）来描述特征的联合概率分布">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/machine-learning/47-1.png">
-<meta property="og:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/machine-learning/47-2.png">
-<meta property="og:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/machine-learning/47-3.png">
-<meta property="og:updated_time" content="2023-09-09T00:18:06.204Z">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/machine-learning/supervised-learning/46-1.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/machine-learning/supervised-learning/46-2.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/machine-learning/supervised-learning/46-3.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/machine-learning/supervised-learning/46-4.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/machine-learning/supervised-learning/46-5.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/machine-learning/supervised-learning/46-6.png">
+<meta property="og:updated_time" content="2023-09-19T13:51:47.529Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="隐马尔可夫模型观测序列的概率计算">
-<meta name="twitter:description" content="【概述】对于隐马尔可夫模型的概率计算问题，即：给定隐马尔可夫模型 $\lambda=(A,B,\pi)$ 和观测序列 $O=(o_1,o_2,\cdots,o_T)$，计算在模型 $\lambda$ 下观测序列 $O$ 出现的概率 $P(O|\lambda)$ 有以下两种概率计算方法：">
-<meta name="twitter:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/machine-learning/47-1.png">
+<meta name="twitter:title" content="贝叶斯网络">
+<meta name="twitter:description" content="References：  贝叶斯网络，看完这篇我终于理解了(附代码)！ 概率图模型之贝叶斯网络 机器学习之贝叶斯网络 贝叶斯网络(Bayesian Network)   【贝叶斯网络】贝叶斯网络（Bayesian Network）借助 DAG 来刻画特征间的依赖关系，并使用条件概率表（Conditional Probability Table，CPT）来描述特征的联合概率分布">
+<meta name="twitter:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/machine-learning/supervised-learning/46-1.png">
 
-<link rel="canonical" href="https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/84c1b09d.html">
+<link rel="canonical" href="https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/supervised-learning/64831aee.html">
 
 
 <script id="page-configurations">
@@ -55,7 +58,7 @@
   };
 </script>
 
-  <title>隐马尔可夫模型观测序列的概率计算 | Alex_McAvoy</title>
+  <title>贝叶斯网络 | Alex_McAvoy</title>
   
 
 
@@ -199,7 +202,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/84c1b09d.html">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/supervised-learning/64831aee.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/assets/img/head.jpg">
@@ -212,7 +215,7 @@
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          隐马尔可夫模型观测序列的概率计算
+          贝叶斯网络
         </h1>
 
         <div class="post-meta">
@@ -222,7 +225,7 @@
               </span>
               <span class="post-meta-item-text">发表于</span>
 
-              <time title="创建时间：2019-09-08 17:24:00" itemprop="dateCreated datePublished" datetime="2019-09-08T17:24:00+08:00">2019-09-08</time>
+              <time title="创建时间：2019-08-26 13:59:00" itemprop="dateCreated datePublished" datetime="2019-08-26T13:59:00+08:00">2019-08-26</time>
             </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -235,6 +238,10 @@
                   ，
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
                   <a href="/categories/artificial-intelligence/machine-learning/" itemprop="url" rel="index"><span itemprop="name">机器学习</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/artificial-intelligence/machine-learning/supervised-learning/" itemprop="url" rel="index"><span itemprop="name">监督学习</span></a>
                 </span>
             </span>
 
@@ -251,14 +258,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>5.3k</span>
+              <span>2.9k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>5 分钟</span>
+              <span>3 分钟</span>
             </span>
 
         </div>
@@ -270,119 +277,77 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <h1 id="【概述】"><a href="#【概述】" class="headerlink" title="【概述】"></a>【概述】</h1><p>对于隐马尔可夫模型的概率计算问题，即：给定隐马尔可夫模型 $\lambda=(A,B,\pi)$ 和观测序列 $O=(o_1,o_2,\cdots,o_T)$，计算在模型 $\lambda$ 下观测序列 $O$ 出现的概率 $P(O|\lambda)$</p>
-<p>有以下两种概率计算方法：</p>
+        <blockquote>
+<p>References：</p>
 <ul>
-<li><strong>直接计算法</strong>：暴力算法，时间复杂度 $O(N^2T)$</li>
-<li><strong>前向后向法（Forward-Backward Algorithm）</strong>：前向计算法与后向计算法的统称，本质上是动态规划算法，时间复杂度 $O(N^2T)$</li>
+<li><a href="https://zhuanlan.zhihu.com/p/73415944" target="_blank" rel="noopener">贝叶斯网络，看完这篇我终于理解了(附代码)！</a></li>
+<li><a href="https://zhuanlan.zhihu.com/p/30139208" target="_blank" rel="noopener">概率图模型之贝叶斯网络</a></li>
+<li><a href="https://zhuanlan.zhihu.com/p/539980922" target="_blank" rel="noopener">机器学习之贝叶斯网络</a></li>
+<li><a href="https://blog.csdn.net/gdp12315_gu/article/details/50002195" target="_blank" rel="noopener">贝叶斯网络(Bayesian Network)</a></li>
 </ul>
-<h1 id="【直接计算法】"><a href="#【直接计算法】" class="headerlink" title="【直接计算法】"></a>【直接计算法】</h1><p>直接计算法即按概率公式直接计算，其基本思路是：列举所有可能的长度为 $T$ 的状态序列 $I$，求各状态序列 $I$ 与观测序列 $O$  联合概率 $P(O,I|\lambda)$，然后对所有可能的状态序列求和，得到 $P(O|\lambda)$</p>
-<p>状态序列 $I=(i_1,i_2,\cdots,i_T)$ 的概率为：</p>
+</blockquote>
+<h1 id="【贝叶斯网络】"><a href="#【贝叶斯网络】" class="headerlink" title="【贝叶斯网络】"></a>【贝叶斯网络】</h1><p><strong>贝叶斯网络（Bayesian Network）</strong>借助 DAG 来刻画特征间的依赖关系，并使用<strong>条件概率表（Conditional Probability Table，CPT）</strong>来描述特征的联合概率分布</p>
+<p>一般而言，一个贝叶斯网络 $B$ 由结构 $G$ 与参数 $\Theta$ 来表示，即 $B= &lt; G,\Theta &gt;$</p>
+<p>其中，结构 $G$ 是一个 DAG，其中每个结点对应一个特征，若两个特征间存在依赖关系，则根据依赖关系建立一条有向边；参数 $\Theta$ 描述了依赖关系，假设特征 $x^{(j)}$ 在结构 $G$ 中的父结点集为 $\pi^{(j)}$，则 $\Theta$ 包含了每个特征的条件概率表，即</p>
 <script type="math/tex; mode=display">
-P(I|\lambda) = \pi_{i_1} a_{i_1,i_2} a_{i_2,i_3} \cdots a_{i_{T-1},i_T}</script><p>对固定的状态序列 $I=(i_1,i_2,\cdots,i_T)$，观测序列 $O=(o_1,o_2,\cdots,o_T)$ 的概率为：</p>
+\Theta_{x^{(j)}|\pi^{(j)}}=P_B(X^{(j)}=x^{(j)}|\pi^{(j)})</script><h1 id="【条件独立性】"><a href="#【条件独立性】" class="headerlink" title="【条件独立性】"></a>【条件独立性】</h1><p>对于贝叶斯网络来说，由于其是一个图结构，因此若每两个特征结点都存在一条边，那么所构建的贝叶斯网络将是一个全连接 DAG，这就意味着模型十分复杂，可能会出现过拟合</p>
+<p>为避免过拟合的发生，贝叶斯网络假设每个特征结点与其非子结点独立，由此有效地表达了特征间的条件独立性</p>
+<p>也就是说，贝叶斯网络 $B= &lt; G,\Theta &gt;$ 将特征 $X^{(1)},X^{(2)},…,X^{(n)}$ 的联合概率分布定义为：</p>
 <script type="math/tex; mode=display">
-P(O|I,\lambda) = b_{i_1}(o_1) b_{i_2}(o_2) \cdots b_{i_T}(o_T)</script><p>观测序列 $O$ 与状态序列 $I$ 同时出现的联合概率为：</p>
+P_B(X^{(1)}=x^{(1)},...,X^{(n)}=x^{(n)}) = \prod_{i=1}^n P(X^{(i)}=x^{(i)}|X^{(i+1)}=x^{(i+1)},...,X^{(n)}=x^{(n)})</script><p><img width="300" src="/images/artificial-intelligence/machine-learning/supervised-learning/46-1.png"></p>
+<p>如上图，联合概率分布表示为：</p>
 <script type="math/tex; mode=display">
-\begin{align*}
-P(O,I|\lambda) 
-&= P(O|I,\lambda) P(I|\lambda) \\
-&= \pi_{i_1}b_{i_1}(o_1) * a_{i_1,i_2} b_{i_2}(o_2) * \cdots * a_{i_{T-1},i_T} b_{i_T}(o_T) 
-\end{align*}</script><p>然后，对所有可能的状态序列 $I$ 求和，得到观测序列 $O$ 的概率 $P(O|\lambda)$，即：</p>
+P(x^{(1)},x^{(2)},x^{(3)},x^{(4)},x^{(5)})=P(x^{(1)})P(x^{(2)})P(x^{(3)}|x^{(1)})P(x^{(4)}|x^{(1)},x^{(2)})P(x^{(5)}|x^{(2)})</script><p>显然，在给定 $x^{(1)}$ 的情况下，$x^{(3)}$ 和 $x^{(4)}$ 独立；在给定 $x^{(2)}$ 的情况下，$x^{(4)}$ 和 $x^{(5)}$ 独立</p>
+<p>此时，可以简记为：</p>
 <script type="math/tex; mode=display">
-\begin{align*}
-P(O|I,\lambda) 
-&= \sum_{I} P(O|I,\lambda) P(I|\lambda) \\
-&= \sum_{i_1,i_2,\cdots,i_T} \pi_{i_1}b_{i_1}(o_1) * a_{i_1,i_2} b_{i_2}(o_2) * \cdots * a_{i_{T-1},i_T} b_{i_T}(o_T) 
-\end{align*}</script><p>但是，直接利用上述公式进行计算的计算量很大，是 $O(TN^T)$ 阶的，随着 $T$ 的增长时间复杂度会呈爆炸式增长，故而该方法在计算上不可行</p>
-<h1 id="【前向计算法】"><a href="#【前向计算法】" class="headerlink" title="【前向计算法】"></a>【前向计算法】</h1><h2 id="前向概率"><a href="#前向概率" class="headerlink" title="前向概率"></a>前向概率</h2><p>对于给定的隐马尔可夫模型 $\lambda=(A,B,\lambda)$，定义到时刻 $t$ 的部分观测序列为 $o_1,o_2,\cdots,o_t$ 且状态为 $q_i$ 的概率为<strong>前向概率</strong>，记作：</p>
-<script type="math/tex; mode=display">
-\alpha_t(i) = P(o_1,o_2,\cdots,o_t,i_t = q_i|\lambda)</script><h2 id="前向概率的递推公式"><a href="#前向概率的递推公式" class="headerlink" title="前向概率的递推公式"></a>前向概率的递推公式</h2><p>对于到时刻 $t$ 观测到 $o_1,o_2,\cdots,o_t$ 并在时刻 $t$ 处于状态 $q_j$ 的前向概率 $\alpha_t(j)$，那么结合转移概率 $a_{ji}$，可求得到时刻 $t$ 观测到 $o_1,o_2,\cdots,o_t$ 并在时刻 $t$ 处于状态 $q_j$ 而在 $t+1$ 时刻到达状态 $q_i$ 的联合概率，即：</p>
-<script type="math/tex; mode=display">
-\alpha_t(j) a_{ji},\quad i=1,2,\cdots,N</script><p>对在 $t$ 时刻所有可能的 $N$ 个状态 $q_j$ 求和，可得到到时刻 $t$ 观测到 $o_1,o_2,\cdots,o_t$ 并在 $t+1$ 时刻处于状态 $q_i$ 的联合概率，即：</p>
-<script type="math/tex; mode=display">
-\sum_{j=1}^N \alpha_t(j) a_{ji},\quad i=1,2,\cdots,N</script><p><img width="300" src="/images/artificial-intelligence/machine-learning/47-1.png"></p>
-<p>那么，将这个联合概率与观测概率 $b_i(o_{t+1})$ 相乘，即可得到到时刻 $t+1$ 观测到 $o_1,o_2,\cdots,o_t,o_{t+1}$ 并在时刻 $t+1$ 处于状态 $q_i$ 的前向概率 $\alpha_{t+1}(i)$，即：</p>
-<script type="math/tex; mode=display">
-\alpha_{t+1}(i) = \bigg[ \sum_{j=1}^N \alpha_t(j) a_{ji} \bigg] b_i(o_{t+1}),\quad i=1,2,\cdots,N</script><p>上式即<strong>前向概率的递推公式</strong></p>
-<h2 id="观测序列概率的计算"><a href="#观测序列概率的计算" class="headerlink" title="观测序列概率的计算"></a>观测序列概率的计算</h2><p>由于到时刻 $T$ 的观测序列为 $o_1,o_2,\cdots,o_T$ 且状态为 $q_i$ 的前向概率为：</p>
-<script type="math/tex; mode=display">
-\alpha_T(i) = P(o_1,o_2,\cdots,o_t,i_T = q_i|\lambda)</script><p>故在模型 $\lambda$ 下观测序列 $O$ 出现的概率 $P(O|\lambda)$ 为：</p>
-<script type="math/tex; mode=display">
-P(O|\lambda) = \sum_{i=1}^N \alpha_T(i)</script><h2 id="算法流程"><a href="#算法流程" class="headerlink" title="算法流程"></a>算法流程</h2><p>综上所述，给出观测序列概率的前向计算法的算法流程</p>
-<p>输入：隐马尔可夫模型 $\lambda=(A,B,\pi)$，观测序列 $O=(o_1,o_2,\cdots,o_T)$</p>
-<p>输出：观测序列概率 $P(O|\lambda)$</p>
-<p>算法步骤如下：</p>
-<p>Step 1：算法初始化，对初始时刻 $t=1$，根据初始概率分布 $\pi$ 与观测概率 $b_i(o_1)$，求得初始时刻的状态 $i_1=q_i$ 和观测 $o_1$ 的联合概率，即初始前向概率：</p>
-<script type="math/tex; mode=display">
-\alpha_1(i) = \pi_i b_i(o_1), \quad i=1,2,\cdots,N</script><p>Step 2：根据前向概率的递推公式进行递推</p>
-<p>对 $t=1,2,\cdots,T-1$，有：</p>
-<script type="math/tex; mode=display">
-\alpha_{t+1}(i) = \bigg[ \sum_{j=1}^N \alpha_t(j) a_{ji} \bigg] b_i(o_{t+1}),\quad i=1,2,\cdots,N</script><p>Step 3：计算在模型 $\lambda$ 下观测序列 $O$ 出现的概率</p>
-<script type="math/tex; mode=display">
-P(O|\lambda) = \sum_{i=1}^N \alpha_T(i)</script><hr>
-<p>如下图所示，前向计算法实际是基于状态序列的路径结构，递推计算 $P(O|\lambda)$</p>
-<p><img width="300" src="/images/artificial-intelligence/machine-learning/47-2.png"></p>
-<p>其高效之处在于局部计算前向概率，然后利用路径结构将前向概率递推到全局，进而得到 $P(O|\lambda)$</p>
-<p>具体来说，在初始时刻 $t=1$，计算 $\alpha_1(i)$ 的 $N$ 个值（$i=1,2,\cdots,N$），在各时刻 $t=1,2,\cdots,T-1$，计算 $\alpha_{t+1}(i)$ 的 $N$ 个值（$i=1,2,\cdots,N$），并且每个 $\alpha_{t+1}(i)$ 的计算利用前一时刻 $N$ 个 $\alpha_t(j)$，减小计算量的原因就在于每一次计算都引用了之前的结果，避免了重复计算</p>
-<p>这样，利用前向概率计算 $P(O|\lambda)$ 的计算量是 $O(N^2T)$ 阶的</p>
-<h1 id="【后向计算法】"><a href="#【后向计算法】" class="headerlink" title="【后向计算法】"></a>【后向计算法】</h1><h2 id="后向概率"><a href="#后向概率" class="headerlink" title="后向概率"></a>后向概率</h2><p>对于给定的隐马尔可夫模型 $\lambda=(A,B,\lambda)$，定义在 $t$ 时刻状态为 $q_i$ 的条件下，从 $t+1$ 到 $T$ 的部分观测序列为 $o_{t+1},o_{t+2},\cdots,o_T$ 的概率为<strong>后向概率</strong>，记作：</p>
-<script type="math/tex; mode=display">
-\beta_t(i) = P(o_{t+1},o_{t+2},\cdots,o_T|i_t = q_i,\lambda)</script><h2 id="后向概率的递推公式"><a href="#后向概率的递推公式" class="headerlink" title="后向概率的递推公式"></a>后向概率的递推公式</h2><p>为计算在 $t$ 时刻状态为 $q_i$ 条件下 $t+1$ 时刻后的观测序列为 $o_{t+1},o_{t+2},\cdots,o_T$ 的后向概率 $\beta_t(i)$，只需考虑在 $t+1$ 时刻所有可能的 $N$ 个状态 $q_j$ 的转移概率 $a_{ij}$，在该状态下的观测 $o_{t+1}$ 的观测概率 $b_j(o_{t+1})$，以及在状态 $q_j$ 后的观测序列的后向概率 $\beta_{t+1}(j)$，即有：</p>
-<script type="math/tex; mode=display">
-\beta_{t}(i) =  \sum_{j=1}^N a_{ji} b_j(o_{t+1}) \beta_{t+1}(j),\quad i=1,2,\cdots,N</script><p><img width="300" src="/images/artificial-intelligence/machine-learning/47-3.png"></p>
-<p>上式即<strong>后向概率的递推公式</strong></p>
-<h2 id="观测序列概率的计算-1"><a href="#观测序列概率的计算-1" class="headerlink" title="观测序列概率的计算"></a>观测序列概率的计算</h2><p>由于在 $t=1$ 时刻状态为 $q_i$ 的条件下，从 $2$ 到 $T$ 的部分观测序列为 $o_{2},o_{3},\cdots,o_T$ 的后向概率为：</p>
-<script type="math/tex; mode=display">
-\beta_1(i) = P(o_{2},o_{3},\cdots,o_T|i_1 = q_i,\lambda)</script><p>那么结合初始概率 $\pi_i$ 与观测概率 $b_i(o_1)$，可得到在模型 $\lambda$ 下观测序列 $O$ 出现的概率 $P(O|\lambda)$ 为：</p>
-<script type="math/tex; mode=display">
-P(O|\lambda) = \sum_{i=1}^N \pi_i b_i(o_1) \beta_1(i)</script><h2 id="算法流程-1"><a href="#算法流程-1" class="headerlink" title="算法流程"></a>算法流程</h2><p>综上所述，给出观测序列概率的后向计算法的算法流程</p>
-<p>输入：隐马尔可夫模型 $\lambda=(A,B,\pi)$，观测序列 $O=(o_1,o_2,\cdots,o_T)$</p>
-<p>输出：观测序列概率 $P(O|\lambda)$</p>
-<p>算法步骤如下：</p>
-<p>Step 1：算法初始化，对最终时刻 $t=T$ 的所有状态 $q_i$ 规定</p>
-<script type="math/tex; mode=display">
-\beta_T(i)=1,\quad i=1,2,\cdots,N</script><p>Step 2：根据后向概率的递推公式进行递推</p>
-<p>对 $t=T-1,T-2,\cdots,1$，有：</p>
-<script type="math/tex; mode=display">
-\beta_{t}(i) =  \sum_{j=1}^N a_{ji} b_j(o_{t+1}) \beta_{t+1}(j),\quad i=1,2,\cdots,N</script><p>Step 3：计算在模型 $\lambda$ 下观测序列 $O$ 出现的概率</p>
-<script type="math/tex; mode=display">
-P(O|\lambda) = \sum_{i=1}^N \pi_i b_i(o_1) \beta_1(i)</script><h1 id="【概率与期望值的计算】"><a href="#【概率与期望值的计算】" class="headerlink" title="【概率与期望值的计算】"></a>【概率与期望值的计算】</h1><h2 id="前向后向概率递推公式"><a href="#前向后向概率递推公式" class="headerlink" title="前向后向概率递推公式"></a>前向后向概率递推公式</h2><p>根据前向概率与后向概率的定义，可以将观测序列概率 $P(O|\lambda)$ 统一写成：</p>
-<script type="math/tex; mode=display">
-P(O|\lambda) = \sum_{i=1}^N \sum_{j=1}^N \alpha_t(i) a_{ij} b_j(o_{t+1}) \beta_{t+1}(j), 
-\quad t=1,2,\cdots,T-1</script><p>上式即<strong>前向后向概率递推公式</strong></p>
-<p>当 $t=1$ 时，即为：</p>
-<script type="math/tex; mode=display">
-P(O|\lambda) = \sum_{i=1}^N \pi_i b_i(o_1) \beta_1(i)</script><p>当 $t=T-1$ 时，即为：</p>
-<script type="math/tex; mode=display">
-P(O|\lambda) = \sum_{i=1}^N \alpha_T(i)</script><h2 id="单一状态计算公式"><a href="#单一状态计算公式" class="headerlink" title="单一状态计算公式"></a>单一状态计算公式</h2><p>记 $\gamma_t(i)=P(i_t=q_i|O,\lambda)$ 为在给定模型 $\lambda$ 和观测序列 $O$ 的条件下，在 $t$ 时刻处于状态 $q_i$ 的概率</p>
-<p>根据前向概率 $\alpha_t(i)$ 与后向概率 $\beta_t(i)$ 的定义，有：</p>
-<script type="math/tex; mode=display">
-P(i_t=q_i,O|\lambda) = \alpha_t(i) \beta_t(i)</script><p>故有：</p>
+\begin{matrix}
+x^{(3)}\perp x^{(4)}|x^{(1)} & x^{(4)}\perp x^{(5)}|x^{(2)} 
+\end{matrix}</script><h1 id="【独立性结构】"><a href="#【独立性结构】" class="headerlink" title="【独立性结构】"></a>【独立性结构】</h1><h2 id="同父结构"><a href="#同父结构" class="headerlink" title="同父结构"></a>同父结构</h2><p><strong>同父结构（Common parent structure）</strong>，又称<strong>尾对尾结构（Tail-to-tail Structure）</strong></p>
+<p>其在给定父特征 $x^{(1)}$ 的取值下，其将子特征结点 $x^{(2)}$ 和 $x^{(3)}$ <strong>阻断（Blocked）</strong>， $x^{(2)}$ 和 $x^{(3)}$ 彼此条件独立</p>
+<p><img width="300" src="/images/artificial-intelligence/machine-learning/supervised-learning/46-2.png"></p>
+<h2 id="顺序结构"><a href="#顺序结构" class="headerlink" title="顺序结构"></a>顺序结构</h2><p><strong>顺序结构（Sequence Structure）</strong>，又称<strong>头对尾结构（Head-to-tail Structure）</strong></p>
+<p>其在给定子特征 $x^{(2)}$ 的取值下，其将父特征结点 $x^{(1)}$ 与其子特征结点 $x^{(3)}$ <strong>阻断（blocked）</strong>， $x^{(1)}$ 和 $x^{(3)}$ 彼此条件独立</p>
+<p>但若</p>
+<p><img width="300" src="/images/artificial-intelligence/machine-learning/supervised-learning/46-3.png"></p>
+<h2 id="V-型结构"><a href="#V-型结构" class="headerlink" title="V 型结构"></a>V 型结构</h2><p><strong>V 型结构（V-structure）</strong>，又称<strong>头对头结构（Head-to-Head Structure）</strong></p>
+<p>其在给定子特征 $x^{(3)}$ 的取值下，父特征结点 $x^{(1)}$ 和 $x^{(2)}$ 必不独立；但若子特征 $x^{(3)}$ 的取值未知， $x^{(1)}$ 和 $x^{(2)}$ 却是独立的</p>
+<p><img width="300" src="/images/artificial-intelligence/machine-learning/supervised-learning/46-4.png"></p>
+<h1 id="【边际独立性】"><a href="#【边际独立性】" class="headerlink" title="【边际独立性】"></a>【边际独立性】</h1><p>在 V 型结构中，子特征的取值确定与否，会对其两个父特征的独立性发生影响</p>
+<p>简单来说，当 $x^{(3)}$ 发生时， $x^{(1)}$ 发生与否与 $x^{(2)}$  发生与否是无关的，即：</p>
 <script type="math/tex; mode=display">
 \begin{align*}
-\gamma_t(i)
-&= P(i_t=q_i|O,\lambda) \\
-&= \frac{P(i_t=q_i,O|\lambda)}{P(O|\lambda)} \\
-&= \frac{\alpha_t(i) \beta_t(i)}{\sum\limits_{j=1}^N \alpha_t(j) \beta_t(j)}
-\end{align*}</script><h2 id="双状态计算公式"><a href="#双状态计算公式" class="headerlink" title="双状态计算公式"></a>双状态计算公式</h2><p>记 $\xi_t(i,j)=P(i_t=q_t,i_{t+1}=q_j|O,\lambda)$ 为在给定模型 $\lambda$ 和观测序列 $O$ 的条件下，在 $t$ 时刻处于状态 $q_i$ 且在 $t+1$ 时刻处于状态 $q_j$ 的概率</p>
-<p>根据前向概率 $\alpha_t(i)$ 与后向概率 $\beta_t(i)$ 的定义，有：</p>
+P(x^{(1)},x^{(2)}) &= \sum_{x^{(3)}}P(x^{(1)},x^{(2)},x^{(3)}) \\
+&= \sum_{x^{(3)}}P(x^{(3)}|x^{(1)},x^{(2)})P(x^{(1)})P(x^{(2)}) \\
+&= P(x^{(1)})P(x^{(2)})
+\end{align*}</script><p>这种情况，被称为<strong>边际独立性（Marginal Independence）</strong>，记为：$x^{(1)}\amalg x^{(2)}$</p>
+<p>实际上，这种情况并非 V 型结构所独有，例如在同父结构中，条件独立性 $x^{(2)}\perp x^{(3)}|x^{(1)}$ 成立，但若 $x^{(1)}$ 的取值未知，则边际独立性 $x^{(2)}\amalg  x^{(3)}$ 不成立</p>
+<h1 id="【条件独立性分析】"><a href="#【条件独立性分析】" class="headerlink" title="【条件独立性分析】"></a>【条件独立性分析】</h1><p>为分析 DAG 中的条件独立性，使用<strong>有向分离（Directed Separation）</strong>，将有向图转为无向图，其步骤如下：</p>
+<ol>
+<li>找出有向图中所有的 V 型结构</li>
+<li>在所有的 V 型结构的两个父结点间加一条无向边</li>
+<li>将所有有向边改为无向边</li>
+</ol>
+<p>由此产生的无向图称为<strong>道德图（Moral graph）</strong>，其含义是子结点的父结点间应该建立牢靠的关系，否则是不道德的，由此，令父结点相连接的过程，称为<strong>道德化（Moralization）</strong></p>
+<p>假定道德图中存在变量 $x$ 与 $y$，以及变量集合 $z=\{z_i\}$，若变量 $x$ 与 $y$ 在图上可被变量集合 $z$ 分开，即将 $z$ 去除后 $x$ 与 $y$ 分属两连通分支，则称为变量 $x$ 与 $y$ 被变量集合 $z$ 有向分离， 条件独立关系 $x\perp y|z$ 成立</p>
+<p><img width="300" src="/images/artificial-intelligence/machine-learning/supervised-learning/46-5.png"></p>
+<p>如上图所示，在上图的道德图中，可以轻易的找出所有的条件独立关系：</p>
 <script type="math/tex; mode=display">
-P(i_t=q_i,i_{t+1}=q_j,O|\lambda) = \alpha_t(i) a_{ij} b_j(o_{t+1}) \beta_{t+1}(j)</script><p>故有：</p>
+\begin{matrix}
+x^{(3)}\perp x^{(2)}|x^{(1)} & x^{(5)}\perp x^{(1)}|x^{(2)} \\
+x^{(3)}\perp x^{(4)}|x^{(1)} & x^{(5)}\perp x^{(3)}|x^{(2)} \\
+x^{(3)}\perp x^{(5)}|x^{(1)} & x^{(5)}\perp x^{(4)}|x^{(2)}
+\end{matrix}</script><h1 id="【贝叶斯网络中的马尔可夫毯】"><a href="#【贝叶斯网络中的马尔可夫毯】" class="headerlink" title="【贝叶斯网络中的马尔可夫毯】"></a>【贝叶斯网络中的马尔可夫毯】</h1><p>在随机变量的全集 $U$，对于给定的变量 $X\in U$ 和变量集 $MB\subset U,X\notin MB$，如果满足：</p>
 <script type="math/tex; mode=display">
-\begin{align*}
-\xi_t(i,j)
-=& P(i_t=q_t,i_{t+1}=q_j|O,\lambda) \\
-=& \frac{P(i_t=q_i,i_{t+1}=q_j,O|\lambda)}{P(O|\lambda)} \\
-=& \frac{P(i_t=q_i,i_{t+1}=q_j,O|\lambda)}{\sum\limits_{i=1}^N \sum\limits_{j=1}^N P(i_t=q_i,i_{t+1}=q_j,O|\lambda)} \\
-=& \frac{\alpha_t(i) a_{ij} b_j(o_{t+1}) \beta_{t+1}(j)}{\sum\limits_{i=1}^N \sum\limits_{j=1}^N \alpha_t(i) a_{ij} b_j(o_{t+1}) \beta_{t+1}(j)} \\
-\end{align*}</script><h2 id="期望值的计算"><a href="#期望值的计算" class="headerlink" title="期望值的计算"></a>期望值的计算</h2><p>将 $\gamma_t(i)$ 和 $\xi_t(i,j)$ 对各个时刻 $t$ 求和，可以得到一些期望值</p>
-<p>在观测序列 $O$ 下，状态 $i$ 出现的期望值为：</p>
-<script type="math/tex; mode=display">
-\sum_{t=1}^T \gamma_t(i)</script><p>在观测序列 $O$ 下，由状态 $i$ 转移的期望值为：</p>
-<script type="math/tex; mode=display">
-\sum_{t=1}^{T-1} \gamma_t(i)</script><p>在观测序列 $O$ 下，由状态 $i$ 转移到状态 $j$ 的期望值为：</p>
-<script type="math/tex; mode=display">
-\sum_{t=1}^{T-1} \xi_t(i,j)</script>
+X\perp \{U-MB-\{X\}\} | MB</script><p>则称满足上述条件的最小变量集 $MB$ 为变量 $X$ 的<strong>马尔可夫毯（Markov Blanket）</strong></p>
+<hr>
+<p>在贝叶斯网络中，一个结点的马尔可夫毯是一个结点集，在这个集合中的结点在给定的条件下，条件独立于其他所有结点</p>
+<p>简单来说，一个结点的马尔可夫毯是它的父结点、子结点、兄弟结点</p>
+<p>如下图，结点 $T$ 的马尔可夫毯为：$MB(T)=\{x^{(1)},x^{(2)},x^{(4)},x^{(6)},x^{(7)}\}$</p>
+<p><img width="500" src="/images/artificial-intelligence/machine-learning/supervised-learning/46-6.png"></p>
+<p>马尔可夫毯是用于<strong>特征选择</strong>的一种冗余性分析工具，对于目标特征来说，其马尔可夫毯包含了该特征的所有信息，非马尔可夫毯则包含了目标特征的冗余特征</p>
+<p>因此，通过发现目标特征的马尔可夫毯，可以准确地确定目标特征的冗余特征，从而降低特征空间的维数</p>
+<p>也就是说，如果要了解某特征的分布情况，仅需了解其马尔可夫毯的信息即可，不需对整个数据集了解</p>
+
     </div>
 
     
@@ -417,7 +382,7 @@ P(i_t=q_i,i_{t+1}=q_j,O|\lambda) = \alpha_t(i) a_{ij} b_j(o_{t+1}) \beta_{t+1}(j
   </li>
   <li class="post-copyright-link">
     <strong>本文链接：</strong>
-    <a href="https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/84c1b09d.html" title="隐马尔可夫模型观测序列的概率计算">https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/84c1b09d.html</a>
+    <a href="https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/supervised-learning/64831aee.html" title="贝叶斯网络">https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/supervised-learning/64831aee.html</a>
   </li>
   <li class="post-copyright-license">
     <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
@@ -431,6 +396,7 @@ P(i_t=q_i,i_{t+1}=q_j,O|\lambda) = \alpha_t(i) a_{ij} b_j(o_{t+1}) \beta_{t+1}(j
               <a href="/tags/artificial-intelligence/" rel="tag"># 人工智能</a>
               <a href="/tags/machine-learning/" rel="tag"># 机器学习</a>
               <a href="/tags/supervised-learning/" rel="tag"># 监督学习</a>
+              <a href="/tags/tagging/" rel="tag"># 标注问题</a>
           </div>
 
         
@@ -439,12 +405,12 @@ P(i_t=q_i,i_{t+1}=q_j,O|\lambda) = \alpha_t(i) a_{ij} b_j(o_{t+1}) \beta_{t+1}(j
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/artificial-intelligence/machine-learning/ac38a68c.html" rel="prev" title="隐马尔可夫模型">
-      <i class="fa fa-chevron-left"></i> 隐马尔可夫模型
+    <a href="/artificial-intelligence/machine-learning/supervised-learning/af2d2d3a.html" rel="prev" title="概率图模型">
+      <i class="fa fa-chevron-left"></i> 概率图模型
     </a></div>
       <div class="post-nav-item">
-    <a href="/artificial-intelligence/machine-learning/8852e00e.html" rel="next" title="隐马尔可夫模型的学习">
-      隐马尔可夫模型的学习 <i class="fa fa-chevron-right"></i>
+    <a href="/artificial-intelligence/machine-learning/supervised-learning/a4570d47.html" rel="next" title="贝叶斯网络的学习">
+      贝叶斯网络的学习 <i class="fa fa-chevron-right"></i>
     </a></div>
     </div>
       </footer>
@@ -505,7 +471,7 @@ P(i_t=q_i,i_{t+1}=q_j,O|\lambda) = \alpha_t(i) a_{ij} b_j(o_{t+1}) \beta_{t+1}(j
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【概述】"><span class="nav-number">1.</span> <span class="nav-text">【概述】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【直接计算法】"><span class="nav-number">2.</span> <span class="nav-text">【直接计算法】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【前向计算法】"><span class="nav-number">3.</span> <span class="nav-text">【前向计算法】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#前向概率"><span class="nav-number">3.1.</span> <span class="nav-text">前向概率</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#前向概率的递推公式"><span class="nav-number">3.2.</span> <span class="nav-text">前向概率的递推公式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#观测序列概率的计算"><span class="nav-number">3.3.</span> <span class="nav-text">观测序列概率的计算</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#算法流程"><span class="nav-number">3.4.</span> <span class="nav-text">算法流程</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【后向计算法】"><span class="nav-number">4.</span> <span class="nav-text">【后向计算法】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#后向概率"><span class="nav-number">4.1.</span> <span class="nav-text">后向概率</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#后向概率的递推公式"><span class="nav-number">4.2.</span> <span class="nav-text">后向概率的递推公式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#观测序列概率的计算-1"><span class="nav-number">4.3.</span> <span class="nav-text">观测序列概率的计算</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#算法流程-1"><span class="nav-number">4.4.</span> <span class="nav-text">算法流程</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【概率与期望值的计算】"><span class="nav-number">5.</span> <span class="nav-text">【概率与期望值的计算】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#前向后向概率递推公式"><span class="nav-number">5.1.</span> <span class="nav-text">前向后向概率递推公式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#单一状态计算公式"><span class="nav-number">5.2.</span> <span class="nav-text">单一状态计算公式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#双状态计算公式"><span class="nav-number">5.3.</span> <span class="nav-text">双状态计算公式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#期望值的计算"><span class="nav-number">5.4.</span> <span class="nav-text">期望值的计算</span></a></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【贝叶斯网络】"><span class="nav-number">1.</span> <span class="nav-text">【贝叶斯网络】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【条件独立性】"><span class="nav-number">2.</span> <span class="nav-text">【条件独立性】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【独立性结构】"><span class="nav-number">3.</span> <span class="nav-text">【独立性结构】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#同父结构"><span class="nav-number">3.1.</span> <span class="nav-text">同父结构</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#顺序结构"><span class="nav-number">3.2.</span> <span class="nav-text">顺序结构</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#V-型结构"><span class="nav-number">3.3.</span> <span class="nav-text">V 型结构</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【边际独立性】"><span class="nav-number">4.</span> <span class="nav-text">【边际独立性】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【条件独立性分析】"><span class="nav-number">5.</span> <span class="nav-text">【条件独立性分析】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【贝叶斯网络中的马尔可夫毯】"><span class="nav-number">6.</span> <span class="nav-text">【贝叶斯网络中的马尔可夫毯】</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -521,20 +487,20 @@ P(i_t=q_i,i_{t+1}=q_j,O|\lambda) = \alpha_t(i) a_{ij} b_j(o_{t+1}) \beta_{t+1}(j
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">671</span>
+          <span class="site-state-item-count">673</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">65</span>
+        <span class="site-state-item-count">66</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">74</span>
+        <span class="site-state-item-count">76</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -778,7 +744,7 @@ NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
       repo        : 'Gitalk-Comment',
       owner       : 'Alex-McAvoy',
       admin       : ['Alex-McAvoy'],
-      id          : 'a838d69263f6b4b44fdde05170f7538c',
+      id          : '364757d09d9a39b330982901348d4c96',
         language: '',
       distractionFreeMode: true
     });
