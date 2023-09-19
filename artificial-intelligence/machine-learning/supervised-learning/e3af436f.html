@@ -25,29 +25,22 @@
     var CONFIG = {"hostname":"alex-mcavoy.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":16,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":true,"color":"#ff0000","save":"manual"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":true},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.json"};
   </script>
 
-  <meta name="description" content="【概述】在实现 K 近邻时，主要考虑的是如何对训练数据进行 K 近邻搜索，最简单的实现方式是线性扫描（Linear Scan），此时要计算输入样本与每一个训练样本的距离，这在维度大的特征空间以及大容量的训练数据集中非常耗时 为提高 K 近邻搜索的效率，可以使用特殊的数据结构来存储训练数据，通过以空间换时间来快速查询样本的近邻">
-<meta name="keywords" content="人工智能,机器学习,监督学习">
+  <meta name="description" content="Reference  详解最大熵模型 最大熵模型原理 深入机器学习系列21-最大熵模型 二十一.最大熵模型原理 最大熵模型中的对数似然函数表示法解释 最大熵模型中的对数似然函数的解释   【判别分类模型】假设分类模型为一判别模型，选用条件概率分布 $P(Y|X)$ 作为预测模型，$X\in\mathcal{X}\subseteq \mathbb{R}^n $ 为输入，$Y\in\mathcal{">
+<meta name="keywords" content="人工智能,机器学习,监督学习,分类问题">
 <meta property="og:type" content="article">
-<meta property="og:title" content="KD 树">
-<meta property="og:url" content="https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/9b1193a0.html">
+<meta property="og:title" content="最大熵模型的导出">
+<meta property="og:url" content="https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/supervised-learning/e3af436f.html">
 <meta property="og:site_name" content="Alex_McAvoy">
-<meta property="og:description" content="【概述】在实现 K 近邻时，主要考虑的是如何对训练数据进行 K 近邻搜索，最简单的实现方式是线性扫描（Linear Scan），此时要计算输入样本与每一个训练样本的距离，这在维度大的特征空间以及大容量的训练数据集中非常耗时 为提高 K 近邻搜索的效率，可以使用特殊的数据结构来存储训练数据，通过以空间换时间来快速查询样本的近邻">
+<meta property="og:description" content="Reference  详解最大熵模型 最大熵模型原理 深入机器学习系列21-最大熵模型 二十一.最大熵模型原理 最大熵模型中的对数似然函数表示法解释 最大熵模型中的对数似然函数的解释   【判别分类模型】假设分类模型为一判别模型，选用条件概率分布 $P(Y|X)$ 作为预测模型，$X\in\mathcal{X}\subseteq \mathbb{R}^n $ 为输入，$Y\in\mathcal{">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/machine-learning/26-1.png">
-<meta property="og:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/machine-learning/26-2.png">
-<meta property="og:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/machine-learning/26-3.png">
-<meta property="og:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/machine-learning/26-4.png">
-<meta property="og:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/machine-learning/26-5.png">
-<meta property="og:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/machine-learning/26-6.png">
-<meta property="og:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/machine-learning/26-7.png">
-<meta property="og:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/machine-learning/26-8.png">
-<meta property="og:updated_time" content="2023-07-19T14:08:57.112Z">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/machine-learning/supervised-learning/21-1.png">
+<meta property="og:updated_time" content="2023-09-19T03:41:32.445Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="KD 树">
-<meta name="twitter:description" content="【概述】在实现 K 近邻时，主要考虑的是如何对训练数据进行 K 近邻搜索，最简单的实现方式是线性扫描（Linear Scan），此时要计算输入样本与每一个训练样本的距离，这在维度大的特征空间以及大容量的训练数据集中非常耗时 为提高 K 近邻搜索的效率，可以使用特殊的数据结构来存储训练数据，通过以空间换时间来快速查询样本的近邻">
-<meta name="twitter:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/machine-learning/26-1.png">
+<meta name="twitter:title" content="最大熵模型的导出">
+<meta name="twitter:description" content="Reference  详解最大熵模型 最大熵模型原理 深入机器学习系列21-最大熵模型 二十一.最大熵模型原理 最大熵模型中的对数似然函数表示法解释 最大熵模型中的对数似然函数的解释   【判别分类模型】假设分类模型为一判别模型，选用条件概率分布 $P(Y|X)$ 作为预测模型，$X\in\mathcal{X}\subseteq \mathbb{R}^n $ 为输入，$Y\in\mathcal{">
+<meta name="twitter:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/machine-learning/supervised-learning/21-1.png">
 
-<link rel="canonical" href="https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/9b1193a0.html">
+<link rel="canonical" href="https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/supervised-learning/e3af436f.html">
 
 
 <script id="page-configurations">
@@ -60,7 +53,7 @@
   };
 </script>
 
-  <title>KD 树 | Alex_McAvoy</title>
+  <title>最大熵模型的导出 | Alex_McAvoy</title>
   
 
 
@@ -204,7 +197,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/9b1193a0.html">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/supervised-learning/e3af436f.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/assets/img/head.jpg">
@@ -217,7 +210,7 @@
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          KD 树
+          最大熵模型的导出
         </h1>
 
         <div class="post-meta">
@@ -227,7 +220,7 @@
               </span>
               <span class="post-meta-item-text">发表于</span>
 
-              <time title="创建时间：2019-07-11 15:10:00" itemprop="dateCreated datePublished" datetime="2019-07-11T15:10:00+08:00">2019-07-11</time>
+              <time title="创建时间：2019-07-19 11:38:00" itemprop="dateCreated datePublished" datetime="2019-07-19T11:38:00+08:00">2019-07-19</time>
             </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -240,6 +233,10 @@
                   ，
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
                   <a href="/categories/artificial-intelligence/machine-learning/" itemprop="url" rel="index"><span itemprop="name">机器学习</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/artificial-intelligence/machine-learning/supervised-learning/" itemprop="url" rel="index"><span itemprop="name">监督学习</span></a>
                 </span>
             </span>
 
@@ -256,14 +253,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>3.6k</span>
+              <span>2k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>3 分钟</span>
+              <span>2 分钟</span>
             </span>
 
         </div>
@@ -275,70 +272,60 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <h1 id="【概述】"><a href="#【概述】" class="headerlink" title="【概述】"></a>【概述】</h1><p>在实现 K 近邻时，主要考虑的是如何对训练数据进行 K 近邻搜索，最简单的实现方式是<strong>线性扫描（Linear Scan）</strong>，此时要计算输入样本与每一个训练样本的距离，这在维度大的特征空间以及大容量的训练数据集中非常耗时</p>
-<p>为提高 K 近邻搜索的效率，可以使用特殊的数据结构来存储训练数据，通过以空间换时间来快速查询样本的近邻</p>
-<p><strong>KD 树（K-Dimensional Tree）</strong>利用树结构在 $k$ 维空间上为数据集建立索引，其建立思想如同分治法，即利用已有数据对 $k$ 维空间进行切分</p>
-<p>具体来说，KD 树表示了对 $k$ 维空间的一个<strong>划分（Partition）</strong>，构造 KD 树相当于不断利用垂直于坐标轴的超平面将 $k$ 维空间切分，从而构成一系列的 $k$ 维超矩形区域，这样一来，树上的每一个点都对应于一个 $k$ 维超矩形区域</p>
-<p>同时，由于 KD 树是<strong>二叉树结构</strong>，其时间复杂度上是 $O(\log n)$，相较于线性扫描的 $O(n)$ 的复杂度，有了极大的提高</p>
-<p>此外，若在使用 <code>sklearn</code> 的 <code>KNeighborsClassifier()</code> 方法时，想利用 KD 树作为数据结构，在该方法参数中加入 <code>algorithm=&#39;kd_tree&#39;</code> 即可</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">model = KNeighborsClassifier(n_neighbors=k, p=<span class="number">2</span>, metric=<span class="string">'minkowski'</span>, algorithm=<span class="string">'kd_tree'</span>)</span><br></pre></td></tr></table></figure>
-<h1 id="【KD-树的构造】"><a href="#【KD-树的构造】" class="headerlink" title="【KD 树的构造】"></a>【KD 树的构造】</h1><h2 id="基本思想"><a href="#基本思想" class="headerlink" title="基本思想"></a>基本思想</h2><p>构造 KD 树的基本思想是如下：先构造根结点，使根结点对应于 $k$ 维空间中包含所有样本的超矩形区域，之后对 $k$ 维空间进行递归切分，以生成子结点，每个子结点对应一个切分后的子超矩形区域，直到子区域内没有样本时终止切分，在迭代过程中，样本将被保存到相应的结点上</p>
-<p>递归切分的方法是在超矩形区域上选择一个坐标轴，并在坐标轴上选择一个切分点，通过切分点来确定一个超平面，这个超平面通过选定的切分点，同时垂直于选定的坐标轴，此时，当前超矩形区域被切分为左右两个子超矩形区域</p>
-<p>通常，依次选择坐标轴对空间进行切分，选择训练样本点在选定的坐标轴上的中位数作为切分点，此时得到的 KD 树，是一个平衡二叉树</p>
-<h2 id="算法流程"><a href="#算法流程" class="headerlink" title="算法流程"></a>算法流程</h2><p>对于给定的数据集 $T=\{\mathbf{x_1},\mathbf{x_2},…,\mathbf{x_n}\}$，第 $i$ 组样本中的输入 $\mathbf{x_i}$ 具有 $m$ 个特征值，即：$\mathbf{x_i} =(x_i^{(1)},x_i^{(2)},…,x_i^{(m)})\in \mathbb{R}^m$</p>
-<p>构造 KD 树的算法流程如下：</p>
-<p>Step 1：构造根结点，其对应于包含 $T$ 的样本输入 $\mathbf{x_i}$ 的 $m$ 维空间的超矩形区域，并进行切分，切分由通过切分点且与坐标轴 $x^{(1)}$ 垂直的超平面实现</p>
-<p>1）选择 $x^{(1)}$ 作为切分的坐标轴，以 $T$ 中所有实例的 $x^{(1)}$ 坐标的中位数为切分点，将根结点对应的超矩形区域切分为两个子区域</p>
-<p>2）对于由根结点生成的深度为 $1$ 的左、右子结点：左子结点对应坐标 $x^{(1)}$ 小于切分点的子区域，右子结点对应坐标 $x^{(1)}$ 大于切分点的子区域</p>
-<p>3）将落在切分超平面上的实例点，保存在根结点</p>
-<p>Step 2：对于深度为 $j$ 的结点，进行迭代切分，切分由通过切分点且与坐标轴 $x^{(l)}$ 垂直的超平面实现</p>
-<p>1）选择 $x^{(l)}$ 作为切分的坐标轴，$l=j\:(mod\:\:k)+1$，以该结点的区域中的所有实例 $x^{(l)}$ 坐标的中位数为切分点，将该结点对应的超矩形区域切分为两个子区域</p>
-<p>2）对于由该结点生成的深度为 $j+1$ 的左、右子结点：左子结点对应坐标 $x^{(l)}$ 小于切分点的子区域，右子结点对应坐标 $x^{(l)}$ 大于切分点的子区域</p>
-<p>3）将落在切分超平面上的实例点，保存在该结点</p>
-<p>Step 3：重复 Step 2，直到两个子区域没有实例存在时停止，此时即形成 KD 树的区域划分</p>
-<h2 id="实例"><a href="#实例" class="headerlink" title="实例"></a>实例</h2><p>给定一个输入 $\mathbf{x}$ 为二维的数据集 $T=\{(2,3),(5,4),(9,6),(4,7),(8,1),(7,2)\}$</p>
-<p><img width="500" src="/images/artificial-intelligence/machine-learning/26-1.png"></p>
-<p>首先构造根结点，选择 $x^{(1)}$ 轴，$6$ 个数据点的 $x^{(1)}$ 坐标的中位数为：$7$，此时以平面 $x^{(1)}=7$ 将空间划分为左、右两个子矩形</p>
-<p><img width="500" src="/images/artificial-intelligence/machine-learning/26-2.png"></p>
-<p>接着，左矩形以 $x^{(2)}=4$ 划分为两个子矩形，右矩形以 $x^{(2)}=6$ 划分为两个子矩形</p>
-<p><img width="500" src="/images/artificial-intelligence/machine-learning/26-3.png"></p>
-<p>之后，对划分出的 $4$ 个子矩形递归的进行划分，对于左上矩形，以 $x^{(1)}=4$ 划分为两个子矩形；对于左下矩形，以 $x^{(1)}=2$ 划分为两个子矩形；对于右下矩形，以 $x^{(1)}=8$ 划分为两个子矩形</p>
-<p><img width="500" src="/images/artificial-intelligence/machine-learning/26-4.png"></p>
-<p>此时，特征空间划分完毕，根据特征空间划分可生成如下图所示的 KD 树</p>
-<p><img width="500" src="/images/artificial-intelligence/machine-learning/26-5.png"></p>
-<h1 id="【KD-树的搜索】"><a href="#【KD-树的搜索】" class="headerlink" title="【KD 树的搜索】"></a>【KD 树的搜索】</h1><h2 id="基本思想-1"><a href="#基本思想-1" class="headerlink" title="基本思想"></a>基本思想</h2><p>对于指定目标点，在 KD 树上寻找该目标点的最近邻时，其基本思想是：找到包含目标点的叶结点，然后从该叶结点出发，依次退回到父结点，在退回的过程中，不断查找与目标点最近邻的结点，当确定不可能存在更近的结点时终止</p>
-<p>在上述过程中，包含目标点的叶结点对应包含目标点的最小超矩形区域，故而以该叶结点的样本点作为当前最近点，同时，目标点的最近邻一定是以目标点为中心，并且通过当前最近点的超球体内部</p>
-<p>在返回当前结点的父结点时，若父结点的另一子结点的超矩形区域与超球体相交，那么就在相交的区域内寻找与目标点更近的样本点，若存在更近的样本点，就将该结点作为新的当前最近点，之后转到更上一级的父结点，重复上述过程</p>
-<p>在返回当前结点的父结点时，若父结点的另一子结点的超矩形区域与超球体不相交，或不存在比当前点更近的点，则停止搜索</p>
-<p>这样搜索就被限制在空间的局部区域上，效率得到极大的提高</p>
-<h2 id="算法流程-1"><a href="#算法流程-1" class="headerlink" title="算法流程"></a>算法流程</h2><p>对于给定的数据集 $T=\{\mathbf{x_1},\mathbf{x_2},…,\mathbf{x_n}\}$，第 $i$ 组样本中的输入 $\mathbf{x_i}$ 具有 $m$ 个特征值，即：$\mathbf{x_i} =(x_i^{(1)},x_i^{(2)},…,x_i^{(m)})\in \mathbb{R}^m$，在构造完 KD 树后，求目标点 $\mathbf{x}$ 的最近邻的算法流程如下：</p>
-<p>Step 1：从 KD 树的根结点出发，按如下步骤递归地寻找包含目标点 $\mathbf{x}$ 的叶结点</p>
-<p>1）若目标点 $\mathbf{x}$ 当前维的坐标小于切分点的坐标，移动到左子结点</p>
-<p>2）若目标点 $\mathbf{x}$ 当前维的坐标大于切分点的坐标，移动到右子结点</p>
-<p>3）直到子结点为叶结点停止</p>
-<p>Step 2：以 Step 1 中寻找到的叶结点为当前最近点</p>
-<p>Step 3：按如下步骤递归地从叶结点向上回溯，对每个结点进行以下操作：</p>
-<p>1）若该结点保存的样本点比当前最近点距离目标点更近，将该样本点作为当前最近点</p>
-<p>2）当前最近点一定存在于该结点的某个子结点所对应的区域，检查该子结点的兄弟结点对应的区域是否有更近的点</p>
-<p>  a）该区域是否与以目标点为球心、以目标点与当前最近点的距离为半径的超球体相交</p>
-<p>  b）若相交，可能在该兄弟结点对应的区域内存在距目标点更近的点，移动到该兄弟结点中，接着向上递归</p>
-<p>Step 4：当回溯到根结点时，搜索结束，最后的当前最近点，即为 $\mathbf{x}$ 的最近邻点</p>
-<h2 id="实例-1"><a href="#实例-1" class="headerlink" title="实例"></a>实例</h2><p>以下例所示的 KD 树为例，假设求输入的目标点 $(2,4.5)$ 的最近邻</p>
-<p><img src="/images/artificial-intelligence/machine-learning/26-6.png"></p>
-<p>对于输入的目标点 $(2,4.5)$ 其落于叶结点 $(4,7)$ 上，将 $(4,7)$ 作为最近邻点，计算到该样本点的欧式距离，并将其作为最近距离，即：</p>
+        <blockquote>
+<p>Reference</p>
+<ul>
+<li><a href="https://blog.csdn.net/ccblogger/article/details/81843304" target="_blank" rel="noopener">详解最大熵模型</a></li>
+<li><a href="https://xueqiu.com/8566534281/151009557" target="_blank" rel="noopener">最大熵模型原理</a></li>
+<li><a href="https://zhuanlan.zhihu.com/p/29978153" target="_blank" rel="noopener">深入机器学习系列21-最大熵模型</a></li>
+<li><a href="https://zhuanlan.zhihu.com/p/181591842" target="_blank" rel="noopener">二十一.最大熵模型原理</a></li>
+<li><a href="https://zhuanlan.zhihu.com/p/83871690" target="_blank" rel="noopener">最大熵模型中的对数似然函数表示法解释</a></li>
+<li><a href="https://blog.csdn.net/wkebj/article/details/77965714" target="_blank" rel="noopener">最大熵模型中的对数似然函数的解释</a></li>
+</ul>
+</blockquote>
+<h1 id="【判别分类模型】"><a href="#【判别分类模型】" class="headerlink" title="【判别分类模型】"></a>【判别分类模型】</h1><p>假设分类模型为一判别模型，选用条件概率分布 $P(Y|X)$ 作为预测模型，$X\in\mathcal{X}\subseteq \mathbb{R}^n $ 为输入，$Y\in\mathcal{Y}\subseteq \mathbb{R}^n $ 为输出</p>
+<p>该模型的含义为：对于给定的输入 $X$，以 $P(Y|X)$ 的概率输出 $Y$</p>
+<h1 id="【特征函数】"><a href="#【特征函数】" class="headerlink" title="【特征函数】"></a>【特征函数】</h1><p><strong>特征函数（Feature Function）</strong>用于描述输入 $x$ 与输出 $y$ 之间的某一事实，其定义为：</p>
 <script type="math/tex; mode=display">
-d_{min}=\sqrt{(2-4)^2+(4.5-7)^2} \approx 3.2</script><p>在从叶结点向上回溯时，路径为：$(4,7)\rightarrow(5,4)\rightarrow(7,2)$</p>
-<p>输入样本点 $(2,4.5)$ 与 $(4,7)$ 的父结点 $(5,4)$ 的欧式距离为：</p>
+f(x,y)=\left\{\begin{array}{rl}
+1,& x,y\:\:满足某一事实 \\
+0,& 否则
+\end{array}\right.</script><p>其是一个二值函数，用于将数据集数学化</p>
+<p>举例来说，对于如下数据集：</p>
+<p><img width="150" src="/images/artificial-intelligence/machine-learning/supervised-learning/21-1.png"></p>
+<p>取第一列为 $x$，第二列为 $y$，可以为该数据集写出一些特征函数，例如：</p>
 <script type="math/tex; mode=display">
-d=\sqrt{(2-5)^2+(4.5-4)^2} \approx 3.04</script><p>该距离小于 $d_{min}=3.2$，这就意味着叶结点 $(4,7)$ 作为最近邻点不成立，此时更新最近距离为 $d_{min}=3.04$，同时以 $(5,4)$ 作为最近邻点</p>
-<p>之后，以输入样本点 $(2,4.5)$ 为圆心，以 $d_{min}=3.04$ 为半径做圆</p>
-<p><img width="500" src="/images/artificial-intelligence/machine-learning/26-7.png"></p>
-<p>圆跟 $(5,4)$ 所切分的两个子区域相交，因此需要检查 $(5,4)$ 的另外一个子树的叶结点 $(2,3)$</p>
-<p>输入样本点 $(2,4.5)$ 与叶结点 $(2,3)$ 的欧式距离为：</p>
+f(x,y)=\left\{\begin{array}{rl}
+1,& if:\:x=cloudy\:\:and\:\:y=outdoor \\
+0,& else
+\end{array}\right.</script><p>如此，可以为每个 <code>&lt;特征，标签&gt;</code> 对都做一个如上的特征函数，以实现数据集数学化</p>
+<h1 id="【经验分布】"><a href="#【经验分布】" class="headerlink" title="【经验分布】"></a>【经验分布】</h1><p>对于给定训练集，可将训练数据当做由随机变量 $(X,Y)$ 产生的，那么可根据训练数据来确定联合分布 $P(X,Y)$ 的经验分布 $\tilde{P}(X,Y)$ 与边缘分布 $P(X)$ 的经验分布 $\tilde{P}(X)$</p>
+<p>记 $v(X=x,Y=y)$ 为训练集中样本 $(x,y)$ 的出现频数，$v(X=x)$ 为训练集中输入 $x$ 的出现频数，$n$ 为样本容量，则对于两个经验分布，有：</p>
 <script type="math/tex; mode=display">
-d=\sqrt{(2-2)^2+(4.5-3)^2} \approx 1.5</script><p>该距离小于 $d_{min}=3.04$，更新最近距离 $d_{min}=1.5$，并令 $(2,3)$ 为最近邻点</p>
-<p>之后，回溯到根结点 $(7，2)$，由上图可以确认 $(7,2)$ 与切分的右子区域无关，回溯结束，$(2,3)$ 为最近邻点</p>
-<p><img width="500" src="/images/artificial-intelligence/machine-learning/26-8.png"></p>
+\begin{gather*}
+\tilde{P}(X=x,Y=y)=\frac{v(X=x,Y=y)}{n} \\
+\tilde{P}(X=x)=\frac{v(X=x)}{n}
+\end{gather*}</script><h1 id="【约束条件】"><a href="#【约束条件】" class="headerlink" title="【约束条件】"></a>【约束条件】</h1><p>对于来自参数空间 $\mathcal{X}$ 的离散随机变量 $X$，其概率分布为：</p>
+<script type="math/tex; mode=display">
+P(X=x_i)=p_i,\quad i=1,2,...,n</script><p>对于随机变量 $X$，其数学期望为 $E(X)=\sum\limits_{i=1}^nx_ip_i$，若 $Y=f(X)$，则关于 $X$ 的函数 $Y$ 的期望为：</p>
+<script type="math/tex; mode=display">
+E(Y)=\sum_{i=1}^nf(x_i)p_i</script><p>按照期望的定义，对于任意的特征函数 $f(x,y)$，用 $E_{\tilde{p}}(f)$ 表示特征函数 $f(x,y)$ 关于经验分布 $\tilde{P}(X,Y)$ 的期望，有：</p>
+<script type="math/tex; mode=display">
+E_{\tilde{p}}(f)=\sum_{x\in X}\sum_{y\in Y}\tilde{p}(x,y)f(x,y)</script><p>对于任意的特征函数 $f(x,y)$，用 $E_p(f)$ 表示特征函数 $f(x,y)$ 关于判别模型 $P(Y|X)$ 的期望，有：</p>
+<script type="math/tex; mode=display">
+E_p(f)=\sum_{x\in X}\tilde{p}(x)\sum_{y\in Y}p(y|x)f(x,y)</script><p>对于判别模型 $P(Y|X)$，希望关于经验分布 $\tilde{P}(X,Y)$ 的期望 $E_{\tilde{p}}(f)$ 应该与从训练集中得到的关于经验分布 $\tilde{P}(X)$ 的期望 $E_p(f)$ 是一致的，为此，提出特征约束：</p>
+<script type="math/tex; mode=display">
+E_p(f)=E_{\tilde{p}}(f)</script><p>即：</p>
+<script type="math/tex; mode=display">
+\sum_{x\in X}\tilde{p}(x)\sum_{y\in Y}p(y|x)f(x,y)=\sum_{x\in X}\sum_{y\in Y}\tilde{p}(x,y)f(x,y)</script><p>上式即为最大熵模型中要满足的约束条件</p>
+<p>需要注意的是，由于特征函数是对数据集实现数学化的，每个 <code>&lt;特征，标签&gt;</code> 对都会做一个特征函数，因此，若有 $m$ 个特征的话，就有 $m$ 个特征函数 $f_j(x,y)$ ，相应地，有 $m$ 个约束条件</p>
+<p>满足所有约束条件的模型集合为：</p>
+<script type="math/tex; mode=display">
+\mathcal{C}\equiv\{p\in\mathcal{P}|E_p(f_j)=E_{\tilde{p}}(f_j),j=1,2,...,m\}</script><h1 id="【最大熵模型】"><a href="#【最大熵模型】" class="headerlink" title="【最大熵模型】"></a>【最大熵模型】</h1><p>对于给定的训练集 $T$，目标是根据<a href="https://alex-mcavoy.github.io/mathematics/information-theory/81ddb601.html">最大熵原理</a>，选择一个最优的分类器</p>
+<p>对于从训练集获得的特征函数和约束条件，将信息熵的概念应用到条件分布中，条件概率分布 $p(Y|X)$ 上的条件熵为：</p>
+<script type="math/tex; mode=display">
+H(Y|X) = -\sum_{x\in X}\tilde{p}(x)\sum_{y\in Y}p(y|x)\log p(y|x)</script><p>此时，在约束条件的模型集合 $\mathcal{C}$ 中，条件熵最大的模型，即为最大熵模型</p>
+<p>要注意的是，式中的对数取自然对数</p>
 
     </div>
 
@@ -374,7 +361,7 @@ d=\sqrt{(2-2)^2+(4.5-3)^2} \approx 1.5</script><p>该距离小于 $d_{min}=3.04$
   </li>
   <li class="post-copyright-link">
     <strong>本文链接：</strong>
-    <a href="https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/9b1193a0.html" title="KD 树">https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/9b1193a0.html</a>
+    <a href="https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/supervised-learning/e3af436f.html" title="最大熵模型的导出">https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/supervised-learning/e3af436f.html</a>
   </li>
   <li class="post-copyright-license">
     <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
@@ -388,6 +375,7 @@ d=\sqrt{(2-2)^2+(4.5-3)^2} \approx 1.5</script><p>该距离小于 $d_{min}=3.04$
               <a href="/tags/artificial-intelligence/" rel="tag"># 人工智能</a>
               <a href="/tags/machine-learning/" rel="tag"># 机器学习</a>
               <a href="/tags/supervised-learning/" rel="tag"># 监督学习</a>
+              <a href="/tags/classification/" rel="tag"># 分类问题</a>
           </div>
 
         
@@ -396,12 +384,12 @@ d=\sqrt{(2-2)^2+(4.5-3)^2} \approx 1.5</script><p>该距离小于 $d_{min}=3.04$
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/artificial-intelligence/machine-learning/4021c347.html" rel="prev" title="K 近邻">
-      <i class="fa fa-chevron-left"></i> K 近邻
+    <a href="/mathematics/information-theory/81ddb601.html" rel="prev" title="最大熵原理">
+      <i class="fa fa-chevron-left"></i> 最大熵原理
     </a></div>
       <div class="post-nav-item">
-    <a href="/mathematics/information-theory/d9f8f63d.html" rel="next" title="信息熵与互信息">
-      信息熵与互信息 <i class="fa fa-chevron-right"></i>
+    <a href="/artificial-intelligence/machine-learning/supervised-learning/ba8a14c4.html" rel="next" title="最大熵模型">
+      最大熵模型 <i class="fa fa-chevron-right"></i>
     </a></div>
     </div>
       </footer>
@@ -462,7 +450,7 @@ d=\sqrt{(2-2)^2+(4.5-3)^2} \approx 1.5</script><p>该距离小于 $d_{min}=3.04$
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【概述】"><span class="nav-number">1.</span> <span class="nav-text">【概述】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【KD-树的构造】"><span class="nav-number">2.</span> <span class="nav-text">【KD 树的构造】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#基本思想"><span class="nav-number">2.1.</span> <span class="nav-text">基本思想</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#算法流程"><span class="nav-number">2.2.</span> <span class="nav-text">算法流程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#实例"><span class="nav-number">2.3.</span> <span class="nav-text">实例</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【KD-树的搜索】"><span class="nav-number">3.</span> <span class="nav-text">【KD 树的搜索】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#基本思想-1"><span class="nav-number">3.1.</span> <span class="nav-text">基本思想</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#算法流程-1"><span class="nav-number">3.2.</span> <span class="nav-text">算法流程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#实例-1"><span class="nav-number">3.3.</span> <span class="nav-text">实例</span></a></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【判别分类模型】"><span class="nav-number">1.</span> <span class="nav-text">【判别分类模型】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【特征函数】"><span class="nav-number">2.</span> <span class="nav-text">【特征函数】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【经验分布】"><span class="nav-number">3.</span> <span class="nav-text">【经验分布】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【约束条件】"><span class="nav-number">4.</span> <span class="nav-text">【约束条件】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【最大熵模型】"><span class="nav-number">5.</span> <span class="nav-text">【最大熵模型】</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -478,7 +466,7 @@ d=\sqrt{(2-2)^2+(4.5-3)^2} \approx 1.5</script><p>该距离小于 $d_{min}=3.04$
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">664</span>
+          <span class="site-state-item-count">667</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -735,7 +723,7 @@ NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
       repo        : 'Gitalk-Comment',
       owner       : 'Alex-McAvoy',
       admin       : ['Alex-McAvoy'],
-      id          : 'f8d8083f8a9c3b670b76f568cb7c5ccc',
+      id          : '0c30b4623016d6b7657a3d477741f87e',
         language: '',
       distractionFreeMode: true
     });

@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.9.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/img/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/assets/img/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/pace-js@1/themes/blue/pace-theme-minimal.css">
+  <script src="//cdn.jsdelivr.net/npm/pace-js@1/pace.min.js"></script>
+
+
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"alex-mcavoy.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":16,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":true,"color":"#ff0000","save":"manual"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":true},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.json"};
+  </script>
+
+  <meta name="description" content="Reference  详解最大熵模型 最大熵模型原理 深入机器学习系列21-最大熵模型 二十一.最大熵模型原理 最大熵模型中的对数似然函数表示法解释 最大熵模型中的对数似然函数的解释   【对偶函数的极大化】对于最大熵模型的约束最优化问题，内部的极小化问题的求解得到了关于 $\boldsymbol{\omega}$ 的对偶函数">
+<meta name="keywords" content="人工智能,机器学习,监督学习,分类问题">
+<meta property="og:type" content="article">
+<meta property="og:title" content="最大熵模型的学习">
+<meta property="og:url" content="https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/supervised-learning/1bae2fc4.html">
+<meta property="og:site_name" content="Alex_McAvoy">
+<meta property="og:description" content="Reference  详解最大熵模型 最大熵模型原理 深入机器学习系列21-最大熵模型 二十一.最大熵模型原理 最大熵模型中的对数似然函数表示法解释 最大熵模型中的对数似然函数的解释   【对偶函数的极大化】对于最大熵模型的约束最优化问题，内部的极小化问题的求解得到了关于 $\boldsymbol{\omega}$ 的对偶函数">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2023-09-19T03:55:02.749Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="最大熵模型的学习">
+<meta name="twitter:description" content="Reference  详解最大熵模型 最大熵模型原理 深入机器学习系列21-最大熵模型 二十一.最大熵模型原理 最大熵模型中的对数似然函数表示法解释 最大熵模型中的对数似然函数的解释   【对偶函数的极大化】对于最大熵模型的约束最优化问题，内部的极小化问题的求解得到了关于 $\boldsymbol{\omega}$ 的对偶函数">
+
+<link rel="canonical" href="https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/supervised-learning/1bae2fc4.html">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>最大熵模型的学习 | Alex_McAvoy</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Alex_McAvoy</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">想要成为渔夫的猎手</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+
+	
+	
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/supervised-learning/1bae2fc4.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/assets/img/head.jpg">
+      <meta itemprop="name" content="Alex_McAvoy">
+      <meta itemprop="description" content="想要成为渔夫的猎手">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Alex_McAvoy">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          最大熵模型的学习
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-07-20 15:34:00" itemprop="dateCreated datePublished" datetime="2019-07-20T15:34:00+08:00">2019-07-20</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/artificial-intelligence/" itemprop="url" rel="index"><span itemprop="name">人工智能</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/artificial-intelligence/machine-learning/" itemprop="url" rel="index"><span itemprop="name">机器学习</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/artificial-intelligence/machine-learning/supervised-learning/" itemprop="url" rel="index"><span itemprop="name">监督学习</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>4.8k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>4 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <blockquote>
+<p>Reference</p>
+<ul>
+<li><a href="https://blog.csdn.net/ccblogger/article/details/81843304" target="_blank" rel="noopener">详解最大熵模型</a></li>
+<li><a href="https://xueqiu.com/8566534281/151009557" target="_blank" rel="noopener">最大熵模型原理</a></li>
+<li><a href="https://zhuanlan.zhihu.com/p/29978153" target="_blank" rel="noopener">深入机器学习系列21-最大熵模型</a></li>
+<li><a href="https://zhuanlan.zhihu.com/p/181591842" target="_blank" rel="noopener">二十一.最大熵模型原理</a></li>
+<li><a href="https://zhuanlan.zhihu.com/p/83871690" target="_blank" rel="noopener">最大熵模型中的对数似然函数表示法解释</a></li>
+<li><a href="https://blog.csdn.net/wkebj/article/details/77965714" target="_blank" rel="noopener">最大熵模型中的对数似然函数的解释</a></li>
+</ul>
+</blockquote>
+<h1 id="【对偶函数的极大化】"><a href="#【对偶函数的极大化】" class="headerlink" title="【对偶函数的极大化】"></a>【对偶函数的极大化】</h1><p>对于最大熵模型的约束最优化问题，内部的极小化问题的求解得到了关于 $\boldsymbol{\omega}$ 的对偶函数</p>
+<script type="math/tex; mode=display">
+\psi(\boldsymbol{\omega})= \min\limits_{p\in\mathcal{C}}\:L(p,\boldsymbol{\omega}) = L(p_{\boldsymbol\omega},\boldsymbol\omega)</script><p>此时，只需对最大熵模型进行学习，即对对偶问题 $\max\limits_{\boldsymbol{\omega}}\:\min\limits_{p\in\mathcal{C}}\:L(p,\boldsymbol{\omega})$ 的外部极大化问题进行处理</p>
+<p>将极大化问题的解记为 $\boldsymbol{\omega}^{*}$，有：</p>
+<script type="math/tex; mode=display">
+\boldsymbol{\omega}^{*}=\arg \max_{\boldsymbol{\omega}} \psi(\boldsymbol{\omega})</script><p>将 $p_{\boldsymbol{\omega}}(y|x)$ 代入到对偶函数 $\psi(\boldsymbol{\omega})$ 中，可得：</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+\psi(\boldsymbol{\omega}) 
+=& \sum_{x\in X}\tilde{p}(x)\sum_{y\in Y}p(y|x)\log p(y|x) + \omega^{(0)}\bigl[1-\sum_{y\in Y} p(y|x)\bigr] \\
+&+ \sum_{j=1}^m \omega^{(j)}\Big[ \sum_{x\in X}\sum_{y\in Y} \tilde{p}(x,y)f_j(x,y) - \sum_{x\in X}\tilde{p}(x)\sum_{y\in Y}p(y|x)f_j(x,y) \Big] \\
+=& \sum_{x\in X}\tilde{p}(x)\sum_{y\in Y}p_{\boldsymbol{\omega}}(y|x)\log p_{\boldsymbol{\omega}}(y|x) + \omega^{(0)}\bigl[1-\sum_{y\in Y} p_{\boldsymbol{\omega}}(y|x)\bigr] \\
+&+ \sum_{j=1}^m \omega^{(j)}\Big[ \sum_{x\in X}\sum_{y\in Y} \tilde{p}(x,y)f_j(x,y) - \sum_{x\in X}\tilde{p}(x)\sum_{y\in Y}p_{\boldsymbol{\omega}}(y|x)f_j(x,y) \Big] 
+\end{align*}</script><p>由于 $\sum\limits_{y\in Y} p(y|x)=1$，故有：</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+\psi(\boldsymbol{\omega})
+=& \sum_{x\in X,y\in Y} \tilde{p}(x) \log p_{\boldsymbol{\omega}}(y|x) + \sum_{j=1}^m \omega^{(j)} \sum_{x\in X,y\in Y} \tilde{p}(x,y)f_j(x,y) \\\
+&- \sum_{j=1}^m\omega^{(j)}\sum_{x\in X,y\in Y} \tilde{p}(x)f_j(x,y)
+\end{align*}</script><p>又因为：</p>
+<script type="math/tex; mode=display">
+\log p_{\boldsymbol{\omega}}(y|x) = \sum_{j=1}^m \omega^{(j)}f_j(x,y) - \log Z_{\boldsymbol{\omega}} (x)</script><p>则有：</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+\psi(\boldsymbol{\omega}) 
+=& \sum_{x\in X,y\in Y} \tilde{p}(x) \Big[ \sum_{j=1}^m \omega^{(j)}f_j(x,y) - \log Z_{\boldsymbol{\omega}} (x) \Big] \\
+&+ \sum_{j=1}^m \omega^{(j)} \sum_{x\in X,y\in Y} \tilde{p}(x,y)f_j(x,y) - \sum_{j=1}^m\omega^{(j)}\sum_{x\in X,y\in Y} \tilde{p}(x)f_j(x,y)
+\end{align*}</script><p>化简得：</p>
+<script type="math/tex; mode=display">
+\psi(\boldsymbol{\omega}) = \sum_{x\in X,y\in Y} \tilde{p}(x,y)\sum_{j=1}^m \omega^{(j)} f_j(x,y)  - \sum_{x\in X} \tilde{p}(x) \log Z_{\boldsymbol{\omega}}(x)</script><p>故极大化问题为：</p>
+<script type="math/tex; mode=display">
+\boldsymbol{\omega}^{*}=\arg \max_{\boldsymbol{\omega}} \Big [\sum_{x\in X,y\in Y} \tilde{p}(x,y)\sum_{j=1}^m \omega^{(j)} f_j(x,y)  - \sum_{x\in X} \tilde{p}(x) \log Z_{\boldsymbol{\omega}}(x) \Big]</script><h1 id="【最大熵模型的极大似然估计】"><a href="#【最大熵模型的极大似然估计】" class="headerlink" title="【最大熵模型的极大似然估计】"></a>【最大熵模型的极大似然估计】</h1><p>假设样本集大小为 $n$，对于样本具体观测值 $x_1,x_2,…,x_n$，假设其取值有 $K$ 个，分别为 $v_1,v_2,…,v_K$，用 $C(X=v_i)$ 表示在观测值中样本 $v_i$ 出现的频数，那么似然函数可写为：</p>
+<script type="math/tex; mode=display">
+L(x_1,x_2,...,x_n;\theta) = \prod_{k=1}^K p(v_k;\theta)^{C(X=v_k)}</script><p>对上式两边同时开 $\frac{1}{n}$ 次方，可得：</p>
+<script type="math/tex; mode=display">
+L(x_1,x_2,...,x_n;\theta)^{\frac{1}{n}} = \prod_{k=1}^k p(v_k;\theta)^\frac{C(X=v_k)}{n}</script><p>由于经验概率 $\tilde{p}(x)=\frac{C(X=v_k)}{n}$，故有：</p>
+<script type="math/tex; mode=display">
+L(x_1,x_2,...,x_n;\theta)^{\frac{1}{n}} = \prod_{x\in X} p(x;\theta)^{\tilde{p}(x)}</script><p>显然，对 $L(x_1,x_2,…,x_n;\theta)^{\frac{1}{n}}$ 求极大值与对 $L(x_1,x_2,…,x_n;\theta)$ 求极大值的优化结果是相同的，那么，最终的极大似然函数可表示为：</p>
+<script type="math/tex; mode=display">
+L(x;\theta) = \prod_{x\in X} p(x;\theta)^{\tilde{p}(x)}</script><p>当已知训练数据的经验概率分布为 $\tilde{p}(X,Y)$ 时，有：</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+L_{\tilde{p}}
+&= \log \prod_{x\in X,y\in Y} p(x,y)^{\tilde{p}(x,y)} \\
+&= \sum_{x\in X,y\in Y} \tilde{p}(x,y) \log p(x,y) \\
+&= \sum_{x\in X,y\in Y} \tilde{p}(x,y) \log \big[ \tilde{p}(x)p(y|x) \big] \\
+&= \sum_{x\in X,y\in Y} \tilde{p}(x,y)\log p(y|x) + \sum_{x\in X,y\in Y} \tilde{p}(x,y)\log \tilde{p}(x)
+\end{align*}</script><p>其中，对于第二项 $\sum\limits_{x\in X,y\in Y} \tilde{p}(x,y)\log \tilde{p}(x)$，一旦样本集确定，经验分布 $\tilde{p}(x,y)$ 与 $\tilde{p}(x)$ 可直接算出，故该项为一常数，忽略即可，故而最终的对数似然函数为：</p>
+<script type="math/tex; mode=display">
+L_{\tilde{p}}=\sum_{x\in X,y\in Y} \tilde{p}(x,y) \log p(y|x)</script><hr>
+<p>当条件概率分布 $p(y|x)$ 为最大熵模型 $p_{\boldsymbol{\omega}}(y|x) = \frac{1}{Z_{\boldsymbol\omega}(x)} \exp\Big[\sum_{j=1}^m\omega^{(j)}f_j(x,y)\Big]$ 时，对数似然函数为：</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+L_{\tilde{p}}(p_{\boldsymbol{\omega}}) 
+&= \sum_{x\in X,y\in Y} \tilde{p}(x,y)\log p_{\boldsymbol{\omega}}(y|x) \\
+&= \sum_{x\in X,y\in Y} \tilde{p}(x,y)\sum_{j=1}^m \omega^{(j)} f_j(x,y)-\sum_{x\in X,y\in Y}\tilde{p}(x,y)\log Z_{\boldsymbol{\omega}} (x) \\
+&= \sum_{x\in X,y\in Y} \tilde{p}(x,y)\sum_{j=1}^m \omega^{(j)} f_j(x,y)-\sum_{x\in X}\tilde{p}(x)\log Z_{\boldsymbol{\omega}} (x) \\
+\end{align*}</script><p>可以发现，对数似然函数 $L_{\tilde{p}}(p_{\boldsymbol{\omega}}) $ 与对偶函数 $\psi(\boldsymbol{\omega}) $ 相等，即：</p>
+<script type="math/tex; mode=display">
+L_{\tilde{p}}(p_{\boldsymbol{\omega}}) = \psi(\boldsymbol{\omega})</script><p>接着，考虑对偶函数 $\psi(\boldsymbol{\omega})$，有：</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+\psi(\boldsymbol{\omega}) &= -\sum_x\tilde{p}(x)\log Z_{\boldsymbol{\omega}}(x)+\sum_{j=1}^m\omega^{(j)}E_{\tilde{p}}(f_j) \\
+&= -\sum_x\tilde{p}(x)\log Z_{\boldsymbol{\omega}}(x)+\sum_{j=m}^n\omega^{(j)}\sum_{x,y}\tilde{p}(x,y)f_j(x,y)\\
+&=  \sum_{x,y}\tilde{p}(x,y)\sum_{j=1}^m\omega^{(j)}f_j(x,y)-\sum_x\tilde{p}(x)\log Z_{\boldsymbol{\omega}}(x)
+\end{align*}</script><p>可以发现，最大熵模型 $p_{\boldsymbol{\omega}}(y|x)$ 的对数似然函数与对偶函数 $\psi(\boldsymbol{\omega})$ 等价，即：</p>
+<script type="math/tex; mode=display">
+\psi(\boldsymbol{\omega})=L_{\tilde{p}}(p_{\boldsymbol{\omega}})</script><p>因此，最大熵模型学习中的对偶函数 $\psi(\boldsymbol{\omega})$ 极大化等价于最大熵模型的极大似然估计，这样对最大熵模型的学习问题就转化成了具体求解<strong>对数似然函数极大化</strong>或求解<strong>对偶函数极大化</strong>的问题，即：</p>
+<script type="math/tex; mode=display">
+\max_{\boldsymbol{\omega}}\sum_{x\in X,y\in Y}\tilde{p}(x,y)\sum_{j=1}^m\omega^{(j)}f_j(x,y)-\sum_{x\in X}\tilde{p}(x)\log Z_{\boldsymbol{\omega}}(x)</script>
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>感谢您对我的支持，让我继续努力分享有用的技术与知识点！</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/wechatpay.jpg" alt="Alex_McAvoy 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/alipay.jpg" alt="Alex_McAvoy 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Alex_McAvoy
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/supervised-learning/1bae2fc4.html" title="最大熵模型的学习">https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/supervised-learning/1bae2fc4.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/artificial-intelligence/" rel="tag"># 人工智能</a>
+              <a href="/tags/machine-learning/" rel="tag"># 机器学习</a>
+              <a href="/tags/supervised-learning/" rel="tag"># 监督学习</a>
+              <a href="/tags/classification/" rel="tag"># 分类问题</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/artificial-intelligence/machine-learning/supervised-learning/ba8a14c4.html" rel="prev" title="最大熵模型">
+      <i class="fa fa-chevron-left"></i> 最大熵模型
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/mathematics/convex-optimization/346416ed.html" rel="next" title="改进的迭代尺度法(IIS)">
+      改进的迭代尺度法(IIS) <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【对偶函数的极大化】"><span class="nav-number">1.</span> <span class="nav-text">【对偶函数的极大化】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【最大熵模型的极大似然估计】"><span class="nav-number">2.</span> <span class="nav-text">【最大熵模型的极大似然估计】</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">  
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Alex_McAvoy"
+      src="/assets/img/head.jpg">
+  <p class="site-author-name" itemprop="name">Alex_McAvoy</p>
+  <div class="site-description" itemprop="description">想要成为渔夫的猎手</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">667</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">65</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">74</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Alex-McAvoy" title="GitHub → https://github.com/Alex-McAvoy" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/u011815404" title="CSDN → https://blog.csdn.net/u011815404" rel="noopener" target="_blank"><i class="fas fa-copyright fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+<!-- 访客地图 -->
+<script type="text/javascript" src="//rf.revolvermaps.com/0/0/5.js?i=50n58yo58ow&amp;m=0&amp;c=ff0000&amp;cr1=ffffff&amp;s=140" async="async"></script>
+
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdz20172133" title="https://blog.csdn.net/sdz20172133" rel="noopener" target="_blank">神仙队友</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://pxlsdz.gitee.io/" title="https://pxlsdz.gitee.io/" rel="noopener" target="_blank">神仙队友blog2</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdau_fangshifeng" title="https://blog.csdn.net/sdau_fangshifeng" rel="noopener" target="_blank">酷头</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://bycore.net" title="https://bycore.net" rel="noopener" target="_blank">凉了的某饼同学</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://kris-cn.github.io/" title="http://kris-cn.github.io/" rel="noopener" target="_blank">翟孙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://deng.fun/" title="http://deng.fun/" rel="noopener" target="_blank">芙蓉姐姐</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/wentong_Xu" title="https://blog.csdn.net/wentong_Xu" rel="noopener" target="_blank">小黑贱胖子</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.yuheng.tech/" title="https://www.yuheng.tech/" rel="noopener" target="_blank">咸于</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/lanshan1111" title="https://blog.csdn.net/lanshan1111" rel="noopener" target="_blank">肥硕硕</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdauguanweihong" title="https://blog.csdn.net/sdauguanweihong" rel="noopener" target="_blank">管少</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_41661919" title="https://blog.csdn.net/qq_41661919" rel="noopener" target="_blank">俊杰</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_40859951" title="https://blog.csdn.net/qq_40859951" rel="noopener" target="_blank">峰哥</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/LSD20164388" title="https://blog.csdn.net/LSD20164388" rel="noopener" target="_blank">狗冬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37868325" title="https://blog.csdn.net/qq_37868325" rel="noopener" target="_blank">妍大佬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://sanshuiii.github.io/" title="https://sanshuiii.github.io/" rel="noopener" target="_blank">sanshuiii</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://zjpzhao.github.io/" title="https://zjpzhao.github.io/" rel="noopener" target="_blank">brain</a>
+        </li>
+    </ul>
+  </div>
+
+		
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+  
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Alex_McAvoy</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+</br>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script><script src="/js/bookmark.js"></script>
+
+
+
+  
+
+
+
+
+  <script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '48fd73a538d3fa927f65',
+      clientSecret: '56618aefeee90bac3c20de8d51bb0b985d67252d',
+      repo        : 'Gitalk-Comment',
+      owner       : 'Alex-McAvoy',
+      admin       : ['Alex-McAvoy'],
+      id          : '04d5a783c8f00b7712fb688fb41f56ed',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+  
+  <!-- 鼠标单击粒子特效 -->
+  <script type="text/javascript" src="/js/cursor-effects.js"></script>
+  <!-- 多级目录 -->
+  <script type="text/javascript" src="/js/category.js"></script>
+  
+</body>
+</html>
