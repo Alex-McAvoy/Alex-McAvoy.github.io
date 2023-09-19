@@ -25,20 +25,22 @@
     var CONFIG = {"hostname":"alex-mcavoy.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":16,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":true,"color":"#ff0000","save":"manual"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":true},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.json"};
   </script>
 
-  <meta name="description" content="Reference  一看就懂的多重共线性 如何理解方差膨胀因子（Variance Inflation Factor，VIF）？ 使用方差膨胀因子(Variance Inflation Factor)来特征选择 Multicollinearity Variance inflation factor   【概述】在 机器学习的模型选择 中，简单介绍过过拟合现象和正则化">
-<meta name="keywords" content="人工智能,机器学习,监督学习">
+  <meta name="description" content="【假设形式】在回归分析中，只有一个自变量和因变量，且因变量和自变量之间是线性关系，一般称为一元线性回归（Unary Linear Regression） 通过线性回归算法，会得到很多的线性回归模型，但是不同的模型对于数据的拟合（描述能力）是不一样的，我们的目的是找到一个能够最精确描述数据之间关系的线性回归模型">
+<meta name="keywords" content="人工智能,机器学习,监督学习,回归问题">
 <meta property="og:type" content="article">
-<meta property="og:title" content="多重共线性与方差膨胀因子">
-<meta property="og:url" content="https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/aa85fef4.html">
+<meta property="og:title" content="一元线性回归">
+<meta property="og:url" content="https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/supervised-learning/1bfe723c.html">
 <meta property="og:site_name" content="Alex_McAvoy">
-<meta property="og:description" content="Reference  一看就懂的多重共线性 如何理解方差膨胀因子（Variance Inflation Factor，VIF）？ 使用方差膨胀因子(Variance Inflation Factor)来特征选择 Multicollinearity Variance inflation factor   【概述】在 机器学习的模型选择 中，简单介绍过过拟合现象和正则化">
+<meta property="og:description" content="【假设形式】在回归分析中，只有一个自变量和因变量，且因变量和自变量之间是线性关系，一般称为一元线性回归（Unary Linear Regression） 通过线性回归算法，会得到很多的线性回归模型，但是不同的模型对于数据的拟合（描述能力）是不一样的，我们的目的是找到一个能够最精确描述数据之间关系的线性回归模型">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2023-07-19T14:10:22.481Z">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/machine-learning/supervised-learning/09-1.png">
+<meta property="og:updated_time" content="2023-09-19T00:12:55.594Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="多重共线性与方差膨胀因子">
-<meta name="twitter:description" content="Reference  一看就懂的多重共线性 如何理解方差膨胀因子（Variance Inflation Factor，VIF）？ 使用方差膨胀因子(Variance Inflation Factor)来特征选择 Multicollinearity Variance inflation factor   【概述】在 机器学习的模型选择 中，简单介绍过过拟合现象和正则化">
+<meta name="twitter:title" content="一元线性回归">
+<meta name="twitter:description" content="【假设形式】在回归分析中，只有一个自变量和因变量，且因变量和自变量之间是线性关系，一般称为一元线性回归（Unary Linear Regression） 通过线性回归算法，会得到很多的线性回归模型，但是不同的模型对于数据的拟合（描述能力）是不一样的，我们的目的是找到一个能够最精确描述数据之间关系的线性回归模型">
+<meta name="twitter:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/machine-learning/supervised-learning/09-1.png">
 
-<link rel="canonical" href="https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/aa85fef4.html">
+<link rel="canonical" href="https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/supervised-learning/1bfe723c.html">
 
 
 <script id="page-configurations">
@@ -51,7 +53,7 @@
   };
 </script>
 
-  <title>多重共线性与方差膨胀因子 | Alex_McAvoy</title>
+  <title>一元线性回归 | Alex_McAvoy</title>
   
 
 
@@ -195,7 +197,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/aa85fef4.html">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/supervised-learning/1bfe723c.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/assets/img/head.jpg">
@@ -208,7 +210,7 @@
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          多重共线性与方差膨胀因子
+          一元线性回归
         </h1>
 
         <div class="post-meta">
@@ -218,7 +220,7 @@
               </span>
               <span class="post-meta-item-text">发表于</span>
 
-              <time title="创建时间：2019-07-02 11:21:00" itemprop="dateCreated datePublished" datetime="2019-07-02T11:21:00+08:00">2019-07-02</time>
+              <time title="创建时间：2019-06-26 13:18:00" itemprop="dateCreated datePublished" datetime="2019-06-26T13:18:00+08:00">2019-06-26</time>
             </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -231,6 +233,10 @@
                   ，
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
                   <a href="/categories/artificial-intelligence/machine-learning/" itemprop="url" rel="index"><span itemprop="name">机器学习</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/artificial-intelligence/machine-learning/supervised-learning/" itemprop="url" rel="index"><span itemprop="name">监督学习</span></a>
                 </span>
             </span>
 
@@ -247,14 +253,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>2.5k</span>
+              <span>4.8k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>2 分钟</span>
+              <span>4 分钟</span>
             </span>
 
         </div>
@@ -266,81 +272,55 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <blockquote>
-<p>Reference</p>
-<ul>
-<li><a href="https://zhuanlan.zhihu.com/p/355241680" target="_blank" rel="noopener">一看就懂的多重共线性</a></li>
-<li><a href="https://www.zhihu.com/question/270451437" target="_blank" rel="noopener">如何理解方差膨胀因子（Variance Inflation Factor，VIF）？</a></li>
-<li><a href="https://zhuanlan.zhihu.com/p/435430759" target="_blank" rel="noopener">使用方差膨胀因子(Variance Inflation Factor)来特征选择</a></li>
-<li><a href="https://en.wikipedia.org/wiki/Multicollinearity" target="_blank" rel="noopener">Multicollinearity</a></li>
-<li><a href="https://en.wikipedia.org/wiki/Variance_inflation_factor" target="_blank" rel="noopener">Variance inflation factor</a></li>
-</ul>
-</blockquote>
-<h1 id="【概述】"><a href="#【概述】" class="headerlink" title="【概述】"></a>【概述】</h1><p>在 <a href="https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/d9259ca2.html">机器学习的模型选择</a> 中，简单介绍过过拟合现象和正则化</p>
-<p>对于线性回归来说，其代价函数的解析解为：</p>
+        <h1 id="【假设形式】"><a href="#【假设形式】" class="headerlink" title="【假设形式】"></a>【假设形式】</h1><p>在回归分析中，只有一个自变量和因变量，且因变量和自变量之间是线性关系，一般称为<strong>一元线性回归（Unary Linear Regression）</strong></p>
+<p>通过线性回归算法，会得到很多的线性回归模型，但是不同的模型对于<strong>数据的拟合（描述能力）</strong>是不一样的，我们的目的是找到一个能够最精确描述数据之间关系的线性回归模型</p>
+<p>其假设形式如下：</p>
+<p>对于给定的容量为 $n$ 的样本集 $D=\{(x_1,y_1),(x_2,y_2),…,(x_n,y_n)\}$，第 $i$ 组样本中的输入为 $x_i$，输出为 $y_i$</p>
+<p>假设一元线性回归学习到的模型是 $f(x_i;\theta_0,\theta_1)=\theta_0+\theta_1 x_i$，使得 $f(x_i;\theta_0,\theta_1)\simeq y_i$</p>
+<p>若要使预测更为精确，那么预测就要以现有的数据为根基，尽量的贴合现有数据，使得预测值与真实值的差距尽量小</p>
+<p>这就需要一个<strong>损失函数</strong> $J(\theta_0,\theta_1)$ 来作为衡量预测结果的指标，对于损失函数最小化时的 $\theta_0$ 与 $\theta_1$，通常使用<strong>最小二乘法</strong>或以<strong>梯度下降法</strong>为代表的迭代法来求解</p>
+<p>无论使用何种方法，最终的目标，都是要令这个损失函数的值最小化，即</p>
 <script type="math/tex; mode=display">
-\boldsymbol{\theta}=(XX^T)^{-1}XY</script><p>当 $XX^T$ 不是满秩矩阵时，没有逆矩阵，此时会出现过拟合现象，其本质就是自变量 $x^{(j)}$ 之间存在<strong>多重共线性（Multicollinearity）</strong>，即自变量 $x^{(j)}$ 间存在相关关系</p>
-<p>对于线性回归中的多重共线性问题，其中一个解决方法就是剔除掉共线的自变量，可以通过计算<strong>方差膨胀因子（Variance inflation factor，VIF）</strong>来量化自变量之间的相关关系，方差扩大因子越大说明自变量的共线性越严重</p>
-<p>另一种解决方法是通过对代价函数正则化来解决，使用 L1 范数正则化的回归模型一般称为 <strong>Lasso 回归</strong>，使用 L2 范数正则化的回归模型一般称为 <strong>Ridge 回归</strong></p>
-<p>本文仅介绍多重共线性与方差膨胀因子，关于 Lasso 回归与 Ridge 回归，详见：<a href="https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/113e5e58.html">Lasso 回归与 Ridge 回归</a></p>
-<h1 id="【多重共线性】"><a href="#【多重共线性】" class="headerlink" title="【多重共线性】"></a>【多重共线性】</h1><p><strong>多重共线性（Multicollinearity）</strong>是指线性回归中，变量之间由于存在精确相关关系或高度相关关系而使回归估计不准确</p>
-<p>假设多元线性回归 $y_i=\theta^{(1)}x_i^{(1)}+\theta^{(2)}x_i^{(2)}$，其中 $\theta^{(1)}=2,\theta^{(2)}=3$</p>
-<p>如果 $x^{(1)}$ 与 $x^{(2)}$ 之间存在明确的相关关系，则称两者存在<strong>精确相关关系</strong>：</p>
+(\theta_0^*,\theta_1^*)  = \arg \min \limits_{(\theta_0,\theta_1)} \:J(\theta_0,\theta_1)</script><h1 id="【梯度下降法求解】"><a href="#【梯度下降法求解】" class="headerlink" title="【梯度下降法求解】"></a>【梯度下降法求解】</h1><p>对于给定的容量为 $n$ 的样本集 $D=\{(x_1,y_1),(x_2,y_2),…,(x_n,y_n)\}$，第 $i$ 组样本中的输入为 $x_i$，输出为 $y_i$</p>
+<p>设习得的模型的假设函数为：</p>
 <script type="math/tex; mode=display">
-\left\{\begin{array}{rl}
-y_i &=& 2x_i^{(1)}+3x_i^{(2)} \\
-x_i^{(2)} &=& 2x_i^{(1)}
-\end{array} \right.</script><p>如果 $x_i^{(1)}$ 与 $x_i^{(2)}$ 之间存在近似的相关关系，则称两者存在<strong>高度相关关系</strong>：</p>
+f(x_i;\theta_0,\theta_1)=\theta_0+\theta_1 x_i</script><p>令损失函数为：</p>
+<script type="math/tex; mode=display">
+J(\theta_0,\theta_1) = \frac{1}{2n} \sum\limits_{i=1}^{n} (f(x_i;\theta_0,\theta_1) - y_i )^2</script><p>之所以要乘以 $\frac{1}{2}$，是因为在求导后会带来 $\times 2$，不利于表达与计算，当乘以 $\frac{1}{2}$ 后，求导带来的 $\times 2$ 就与 $\frac{1}{2}$ 抵消，从而简化计算</p>
+<p>目标是通过最小化代价函数 $J(\theta_0,\theta_1)$ 来在参数空间 $\Theta$ 中找到合适的 $\theta_0,\theta_1$ 参数，即：</p>
+<script type="math/tex; mode=display">
+(\theta_0^*,\theta_1^*)  = \arg \min \limits_{(\theta_0,\theta_1)} \:J(\theta_0,\theta_1)</script><p>在最小化代价函数 $J(\theta_0,\theta_1)$ 时，其核心是损失函数对应的梯度函数，使用梯度下降法，即将下列公式<strong>重复直到收敛</strong>为止：</p>
+<script type="math/tex; mode=display">
+\boldsymbol{\theta_{k+1}} = \boldsymbol{\theta_k} - \alpha \frac{\partial}{\partial \boldsymbol{\theta_k}}J(\boldsymbol{\theta_k})</script><p>即：</p>
 <script type="math/tex; mode=display">
 \left\{\begin{array}{rl}
-y_i &=& 2x_i^{(1)}+3x_i^{(2)} \\
-x_i^{(2)} &\approx& 2x_i^{(1)}
-\end{array} \right.</script><p>以上述的精确相关关系为例，由于 $x_i^{(2)} = 2x_i^{(1)}$ 可以将 $y_i = 2x_i^{(1)}+3x_i^{(2)}$ 改写为不同的形式，这样就会导致 $\theta^{(1)},\theta^{(2)}$ 存在无数中解，使得最后的回归估计不准确</p>
+\theta_0 & = & \theta_0 - \alpha \sum\limits_{i=1}^n (f(x_i;\theta_0,\theta_1) - y_i)
+\\ \theta_1 & = & \theta_1 - \alpha  \sum\limits_{i=1}^n (f(x_i;\theta_0,\theta_1) - y_i)\cdot x_i
+\end{array} \right.</script><p>关于批量梯度下降法的具体介绍，详见：<a href="https://alex-mcavoy.github.io/mathematics/numerical-analysis/14625c0.html">梯度下降法</a></p>
+<h1 id="【最小二乘法求解】"><a href="#【最小二乘法求解】" class="headerlink" title="【最小二乘法求解】"></a>【最小二乘法求解】</h1><p>当使用最小二乘法来求解时，一般选用<strong>残差平方和 RSS</strong> 作为损失函数，即：</p>
+<script type="math/tex; mode=display">
+\begin{align}
+J(\theta_0,\theta_1) & = \sum_{i=1}^n(f(x_i;\theta_0,\theta_1)-y_i)^2 \notag \\
+& = \sum_{i=1}^n( \theta_0 + \theta_1 x_i-y_i)^2 \notag
+\end{align}</script><p>目标是通过最小化代价函数 $J(\theta_0,\theta_1)$ 来在参数空间 $\Theta$ 中找到合适的 $\theta_0,\theta_1$ 参数，即：</p>
+<script type="math/tex; mode=display">
+(\theta_0^*,\theta_1^*)  = \arg \min \limits_{(\theta_0,\theta_1)} \:J(\theta_0,\theta_1)</script><p>在最小化代价函数 $J(\theta_0,\theta_1)$ 时，其核心是损失函数对应的梯度函数，分别对 $J(\theta_0,\theta_1)$ 分别对 $\theta_0$、$\theta_1$ 进行求导，有：</p>
 <script type="math/tex; mode=display">
 \left\{\begin{array}{rl}
-y_i &=& 2x_i^{(1)}+3x_i^{(2)} &\Rightarrow \theta^{(1)}=2,\theta^{(2)}=3 \\ 
-y_i &=& 6x_i^{(1)}+x_i^{(2)} &\Rightarrow \theta^{(1)}=6,\theta^{(2)}=1 \\ 
-y_i &=& 8x_i^{(1)} &\Rightarrow \theta^{(1)}=8,\theta^{(2)}=0 \\ 
-y_i &=& 4x_i^{(2)} &\Rightarrow \theta^{(1)}=0,\theta^{(2)}=4 \\ 
-&&...
-\end{array} \right.</script><p>根据线性回归的解析解 $\boldsymbol{\theta}=(XX^T)^{-1}XY$，可以通过下述公式来求解其中的逆矩阵</p>
+\frac{\partial J(\theta_0,\theta_1)}{\partial \theta_0} 
+&=& 2\sum\limits_{i=1}^n(\theta_0+\theta_1 x_i-y_i) \\ 
+\frac{\partial J(\theta_0,\theta_1)}{\partial \theta_1} 
+&=& 2\sum\limits_{i=1}^n(\theta_0+\theta_1 x_i-y_i)x_i
+\end{array} \right.</script><p>取 $\overline{x}=\frac{1}{n}\sum_\limits{i=1}^nx_i$，$\overline{y}=\frac{1}{n}\sum_\limits{i=1}^ny_i$</p>
+<p>令 $\frac{\partial J(\theta_0,\theta_1)}{\partial \theta_0}=0$，$\frac{\partial J(\theta_0,\theta_1)}{\partial \theta_1}=0$，联立后可解得 $\theta_0$ 和 $\theta_1$ 的<strong>解析解（Analytical Solution）</strong>：</p>
 <script type="math/tex; mode=display">
-(XX^T)^{-1}=\frac{(X^TX)^*}{|X^TX|}</script><p>可以看到，逆矩阵可逆的条件是其行列式 $|XX^T|$ 不能为 $0$</p>
-<p>如果存在多重共线性，会使得矩阵的行列式 $|XX^T|$ 为 $0$，导致 $XX^T$ 不可逆，使得最后的回归估计不准确</p>
-<p>如下示例，可以看到 $x_i^{(2)}$ 与 $x_i^{(3)}$ 之间存在精确相关关系</p>
-<script type="math/tex; mode=display">
-\begin{align*}
-x_1 \quad\: x_2\:\:\:\quad x_3 \quad\:\:\: x_4\:\: \\
-X = \begin{bmatrix}
-1\quad & 1\quad & 1\quad & 1 \\
-1\quad & 2\quad & 3\quad & 4 \\
-2\quad & 4\quad & 6\quad & 8 \\
-\end{bmatrix}
-\end{align*}</script><p>此时，$XX^T$ 经过初等变换后，其行列式为 $0$，$XX^T$ 不可逆，使得最后的回归估计不准确</p>
-<script type="math/tex; mode=display">
-XX^T = \begin{bmatrix}
-4 & 10 & 20 \\
-10 & 30 & 60 \\
-20 & 60 & 120 \\
-\end{bmatrix} \stackrel{初等变换}{\longrightarrow}  \begin{bmatrix}
-1 & 0 & 0 \\
-0 & 1 & 2 \\
-0 & 0 & 0 \\
-\end{bmatrix}</script><p>相似地，如果存在高度相关关系，那么会使得 $XX^T$ 的行列式近似为 $0$，此时得到的 $\boldsymbol{\theta}$ 的偏差很大，回归不准确</p>
-<h1 id="【方差膨胀因子】"><a href="#【方差膨胀因子】" class="headerlink" title="【方差膨胀因子】"></a>【方差膨胀因子】</h1><p><strong>方差膨胀因子（Variance inflation factor，VIF）</strong>是用来量化自变量之间的相关关系的一种指标，VIF 越大说明自变量的多重共线性越严重</p>
-<p>VIF 的一般标准如下：</p>
-<ul>
-<li><code>0 &lt; VIF &lt; 5</code>：无共线性</li>
-<li><code>5 &lt; VIF &lt; 10</code>：弱多重共线性</li>
-<li><code>10 &lt; VIF &lt; 100</code>：中多重共线性</li>
-<li><code>VIF &gt; 100</code>：强共线性</li>
-</ul>
-<p>对于线性回归问题，可以计算每个自变量 $x^{(j)}$ 的 VIF，之后去掉 VIF 较大的自变量，或将相关的变量组合为一个单一的变量</p>
-<p>对于多元线性回归的第 $j$ 个自变量 $x^{(j)}$，其 VIF 的计算公式为：</p>
-<script type="math/tex; mode=display">
-VIF_j = \frac{1}{1-R^2_j}</script><p>其中，$R^2_j$ 是可决系数</p>
-<p>相较于 Pearson 相关系数来说，VIF 除了可以量化多重共线性外，还可以看到多个变量间的复相关性</p>
-<p>关于 Pearson 相关系数与可决系数详见：<a href="https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/2559e399.html">回归问题的评价指标（二）</a></p>
+\left\{\begin{array}{rl}
+\theta_0 &=& \overline{y}- \overline{x}\cdot \frac{\sum\limits_{i=1}^n(x_i-\overline{x})(y_i-\overline{y})}{\sum\limits_{i=1}^n(x-\overline{x})^2} \\
+\theta_1 &=& \frac{\sum\limits_{i=1}^n(x_i-\overline{x})(y_i-\overline{y})}{\sum\limits_{i=1}^n(x-\overline{x})^2}
+\end{array} \right.</script><p>关于普通最小二乘法的具体介绍，详见：<a href="https://alex-mcavoy.github.io/mathematics/numerical-analysis/6b330b18.html">最小二乘法</a></p>
+<h1 id="【sklearn-实现】"><a href="#【sklearn-实现】" class="headerlink" title="【sklearn 实现】"></a>【sklearn 实现】</h1><p>以 <code>sklearn</code> 中的波士顿房价数据集为例，选取该数据集中的 CRIM 特征作为自变量，选用普通最小二乘法实现一元线性回归</p>
+<p><img src="/images/artificial-intelligence/machine-learning/supervised-learning/09-1.png"></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"><span class="keyword">import</span> pandas <span class="keyword">as</span> pd</span><br><span class="line"><span class="keyword">import</span> matplotlib.pyplot <span class="keyword">as</span> plt</span><br><span class="line"><span class="keyword">from</span> sklearn.datasets <span class="keyword">import</span> load_boston</span><br><span class="line"><span class="keyword">from</span> sklearn.model_selection <span class="keyword">import</span> train_test_split</span><br><span class="line"><span class="keyword">from</span> sklearn.linear_model <span class="keyword">import</span> LinearRegression</span><br><span class="line"><span class="keyword">from</span> sklearn.metrics <span class="keyword">import</span> mean_squared_error</span><br><span class="line"><span class="keyword">from</span> sklearn.metrics <span class="keyword">import</span> mean_squared_error</span><br><span class="line"><span class="keyword">from</span> sklearn.metrics <span class="keyword">import</span> mean_absolute_error</span><br><span class="line"><span class="keyword">from</span> sklearn.metrics <span class="keyword">import</span> r2_score</span><br><span class="line"></span><br><span class="line"><span class="comment"># 特征提取</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">deal_data</span><span class="params">()</span>:</span></span><br><span class="line">    boston = load_boston()  <span class="comment"># sklearn的波士顿房价数据集</span></span><br><span class="line">    df = pd.DataFrame(boston.data, columns=boston.feature_names)</span><br><span class="line">    df[<span class="string">'result'</span>] = boston.target</span><br><span class="line">    data = np.array(df)</span><br><span class="line">    <span class="keyword">return</span> data[:, <span class="number">0</span>], data[:, <span class="number">-1</span>]</span><br><span class="line"></span><br><span class="line"><span class="comment"># 模型训练</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">train_model</span><span class="params">(features, labels)</span>:</span></span><br><span class="line">    <span class="comment"># 由一维变为二维</span></span><br><span class="line">    features = features.reshape(<span class="number">-1</span>,<span class="number">1</span>)</span><br><span class="line">    labels = labels.reshape(<span class="number">-1</span>,<span class="number">1</span>)</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 建立线性回归模型</span></span><br><span class="line">    model = LinearRegression()</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 训练</span></span><br><span class="line">    model.fit(features, labels)</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> model</span><br><span class="line"></span><br><span class="line"><span class="comment"># 模型评估</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">estimate_model</span><span class="params">(y_true, y_pred)</span>:</span></span><br><span class="line">    MSE = mean_squared_error(y_true, y_pred)</span><br><span class="line">    RMSE = np.sqrt(MSE)</span><br><span class="line">    MAE = mean_absolute_error(y_true, y_pred)</span><br><span class="line">    R2 = r2_score(y_true, y_pred)</span><br><span class="line">    indicators = &#123;<span class="string">"MSE"</span>: MSE, <span class="string">"RMSE"</span>:RMSE, <span class="string">"MAE"</span>:MAE, <span class="string">"R2"</span>:R2&#125;</span><br><span class="line">    <span class="keyword">return</span> indicators</span><br><span class="line"></span><br><span class="line"><span class="comment"># 可视化</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">visualization</span><span class="params">(y_true, y_pred, model)</span>:</span></span><br><span class="line">    <span class="comment"># 绘图</span></span><br><span class="line">    plt.plot(range(y_true.shape[<span class="number">0</span>]), y_true, <span class="string">"b-"</span>) </span><br><span class="line">    plt.plot(range(y_true.shape[<span class="number">0</span>]), y_pred, <span class="string">"r-."</span>)</span><br><span class="line">    plt.legend([<span class="string">"original value"</span>, <span class="string">"predicted value"</span>])</span><br><span class="line">    plt.xlabel(<span class="string">"samples"</span>, fontsize=<span class="string">"15"</span>)</span><br><span class="line">    plt.ylabel(<span class="string">"y"</span>, fontsize=<span class="string">"15"</span>)</span><br><span class="line">    </span><br><span class="line">    plt.show()</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:</span><br><span class="line">    <span class="comment"># 特征提取</span></span><br><span class="line">    x, y = deal_data()</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 简单交叉验证</span></span><br><span class="line">    x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=<span class="number">0.3</span>, random_state=<span class="number">0</span>)</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 模型训练</span></span><br><span class="line">    model = train_model(x_train, y_train)</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 预测结果</span></span><br><span class="line">    x_test = x_test.reshape(<span class="number">-1</span>,<span class="number">1</span>) <span class="comment"># 由一维变为二维</span></span><br><span class="line">    y_pred = model.predict(x_test) <span class="comment"># predict()输入输出均为二维</span></span><br><span class="line">    y_pred = y_pred.flatten() <span class="comment"># 由二维变为一维</span></span><br><span class="line">    print(<span class="string">"y test:"</span>, y_test[:<span class="number">10</span>]) <span class="comment"># 测试集y值</span></span><br><span class="line">    print(<span class="string">"y pred:"</span>, y_pred[:<span class="number">10</span>]) <span class="comment"># 预测y值</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 模型评估</span></span><br><span class="line">    indicators = estimate_model(y_test, y_pred)</span><br><span class="line">    print(<span class="string">"MSE:"</span>, indicators[<span class="string">"MSE"</span>])</span><br><span class="line">    print(<span class="string">"RMSE:"</span>, indicators[<span class="string">"RMSE"</span>])</span><br><span class="line">    print(<span class="string">"MAE:"</span>, indicators[<span class="string">"MAE"</span>])</span><br><span class="line">    print(<span class="string">"R2:"</span>, indicators[<span class="string">"R2"</span>])</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 可视化</span></span><br><span class="line">    visualization(y_test, y_pred, model)</span><br></pre></td></tr></table></figure>
 
     </div>
 
@@ -376,7 +356,7 @@ VIF_j = \frac{1}{1-R^2_j}</script><p>其中，$R^2_j$ 是可决系数</p>
   </li>
   <li class="post-copyright-link">
     <strong>本文链接：</strong>
-    <a href="https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/aa85fef4.html" title="多重共线性与方差膨胀因子">https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/aa85fef4.html</a>
+    <a href="https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/supervised-learning/1bfe723c.html" title="一元线性回归">https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/supervised-learning/1bfe723c.html</a>
   </li>
   <li class="post-copyright-license">
     <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
@@ -390,6 +370,7 @@ VIF_j = \frac{1}{1-R^2_j}</script><p>其中，$R^2_j$ 是可决系数</p>
               <a href="/tags/artificial-intelligence/" rel="tag"># 人工智能</a>
               <a href="/tags/machine-learning/" rel="tag"># 机器学习</a>
               <a href="/tags/supervised-learning/" rel="tag"># 监督学习</a>
+              <a href="/tags/regression/" rel="tag"># 回归问题</a>
           </div>
 
         
@@ -398,12 +379,12 @@ VIF_j = \frac{1}{1-R^2_j}</script><p>其中，$R^2_j$ 是可决系数</p>
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/artificial-intelligence/machine-learning/554feae6.html" rel="prev" title="多元线性回归">
-      <i class="fa fa-chevron-left"></i> 多元线性回归
+    <a href="/mathematics/numerical-analysis/6b330b18.html" rel="prev" title="最小二乘法">
+      <i class="fa fa-chevron-left"></i> 最小二乘法
     </a></div>
       <div class="post-nav-item">
-    <a href="/artificial-intelligence/machine-learning/113e5e58.html" rel="next" title="Lasso 回归与 Ridge 回归">
-      Lasso 回归与 Ridge 回归 <i class="fa fa-chevron-right"></i>
+    <a href="/artificial-intelligence/machine-learning/supervised-learning/554feae6.html" rel="next" title="多元线性回归">
+      多元线性回归 <i class="fa fa-chevron-right"></i>
     </a></div>
     </div>
       </footer>
@@ -464,7 +445,7 @@ VIF_j = \frac{1}{1-R^2_j}</script><p>其中，$R^2_j$ 是可决系数</p>
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【概述】"><span class="nav-number">1.</span> <span class="nav-text">【概述】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【多重共线性】"><span class="nav-number">2.</span> <span class="nav-text">【多重共线性】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【方差膨胀因子】"><span class="nav-number">3.</span> <span class="nav-text">【方差膨胀因子】</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【假设形式】"><span class="nav-number">1.</span> <span class="nav-text">【假设形式】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【梯度下降法求解】"><span class="nav-number">2.</span> <span class="nav-text">【梯度下降法求解】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【最小二乘法求解】"><span class="nav-number">3.</span> <span class="nav-text">【最小二乘法求解】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【sklearn-实现】"><span class="nav-number">4.</span> <span class="nav-text">【sklearn 实现】</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -737,7 +718,7 @@ NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
       repo        : 'Gitalk-Comment',
       owner       : 'Alex-McAvoy',
       admin       : ['Alex-McAvoy'],
-      id          : '1d5502ce1ba73b36afa2b680a66ceaf0',
+      id          : '2a641169a31cfdb151c6a6d01f6cda8c',
         language: '',
       distractionFreeMode: true
     });
