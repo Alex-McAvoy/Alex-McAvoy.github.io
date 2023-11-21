@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.9.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/img/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/assets/img/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/pace-js@1/themes/blue/pace-theme-minimal.css">
+  <script src="//cdn.jsdelivr.net/npm/pace-js@1/pace.min.js"></script>
+
+
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"alex-mcavoy.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":16,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":true,"color":"#ff0000","save":"manual"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":true},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.json"};
+  </script>
+
+  <meta name="description" content="【概述】聚类，是将数据集 $D$ 划分为若干互不相交的子集（样本簇），直观上来看，希望同一簇的样本尽可能的相似，不同簇的样本尽可能的不同，也就是说，聚类结果的簇内相似度（Intra-cluster Similarity）高，且簇间相似度（Inter-cluster Similarity）低 聚类问题的评价指标可划分为两类：">
+<meta name="keywords" content="人工智能,机器学习,无监督学习,聚类问题">
+<meta property="og:type" content="article">
+<meta property="og:title" content="聚类问题的外部评价指标">
+<meta property="og:url" content="https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/unsupervised-learning/52f3d3e8.html">
+<meta property="og:site_name" content="Alex_McAvoy">
+<meta property="og:description" content="【概述】聚类，是将数据集 $D$ 划分为若干互不相交的子集（样本簇），直观上来看，希望同一簇的样本尽可能的相似，不同簇的样本尽可能的不同，也就是说，聚类结果的簇内相似度（Intra-cluster Similarity）高，且簇间相似度（Inter-cluster Similarity）低 聚类问题的评价指标可划分为两类：">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/machine-learning/unsupervised-learning/04-1.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/machine-learning/unsupervised-learning/04-2.png">
+<meta property="og:updated_time" content="2023-11-01T08:39:29.922Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="聚类问题的外部评价指标">
+<meta name="twitter:description" content="【概述】聚类，是将数据集 $D$ 划分为若干互不相交的子集（样本簇），直观上来看，希望同一簇的样本尽可能的相似，不同簇的样本尽可能的不同，也就是说，聚类结果的簇内相似度（Intra-cluster Similarity）高，且簇间相似度（Inter-cluster Similarity）低 聚类问题的评价指标可划分为两类：">
+<meta name="twitter:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/machine-learning/unsupervised-learning/04-1.png">
+
+<link rel="canonical" href="https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/unsupervised-learning/52f3d3e8.html">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>聚类问题的外部评价指标 | Alex_McAvoy</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Alex_McAvoy</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">想要成为渔夫的猎手</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+
+	
+	
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/unsupervised-learning/52f3d3e8.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/assets/img/head.jpg">
+      <meta itemprop="name" content="Alex_McAvoy">
+      <meta itemprop="description" content="想要成为渔夫的猎手">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Alex_McAvoy">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          聚类问题的外部评价指标
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-09-25 16:38:00" itemprop="dateCreated datePublished" datetime="2019-09-25T16:38:00+08:00">2019-09-25</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/artificial-intelligence/" itemprop="url" rel="index"><span itemprop="name">人工智能</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/artificial-intelligence/machine-learning/" itemprop="url" rel="index"><span itemprop="name">机器学习</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/artificial-intelligence/machine-learning/unsupervised-learning/" itemprop="url" rel="index"><span itemprop="name">无监督学习</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>1.4k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>1 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="【概述】"><a href="#【概述】" class="headerlink" title="【概述】"></a>【概述】</h1><p>聚类，是将数据集 $D$ 划分为若干互不相交的子集（样本簇），直观上来看，希望同一簇的样本尽可能的相似，不同簇的样本尽可能的不同，也就是说，聚类结果的<strong>簇内相似度（Intra-cluster Similarity）</strong>高，且<strong>簇间相似度（Inter-cluster Similarity）</strong>低</p>
+<p>聚类问题的评价指标可划分为两类：</p>
+<ol>
+<li><strong>外部指标（Externa Index）</strong>：将聚类结果与某个参考模型进行比较</li>
+<li><strong>内部指标（Internal Index）</strong>：直接考察聚类结果而不利用任何参考模型</li>
+</ol>
+<p>具体来说，参考模型就是训练样本的真实标签</p>
+<p>本文仅介绍聚类问题的外部评价指标</p>
+<h1 id="【聚类纯度】"><a href="#【聚类纯度】" class="headerlink" title="【聚类纯度】"></a>【聚类纯度】</h1><p><strong>聚类纯度（Cluster Purity）</strong>是最简单直观的外部指标，其基本思想与分类的准确率类似，用聚类正确的样本数除以总的样本数，因此它也经常被称为聚类的准确率</p>
+<p>但由于并不知道聚类结果中每个簇所对应的真实类别，因此需要取每种情况下的最大值，其计算公式如下：</p>
+<script type="math/tex; mode=display">
+P=\frac{1}{n} \sum_{k=1}^K \max_{c_j\in \mathbb{C}} |\omega_k\cap c_j|</script><p>其中，$n$ 为样本总数，$K$ 为聚类簇数，$\omega_k$ 代表聚类后第 $k$ 个簇中的所有样本，$\mathbb{C}=\{c_1,c_2,\cdots,c_J\}$ 是正确的类别，$c_{j}$ 表示第 $j$ 个类别中真实的样本</p>
+<p><img width="400" src="/images/artificial-intelligence/machine-learning/unsupervised-learning/04-1.png"></p>
+<p>如上图所示，定义 $\mathbb{C}=\{c_1,c_2,c_3\}$，其中 $c_1$ 表示叉形，$c_2$ 表示圆形，$c_3$ 表示菱形，那么对于第一个簇来说，有：</p>
+<script type="math/tex; mode=display">
+\begin{gather*}
+|\omega_1 \cap c_1| = 5 \\
+|\omega_1 \cap c_2| = 1 \\
+|\omega_1 \cap c_3| = 0 
+\end{gather*}</script><p>则：</p>
+<script type="math/tex; mode=display">
+\max_{c_j\in \mathbb{C}}|\omega_k\cap c_j|=5</script><p>同理，可得到第二个簇、第三个簇中最大的 $|\omega_k\cap c_j|$ 分别是 $4,3$，故最终纯度为：</p>
+<script type="math/tex; mode=display">
+P = \frac{5+4+3}{17} = 0.706</script><h1 id="【匹配矩阵】"><a href="#【匹配矩阵】" class="headerlink" title="【匹配矩阵】"></a>【匹配矩阵】</h1><p>对于数据集 $D=\{\mathbf{x}_1,\mathbf{x}_2,\cdots,\mathbf{x}_n\}$，第 $i$ 个样本 $\mathbf{x}_i$ 有 $m$ 个特征值，即：$\mathbf{x}_i=(x_i^{(1)},x_i^{(2)},\cdots,x_i^{(m)})\in \mathbb{R}^m$，假定通过聚类方法给出的簇划分为 $\mathcal{C} = \{C_1,C_2,\cdots,C_k\}$，实际类别划分为 $\mathcal{C}^{*}=\{C^{*}_1,C^{*}_2,\cdots,C^{*}_s\}$，通常 $k\neq s$</p>
+<p>相应地，令 $\boldsymbol{\lambda}$ 和 $\boldsymbol{\lambda}^{*}$ 分别表示 $\mathcal{C}$ 和 $\mathcal{C}^{*}$ 对应的簇标记向量，定义：</p>
+<script type="math/tex; mode=display">
+\begin{array}{cc}
+TP = |SS|,& SS=\{ (\mathbf{x}_i,\mathbf{x}_j) | \lambda_i=\lambda_j,  \lambda_i^{*}=\lambda_j^{*},  i<j \} \\
+FP = |SD|,& SD=\{ (\mathbf{x}_i,\mathbf{x}_j) | \lambda_i=\lambda_j,  \lambda_i^{*}\neq\lambda_j^{*},  i<j \} \\
+TN = |DD|,& DD=\{ (\mathbf{x}_i,\mathbf{x}_j) | \lambda_i\neq\lambda_j,  \lambda_i^{*}\neq\lambda_j^{*},  i<j \} \\
+FN = |DS|,& DS=\{ (\mathbf{x}_i,\mathbf{x}_j) | \lambda_i\neq\lambda_j,  \lambda_i^{*}=\lambda_j^{*},  i<j \} \\
+\end{array}</script><p>其中，四个集合包含的元素如下：</p>
+<ul>
+<li>集合 $SS$：包含了在 $\mathcal{C}$ 中隶属于<strong>相同簇</strong>，在 $\mathcal{C}^{*}$ 中隶属于<strong>相同类别</strong>的样本对 $(\mathbf{x}_i,\mathbf{x}_j)$</li>
+<li>集合 $SD$：包含了在 $\mathcal{C}$ 中隶属于<strong>相同簇</strong>，在 $\mathcal{C}^{*}$ 中隶属于<strong>不同类别</strong>的样本对 $(\mathbf{x}_i,\mathbf{x}_j)$</li>
+<li>集合 $DD$：包含了在 $\mathcal{C}$ 中隶属于<strong>不同簇</strong>，在 $\mathcal{C}^{*}$ 中隶属于<strong>不同类别</strong>的样本对 $(\mathbf{x}_i,\mathbf{x}_j)$</li>
+<li>集合 $DS$：包含了在 $\mathcal{C}$ 中隶属于<strong>不同簇</strong>，在 $\mathcal{C}^{*}$ 中隶属于<strong>相同类别</strong>的样本对 $(\mathbf{x}_i,\mathbf{x}_j)$</li>
+</ul>
+<p>此时，即可得到聚类下的<strong>匹配矩阵（Confusion Matrix）</strong>，即：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:center"></th>
+<th style="text-align:center">同一簇</th>
+<th style="text-align:center">不同簇</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">同一类</td>
+<td style="text-align:center">TP</td>
+<td style="text-align:center">FN</td>
+</tr>
+<tr>
+<td style="text-align:center">不同类</td>
+<td style="text-align:center">FP</td>
+<td style="text-align:center">TN</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p> 由于每个样本对 $(\mathbf{x}_i,\mathbf{x}_j),i&lt;j$ 仅能在一个集合中出现，故有：</p>
+<script type="math/tex; mode=display">
+TP+FP+TN+FN = \tbinom{n}{2} = \frac{n(n-1)}{2}</script><hr>
+<p><img width="400" src="/images/artificial-intelligence/machine-learning/unsupervised-learning/04-2.png"></p>
+<p>如图所示，聚类簇数为 $3$，实际类别划分为绿色三角形、蓝色圆形、红色正方形，下面计算 TP、FP、TN、FN</p>
+<p>对于 TP 的计算，其是在第一簇中的 $5$ 个绿色三角形中取 $2$ 个、在第二簇的 $4$ 个蓝色圆形中取 $2$ 个、在第三簇的 $3$ 个红色正方形中取 $2$ 个、在第三簇的 $2$ 个绿色三角形中取 $2$ 个，这四种情况的和，即：</p>
+<script type="math/tex; mode=display">
+TP = \tbinom{5}{2} + \tbinom{4}{2} + \tbinom{3}{2} + \tbinom{2}{2} = 10+6+3+1=20</script><p>而对于 FP、TN、FN 的计算较为复杂，但可以转变思路，进行联合计算</p>
+<p>TP+FP 是在同一簇中取两个样本，即：</p>
+<script type="math/tex; mode=display">
+TP+FP = \tbinom{6}{2} + \tbinom{6}{2} + \tbinom{5}{2} = 15+15+10=40</script><p>TP+FN 是在任意两个同类样本点分布在同簇和非同簇的情况和，即：</p>
+<script type="math/tex; mode=display">
+TP+FN = \tbinom{8}{2}+\tbinom{5}{2}+\tbinom{4}{2} = 28+10+6 = 44</script><p>TP+FP+TN+FN 是在所有样本中随机抽取两个样本，即：</p>
+<script type="math/tex; mode=display">
+TP+FP+TN+FN = \tbinom{17}{2} = 136</script><p>根据这些组合结果与 TP 的值，即可得到匹配矩阵的所有结果，即：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th></th>
+<th>同一簇</th>
+<th>不同簇</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>同一类</td>
+<td>TP(20)</td>
+<td>FN(24)</td>
+</tr>
+<tr>
+<td>不同类</td>
+<td>FP(20)</td>
+<td>TN(72)</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h1 id="【常见指标】"><a href="#【常见指标】" class="headerlink" title="【常见指标】"></a>【常见指标】</h1><p>基于匹配矩阵，可得出如下常用的聚类外部评价指标</p>
+<h2 id="兰德指数"><a href="#兰德指数" class="headerlink" title="兰德指数"></a>兰德指数</h2><p><strong>兰德指数（Rand Index，RI）</strong>的计算公式如下：</p>
+<script type="math/tex; mode=display">
+RI = 
+\frac{TP+TN}{TP+TN+FP+FN}</script><p>其取值范围在 $[0,1]$ 区间内，值越大说明聚类结果越接近参考模型</p>
+<p>从形式上看，兰德指数与分类问题中的准确率十分相似，但两者有着本质的区别</p>
+<h2 id="F-beta-分数"><a href="#F-beta-分数" class="headerlink" title="$F_{\beta}$ 分数"></a>$F_{\beta}$ 分数</h2><p><strong>$F_{\beta}$ 分数（F-Score）</strong>的计算公式如下：</p>
+<script type="math/tex; mode=display">
+F_{\beta} = (1+\beta^2) \frac{P\cdot R}{\beta^2\cdot P+R}, \beta>0</script><p>其中，$P$、$R$ 的计算如下</p>
+<script type="math/tex; mode=display">
+\begin{gather*}
+P = \frac{TP}{TP+FP} \\
+R = \frac{TP}{TP+FN} \\
+
+\end{gather*}</script><p>从形式上看，$F_{\beta}$ 分数与分类问题中的 $F_{\beta}$ 分数十分相似，但两者有着本质的区别</p>
+<h2 id="杰卡德系数"><a href="#杰卡德系数" class="headerlink" title="杰卡德系数"></a>杰卡德系数</h2><p><strong>Jaccard 系数（Jaccard Coefficient，JC）</strong>的计算公式如下：</p>
+<script type="math/tex; mode=display">
+JC = \frac{TP}{TP+FP+FN}</script><h2 id="FM-指数"><a href="#FM-指数" class="headerlink" title="FM 指数"></a>FM 指数</h2><p><strong>FM 指数（Fowlkes and Mallows Index，FMI）</strong>的其计算公式如下：</p>
+<script type="math/tex; mode=display">
+FMI = \sqrt{\frac{TP}{TP+FP} \cdot \frac{TP}{TP+FN}}</script>
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>感谢您对我的支持，让我继续努力分享有用的技术与知识点！</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/wechatpay.jpg" alt="Alex_McAvoy 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/alipay.jpg" alt="Alex_McAvoy 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Alex_McAvoy
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/unsupervised-learning/52f3d3e8.html" title="聚类问题的外部评价指标">https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/unsupervised-learning/52f3d3e8.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/artificial-intelligence/" rel="tag"># 人工智能</a>
+              <a href="/tags/machine-learning/" rel="tag"># 机器学习</a>
+              <a href="/tags/unsupervised-learning/" rel="tag"># 无监督学习</a>
+              <a href="/tags/clustering/" rel="tag"># 聚类问题</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/artificial-intelligence/machine-learning/unsupervised-learning/91f486bc.html" rel="prev" title="聚类问题的基本概念">
+      <i class="fa fa-chevron-left"></i> 聚类问题的基本概念
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/notes/computer-networks/d7e1debd.html" rel="next" title="数据链路层流量控制与可靠传输机制">
+      数据链路层流量控制与可靠传输机制 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【概述】"><span class="nav-number">1.</span> <span class="nav-text">【概述】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【聚类纯度】"><span class="nav-number">2.</span> <span class="nav-text">【聚类纯度】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【匹配矩阵】"><span class="nav-number">3.</span> <span class="nav-text">【匹配矩阵】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【常见指标】"><span class="nav-number">4.</span> <span class="nav-text">【常见指标】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#兰德指数"><span class="nav-number">4.1.</span> <span class="nav-text">兰德指数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#F-beta-分数"><span class="nav-number">4.2.</span> <span class="nav-text">$F_{\beta}$ 分数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#杰卡德系数"><span class="nav-number">4.3.</span> <span class="nav-text">杰卡德系数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#FM-指数"><span class="nav-number">4.4.</span> <span class="nav-text">FM 指数</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">  
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Alex_McAvoy"
+      src="/assets/img/head.jpg">
+  <p class="site-author-name" itemprop="name">Alex_McAvoy</p>
+  <div class="site-description" itemprop="description">想要成为渔夫的猎手</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">682</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">66</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">78</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Alex-McAvoy" title="GitHub → https://github.com/Alex-McAvoy" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/u011815404" title="CSDN → https://blog.csdn.net/u011815404" rel="noopener" target="_blank"><i class="fas fa-copyright fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+<!-- 访客地图 -->
+<script type="text/javascript" src="//rf.revolvermaps.com/0/0/5.js?i=50n58yo58ow&amp;m=0&amp;c=ff0000&amp;cr1=ffffff&amp;s=140" async="async"></script>
+
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdz20172133" title="https://blog.csdn.net/sdz20172133" rel="noopener" target="_blank">神仙队友</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://pxlsdz.gitee.io/" title="https://pxlsdz.gitee.io/" rel="noopener" target="_blank">神仙队友blog2</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdau_fangshifeng" title="https://blog.csdn.net/sdau_fangshifeng" rel="noopener" target="_blank">酷头</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://bycore.net" title="https://bycore.net" rel="noopener" target="_blank">凉了的某饼同学</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://kris-cn.github.io/" title="http://kris-cn.github.io/" rel="noopener" target="_blank">翟孙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://deng.fun/" title="http://deng.fun/" rel="noopener" target="_blank">芙蓉姐姐</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/wentong_Xu" title="https://blog.csdn.net/wentong_Xu" rel="noopener" target="_blank">小黑贱胖子</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.yuheng.tech/" title="https://www.yuheng.tech/" rel="noopener" target="_blank">咸于</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/lanshan1111" title="https://blog.csdn.net/lanshan1111" rel="noopener" target="_blank">肥硕硕</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdauguanweihong" title="https://blog.csdn.net/sdauguanweihong" rel="noopener" target="_blank">管少</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_41661919" title="https://blog.csdn.net/qq_41661919" rel="noopener" target="_blank">俊杰</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_40859951" title="https://blog.csdn.net/qq_40859951" rel="noopener" target="_blank">峰哥</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/LSD20164388" title="https://blog.csdn.net/LSD20164388" rel="noopener" target="_blank">狗冬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37868325" title="https://blog.csdn.net/qq_37868325" rel="noopener" target="_blank">妍大佬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://sanshuiii.github.io/" title="https://sanshuiii.github.io/" rel="noopener" target="_blank">sanshuiii</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://zjpzhao.github.io/" title="https://zjpzhao.github.io/" rel="noopener" target="_blank">brain</a>
+        </li>
+    </ul>
+  </div>
+
+		
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+  
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Alex_McAvoy</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+</br>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script><script src="/js/bookmark.js"></script>
+
+
+
+  
+
+
+
+
+  <script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '48fd73a538d3fa927f65',
+      clientSecret: '56618aefeee90bac3c20de8d51bb0b985d67252d',
+      repo        : 'Gitalk-Comment',
+      owner       : 'Alex-McAvoy',
+      admin       : ['Alex-McAvoy'],
+      id          : 'f708f102f46a0e405b516d79491a1a39',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+  
+  <!-- 鼠标单击粒子特效 -->
+  <script type="text/javascript" src="/js/cursor-effects.js"></script>
+  <!-- 多级目录 -->
+  <script type="text/javascript" src="/js/category.js"></script>
+  
+</body>
+</html>

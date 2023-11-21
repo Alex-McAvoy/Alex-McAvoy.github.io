@@ -25,18 +25,18 @@
     var CONFIG = {"hostname":"alex-mcavoy.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":16,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":true,"color":"#ff0000","save":"manual"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":true},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.json"};
   </script>
 
-  <meta name="description" content="References：  贝叶斯网络，看完这篇我终于理解了(附代码)！ 概率图模型之贝叶斯网络 机器学习之贝叶斯网络 贝叶斯网络(Bayesian Network)   【贝叶斯网络的预测】在贝叶斯网络训练好后即可进行查询（Query），即通过某些特征的观测值来推测其他特征的取值，这样通过已知特征观测值来推测预测值的过程称为推断（Inference），其中已知观测值称为证据（Evidence）">
+  <meta name="description" content="References：  贝叶斯网络，看完这篇我终于理解了(附代码)！ 概率图模型之贝叶斯网络 机器学习之贝叶斯网络 贝叶斯网络(Bayesian Network)   【概述】在贝叶斯网络训练好后即可进行查询（Query），即通过某些特征的观测值来推测其他特征的取值，这样通过已知特征观测值来推测预测值的过程称为推断（Inference），其中已知观测值称为证据（Evidence）">
 <meta name="keywords" content="人工智能,机器学习,监督学习,标注问题">
 <meta property="og:type" content="article">
 <meta property="og:title" content="贝叶斯网络的预测">
 <meta property="og:url" content="https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/supervised-learning/58735f7a.html">
 <meta property="og:site_name" content="Alex_McAvoy">
-<meta property="og:description" content="References：  贝叶斯网络，看完这篇我终于理解了(附代码)！ 概率图模型之贝叶斯网络 机器学习之贝叶斯网络 贝叶斯网络(Bayesian Network)   【贝叶斯网络的预测】在贝叶斯网络训练好后即可进行查询（Query），即通过某些特征的观测值来推测其他特征的取值，这样通过已知特征观测值来推测预测值的过程称为推断（Inference），其中已知观测值称为证据（Evidence）">
+<meta property="og:description" content="References：  贝叶斯网络，看完这篇我终于理解了(附代码)！ 概率图模型之贝叶斯网络 机器学习之贝叶斯网络 贝叶斯网络(Bayesian Network)   【概述】在贝叶斯网络训练好后即可进行查询（Query），即通过某些特征的观测值来推测其他特征的取值，这样通过已知特征观测值来推测预测值的过程称为推断（Inference），其中已知观测值称为证据（Evidence）">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2023-09-19T13:55:10.969Z">
+<meta property="og:updated_time" content="2023-09-23T04:24:00.699Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="贝叶斯网络的预测">
-<meta name="twitter:description" content="References：  贝叶斯网络，看完这篇我终于理解了(附代码)！ 概率图模型之贝叶斯网络 机器学习之贝叶斯网络 贝叶斯网络(Bayesian Network)   【贝叶斯网络的预测】在贝叶斯网络训练好后即可进行查询（Query），即通过某些特征的观测值来推测其他特征的取值，这样通过已知特征观测值来推测预测值的过程称为推断（Inference），其中已知观测值称为证据（Evidence）">
+<meta name="twitter:description" content="References：  贝叶斯网络，看完这篇我终于理解了(附代码)！ 概率图模型之贝叶斯网络 机器学习之贝叶斯网络 贝叶斯网络(Bayesian Network)   【概述】在贝叶斯网络训练好后即可进行查询（Query），即通过某些特征的观测值来推测其他特征的取值，这样通过已知特征观测值来推测预测值的过程称为推断（Inference），其中已知观测值称为证据（Evidence）">
 
 <link rel="canonical" href="https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/supervised-learning/58735f7a.html">
 
@@ -251,7 +251,7 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>337</span>
+              <span>789</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
@@ -279,9 +279,14 @@
 <li><a href="https://blog.csdn.net/gdp12315_gu/article/details/50002195" target="_blank" rel="noopener">贝叶斯网络(Bayesian Network)</a></li>
 </ul>
 </blockquote>
-<h1 id="【贝叶斯网络的预测】"><a href="#【贝叶斯网络的预测】" class="headerlink" title="【贝叶斯网络的预测】"></a>【贝叶斯网络的预测】</h1><p>在贝叶斯网络训练好后即可进行<strong>查询（Query）</strong>，即通过某些特征的观测值来推测其他特征的取值，这样通过已知特征观测值来推测预测值的过程称为<strong>推断（Inference）</strong>，其中已知观测值称为<strong>证据（Evidence）</strong></p>
+<h1 id="【概述】"><a href="#【概述】" class="headerlink" title="【概述】"></a>【概述】</h1><p>在贝叶斯网络训练好后即可进行<strong>查询（Query）</strong>，即通过某些特征的观测值来推测其他特征的取值，这样通过已知特征观测值来推测预测值的过程称为<strong>推断（Inference）</strong>，其中已知观测值称为<strong>证据（Evidence）</strong></p>
 <p>最理想的情况是，直接根据贝叶斯网络定义的联合概率分布来精确计算后验概率，但当网络结点较多、图为稠密图时，这样的推断是 NP 难的，难以进行精确推断，为此，通常进行<strong>近似推断</strong>，即通过降低精度要求，在有限时间内求得近似解</p>
 <p>在实际应用中，贝叶斯网络的近似推断通常使用<strong>吉布斯采样（Gibbs Sampling）</strong>完成</p>
+<h1 id="【近似推断】"><a href="#【近似推断】" class="headerlink" title="【近似推断】"></a>【近似推断】</h1><p>设 $Q=\{Q_1,Q_2,\cdots,Q_n\}$ 为待查询变量，$E=\{E_1,E_2,\cdots,E_k\}$ 为证据变量，证据变量的取值为 $e=\{e_1,e_2,\cdots,e_k\}$，$q=\{q_1,q_2,\cdots,q_n\}$ 是待查询变量的一组取值，现要计算后验概率 $P(Q=q|E=e)$</p>
+<p>使用吉布斯采样进行近似推断时，会先随机产生一个与证据 $E=e$ 一致的样本 $q^{(0)}$ 作为初始点，然后每步从当前样本出发产生下一个样本，即在第 $t$ 次采样中，会假设 $q^{(t)}=q^{(t-1)}$，然后对非证据变量逐个进行采样改变其取值，采样概率根据贝叶斯网络 $B$ 和其他变量的当前取值 $Z=z$ 计算获得</p>
+<p>假设经过 $T$ 次采样得到的与 $q$ 一致的样本有 $n_q$ 个，那么可近似估算出后验概率：</p>
+<script type="math/tex; mode=display">
+P(Q=q|E=e) \approx \frac{n_q}{T}</script><p>使用吉布斯采样在贝叶斯网络上进行近似推断，本质上是在贝叶斯网络所有变量的联合状态空间与证据 $E=e$ 一致的子空间中进行随机漫步</p>
 
     </div>
 
@@ -406,7 +411,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【贝叶斯网络的预测】"><span class="nav-number">1.</span> <span class="nav-text">【贝叶斯网络的预测】</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【概述】"><span class="nav-number">1.</span> <span class="nav-text">【概述】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【近似推断】"><span class="nav-number">2.</span> <span class="nav-text">【近似推断】</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -422,7 +427,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">673</span>
+          <span class="site-state-item-count">682</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -435,7 +440,7 @@
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">76</span>
+        <span class="site-state-item-count">78</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
