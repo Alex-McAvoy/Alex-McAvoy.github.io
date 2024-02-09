@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.9.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/img/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/assets/img/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/pace-js@1/themes/blue/pace-theme-minimal.css">
+  <script src="//cdn.jsdelivr.net/npm/pace-js@1/pace.min.js"></script>
+
+
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"alex-mcavoy.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":16,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":true,"color":"#ff0000","save":"manual"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":true},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.json"};
+  </script>
+
+  <meta name="description" content="【概述】统计分析中，数据的变量之间可能存在相关性，以致增加了分析的难度。那么，考虑用少数不相关的变量来代替相关的变量，以表示数据，并且要求能够保留数据中的大部分信息 主成分分析（Principal Component Analysis，PCA）的基本思想，具体来说，首先对给定数据进行规范化，使得数据每一变量的均值为 $0$，方差为 $1$，之后对数据进行正交变换，将原来由线性相关变量表示的数据，变">
+<meta name="keywords" content="人工智能,机器学习,无监督学习,降维问题">
+<meta property="og:type" content="article">
+<meta property="og:title" content="主成分分析 PCA">
+<meta property="og:url" content="https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/unsupervised-learning/3f14d5f3.html">
+<meta property="og:site_name" content="Alex_McAvoy">
+<meta property="og:description" content="【概述】统计分析中，数据的变量之间可能存在相关性，以致增加了分析的难度。那么，考虑用少数不相关的变量来代替相关的变量，以表示数据，并且要求能够保留数据中的大部分信息 主成分分析（Principal Component Analysis，PCA）的基本思想，具体来说，首先对给定数据进行规范化，使得数据每一变量的均值为 $0$，方差为 $1$，之后对数据进行正交变换，将原来由线性相关变量表示的数据，变">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/machine-learning/unsupervised-learning/13-1.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/machine-learning/unsupervised-learning/13-2.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/machine-learning/unsupervised-learning/13-3.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/machine-learning/unsupervised-learning/13-4.png">
+<meta property="og:updated_time" content="2024-02-09T13:42:33.711Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="主成分分析 PCA">
+<meta name="twitter:description" content="【概述】统计分析中，数据的变量之间可能存在相关性，以致增加了分析的难度。那么，考虑用少数不相关的变量来代替相关的变量，以表示数据，并且要求能够保留数据中的大部分信息 主成分分析（Principal Component Analysis，PCA）的基本思想，具体来说，首先对给定数据进行规范化，使得数据每一变量的均值为 $0$，方差为 $1$，之后对数据进行正交变换，将原来由线性相关变量表示的数据，变">
+<meta name="twitter:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/machine-learning/unsupervised-learning/13-1.png">
+
+<link rel="canonical" href="https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/unsupervised-learning/3f14d5f3.html">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>主成分分析 PCA | Alex_McAvoy</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Alex_McAvoy</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">想要成为渔夫的猎手</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+
+	
+	
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/unsupervised-learning/3f14d5f3.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/assets/img/head.jpg">
+      <meta itemprop="name" content="Alex_McAvoy">
+      <meta itemprop="description" content="想要成为渔夫的猎手">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Alex_McAvoy">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          主成分分析 PCA
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-10-18 17:51:00" itemprop="dateCreated datePublished" datetime="2019-10-18T17:51:00+08:00">2019-10-18</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/artificial-intelligence/" itemprop="url" rel="index"><span itemprop="name">人工智能</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/artificial-intelligence/machine-learning/" itemprop="url" rel="index"><span itemprop="name">机器学习</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/artificial-intelligence/machine-learning/unsupervised-learning/" itemprop="url" rel="index"><span itemprop="name">无监督学习</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>8.3k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>8 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="【概述】"><a href="#【概述】" class="headerlink" title="【概述】"></a>【概述】</h1><p>统计分析中，数据的变量之间可能存在相关性，以致增加了分析的难度。那么，考虑用少数不相关的变量来代替相关的变量，以表示数据，并且要求能够保留数据中的大部分信息</p>
+<p><strong>主成分分析（Principal Component Analysis，PCA）</strong>的基本思想，具体来说，首先对给定数据进行规范化，使得数据每一变量的均值为 $0$，方差为 $1$，之后对数据进行正交变换，将原来由线性相关变量表示的数据，变换成由若干个线性无关的新变量表示的数据，其中，新变量是正交变换中变量的方差和最大的，方差表示了新变量上信息的大小，这些新变量依次被称为第一主成分、第二主成分等</p>
+<p>通过上述的主成分分析，可以用主成分近似地来表示原始数据，这个过程可理解为发现数据的基本结构，将数据用少数主成分来表示，即对数据降维</p>
+<h1 id="【直观解释】"><a href="#【直观解释】" class="headerlink" title="【直观解释】"></a>【直观解释】</h1><p>数据集合中的样本由实数空间中的点表示，实数空间中的一个坐标轴表示一个变量，规范化处理后得到的数据分布在原点附近</p>
+<p>对原坐标系中的数据进行主成分分析等价于进行坐标系旋转变换，将数据投影到新坐标系的坐标轴上，新坐标系的第一坐标轴、第二坐标轴等分别表示第一主成分、第二主成分等，数据在每一个轴上的坐标值的平方表示相应变量的方差，同时，这个坐标系是在所有可能的新的坐标系中，坐标轴上的方差和最大的</p>
+<p>如下图所示，样本点存在于二维空间中，由两个变量 $x_1$​ 和 $x_2$​ 表示，进行规范化处理后，这些数据分布在以原点为中心的左下至右上倾斜的椭圆之内，显然变量 $x_1$ 和 $x_2$ 是线性相关的，当知道其中一个变量的取值时，对另一个变量的预测不是完全随机的</p>
+<p><img width="500" src="/images/artificial-intelligence/machine-learning/unsupervised-learning/13-1.png"></p>
+<p>主成分分析对数据进行正交变换，具体来说，是对原坐标系进行旋转变换，选择方差最大的方向（第一主成分）作为新坐标系的第一坐标轴，即 $y_1$ 轴，在这里意味着选择椭圆的长轴作为新坐标系的第一坐标轴，之后选择与第一坐标轴正交，且方差次之的方向（第二主成分）作为新坐标系的第二坐标轴，即 $y_2$​​ 轴，在这里意味着选择椭圆的短轴作为新坐标系的第二坐标轴</p>
+<p>在新坐标系里，数据中的变量 $y_1$ 和 $y_2$ 是线性无关的，当知道其中一个变量 $y_1$ 的取值时，对另一个变量 $y_2$​ 的预测是完全随机的</p>
+<p>如果主成分分析只取第一主成分，即新坐标系的 $y_1$ 轴，那么等价于将数据投影在椭圆长轴上，用这个主轴表示数据，将二维空间的数据压缩到一维空间中</p>
+<p><img width="500" src="/images/artificial-intelligence/machine-learning/unsupervised-learning/13-2.png"></p>
+<p>对于方差最大来说，假设三个样本点 $A,B,C$ 分布在由 $x_1$ 轴和 $x_2$ 轴组成的坐标系中，对坐标系进行旋转变换，得到新的坐标轴 $y_1$，样本点 $A,B,C$ 在 $y_1$ 轴上投影的为 $A’,B’,C’$，坐标的平方和 $OA’^2＋OB’^2＋OC’^2$ 表示样本在轴 $y_1$ 上的方差和</p>
+<p>主成分分析旨在选取正交变换中方差最大的变量作为第一主成分，也就是旋转变换中坐标值的平方和最大的轴</p>
+<p>由于旋转变换中样本点到原点的距离的平方和 $OA^2＋OB^2＋OC^2$ 保持不变，根据勾股定理，坐标值的平方和 $OA’^2＋OB’^2＋OC’^2$ 最大等价于样本点到 $y_1$ 轴的距离的平方和 $AA’^2＋BB’^2＋CC’^2$ 最小</p>
+<p>所以，主成分分析在旋转变换中选取离样本点的距离平方和最小的轴，作为第一主成分，而第二主成分等的选取，在保证与已选坐标轴正交的条件下，类似地进行</p>
+<p><img width="500" src="/images/artificial-intelligence/machine-learning/unsupervised-learning/13-3.png"></p>
+<h1 id="【总体主成分分析】"><a href="#【总体主成分分析】" class="headerlink" title="【总体主成分分析】"></a>【总体主成分分析】</h1><h2 id="定义"><a href="#定义" class="headerlink" title="定义"></a>定义</h2><p>在数据总体上进行的主成分分析被称为<strong>总体主成分分析（Population Principal Component Analysis，Population PCA）</strong>，其是在有限样本上进行的<strong>样本主成分分析（Sample Principal Component Analysis，Sample PCA）</strong>的基础</p>
+<p>假设 $\mathbf{x} = (x_1,x_2,\cdots,x_m)^T$ 是 $m$​ 维随机变量，其均值向量是</p>
+<script type="math/tex; mode=display">
+\boldsymbol{\mu}=E(\mathbf{x})=(\mu_1,\mu_2,\cdots,\mu_m)^T</script><p>其协方差矩阵是</p>
+<script type="math/tex; mode=display">
+\Sigma=\text{cov}(\mathbf{x},\mathbf{x}) = E[(\mathbf{x}-\boldsymbol{\mu})(\mathbf{x}-\boldsymbol{\mu})^T]</script><p>考虑由 $m$ 维随机变量 $\mathbf{x}$ 到 $m$ 维随机变量 $\mathbf{y}=(y_1,y_2,\cdots,y_m)^T$ 的线性变换</p>
+<script type="math/tex; mode=display">
+y_i = \alpha_i^T \mathbf{x} = \alpha_{1i}x_1 + \alpha_{2i}x_2 + \cdots + \alpha_{mi}x_m</script><p>其中，$\alpha_i^T=(\alpha_{1i},\alpha_{2i},\cdots,\alpha_{mi}),i=1,2,\cdots,m$</p>
+<p>根据随机变量的性质，有：</p>
+<script type="math/tex; mode=display">
+\begin{gather*}
+E(y_i) = \alpha_i^T \boldsymbol{\mu}, & i=1,2,\cdots,m \\
+\text{var}(y_i) = \alpha_i^T \Sigma\alpha_i, & i=1,2,\cdots,m \\
+\text{cov}(y_i,y_j) = \alpha_i^T \Sigma a_j, & i,j=1,2,\cdots,m 
+\end{gather*}</script><p>若上述的线性变换满足：</p>
+<ol>
+<li>系数向量 $\alpha_i^T$ 是单位向量，即 $\alpha_{i}^{T} \alpha_i = 1,i=1,2,\cdots,m$</li>
+<li>变量 $y_i$ 与 $y_j$ 互不相关，即 $\text{cov}(y_i,y_j)=0,i\neq j$</li>
+<li>变量 $y_1$ 是 $\mathbf{x}$ 的所有线性变换中方差最大的，$y_i$ 是与 $y_1,y_2,\cdots,y_{i-1},i=2,\cdots,m$ 都不相关的 $\mathbf{x}$ 的所有线性变换中方差最大的</li>
+</ol>
+<p>此时，分别称 $y_1,y_2,\cdots,y_m$ 为 $\mathbf{x}$ 的第一主成分、第二主成分、$\cdots$、第 $m$ 主成分</p>
+<hr>
+<p>可以发现，上述定义的条件 1 表明线性变换是正交变换，$\alpha_1,\alpha_2,\cdots,\alpha_m$ 是一组标准正交基，即</p>
+<script type="math/tex; mode=display">
+\alpha_i^T \alpha_j 
+= \left\{\begin{array}{cc}
+1, & i = j \\
+0, & i \neq j
+\end{array}\right.</script><p>同时，条件 2、3 给出了一个求主成分的方法：</p>
+<p>Step 1：在 $\mathbf{x}$ 的所有线性变换中，在 $\alpha_1^T\alpha_1=1$ 条件下，求方差最大的，得到 $\mathbf{x}$ 的第一主成分</p>
+<p>Step 2：在与 $\alpha_1^T\mathbf{x}$ 不相关的 $\mathbf{x}$ 的所有线性变换</p>
+<script type="math/tex; mode=display">
+\alpha_2^T \mathbf{x} = \sum_{i=1}^m \alpha_{i2}x_i</script><p>中，在 $\alpha_2^T\alpha_2=1$ 条件下，求方差最大的，得到 $\mathbf{x}$ 的第二主成分</p>
+<p>Step k：在与 $\alpha_1^T\mathbf{x},\alpha_2^T\mathbf{x},\cdots,\alpha_{k-1}^T\mathbf{x}$ 不相关的 $\mathbf{x}$ 的所有线性变换</p>
+<script type="math/tex; mode=display">
+\alpha_k^T \mathbf{x} = \sum_{i=1}^m \alpha_{ik}x_i</script><p>中，在 $\alpha_k^T\alpha_k=1$ 条件下，求方差最大的，得到 $\mathbf{x}$ 的第 $k$ 主成分</p>
+<p>以此类推，直到得到 $\mathbf{x}$ 的第 $m$ 主成分</p>
+<h2 id="主成分的个数"><a href="#主成分的个数" class="headerlink" title="主成分的个数"></a>主成分的个数</h2><h3 id="理论依据"><a href="#理论依据" class="headerlink" title="理论依据"></a>理论依据</h3><p>主成分分析的主要目的是降维，所以一般选择 $k\ll m$ 个主成分来代替原有的 $m$ 个线性相关变量，使得问题简化，并能保留原有变量的大部分信息（方差）</p>
+<p>对于任意正整数 $1\leq q\leq m$，考虑正交线性变换</p>
+<script type="math/tex; mode=display">
+y=B^T \mathbf{x}</script><p>其中，$\mathbf{y}$ 是 $q$ 维向量，$B^T$ 是 $q\times m$ 维矩阵，令 $\mathbf{y}$ 的协方差矩阵为：</p>
+<script type="math/tex; mode=display">
+\Sigma_y = b^T \Sigma B</script><p>则 $\Sigma_y$ 的迹 $\text{tr}(\Sigma_y)$ 在 $B=A_q$ 时取得最大值，其中矩阵 $A_q$ 由正交矩阵 $A$ 的前 $q$ 列组成</p>
+<p>上述定理表明，当 $\mathbf{x}$ 的线性变换 $\mathbf{y}$ 在 $B=A_q$ 时，其协方差矩阵 $\Sigma_y$ 的迹 $\text{tr}(\Sigma_y)$ 取得最大值，即当取 $A$ 的前 $q$ 列（取 $\mathbf{x}$ 的前 $q$ 个主成分）时，能够最大限度地保留原有变量方差的信息</p>
+<p>同时，当 $\text{tr}(\Sigma_y)$ 在 $B=A_p$ 时，取得最小值，其中 $A_p$ 由 $A$ 的后 $p$ 列组成，即舍弃 $A$ 的后 $p$ 列（舍弃 $\mathbf{x}$ 的后 $p$​ 个主成分）时，原有变量的方差的信息损失最少</p>
+<h3 id="方差贡献率"><a href="#方差贡献率" class="headerlink" title="方差贡献率"></a>方差贡献率</h3><p>上述定理，可以作为选择 $k$ 个主成分的理论依据，具体选择 $k$ 的方法，通常利用方差贡献率</p>
+<p>第 $k$ 个主成分 $y_k$ 的方差贡献率定义为 $y_k$ 的方差与所有方差和的比，记作：</p>
+<script type="math/tex; mode=display">
+\eta_k = \frac{\lambda_k}{\sum\limits_{i=1}^m \lambda_i}</script><p>$k$ 个主成分 $y_1,y_2,\cdots,y_k$ 的累计方差贡献率定义为 $k$ 个方差和与所有方差和的比值，即：</p>
+<script type="math/tex; mode=display">
+\sum_{i=1}^k \eta_i = \frac{\sum\limits_{i=1}^k \lambda_i}{\sum\limits_{i=1}^m \lambda_i}</script><p>通常取 $k$ 使得累计方差贡献率达到规定的百分比以上，通常取 $70\%\sim80\%$ 左右</p>
+<h3 id="主成分对原有变量的贡献率"><a href="#主成分对原有变量的贡献率" class="headerlink" title="主成分对原有变量的贡献率"></a>主成分对原有变量的贡献率</h3><p>累计方差贡献率反映了主成分保留信息的比例，但无法反映对某个原有变量 $x_i$ 保留信息的比例</p>
+<p>此时通常利用 $k$ 个主成分 $y_1,y_2,\cdots,y_k$ 对原有变量 $x_i$ 的贡献率，其被定义为 $x_i$ 与 $(y_1,y_2,\cdots,y_k)$ 的相关系数的平方，记作：</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+\nu_i 
+&= \rho^2(x_i,(y_1,y_2,\cdots,y_k)) \\
+&= \sum_{j=1}^k \rho^2(x_i,y_j) \\
+&= \sum_{j=1}^k \frac{\lambda_j \alpha_{ij}^2}{\sigma_{ij}}
+\end{align*}</script><h2 id="规范化变量"><a href="#规范化变量" class="headerlink" title="规范化变量"></a>规范化变量</h2><p>在实际应用中，不同变量可能有不同的量纲，直接求主成分有时会产生不合理的结果，为消除这种影响，通常会对各个随机变量进行规范化处理，使其均值为 $0$，方差为 $1$</p>
+<p>设 $\mathbf{x} = (x_1,x_2,\cdots,x_m)^T$ 为 $m$ 维随机变量，令</p>
+<script type="math/tex; mode=display">
+x_i^* = \frac{x_i-E(x_i)}{\text{var}(x_i)},\quad i=1,2,\cdots,m</script><p>其中，$E(x_i),\text{var}(x_i)$ 分别是随机变量 $x_i$ 的均值和方差，此时 $x_i^{*}$ 就是 $x_i$ 的规范化随机变量</p>
+<p>显然，规范化随机变量的协方差矩阵就是相关矩阵 $R$​，主成分分析通常在规范化随机变量的协方差矩阵即相关矩阵上进行</p>
+<h1 id="【样本主成分分析】"><a href="#【样本主成分分析】" class="headerlink" title="【样本主成分分析】"></a>【样本主成分分析】</h1><h2 id="定义-1"><a href="#定义-1" class="headerlink" title="定义"></a>定义</h2><p>在实际应用中，需要在观测数据上进行主成分分析，即<strong>样本主成分分析（Sample Principal Component Analysis，Sample PCA）</strong>，一般常说的主成分分析 PCA，就是指样本主成分分析</p>
+<p>对 $m$ 维随机变量 $\mathbf{x}=(x_1,x_2,\cdots,x_m)^T$ 进行 $n$ 次独立观测，$\mathbf{x}_1,\mathbf{x}_2,\cdots,\mathbf{x}_n$ 表示观测样本，其中 $\mathbf{x}_j=(x_{1j},x_{2j},\cdots,x_{mj})^T,j=1,2,\cdots,n$ 表示第 $j$ 个观测样本</p>
+<p>将观测数据用样本矩阵 $X$ 来表示，记作：</p>
+<script type="math/tex; mode=display">
+X=[\mathbf{x}_1,\mathbf{x}_2,\cdots,\mathbf{x}_n] = \begin{bmatrix}
+x_{11} & x_{12} & \cdots & x_{1n} \\
+x_{21} & x_{22} & \cdots & x_{2n} \\
+\vdots & \vdots & \ddots & \vdots \\
+x_{m1} & x_{m2} & \cdots & x_{mn} \\
+\end{bmatrix}</script><p>定义 $m$ 维向量 $\mathbf{x}=(x_1,x_2,\cdots,x_m)^T$ 到 $m$ 维向量 $\mathbf{y}=(y_1,y_2,\cdots,y_m)^T$ 的线性变换</p>
+<script type="math/tex; mode=display">
+\begin{gather*}
+\mathbf{y} = A^T\mathbf{x} \\
+A=[\mathbf{a}_1,\mathbf{a}_2,\cdots,\mathbf{a}_m] = \begin{bmatrix}
+a_{11} & a_{12} & \cdots & a_{1m} \\
+a_{21} & a_{22} & \cdots & a_{2m} \\
+\vdots & \vdots & \ddots & \vdots \\
+a_{m1} & a_{m2} & \cdots & a_{mm} \\
+\end{bmatrix}
+\end{gather*}</script><p>那么，样本矩阵 $X$ 的第一主成分 $\mathbf{y}_1=\mathbf{a}_1^T\mathbf{x}$ 是在 $\mathbf{a}_1^T\mathbf{a}_1=1$ 的条件下，使得 $\mathbf{a}_1^T\mathbf{x}_{j},j=1,2,\cdots,n$ 的样本方差 $\mathbf{a}_1^TS_{\mathbf{a}_1}$ 最大的 $\mathbf{x}$ 的线性变换，样本的第 $i$ 主成分 $\mathbf{y}_i=\mathbf{a}_i^T\mathbf{x}$ 是在 $\mathbf{a}_i^T\mathbf{a}_i=1$，和 $\mathbf{a}_i^T\mathbf{x}_j$ 与 $\mathbf{a}_k^T\mathbf{x}_j(k&lt;i,j=1,2,\cdots,n)$ 的样本协方差 $\mathbf{a}_k^TS_{\mathbf{a}_i}=0$ 的条件下，使得 $\mathbf{a}_i^T\mathbf{x}_{j},j=1,2,\cdots,n$ 的样本方差 $\mathbf{a}_i^TS_{\mathbf{a}_i}$ 最大的 $\mathbf{x}$ 的线性变换</p>
+<h2 id="规范化变量-1"><a href="#规范化变量-1" class="headerlink" title="规范化变量"></a>规范化变量</h2><p>使用样本主成分分析时，一般假设样本数据是规范化的，即对样本矩阵进行如下变换：</p>
+<script type="math/tex; mode=display">
+x_{ij}^{*} = \frac{x_{ij}-\overline{x}_i}{\sqrt{s_{ii}}},\quad i=1,2,\cdots,m;j=1,2,\cdots,n</script><p>其中</p>
+<script type="math/tex; mode=display">
+\begin{gather*}
+\overline{x}_i = \frac{1}{n} \sum_{j=1}^n x_{ij}, & i=1,2,\cdots,m \\
+s_{ii} = \frac{1}{n-1}\sum_{j=1}^n(x_{ij}-\overline{x}_i), & i=1,2,\cdots,m
+\end{gather*}</script><h2 id="相关矩阵的特征值分解算法"><a href="#相关矩阵的特征值分解算法" class="headerlink" title="相关矩阵的特征值分解算法"></a>相关矩阵的特征值分解算法</h2><p>给定样本矩阵 $X$，利用数据的样本协方差或者样本相关矩阵的特征值分解进行主成分分析，具体步骤如下：</p>
+<p>Step1：将观测数据按照 $x_{ij}^{*} = \frac{x_{ij}-\overline{x}_i}{\sqrt{s_{ii}}}$ 进行规范化处理，得到规范化数据矩阵，为便于表达，仍用 $X$ 表示</p>
+<p>Step2：利用规范化数据矩阵 $X$，计算样本相关矩阵 $R$</p>
+<script type="math/tex; mode=display">
+\begin{gather*}
+R=[r_{ij}]_{m\times m} = \frac{1}{n-1} XX^T \\
+r_{ij} = \frac{1}{n-1} \sum_{l=1}^n x_{il}x_{lj},\quad i,j=1,2,\cdots,m
+\end{gather*}</script><p>Step3：求样本相关矩阵 $R$ 的 $k$ 个特征值和对应的 $k$ 个单位特征向量</p>
+<p>求解 $R$ 的特征方程</p>
+<script type="math/tex; mode=display">
+|R-\lambda I| = 0</script><p>得到 $R$ 的 $m$ 个特征值</p>
+<script type="math/tex; mode=display">
+\lambda_1\geq \lambda_2 \geq \cdots \geq \lambda_m</script><p>求方差贡献率 $\sum\limits_{i=1}^k \eta_i$ 达到预定值的主成分个数 $k$，并求前 $k$ 个特征值对应的单位特征向量</p>
+<script type="math/tex; mode=display">
+\mathbf{a}_i = (a_{1i},a_{2i},\cdots,a_{mi})^T,\quad i=1,2,\cdots,k</script><p>Step4：以 $k$ 个单位特征向量为系数，进行线性变换，求出 $k$ 个样本主成分</p>
+<script type="math/tex; mode=display">
+\mathbf{y}_i = \mathbf{a}_i^T\mathbf{x},\quad i=1,2,\cdots,k</script><p>Step5：计算 $k$ 个主成分 $\mathbf{y}_j$ 与原变量 $\mathbf{x}_i$ 的相关系数 $\rho(\mathbf{x}_i,\mathbf{y}_j)$，以及 $k$ 个主成分对原变量 $\mathbf{x}_i$ 的贡献率 $\nu_i$</p>
+<p>Step6：将规范化样本数据代入 $k$ 个主成分值，得到 $n$ 个样本的主成分值</p>
+<p>第 $j$ 个样本 $\mathbf{x}_j=(x_{1j},x_{2j},\cdots,x_{mj})^T$ 的第 $i$ 个主成分值是</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+y_{ij} 
+&= (a_{1i},a_{2i},\cdots,a_{mi})(x_{1j},x_{2j},\cdots,x_{mj})^T \\
+&=\sum_{l=1}^m a_{li} x_{lj}\\
+& i=1,2,\cdots,m, \quad j=1,2,\cdots,n
+\end{align*}</script><h1 id="【sklearn-实现】"><a href="#【sklearn-实现】" class="headerlink" title="【sklearn 实现】"></a>【sklearn 实现】</h1><p>以 <code>sklearn</code> 中的鸢尾花数据集为例，将降维到二维空间来可视化</p>
+<p><img width="500" src="/images/artificial-intelligence/machine-learning/unsupervised-learning/13-4.png"></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> pandas <span class="keyword">as</span> pd</span><br><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"><span class="keyword">import</span> matplotlib.pyplot <span class="keyword">as</span> plt</span><br><span class="line"><span class="keyword">from</span> sklearn.datasets <span class="keyword">import</span> load_iris</span><br><span class="line"><span class="keyword">from</span> sklearn.preprocessing <span class="keyword">import</span> StandardScaler</span><br><span class="line"><span class="keyword">from</span> sklearn.decomposition <span class="keyword">import</span> PCA</span><br><span class="line"></span><br><span class="line"><span class="comment"># 特征提取</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">deal_data</span><span class="params">()</span>:</span></span><br><span class="line">    iris = load_iris()  <span class="comment"># sklearn的鸢尾花数据集</span></span><br><span class="line">    <span class="comment"># iris分为三类，前50行一类，51-100行一类，101-150行一类</span></span><br><span class="line">    X = iris.data</span><br><span class="line">    y = iris.target</span><br><span class="line">    <span class="keyword">return</span> X, y</span><br><span class="line"></span><br><span class="line"><span class="comment"># 数据标准化</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">standard_scaler</span><span class="params">(X)</span>:</span></span><br><span class="line">    sc = StandardScaler() <span class="comment"># 初始化一个sc对象去对数据集作变换</span></span><br><span class="line">    scaler = sc.fit(X) <span class="comment"># 归一化，存有计算出的均值和方差</span></span><br><span class="line">    X_std = scaler.transform(X) <span class="comment"># 利用 scaler 进行标准化</span></span><br><span class="line">    <span class="keyword">return</span> X_std</span><br><span class="line"></span><br><span class="line"><span class="comment"># 模型训练</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">train_model</span><span class="params">(features)</span>:</span></span><br><span class="line">    <span class="comment"># 建立PCA模型</span></span><br><span class="line">    model = PCA(n_components=<span class="number">2</span>, random_state=<span class="number">42</span>)</span><br><span class="line">    <span class="comment"># 降维</span></span><br><span class="line">    result = model.fit_transform(features)</span><br><span class="line">    <span class="keyword">return</span> result</span><br><span class="line"></span><br><span class="line"><span class="comment"># 可视化</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">visualization</span><span class="params">(X, y)</span>:</span></span><br><span class="line">    plt.scatter(X[:,<span class="number">0</span>], X[:,<span class="number">1</span>], c=y, s=<span class="number">10</span>)</span><br><span class="line">        </span><br><span class="line">    plt.xlabel(<span class="string">'x1'</span>)</span><br><span class="line">    plt.ylabel(<span class="string">'x2'</span>)</span><br><span class="line">    plt.legend(loc=<span class="string">'upper left'</span>)</span><br><span class="line">    plt.tight_layout()</span><br><span class="line">    plt.show()</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:</span><br><span class="line">    <span class="comment"># 数据处理</span></span><br><span class="line">    X, y = deal_data()</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 数据标准化</span></span><br><span class="line">    X_std = standard_scaler(X)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 获取降维结果</span></span><br><span class="line">    result = train_model(X_std)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 可视化</span></span><br><span class="line">    visualization(result, y)</span><br></pre></td></tr></table></figure>
+
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>感谢您对我的支持，让我继续努力分享有用的技术与知识点！</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/wechatpay.jpg" alt="Alex_McAvoy 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/alipay.jpg" alt="Alex_McAvoy 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Alex_McAvoy
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/unsupervised-learning/3f14d5f3.html" title="主成分分析 PCA">https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/unsupervised-learning/3f14d5f3.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/artificial-intelligence/" rel="tag"># 人工智能</a>
+              <a href="/tags/machine-learning/" rel="tag"># 机器学习</a>
+              <a href="/tags/unsupervised-learning/" rel="tag"># 无监督学习</a>
+              <a href="/tags/dimensionality-reduction/" rel="tag"># 降维问题</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/notes/computer-networks/481361ad.html" rel="prev" title="ARP 协议">
+      <i class="fa fa-chevron-left"></i> ARP 协议
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/notes/computer-networks/1a97c2c0.html" rel="next" title="ICMP 协议">
+      ICMP 协议 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【概述】"><span class="nav-number">1.</span> <span class="nav-text">【概述】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【直观解释】"><span class="nav-number">2.</span> <span class="nav-text">【直观解释】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【总体主成分分析】"><span class="nav-number">3.</span> <span class="nav-text">【总体主成分分析】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#定义"><span class="nav-number">3.1.</span> <span class="nav-text">定义</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#主成分的个数"><span class="nav-number">3.2.</span> <span class="nav-text">主成分的个数</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#理论依据"><span class="nav-number">3.2.1.</span> <span class="nav-text">理论依据</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#方差贡献率"><span class="nav-number">3.2.2.</span> <span class="nav-text">方差贡献率</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#主成分对原有变量的贡献率"><span class="nav-number">3.2.3.</span> <span class="nav-text">主成分对原有变量的贡献率</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#规范化变量"><span class="nav-number">3.3.</span> <span class="nav-text">规范化变量</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【样本主成分分析】"><span class="nav-number">4.</span> <span class="nav-text">【样本主成分分析】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#定义-1"><span class="nav-number">4.1.</span> <span class="nav-text">定义</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#规范化变量-1"><span class="nav-number">4.2.</span> <span class="nav-text">规范化变量</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#相关矩阵的特征值分解算法"><span class="nav-number">4.3.</span> <span class="nav-text">相关矩阵的特征值分解算法</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【sklearn-实现】"><span class="nav-number">5.</span> <span class="nav-text">【sklearn 实现】</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">  
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Alex_McAvoy"
+      src="/assets/img/head.jpg">
+  <p class="site-author-name" itemprop="name">Alex_McAvoy</p>
+  <div class="site-description" itemprop="description">想要成为渔夫的猎手</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">687</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">66</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">79</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Alex-McAvoy" title="GitHub → https://github.com/Alex-McAvoy" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/u011815404" title="CSDN → https://blog.csdn.net/u011815404" rel="noopener" target="_blank"><i class="fas fa-copyright fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+<!-- 访客地图 -->
+<script type="text/javascript" src="//rf.revolvermaps.com/0/0/5.js?i=50n58yo58ow&amp;m=0&amp;c=ff0000&amp;cr1=ffffff&amp;s=140" async="async"></script>
+
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdz20172133" title="https://blog.csdn.net/sdz20172133" rel="noopener" target="_blank">神仙队友</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://pxlsdz.gitee.io/" title="https://pxlsdz.gitee.io/" rel="noopener" target="_blank">神仙队友blog2</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdau_fangshifeng" title="https://blog.csdn.net/sdau_fangshifeng" rel="noopener" target="_blank">酷头</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://bycore.net" title="https://bycore.net" rel="noopener" target="_blank">凉了的某饼同学</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://kris-cn.github.io/" title="http://kris-cn.github.io/" rel="noopener" target="_blank">翟孙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://deng.fun/" title="http://deng.fun/" rel="noopener" target="_blank">芙蓉姐姐</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/wentong_Xu" title="https://blog.csdn.net/wentong_Xu" rel="noopener" target="_blank">小黑贱胖子</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.yuheng.tech/" title="https://www.yuheng.tech/" rel="noopener" target="_blank">咸于</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/lanshan1111" title="https://blog.csdn.net/lanshan1111" rel="noopener" target="_blank">肥硕硕</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdauguanweihong" title="https://blog.csdn.net/sdauguanweihong" rel="noopener" target="_blank">管少</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_41661919" title="https://blog.csdn.net/qq_41661919" rel="noopener" target="_blank">俊杰</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_40859951" title="https://blog.csdn.net/qq_40859951" rel="noopener" target="_blank">峰哥</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/LSD20164388" title="https://blog.csdn.net/LSD20164388" rel="noopener" target="_blank">狗冬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37868325" title="https://blog.csdn.net/qq_37868325" rel="noopener" target="_blank">妍大佬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://sanshuiii.github.io/" title="https://sanshuiii.github.io/" rel="noopener" target="_blank">sanshuiii</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://zjpzhao.github.io/" title="https://zjpzhao.github.io/" rel="noopener" target="_blank">brain</a>
+        </li>
+    </ul>
+  </div>
+
+		
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+  
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Alex_McAvoy</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+</br>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script><script src="/js/bookmark.js"></script>
+
+
+
+  
+
+
+
+
+  <script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '48fd73a538d3fa927f65',
+      clientSecret: '56618aefeee90bac3c20de8d51bb0b985d67252d',
+      repo        : 'Gitalk-Comment',
+      owner       : 'Alex-McAvoy',
+      admin       : ['Alex-McAvoy'],
+      id          : 'e11e4c4984597b98ced845241b4a154a',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+  
+  <!-- 鼠标单击粒子特效 -->
+  <script type="text/javascript" src="/js/cursor-effects.js"></script>
+  <!-- 多级目录 -->
+  <script type="text/javascript" src="/js/category.js"></script>
+  
+</body>
+</html>
