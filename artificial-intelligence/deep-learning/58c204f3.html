@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.9.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/img/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/assets/img/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/pace-js@1/themes/blue/pace-theme-minimal.css">
+  <script src="//cdn.jsdelivr.net/npm/pace-js@1/pace.min.js"></script>
+
+
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"alex-mcavoy.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":16,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":true,"color":"#ff0000","save":"manual"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":true},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.json"};
+  </script>
+
+  <meta name="description" content="【概述】注意力机制（Attention）是人类大脑的一种天生的能力，当人们看到一幅图片时，先是快速扫过图片，然后锁定需要重点关注的目标区域 例如，当观察下面的图片时，注意力很容易就集中在了人脸、文章标题和文章首句等位置">
+<meta name="keywords" content="人工智能,深度学习">
+<meta property="og:type" content="article">
+<meta property="og:title" content="注意力机制 Attention">
+<meta property="og:url" content="https://alex-mcavoy.github.io/artificial-intelligence/deep-learning/58c204f3.html">
+<meta property="og:site_name" content="Alex_McAvoy">
+<meta property="og:description" content="【概述】注意力机制（Attention）是人类大脑的一种天生的能力，当人们看到一幅图片时，先是快速扫过图片，然后锁定需要重点关注的目标区域 例如，当观察下面的图片时，注意力很容易就集中在了人脸、文章标题和文章首句等位置">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/deep-learning/30-1.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/deep-learning/30-2.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/deep-learning/30-3.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/deep-learning/30-4.png">
+<meta property="og:updated_time" content="2024-02-23T02:15:33.139Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="注意力机制 Attention">
+<meta name="twitter:description" content="【概述】注意力机制（Attention）是人类大脑的一种天生的能力，当人们看到一幅图片时，先是快速扫过图片，然后锁定需要重点关注的目标区域 例如，当观察下面的图片时，注意力很容易就集中在了人脸、文章标题和文章首句等位置">
+<meta name="twitter:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/deep-learning/30-1.png">
+
+<link rel="canonical" href="https://alex-mcavoy.github.io/artificial-intelligence/deep-learning/58c204f3.html">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>注意力机制 Attention | Alex_McAvoy</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Alex_McAvoy</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">想要成为渔夫的猎手</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+
+	
+	
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/artificial-intelligence/deep-learning/58c204f3.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/assets/img/head.jpg">
+      <meta itemprop="name" content="Alex_McAvoy">
+      <meta itemprop="description" content="想要成为渔夫的猎手">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Alex_McAvoy">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          注意力机制 Attention
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2023-12-25 16:56:00" itemprop="dateCreated datePublished" datetime="2023-12-25T16:56:00+08:00">2023-12-25</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/artificial-intelligence/" itemprop="url" rel="index"><span itemprop="name">人工智能</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/artificial-intelligence/deep-learning/" itemprop="url" rel="index"><span itemprop="name">深度学习</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>2.9k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>3 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="【概述】"><a href="#【概述】" class="headerlink" title="【概述】"></a>【概述】</h1><p><strong>注意力机制（Attention）</strong>是人类大脑的一种天生的能力，当人们看到一幅图片时，先是快速扫过图片，然后锁定需要重点关注的目标区域</p>
+<p>例如，当观察下面的图片时，注意力很容易就集中在了人脸、文章标题和文章首句等位置</p>
+<p><img width="500" src="/images/artificial-intelligence/deep-learning/30-1.png"></p>
+<p>如果每个局部信息都不放过，那么必然耗费很多精力，同样地，在深度学习网络中引入类似的机制，可以简化模型，加速计算</p>
+<p>在深度学习中，注意力机制最早被用于 CNN 模型，在识别图像时，一般是通过卷积核去提取图像的局部信息，然而，每个局部信息对图像能否被正确识别的影响力是不同的，而注意力机制能够让模型知道图像中不同局部信息的重要性</p>
+<p>此外，在利用循环神经网络去处理 NLP 任务时，长距离记忆能力一直是个大难题，而引入注意力机制也能有效缓解这一问题，目前流行的 BERT、Transformer 等模型，均基于注意力机制</p>
+<h1 id="【基本原理】"><a href="#【基本原理】" class="headerlink" title="【基本原理】"></a>【基本原理】</h1><h2 id="架构"><a href="#架构" class="headerlink" title="架构"></a>架构</h2><p>Attention 机制的架构可用下图来表示，其与内存中的<strong>软寻址（Soft Addressing）</strong>十分相似</p>
+<p><img width="500" src="/images/artificial-intelligence/deep-learning/30-2.png"></p>
+<p>对于软寻址来说，Source 是内存中的一块存储空间，其中存储的数据是由一系列的键值对 $&lt;\text{Key}_i,\text{Value}_i&gt;$ 构成，当给定某个 $\text{Query}$ 时，会取出对应内容</p>
+<p>而在 Attention 机制中，当给定某个 $\text{Query}$ 时，会在每个地址中取出一部分内容，然后对所有取出的内容进行加权求和，即计算 $\text{Query}$ 和各个键 $\text{Key}_i$ 的相似性，得到每个键 $\text{Key}_i$ 对应 $\text{Value}_i$ 的权重系数，然后对 $\text{Value}_i$ 进行加权求和，得到最终的 Attention 值</p>
+<h2 id="三大阶段"><a href="#三大阶段" class="headerlink" title="三大阶段"></a>三大阶段</h2><p>Attention 机制本质上是对 Source 中元素的 $\text{Value}$ 值进行加权求和，而 $\text{Query}$ 和 $\text{Key}$ 用来计算对应 $\text{Value}$ 的权重系数，整个过程可分为如下图的三个阶段：</p>
+<p><img width="500" src="/images/artificial-intelligence/deep-learning/30-3.png"></p>
+<p>1.计算 $\text{Query}$ 与 Source 中的 $n$ 个 $\text{Key}_i$ 的相似度</p>
+<script type="math/tex; mode=display">
+Sim_i = \text{Similarity}(\text{Query},\text{Key}_i)</script><p>2.采用类 Softmax 的方式对相似度进行数值转换，将相似度转为 $[0,1]$ 间的概率分布，即 $\text{Value}_i$ 的权重系数</p>
+<script type="math/tex; mode=display">
+a_i = \text{softmax}(Sim_i) = \frac{\exp (Sim_i)}{\sum\limits_{j=1}^n\exp(Sim_j)}</script><p>3.对 $\text{Value}_i$ 的权重系数加权求和</p>
+<script type="math/tex; mode=display">
+\text{Attention}(\text{Query},\text{Key}_i,\text{Value}_i) = \sum_{i=1}^n a_i *\text{Value}_i</script><h1 id="【类型】"><a href="#【类型】" class="headerlink" title="【类型】"></a>【类型】</h1><h2 id="基本分类"><a href="#基本分类" class="headerlink" title="基本分类"></a>基本分类</h2><p>随着 Attention 的发展，目前有各种各样的 Attention，从计算区域、所用信息、结构层次和模型结构等方面，可归类为下图</p>
+<p><img src="/images/artificial-intelligence/deep-learning/30-4.png"></p>
+<h2 id="模型结构"><a href="#模型结构" class="headerlink" title="模型结构"></a>模型结构</h2><p>根据 Attention 的模型结构，可以分成以下三类：</p>
+<p>1）<strong>单层注意力机制（Single Attention）</strong></p>
+<p>最基础的结构，即每次用一个 $\text{Query}$ 来计算 Attention 值</p>
+<p>2）<strong>多层注意力机制（Hierarchical Attention）</strong></p>
+<p>一般用于文本具有层次关系的模型，每一层都单独使用一个单层 Attention</p>
+<p>假设把一个文档划分成多个句子，在第一层，分别对每个句子使用 Attention 计算出一个句向量，在第二层，对所有句向量再次使用 Attention 计算出一个文档向量，最后用这个文档向量去进行下一步任务</p>
+<p>3）<strong>多头注意力机制（Multi-Head Attention）</strong></p>
+<p>将模型分为多个头，形成多个子空间，从而让模型关注不同方面的信息，即利用多个 $\text{Query}$ 进行多次 Attention，每个 $\text{Query}$ 都关注不同部分，相当于重复做多次单层 Attention</p>
+<script type="math/tex; mode=display">
+\text{head}_i = \text{Attention}(\text{Query},\text{Key}_i,\text{Value}_i)</script><p>最后再将这些结果拼接起来</p>
+<script type="math/tex; mode=display">
+\text{multi-head}(\text{Query},\text{Key},\text{Value}) = \text{Concat}(\text{head}_1,\cdots,\text{head}_h)</script><h2 id="计算区域"><a href="#计算区域" class="headerlink" title="计算区域"></a>计算区域</h2><p>根据 Attention 的计算区域，可以分成以下三类：</p>
+<p>1）<strong>软注意力机制（Soft Attention）</strong></p>
+<p>也称<strong>全局注意力机制（Global Attention）</strong>，即上文中介绍的对所有 $\text{Key}_i$ 求权重概率，再进行加权，但这种方式的计算量可能会较大</p>
+<p>2）<strong>硬注意力机制（Hard Attention）</strong></p>
+<p>直接精准定位到某个 $\text{Key}$，忽略其余的 $\text{Key}$，即相当于定位到的 $\text{Key}$ 的概率是 $1$，其余 $\text{Key}$ 的概率全部是 $0$</p>
+<p>这种方式对对齐要求很高，要求一步到位，如果没有正确对齐，则会带来很大的影响，另一方面，因为不可导，一般需要用强化学习的方法进行训练</p>
+<p>3）<strong>局部注意力机制（Local Attention）</strong></p>
+<p>是软注意力和硬注意力的一个折中，其先用 Hard 的方式定位到某个点，然后以这个点为中心得到一个窗口区域，再在这个窗口区域内采用 Soft 的方式来计算 Attention 值</p>
+<h2 id="所用信息"><a href="#所用信息" class="headerlink" title="所用信息"></a>所用信息</h2><p>假设要对一段文本进行 Attention，那么所用信息包括内部信息和外部信息，内部信息指的是原文本身的信息，而外部信息指的是除原文以外的额外信息</p>
+<p>根据 Attention 的所用信息，可以分成以下两类：</p>
+<p>1）<strong>普通注意力（General Attention）</strong></p>
+<p>这种方式利用了内部信息和外部信息，常用于需要构建两段文本关系的任务</p>
+<p>一般在 $\text{Query}$ 中包含外部信息，需要根据外部信息对原文进行对齐</p>
+<p>例如在阅读理解任务中，需要构建问题和文章的关联，假设要对某问题计算出一个问题向量，然后把这个问题向量和所有的文章词向量拼接起来，输入到 LSTM 中进行建模</p>
+<p>那么，在这个模型中，文章所有词向量共享同一个问题向量，现在想让文章每一步的词向量都有一个不同的问题向量，即在每一步使用文章在该步下的词向量对问题来计算 Attention 值，这里问题属于原文，文章词向量就属于外部信息</p>
+<p>2）<strong>自注意力机制（Self Attention）</strong></p>
+<p>这种方式只使用内部信息，即 $\text{Key}$ 和 $\text{Value}$ 以及 $\text{Query}$ 只和输入原文有关</p>
+<script type="math/tex; mode=display">
+\text{Key} = \text{Value} = \text{Query}</script><p>由于没有外部信息，那么在原文中的每个词可以跟该句子中的所有词进行 Attention 计算，相当于寻找原文内部的关系</p>
+<p>同样以阅读理解任务为例，假设要对某问题计算出一个问题向量，那么可以直接使用问题自身的信息去做 Attention，而不引入文章信息</p>
+
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>感谢您对我的支持，让我继续努力分享有用的技术与知识点！</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/wechatpay.jpg" alt="Alex_McAvoy 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/alipay.jpg" alt="Alex_McAvoy 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Alex_McAvoy
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://alex-mcavoy.github.io/artificial-intelligence/deep-learning/58c204f3.html" title="注意力机制 Attention">https://alex-mcavoy.github.io/artificial-intelligence/deep-learning/58c204f3.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/artificial-intelligence/" rel="tag"># 人工智能</a>
+              <a href="/tags/deep-learning/" rel="tag"># 深度学习</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/artificial-intelligence/deep-learning/e5c3ae8a.html" rel="prev" title="Word2Vec 模型">
+      <i class="fa fa-chevron-left"></i> Word2Vec 模型
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/artificial-intelligence/deep-learning/f2682d67.html" rel="next" title="Seq2Seq 模型">
+      Seq2Seq 模型 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【概述】"><span class="nav-number">1.</span> <span class="nav-text">【概述】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【基本原理】"><span class="nav-number">2.</span> <span class="nav-text">【基本原理】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#架构"><span class="nav-number">2.1.</span> <span class="nav-text">架构</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三大阶段"><span class="nav-number">2.2.</span> <span class="nav-text">三大阶段</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【类型】"><span class="nav-number">3.</span> <span class="nav-text">【类型】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#基本分类"><span class="nav-number">3.1.</span> <span class="nav-text">基本分类</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#模型结构"><span class="nav-number">3.2.</span> <span class="nav-text">模型结构</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#计算区域"><span class="nav-number">3.3.</span> <span class="nav-text">计算区域</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#所用信息"><span class="nav-number">3.4.</span> <span class="nav-text">所用信息</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">  
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Alex_McAvoy"
+      src="/assets/img/head.jpg">
+  <p class="site-author-name" itemprop="name">Alex_McAvoy</p>
+  <div class="site-description" itemprop="description">想要成为渔夫的猎手</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">698</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">66</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">80</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Alex-McAvoy" title="GitHub → https://github.com/Alex-McAvoy" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/u011815404" title="CSDN → https://blog.csdn.net/u011815404" rel="noopener" target="_blank"><i class="fas fa-copyright fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+<!-- 访客地图 -->
+<script type="text/javascript" src="//rf.revolvermaps.com/0/0/5.js?i=50n58yo58ow&amp;m=0&amp;c=ff0000&amp;cr1=ffffff&amp;s=140" async="async"></script>
+
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdz20172133" title="https://blog.csdn.net/sdz20172133" rel="noopener" target="_blank">神仙队友</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://pxlsdz.gitee.io/" title="https://pxlsdz.gitee.io/" rel="noopener" target="_blank">神仙队友blog2</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdau_fangshifeng" title="https://blog.csdn.net/sdau_fangshifeng" rel="noopener" target="_blank">酷头</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://bycore.net" title="https://bycore.net" rel="noopener" target="_blank">凉了的某饼同学</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://kris-cn.github.io/" title="http://kris-cn.github.io/" rel="noopener" target="_blank">翟孙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://deng.fun/" title="http://deng.fun/" rel="noopener" target="_blank">芙蓉姐姐</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/wentong_Xu" title="https://blog.csdn.net/wentong_Xu" rel="noopener" target="_blank">小黑贱胖子</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.yuheng.tech/" title="https://www.yuheng.tech/" rel="noopener" target="_blank">咸于</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/lanshan1111" title="https://blog.csdn.net/lanshan1111" rel="noopener" target="_blank">肥硕硕</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdauguanweihong" title="https://blog.csdn.net/sdauguanweihong" rel="noopener" target="_blank">管少</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_41661919" title="https://blog.csdn.net/qq_41661919" rel="noopener" target="_blank">俊杰</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_40859951" title="https://blog.csdn.net/qq_40859951" rel="noopener" target="_blank">峰哥</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/LSD20164388" title="https://blog.csdn.net/LSD20164388" rel="noopener" target="_blank">狗冬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37868325" title="https://blog.csdn.net/qq_37868325" rel="noopener" target="_blank">妍大佬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://sanshuiii.github.io/" title="https://sanshuiii.github.io/" rel="noopener" target="_blank">sanshuiii</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://zjpzhao.github.io/" title="https://zjpzhao.github.io/" rel="noopener" target="_blank">brain</a>
+        </li>
+    </ul>
+  </div>
+
+		
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+  
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Alex_McAvoy</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+</br>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script><script src="/js/bookmark.js"></script>
+
+
+
+  
+
+
+
+
+  <script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '48fd73a538d3fa927f65',
+      clientSecret: '56618aefeee90bac3c20de8d51bb0b985d67252d',
+      repo        : 'Gitalk-Comment',
+      owner       : 'Alex-McAvoy',
+      admin       : ['Alex-McAvoy'],
+      id          : '518542014ba7bf1f447aa8f37746468d',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+  
+  <!-- 鼠标单击粒子特效 -->
+  <script type="text/javascript" src="/js/cursor-effects.js"></script>
+  <!-- 多级目录 -->
+  <script type="text/javascript" src="/js/category.js"></script>
+  
+</body>
+</html>
