@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.9.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/img/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/assets/img/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/pace-js@1/themes/blue/pace-theme-minimal.css">
+  <script src="//cdn.jsdelivr.net/npm/pace-js@1/pace.min.js"></script>
+
+
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"alex-mcavoy.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":16,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":true,"color":"#ff0000","save":"manual"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":true},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.json"};
+  </script>
+
+  <meta name="description" content="【概述】在 PAC 学习理论概述 中，介绍了 PAC 学习理论，由于恰 PAC 学习并不实际，因此更重要的是研究假设空间 $\mathcal{H}$ 与概念类 $\mathcal{C}$ 不同的情景，即在给定 $n$ 个样本的训练集 $D$ 时，找出满足误差参数 $\epsilon$ 的假设 在 $|\mathcal{H}|$ 有限时，称假设空间 $\mathcal{H}$ 为有限假设空间，其可分">
+<meta name="keywords" content="人工智能,机器学习,计算学习理论">
+<meta property="og:type" content="article">
+<meta property="og:title" content="有限假设空间">
+<meta property="og:url" content="https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/compututational-learning-theory/c0d01fe8.html">
+<meta property="og:site_name" content="Alex_McAvoy">
+<meta property="og:description" content="【概述】在 PAC 学习理论概述 中，介绍了 PAC 学习理论，由于恰 PAC 学习并不实际，因此更重要的是研究假设空间 $\mathcal{H}$ 与概念类 $\mathcal{C}$ 不同的情景，即在给定 $n$ 个样本的训练集 $D$ 时，找出满足误差参数 $\epsilon$ 的假设 在 $|\mathcal{H}|$ 有限时，称假设空间 $\mathcal{H}$ 为有限假设空间，其可分">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2024-03-17T12:45:14.847Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="有限假设空间">
+<meta name="twitter:description" content="【概述】在 PAC 学习理论概述 中，介绍了 PAC 学习理论，由于恰 PAC 学习并不实际，因此更重要的是研究假设空间 $\mathcal{H}$ 与概念类 $\mathcal{C}$ 不同的情景，即在给定 $n$ 个样本的训练集 $D$ 时，找出满足误差参数 $\epsilon$ 的假设 在 $|\mathcal{H}|$ 有限时，称假设空间 $\mathcal{H}$ 为有限假设空间，其可分">
+
+<link rel="canonical" href="https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/compututational-learning-theory/c0d01fe8.html">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>有限假设空间 | Alex_McAvoy</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Alex_McAvoy</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">想要成为渔夫的猎手</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+
+	
+	
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/compututational-learning-theory/c0d01fe8.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/assets/img/head.jpg">
+      <meta itemprop="name" content="Alex_McAvoy">
+      <meta itemprop="description" content="想要成为渔夫的猎手">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Alex_McAvoy">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          有限假设空间
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-06-08 15:32:00" itemprop="dateCreated datePublished" datetime="2019-06-08T15:32:00+08:00">2019-06-08</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/artificial-intelligence/" itemprop="url" rel="index"><span itemprop="name">人工智能</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/artificial-intelligence/machine-learning/" itemprop="url" rel="index"><span itemprop="name">机器学习</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/artificial-intelligence/machine-learning/compututational-learning-theory/" itemprop="url" rel="index"><span itemprop="name">计算学习理论</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>3.2k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>3 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="【概述】"><a href="#【概述】" class="headerlink" title="【概述】"></a>【概述】</h1><p>在 <a href="https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/compututational-learning-theory/10dc5c42.html">PAC 学习理论概述</a> 中，介绍了 PAC 学习理论，由于恰 PAC 学习并不实际，因此更重要的是研究假设空间 $\mathcal{H}$ 与概念类 $\mathcal{C}$ 不同的情景，即在给定 $n$ 个样本的训练集 $D$ 时，找出满足误差参数 $\epsilon$ 的假设</p>
+<p>在 $|\mathcal{H}|$ 有限时，称假设空间 $\mathcal{H}$ 为<strong>有限假设空间</strong>，其可分为两种情形：</p>
+<ol>
+<li><strong>可分情形</strong>：目标概念 $c$ 属于假设空间 $\mathcal{H}$，即 $c\in \mathcal{H}$</li>
+<li><strong>不可分情形</strong>：目标概念 $c$ 不存在于假设空间 $\mathcal{H}$，即 $c\notin \mathcal{H}$</li>
+</ol>
+<h1 id="【可分情形】"><a href="#【可分情形】" class="headerlink" title="【可分情形】"></a>【可分情形】</h1><h2 id="基本思想"><a href="#基本思想" class="headerlink" title="基本思想"></a>基本思想</h2><p>在可分情形下，目标概念 $c$ 属于假设空间 $\mathcal{H}$，即 $c\in \mathcal{H}$，由于 $D$ 中的样本标记都是由目标概念 $c$ 赋予的，且目标概念 $c$ 存在于假设空间 $\mathcal{h}$ 中，那么任何在训练集 $D$ 上出现的标记错误的假设，肯定不是目标概念 $c$，因此，只需要保留与 $D$ 一致的假设，剔除与 $D$ 不一致的假设即可</p>
+<p>若训练集 $D$ 足够大，那么可不断借助 $D$ 中的样本剔除不一致的假设，直到假设空间 $\mathcal{H}$ 中仅剩一个假设为止，这个假设就是目标概念 $c$​</p>
+<h2 id="等效假设的区分"><a href="#等效假设的区分" class="headerlink" title="等效假设的区分"></a>等效假设的区分</h2><p>通常情况下，由于训练集规模有限，假设空间 $\mathcal{H}$ 中可能存在不止一个与 $D$ 一致的等效假设，对于这些等效假设，无法根据 $D$​ 对它们的优劣进一步的区分</p>
+<p>对 PAC 学习来说，只要训练集 $D$ 的规模能够使学习算法 $\mathcal{L}$ 以概率 $1-\delta$ 找到目标假设的 $\epsilon$ 近似即可</p>
+<p>假设 $h$ 的泛化误差大于 $\epsilon$，对分布 $\mathcal{D}$ 上随机采样得到的任意样本 $(\mathbf{x},y)$，其在训练集 $D$ 仍表现完美的假设出现的概率为：</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+P(h(\mathbf{x})=y) 
+&= 1-P(h(\mathbf{x})\neq y) \\
+&= 1-E(h) \\
+&< 1-\epsilon
+\end{align*}</script><p>由于 $D$ 包含 $n$ 个从 $\mathcal{D}$ 独立同分布采样而得的样本，因此 $h$ 与 $D$ 表现一致的概率为：</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+P\Big[\big(h(\mathbf{x}_1)=y_1\big) \wedge \cdots \wedge \big(h(\mathbf{x}_n)=y_n\big) \Big] 
+&= \Big[1-P\big(h(\mathbf{x}\neq y)\big)\Big]^n \\
+&< (1-\epsilon)^n
+\end{align*}</script><p>又由于事先并不知道学习算法 $\mathcal{L}$ 会输出 $\mathcal{H}$ 中的哪个假设，因此仅需保证泛化误差大于 $\epsilon$，且在训练集上表现完美的所有假设出现概率和不大于 $\delta$​ 即可</p>
+<p>对于概率和，有：</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+P\Big( h\in\mathcal{H}:E(h)> \epsilon \wedge \hat{E}(h)=0 \Big) 
+&< |\mathcal{H}|(1-\epsilon)^n \\
+&< |\mathcal{H}|e^{-n\epsilon}
+\end{align*}</script><p>令上式不大于 $\delta$，即：</p>
+<script type="math/tex; mode=display">
+|\mathcal{H}| e^{-n\epsilon} \leq \delta</script><p>可得：</p>
+<script type="math/tex; mode=display">
+n \geq \frac{1}{\epsilon} (\ln |\mathcal{H}| + \ln \frac{1}{\delta})</script><p>由此可知，有限假设空间 $\mathcal{H}$ 都是 PAC 可学习的，所需的样本数目如上式所示，输出假设 $h$ 的泛化误差随样本数量的增多而收敛到 $0$，收敛速率为 $O(\frac{1}{n})$</p>
+<h1 id="【不可分情形】"><a href="#【不可分情形】" class="headerlink" title="【不可分情形】"></a>【不可分情形】</h1><h2 id="基本思想-1"><a href="#基本思想-1" class="headerlink" title="基本思想"></a>基本思想</h2><p>在不可分情形下，目标概念 $c$ 不存在于假设空间 $\mathcal{H}$，即 $c\notin \mathcal{H}$，假定对任意 $h\in\mathcal{H},\hat{E}(h)\neq 0$，即假设空间 $\mathcal{H}$ 中的任意假设都会在训练集上出现或多或少的错误</p>
+<p>若训练集 $D$ 包含 $n$ 个从分布 $\mathcal{D}$ 上独立同分布采样得到的样本，$0&lt;\epsilon&lt; 1$，则对任意 $h\in \mathcal{H}$，根据 Hoeffding 不等式，有：</p>
+<script type="math/tex; mode=display">
+\begin{gather*}
+P(\hat{E}(h)-E(h)\geq\epsilon) \leq exp(-2n\epsilon^2) \\
+P(E(h)-\hat{E}(h)\geq\epsilon) \leq exp(-2n\epsilon^2) \\
+P(|E(h)-\hat{E}(h)|\geq\epsilon) \leq 2exp(-2n\epsilon^2) \\
+\end{gather*}</script><p>进一步，可知下式以至少 $1-\delta$ 的概率成立</p>
+<script type="math/tex; mode=display">
+\hat{E}(h)-\sqrt{\frac{\ln \frac{2}{\delta}}{2n}} \leq E(h)\leq \hat{E}(h)+\sqrt{\frac{\ln \frac{2}{\delta}}{2n}}</script><p>上式表明，在样本数量 $n$ 较大时，假设 $h$ 的经验误差 $\hat{E}(h)$ 是其泛化误差 $E(h)$ 很好的近似</p>
+<p>那么对于有限假设空间 $\mathcal{H}$ 来说，有：</p>
+<script type="math/tex; mode=display">
+P\Bigg(|E(h)-\hat{E}(h)|\geq \sqrt{\frac{\ln|\mathcal{H}| + \ln \frac{2}{\delta}}{2n}} \Bigg) \geq 1-\delta</script><p>显然，学习算法无法习得目标概念 $c$ 的 $\epsilon$ 近似，但当假设空间 $\mathcal{H}$ 给定时，必定存在一个泛化误差最小的假设</p>
+<script type="math/tex; mode=display">
+\arg \min_{h\in\mathcal{H}} E(h)</script><p>找到该泛化误差最小的假设的 $\epsilon$ 近似也不失为一个较好的目标，那么以此为目标可将 PAC 学习推广到不可分情形，即 $c\notin \mathcal{C}$ 的情况，这被称为<strong>不可知学习（Agnostic Learning）</strong></p>
+<h2 id="不可知学习"><a href="#不可知学习" class="headerlink" title="不可知学习"></a>不可知学习</h2><p>假设从分布 $\mathcal{D}$ 中独立同分布采样得到的样本数目为 $n$，$0&lt;\epsilon,\delta&lt;1$，对于所有分布 $\mathcal{D}$，若存在学习算法 $\mathcal{L}$ 和多项式函数 $\text{poly}(\cdot,\cdot,\cdot,\cdot)$，使得对任意 $n$ 有</p>
+<script type="math/tex; mode=display">
+n\geq \text{poly}(\frac{1}{\epsilon},\frac{1}{\delta},\text{size}(\mathbf{x}),\text{size}(c))</script><p>学习算法 $\mathcal{L}$ 能从假设空间 $\mathcal{H}$ 中输出满足下式的假设 $h$</p>
+<script type="math/tex; mode=display">
+P\big(E(h) -\min_{h'\in\mathcal{H}} E(h') \leq \epsilon \big) \geq 1-\delta</script><p>则称假设空间 $\mathcal{H}$ 是<strong>不可知 PAC 可学习的</strong></p>
+<p>与 PAC 可学习类似，若学习算法 $\mathcal{L}$ 的运行事件也是多项式函数</p>
+<script type="math/tex; mode=display">
+\text{poly}(\frac{1}{\epsilon},\frac{1}{\delta},\text{size}(\mathbf{x}),\text{size}(c))</script><p>则称假设空间 $\mathcal{H}$ 是<strong>高效不可知 PAC 可学习</strong>的，学习算法 $\mathcal{L}$ 不被称为假设空间 $\mathcal{H}$ 的<strong>不可知 PAC 学习算法</strong>，满足上述要求的最小 $n$ 被称为学习算法 $\mathcal{L}$ 的样本复杂度</p>
+
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>感谢您对我的支持，让我继续努力分享有用的技术与知识点！</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/wechatpay.jpg" alt="Alex_McAvoy 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/alipay.jpg" alt="Alex_McAvoy 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Alex_McAvoy
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/compututational-learning-theory/c0d01fe8.html" title="有限假设空间">https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/compututational-learning-theory/c0d01fe8.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/artificial-intelligence/" rel="tag"># 人工智能</a>
+              <a href="/tags/machine-learning/" rel="tag"># 机器学习</a>
+              <a href="/tags/compututational-learning-theory/" rel="tag"># 计算学习理论</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/artificial-intelligence/machine-learning/compututational-learning-theory/10dc5c42.html" rel="prev" title="PAC 学习理论概述">
+      <i class="fa fa-chevron-left"></i> PAC 学习理论概述
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/artificial-intelligence/machine-learning/compututational-learning-theory/b3e4012d.html" rel="next" title="VC 维">
+      VC 维 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【概述】"><span class="nav-number">1.</span> <span class="nav-text">【概述】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【可分情形】"><span class="nav-number">2.</span> <span class="nav-text">【可分情形】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#基本思想"><span class="nav-number">2.1.</span> <span class="nav-text">基本思想</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#等效假设的区分"><span class="nav-number">2.2.</span> <span class="nav-text">等效假设的区分</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【不可分情形】"><span class="nav-number">3.</span> <span class="nav-text">【不可分情形】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#基本思想-1"><span class="nav-number">3.1.</span> <span class="nav-text">基本思想</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#不可知学习"><span class="nav-number">3.2.</span> <span class="nav-text">不可知学习</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">  
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Alex_McAvoy"
+      src="/assets/img/head.jpg">
+  <p class="site-author-name" itemprop="name">Alex_McAvoy</p>
+  <div class="site-description" itemprop="description">想要成为渔夫的猎手</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">702</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">72</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">83</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Alex-McAvoy" title="GitHub → https://github.com/Alex-McAvoy" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/u011815404" title="CSDN → https://blog.csdn.net/u011815404" rel="noopener" target="_blank"><i class="fas fa-copyright fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+<!-- 访客地图 -->
+<script type="text/javascript" src="//rf.revolvermaps.com/0/0/5.js?i=50n58yo58ow&amp;m=0&amp;c=ff0000&amp;cr1=ffffff&amp;s=140" async="async"></script>
+
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdz20172133" title="https://blog.csdn.net/sdz20172133" rel="noopener" target="_blank">神仙队友</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://pxlsdz.gitee.io/" title="https://pxlsdz.gitee.io/" rel="noopener" target="_blank">神仙队友blog2</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdau_fangshifeng" title="https://blog.csdn.net/sdau_fangshifeng" rel="noopener" target="_blank">酷头</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://bycore.net" title="https://bycore.net" rel="noopener" target="_blank">凉了的某饼同学</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://kris-cn.github.io/" title="http://kris-cn.github.io/" rel="noopener" target="_blank">翟孙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://deng.fun/" title="http://deng.fun/" rel="noopener" target="_blank">芙蓉姐姐</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/wentong_Xu" title="https://blog.csdn.net/wentong_Xu" rel="noopener" target="_blank">小黑贱胖子</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.yuheng.tech/" title="https://www.yuheng.tech/" rel="noopener" target="_blank">咸于</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/lanshan1111" title="https://blog.csdn.net/lanshan1111" rel="noopener" target="_blank">肥硕硕</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdauguanweihong" title="https://blog.csdn.net/sdauguanweihong" rel="noopener" target="_blank">管少</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_41661919" title="https://blog.csdn.net/qq_41661919" rel="noopener" target="_blank">俊杰</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_40859951" title="https://blog.csdn.net/qq_40859951" rel="noopener" target="_blank">峰哥</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/LSD20164388" title="https://blog.csdn.net/LSD20164388" rel="noopener" target="_blank">狗冬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37868325" title="https://blog.csdn.net/qq_37868325" rel="noopener" target="_blank">妍大佬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://sanshuiii.github.io/" title="https://sanshuiii.github.io/" rel="noopener" target="_blank">sanshuiii</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://zjpzhao.github.io/" title="https://zjpzhao.github.io/" rel="noopener" target="_blank">brain</a>
+        </li>
+    </ul>
+  </div>
+
+		
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+  
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Alex_McAvoy</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+</br>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script><script src="/js/bookmark.js"></script>
+
+
+
+  
+
+
+
+
+  <script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '48fd73a538d3fa927f65',
+      clientSecret: '56618aefeee90bac3c20de8d51bb0b985d67252d',
+      repo        : 'Gitalk-Comment',
+      owner       : 'Alex-McAvoy',
+      admin       : ['Alex-McAvoy'],
+      id          : '3c43a73bc0a9968480baa70027e45235',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+  
+  <!-- 鼠标单击粒子特效 -->
+  <script type="text/javascript" src="/js/cursor-effects.js"></script>
+  <!-- 多级目录 -->
+  <script type="text/javascript" src="/js/category.js"></script>
+  
+</body>
+</html>

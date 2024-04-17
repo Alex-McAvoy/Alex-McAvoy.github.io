@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.9.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/img/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/assets/img/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/pace-js@1/themes/blue/pace-theme-minimal.css">
+  <script src="//cdn.jsdelivr.net/npm/pace-js@1/pace.min.js"></script>
+
+
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"alex-mcavoy.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":16,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":true,"color":"#ff0000","save":"manual"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":true},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.json"};
+  </script>
+
+  <meta name="description" content="【概述】N-Gram 模型是一种基于统计语言模型的算法，常用于预测一个文本中下一个单词出现的概率 其基本思想是将文本内容按词进行大小为 $N$ 的滑动窗口操作，形成长度是 $N$ 的词片段序列，每一个词片段被称为 gram，通过这种序列信息，来预测下一个项的出现概率">
+<meta name="keywords" content="人工智能,深度学习,自然语言处理">
+<meta property="og:type" content="article">
+<meta property="og:title" content="N-Gram 模型">
+<meta property="og:url" content="https://alex-mcavoy.github.io/artificial-intelligence/deep-learning/nlp/4319fc88.html">
+<meta property="og:site_name" content="Alex_McAvoy">
+<meta property="og:description" content="【概述】N-Gram 模型是一种基于统计语言模型的算法，常用于预测一个文本中下一个单词出现的概率 其基本思想是将文本内容按词进行大小为 $N$ 的滑动窗口操作，形成长度是 $N$ 的词片段序列，每一个词片段被称为 gram，通过这种序列信息，来预测下一个项的出现概率">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/deep-learning/nlp/04-1.png">
+<meta property="og:updated_time" content="2024-04-17T15:26:00.491Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="N-Gram 模型">
+<meta name="twitter:description" content="【概述】N-Gram 模型是一种基于统计语言模型的算法，常用于预测一个文本中下一个单词出现的概率 其基本思想是将文本内容按词进行大小为 $N$ 的滑动窗口操作，形成长度是 $N$ 的词片段序列，每一个词片段被称为 gram，通过这种序列信息，来预测下一个项的出现概率">
+<meta name="twitter:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/deep-learning/nlp/04-1.png">
+
+<link rel="canonical" href="https://alex-mcavoy.github.io/artificial-intelligence/deep-learning/nlp/4319fc88.html">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>N-Gram 模型 | Alex_McAvoy</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Alex_McAvoy</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">想要成为渔夫的猎手</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+
+	
+	
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/artificial-intelligence/deep-learning/nlp/4319fc88.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/assets/img/head.jpg">
+      <meta itemprop="name" content="Alex_McAvoy">
+      <meta itemprop="description" content="想要成为渔夫的猎手">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Alex_McAvoy">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          N-Gram 模型
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2023-12-21 13:16:00" itemprop="dateCreated datePublished" datetime="2023-12-21T13:16:00+08:00">2023-12-21</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/artificial-intelligence/" itemprop="url" rel="index"><span itemprop="name">人工智能</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/artificial-intelligence/deep-learning/" itemprop="url" rel="index"><span itemprop="name">深度学习</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/artificial-intelligence/deep-learning/nlp/" itemprop="url" rel="index"><span itemprop="name">自然语言处理</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>3.5k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>3 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="【概述】"><a href="#【概述】" class="headerlink" title="【概述】"></a>【概述】</h1><p>N-Gram 模型是一种基于统计语言模型的算法，常用于预测一个文本中下一个单词出现的概率</p>
+<p>其基本思想是将文本内容按词进行大小为 $N$ 的滑动窗口操作，形成长度是 $N$ 的词片段序列，每一个词片段被称为 gram，通过这种序列信息，来预测下一个项的出现概率</p>
+<h1 id="【基本思想】"><a href="#【基本思想】" class="headerlink" title="【基本思想】"></a>【基本思想】</h1><h2 id="概率计算"><a href="#概率计算" class="headerlink" title="概率计算"></a>概率计算</h2><p>假设有一个由 $n$ 个词组成的句子 $S=(w_1,w_2,\cdots,w_n)$，每一个单词 $w_i$ 都依赖于从第 $w_1$ 个词到它前一个词 $w_{i-1}$ 的影响，整句的概率就是各个词出现概率的乘积，那么这个句子的概率为：</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+P(S)
+&=p(w_1,w_2,\cdots,w_m) \\
+&=p(w_1)p(w_2|w_1)\cdots p(w_n|w_{n-1}\cdots w_2w_1)
+\end{align*}</script><p>这种计算方法看上去十分简单，不过有两个缺陷：</p>
+<ol>
+<li><strong>参数空间过大</strong>：概率 $p(w_1,w_2,\cdots,w_m)$ 的参数有 $O(n)$ 个</li>
+<li><strong>数据稀疏严重</strong>：词的组合在语料库中的重复出现的概率极低，组合阶数高时尤为明显</li>
+</ol>
+<h2 id="马尔可夫假设的引入"><a href="#马尔可夫假设的引入" class="headerlink" title="马尔可夫假设的引入"></a>马尔可夫假设的引入</h2><p>对于第一个问题，引入<strong>马尔可夫假设（Markov Assumption）</strong>，即一个词的出现仅与它之前的 $N$ 个词有关，称为 N-Gram</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+p(w_1,w_2,\cdots,w_n) 
+&= \prod_{i=1}^n p(w_i|w_{i-1}\cdots w_1) \\
+&\approx \prod_{i=1}^n p(w_i|w_{i-1}\cdots w_{i-N+1})
+\end{align*}</script><p>如果一个词的出现不依赖于它之前的词，即 $N=1$，那么就称为<strong>一元模型（Unigram Model）</strong>，也称为上下文无关模型，此时有：</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+P(S)
+&=p(w_1,w_2,\cdots,w_m) \\
+&= \prod_{i=1}^n p(w_i) \\
+&=p(w_1)p(w_2)\cdots p(w_n)
+\end{align*}</script><p>如果一个词的出现仅依赖于它之前的一个词，即 $N=2$，那么就称为<strong>二元模型（Bi-gram Model）</strong>，此时有：</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+P(S)
+&=p(w_1,w_2,\cdots,w_m) \\
+&= \prod_{i=1}^n p(w_i|w_{i-1}) \\
+&=p(w_1)p(w_2|w_1)\cdots p(w_n|w_{n-1})
+\end{align*}</script><p>如果一个词的出现仅依赖于它之前的两个词，即 $N=3$，那么就称为<strong>三元模型（Tri-gram Model）</strong>，此时有：</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+P(S)
+&=p(w_1,w_2,\cdots,w_m) \\
+&= \prod_{i=1}^n p(w_i|w_{i-2}w_{i-1}) \\
+&=p(w_1)p(w_2|w_1)\cdots p(w_n|w_{n-1}w_{n-2})
+\end{align*}</script><p>以此类推，$N$ 可以取很高，这一类模型即 N-Gram 模型</p>
+<h2 id="条件概率的计算"><a href="#条件概率的计算" class="headerlink" title="条件概率的计算"></a>条件概率的计算</h2><p>在引入马尔可夫假设后，对于 N-Gram，有：</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+p(w_1,w_2,\cdots,w_n) 
+&= \prod_{i=1}^n p(w_i|w_{i-1}\cdots w_1) \\
+&\approx \prod_{i=1}^n p(w_i|w_{i-1}\cdots w_{i-N+1})
+\end{align*}</script><p>此时问题的核心就是如何计算每一项的条件概率 $p(w_i|w_{i-1}\cdots w_2 w_1)$，由于整句的概率就是各个词出现概率的乘积，那么有：</p>
+<script type="math/tex; mode=display">
+p(w_i|w_{i-1}\cdots w_{i-N+1}) = \frac{C(w_1w_2\cdots w_i)}{C(w_1w_2\cdots w_{i-1})}</script><p>其中，函数 $C(*)$ 代表取参数 $*$​​ 的频数</p>
+<p>可以发现，对于词袋法来说，其本质上就是一个 Uni-Gram 模型</p>
+<h2 id="实例"><a href="#实例" class="headerlink" title="实例"></a>实例</h2><p>以 Bi-Gram 为例，假设有如下两句话组成的语料库：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">S1: <span class="tag">&lt;<span class="name">s</span>&gt;</span>I am Sam<span class="tag">&lt;<span class="name">s</span>&gt;</span></span><br><span class="line">S2: <span class="tag">&lt;<span class="name">s</span>&gt;</span>Sam I am<span class="tag">&lt;<span class="name">s</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>容易统计，<code>I</code> 出现了 $2$ 次，<code>I am</code> 出现了 $2$ 次，因此能计算概率：</p>
+<script type="math/tex; mode=display">
+p(\text{am}|\text{I}) = \frac{1}{1} = 1</script><p>同理，可计算出：</p>
+<script type="math/tex; mode=display">
+\begin{matrix}
+p(\text{I}|\text{<s>}) = \frac{1}{4} & 
+p(\text{Sam}|\text{am}) = \frac{1}{2} & p(\text{<s>}|\text{Sam}) = \frac{1}{2} \\ 
+p(\text{Sam}|\text{<s>}) = \frac{1}{4} &
+p(\text{I}|\text{Sam}) = \frac{1}{2} &
+p(\text{<s>}|\text{am}) = \frac{1}{2} \\
+\end{matrix}</script><p>那么，对于句子 $S_1$，有：</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+p(S_1) 
+&= p(\text{<s>I am Sam<s>}) \\
+&= p(\text{I}|\text{<s>})p(\text{am}|\text{I})p(\text{Sam}|\text{am})p(\text{<s>}|\text{Sam}) \\
+&= \frac{1}{4} \cdot \frac{1}{1}\cdot \frac{1}{2}\cdot \frac{1}{2} \\
+&= \frac{1}{16}
+\end{align*}</script><p>同理，可计算出句子 $S_2$ 的概率为</p>
+<script type="math/tex; mode=display">
+p(S_2) = \frac{1}{16}</script><p>需要注意的是，当句子很长时，概率的相乘可能会造成数据下溢，即多个小于 $1$ 的常数相乘使得结果接近于 $0$，此时通常使用 $\log$​ 概率来解决</p>
+<h1 id="【N-的选取】"><a href="#【N-的选取】" class="headerlink" title="【N 的选取】"></a>【N 的选取】</h1><p>为确定 $N$ 的最佳取值，《Language Modeling with N-grams》 中，针对 Unigram、Bigram、Trigram 模型，计算各自的 Perplexity 指标，该指标越小说明一个语言模型的效果越好</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+PP(S) 
+&= \sqrt[n]{\frac{1}{p(w_1,w_2,\cdots,w_n)}} \\
+&= \sqrt[n]{\frac{1}{\prod\limits_{i=1}^n p(w_i|w_{i-1}\cdots w_{i-N+1})}} 
+\end{align*}</script><p>结果显示，Tri-Gram 的 Perplexity 最小，因此其效果也是最好的</p>
+<p><img width="500" src="/images/artificial-intelligence/deep-learning/nlp/04-1.png"></p>
+<h1 id="【数据平滑方法】"><a href="#【数据平滑方法】" class="headerlink" title="【数据平滑方法】"></a>【数据平滑方法】</h1><h2 id="稀疏问题"><a href="#稀疏问题" class="headerlink" title="稀疏问题"></a>稀疏问题</h2><p>当 N-Gram 模型的 $N$ 取值越大时，Perplexity 越小，这在直观意义上是说得通的，即依赖的词越多，获得的信息量就越多</p>
+<p>然而，随着 $N$ 的增大，词的组合在语料库中的概率极低，即之前提到的稀疏性问题</p>
+<p>例如在 Bi-Gram 中，若词库中有 $20000$ 个单词，那么两两组合就有 $C_{20000}^2 = 199990000$ 种组合，计算大部分句子的概率时都将为 $0$，这显然是不合理的</p>
+<p>为解决这种稀疏性问题，在计算条件概率时引入<strong>数据平滑（Data Smoothing）</strong>，重新分配整个概率空间，使得已经出现的 N-Gram 的概率降低，补充给未曾出现过的 N-Gram</p>
+<p>常见的数据平滑方法有内插法、回溯法、拉普拉斯平滑、add-K、Absolute Discounting、Kneser-Ney 平滑等，这里仅介绍最简单的两种</p>
+<h2 id="内插法"><a href="#内插法" class="headerlink" title="内插法"></a>内插法</h2><p><strong>内插法（Interpolation）</strong>有点像滑动平均，其核心思想是：既然高阶组合可能出现次数为 $0$，那稍微低阶一点的组合总有不为 $0$ 的，因此利用低阶的组合来计算高阶组合的概率</p>
+<p>例如，对于一个三阶组合 $p(w_{i}|w_{i-1}w_{i-2})=0$，有 $p(w_{i}|w_{i-1})&gt;0$ 且 $p(w_i)&gt;0$，那么加权平均后有：</p>
+<script type="math/tex; mode=display">
+\tilde{p}(w_{i}|w_{i-1}w_{i-2}) = \lambda_3 p(w_{i}|w_{i-1}w_{i-2}) + \lambda_2 p(w_{i}|w_{i-1}) + \lambda_1 p(w_i)</script><h2 id="拉普拉斯平滑"><a href="#拉普拉斯平滑" class="headerlink" title="拉普拉斯平滑"></a>拉普拉斯平滑</h2><p><strong>拉普拉斯平滑（Laplacian Smoothing）</strong>，是强制让所有的 N-Gram 至少出现一次，只需要在分子和分母上分别做加法即可，但由于大部分的 N-Gram 都是没有出现过的，该方法很容易为他们分配过多的概率空间</p>
+<script type="math/tex; mode=display">
+p(w_i|w_{i-1}\cdots w_{i-N+1}) = \frac{C(w_1w_2\cdots w_i)+1}{C(w_1w_2\cdots w_{i-1})+|V|}</script>
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>感谢您对我的支持，让我继续努力分享有用的技术与知识点！</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/wechatpay.jpg" alt="Alex_McAvoy 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/alipay.jpg" alt="Alex_McAvoy 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Alex_McAvoy
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://alex-mcavoy.github.io/artificial-intelligence/deep-learning/nlp/4319fc88.html" title="N-Gram 模型">https://alex-mcavoy.github.io/artificial-intelligence/deep-learning/nlp/4319fc88.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/artificial-intelligence/" rel="tag"># 人工智能</a>
+              <a href="/tags/deep-learning/" rel="tag"># 深度学习</a>
+              <a href="/tags/nlp/" rel="tag"># 自然语言处理</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/artificial-intelligence/deep-learning/nlp/93aca240.html" rel="prev" title="TF-IDF 算法">
+      <i class="fa fa-chevron-left"></i> TF-IDF 算法
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/artificial-intelligence/deep-learning/nlp/e5c3ae8a.html" rel="next" title="Word2Vec 模型">
+      Word2Vec 模型 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【概述】"><span class="nav-number">1.</span> <span class="nav-text">【概述】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【基本思想】"><span class="nav-number">2.</span> <span class="nav-text">【基本思想】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#概率计算"><span class="nav-number">2.1.</span> <span class="nav-text">概率计算</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#马尔可夫假设的引入"><span class="nav-number">2.2.</span> <span class="nav-text">马尔可夫假设的引入</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#条件概率的计算"><span class="nav-number">2.3.</span> <span class="nav-text">条件概率的计算</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#实例"><span class="nav-number">2.4.</span> <span class="nav-text">实例</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【N-的选取】"><span class="nav-number">3.</span> <span class="nav-text">【N 的选取】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【数据平滑方法】"><span class="nav-number">4.</span> <span class="nav-text">【数据平滑方法】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#稀疏问题"><span class="nav-number">4.1.</span> <span class="nav-text">稀疏问题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#内插法"><span class="nav-number">4.2.</span> <span class="nav-text">内插法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#拉普拉斯平滑"><span class="nav-number">4.3.</span> <span class="nav-text">拉普拉斯平滑</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">  
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Alex_McAvoy"
+      src="/assets/img/head.jpg">
+  <p class="site-author-name" itemprop="name">Alex_McAvoy</p>
+  <div class="site-description" itemprop="description">想要成为渔夫的猎手</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">702</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">72</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">83</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Alex-McAvoy" title="GitHub → https://github.com/Alex-McAvoy" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/u011815404" title="CSDN → https://blog.csdn.net/u011815404" rel="noopener" target="_blank"><i class="fas fa-copyright fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+<!-- 访客地图 -->
+<script type="text/javascript" src="//rf.revolvermaps.com/0/0/5.js?i=50n58yo58ow&amp;m=0&amp;c=ff0000&amp;cr1=ffffff&amp;s=140" async="async"></script>
+
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdz20172133" title="https://blog.csdn.net/sdz20172133" rel="noopener" target="_blank">神仙队友</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://pxlsdz.gitee.io/" title="https://pxlsdz.gitee.io/" rel="noopener" target="_blank">神仙队友blog2</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdau_fangshifeng" title="https://blog.csdn.net/sdau_fangshifeng" rel="noopener" target="_blank">酷头</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://bycore.net" title="https://bycore.net" rel="noopener" target="_blank">凉了的某饼同学</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://kris-cn.github.io/" title="http://kris-cn.github.io/" rel="noopener" target="_blank">翟孙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://deng.fun/" title="http://deng.fun/" rel="noopener" target="_blank">芙蓉姐姐</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/wentong_Xu" title="https://blog.csdn.net/wentong_Xu" rel="noopener" target="_blank">小黑贱胖子</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.yuheng.tech/" title="https://www.yuheng.tech/" rel="noopener" target="_blank">咸于</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/lanshan1111" title="https://blog.csdn.net/lanshan1111" rel="noopener" target="_blank">肥硕硕</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdauguanweihong" title="https://blog.csdn.net/sdauguanweihong" rel="noopener" target="_blank">管少</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_41661919" title="https://blog.csdn.net/qq_41661919" rel="noopener" target="_blank">俊杰</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_40859951" title="https://blog.csdn.net/qq_40859951" rel="noopener" target="_blank">峰哥</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/LSD20164388" title="https://blog.csdn.net/LSD20164388" rel="noopener" target="_blank">狗冬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37868325" title="https://blog.csdn.net/qq_37868325" rel="noopener" target="_blank">妍大佬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://sanshuiii.github.io/" title="https://sanshuiii.github.io/" rel="noopener" target="_blank">sanshuiii</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://zjpzhao.github.io/" title="https://zjpzhao.github.io/" rel="noopener" target="_blank">brain</a>
+        </li>
+    </ul>
+  </div>
+
+		
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+  
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Alex_McAvoy</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+</br>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script><script src="/js/bookmark.js"></script>
+
+
+
+  
+
+
+
+
+  <script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '48fd73a538d3fa927f65',
+      clientSecret: '56618aefeee90bac3c20de8d51bb0b985d67252d',
+      repo        : 'Gitalk-Comment',
+      owner       : 'Alex-McAvoy',
+      admin       : ['Alex-McAvoy'],
+      id          : '9bc734ceea01752d7155ceed3b65a324',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+  
+  <!-- 鼠标单击粒子特效 -->
+  <script type="text/javascript" src="/js/cursor-effects.js"></script>
+  <!-- 多级目录 -->
+  <script type="text/javascript" src="/js/category.js"></script>
+  
+</body>
+</html>

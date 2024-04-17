@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.9.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/img/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/assets/img/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/pace-js@1/themes/blue/pace-theme-minimal.css">
+  <script src="//cdn.jsdelivr.net/npm/pace-js@1/pace.min.js"></script>
+
+
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"alex-mcavoy.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":16,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":true,"color":"#ff0000","save":"manual"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":true},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.json"};
+  </script>
+
+  <meta name="description" content="【概述】机器学习的模型可分为判别式模型和生成式模型两大类，由于反向传播、Dropout 等算法的出现，基于深度学习的判别式模型得到迅速发展，而由于生成式模型建模较为困难，因此发展缓慢，直到生成对抗网络（Generative Adversarial Network，GAN）的出现，这一领域才重新开始焕发生机 GAN 模型的主要结构包括一个生成器（Generator）和一个判别器（Discrimina">
+<meta name="keywords" content="人工智能,深度学习,对抗生成网络">
+<meta property="og:type" content="article">
+<meta property="og:title" content="生成对抗网络 GAN">
+<meta property="og:url" content="https://alex-mcavoy.github.io/artificial-intelligence/deep-learning/对抗生成网络/db3289e2.html">
+<meta property="og:site_name" content="Alex_McAvoy">
+<meta property="og:description" content="【概述】机器学习的模型可分为判别式模型和生成式模型两大类，由于反向传播、Dropout 等算法的出现，基于深度学习的判别式模型得到迅速发展，而由于生成式模型建模较为困难，因此发展缓慢，直到生成对抗网络（Generative Adversarial Network，GAN）的出现，这一领域才重新开始焕发生机 GAN 模型的主要结构包括一个生成器（Generator）和一个判别器（Discrimina">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/deep-learning/gan/01-1.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/deep-learning/gan/01-2.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/deep-learning/gan/01-3.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/deep-learning/gan/01-4.png">
+<meta property="og:updated_time" content="2024-04-17T15:20:38.745Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="生成对抗网络 GAN">
+<meta name="twitter:description" content="【概述】机器学习的模型可分为判别式模型和生成式模型两大类，由于反向传播、Dropout 等算法的出现，基于深度学习的判别式模型得到迅速发展，而由于生成式模型建模较为困难，因此发展缓慢，直到生成对抗网络（Generative Adversarial Network，GAN）的出现，这一领域才重新开始焕发生机 GAN 模型的主要结构包括一个生成器（Generator）和一个判别器（Discrimina">
+<meta name="twitter:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/deep-learning/gan/01-1.png">
+
+<link rel="canonical" href="https://alex-mcavoy.github.io/artificial-intelligence/deep-learning/对抗生成网络/db3289e2.html">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>生成对抗网络 GAN | Alex_McAvoy</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Alex_McAvoy</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">想要成为渔夫的猎手</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+
+	
+	
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/artificial-intelligence/deep-learning/对抗生成网络/db3289e2.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/assets/img/head.jpg">
+      <meta itemprop="name" content="Alex_McAvoy">
+      <meta itemprop="description" content="想要成为渔夫的猎手">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Alex_McAvoy">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          生成对抗网络 GAN
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2024-04-17 20:16:00" itemprop="dateCreated datePublished" datetime="2024-04-17T20:16:00+08:00">2024-04-17</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/artificial-intelligence/" itemprop="url" rel="index"><span itemprop="name">人工智能</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/artificial-intelligence/deep-learning/" itemprop="url" rel="index"><span itemprop="name">深度学习</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/artificial-intelligence/deep-learning/对抗生成网络/" itemprop="url" rel="index"><span itemprop="name">对抗生成网络</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>3.3k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>3 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="【概述】"><a href="#【概述】" class="headerlink" title="【概述】"></a>【概述】</h1><p>机器学习的模型可分为判别式模型和生成式模型两大类，由于反向传播、Dropout 等算法的出现，基于深度学习的判别式模型得到迅速发展，而由于生成式模型建模较为困难，因此发展缓慢，直到<strong>生成对抗网络（Generative Adversarial Network，GAN）</strong>的出现，这一领域才重新开始焕发生机</p>
+<p>GAN 模型的主要结构包括一个<strong>生成器（Generator）</strong>和一个<strong>判别器（Discriminator）</strong>，通过两者的互相博弈学习产生输出，具体来说，生成器 G 的任务是生成看起来自然真实的、与原始数据相似的样本，判别器 D 的任务是判定给定的样本是来源于真实数据集的，还是来源于生成模型伪造的</p>
+<p><img width="500" src="/images/artificial-intelligence/deep-learning/gan/01-1.png"></p>
+<p>这可以看做一种零和博弈，生成器像一个造假团伙，试图生产和使用假币，而判别器像检测假币的警察。生成器试图欺骗判别器，判别器则努力不被生成器欺骗。模型经过交替优化训练，两种模型都能得到提升，但最终得到的是效果提升到很好的生成器，这个生成器所生成的产品能达到真假难分的地步</p>
+<p>目前，GAN 的应用场景主要有：</p>
+<ol>
+<li>图像数据增强，利用 GAN 生成图像数据</li>
+<li>图像降噪修复、超分辨率重构、图像风格迁移等</li>
+<li>与强化学习结合，将 GAN 应用于离散数据</li>
+</ol>
+<h1 id="【网络结构】"><a href="#【网络结构】" class="headerlink" title="【网络结构】"></a>【网络结构】</h1><p>在原始的 GAN 理论中，并不要求生成器 G 和判别器 D 都是神经网络，只要是能够拟合相应生成和判别的可微分函数即可，但在实际应用中，一般都采用深度神经网络作为生成器 G 和判别器 D</p>
+<p>GAN 的基本结构如下图所示，其是由生成器 G 和判别器 D 两个网络组合而成，对于生成器 G 来说，其输入为随机噪声向量 $z$，输出为给定像素大小的图像 $G(z)$，对于判别器 D 来说，其是一个判别网络，即判别给定的输入图片 $x$ 是不是真实的，输出 $D(x)$ 代表 $x$ 为真实的概率</p>
+<p><img width="500" src="/images/artificial-intelligence/deep-learning/gan/01-2.png"></p>
+<p>具体来说，生成器可以是任意输出图像的模型，通常采用最简单的全连接神经网络，以防止网络层次太深导致梯度消失或者梯度爆炸，输入向量可以视为携带输出的某些信息，由于对于输出没有具体要求，只要求其能够最大程度的与真实数据相似，从而骗过判别器，因此使用随机噪声的作为输入向量即可</p>
+<p>判别器 $D$ 判别的是输入图像 $x$ 的真伪，并不需要判别 $x$ 究竟是什么，只需要判别 $x$ 是来自于真实数据集，还是来自于生成器生成的图像 $G(z)$​，因此只需要输出一个概率即可</p>
+<h1 id="【训练流程】"><a href="#【训练流程】" class="headerlink" title="【训练流程】"></a>【训练流程】</h1><p>综上所述，GAN 就是生成器 G 和判别器 D 两个网络的叠加组合，其核心思想可以简单的概况为：令生成器 G 学习真实数据集中样本分布，期望生成分布能够拟合于数据的真实分布，并且判别器分辨不出样本是真实的还是生成的</p>
+<p>整个 GAN 的训练过程可分为如下四步：</p>
+<ol>
+<li><strong>参数初始化</strong>：初始化生成器参数 $\theta_{g}$ 和判别器参数 $\theta_d$</li>
+<li><strong>采样</strong>：从真实数据集中采样 $n$ 个样本 $\{x_1,x_2,\cdots,x_n\}$，从先验分布噪声中采样 $n$ 个噪声样本 $\{z_1,z_2,\cdots,z_n\}$，并利用噪声样本生成对应的生成样本 $\{\tilde{x}_1,\tilde{x}_2,\cdots,\tilde{x}_n\}$</li>
+<li><strong>训练判别器</strong> D：固定生成器 $G$，对判别器进行 $k$ 次训练，使其能够尽可能地区分生成样本和真实样本</li>
+<li><strong>训练生成器</strong> G：选择较小的学习率对生成器 G 进行 $1$ 次训练 ，使其能够尽可能地减小生成样本与真实样本间的差距，即尽量使判别器 D 判别错误</li>
+</ol>
+<p>多次更新迭代后，最终理想情况是使得判别器 D 判别不出样本来自于生成器的输出还是真实训练集，即最终样本判别概率为 $0.5$​</p>
+<p><img src="/images/artificial-intelligence/deep-learning/gan/01-3.png"></p>
+<p>整个过程可表现为上图的四个状态，其中黑色虚线为真实样本分布，绿色实线为生成样本分布，蓝色虚线为生成样本在判别器中的判别概率分布，$z$ 为随机噪声，$z$ 到 $x$ 的映射为生成器生成的分布映射</p>
+<ol>
+<li>初始状态 $(a)$：最初始的状态，生成器的生成分布和数据的真实分布区别很大，并且判别器判别出样本的概率不稳定</li>
+<li>判别器状态 $(b)$：经过 $k$ 次训练判别器后，判别器达到该状态，此时判别样本区分得非常显著</li>
+<li>生成器状态 $(c)$：经过 $1$ 次训练生成器后，生成器达到该状态，此时生成器的生成分布逼近了数据的真实分布</li>
+<li>理想状态 $(d)$​：最终希望到达的状态，生成器的生成分布拟合于数据的真实分布，并且判别器分辨不出样本是生成的还是真实的</li>
+</ol>
+<p>需要注意的是，之所以要先训练 $k$ 次判别器 D，再训练生成器 G，是因为要先拥有一个好的判别器 D，使得能够教好地区分出真实样本和生成样本之后，才好更为准确地对生成器 G 进行更新</p>
+<h1 id="【损失函数】"><a href="#【损失函数】" class="headerlink" title="【损失函数】"></a>【损失函数】</h1><p>对于 GAN 来说，其有生成器 G 和判别器 D 两个网络，优化目标即寻找两个网络间的<strong>纳什均衡（对于博弈中的每个参与者，只要其他人不改变策略，他就无法改善自己的状况）</strong>，即生成器 G 的生成分布拟合于数据的真实分布，使得判别器 D 判别不出样本来自于生成器的输出还是真实训练集，即最终样本判别概率为 $0.5$</p>
+<p><img width="500" src="/images/artificial-intelligence/deep-learning/gan/01-4.png"></p>
+<p>由于 GAN 关心的是生成分布和真实分布间的差异，而对于两种概率分布的差异，通常使用交叉熵来表达，即：</p>
+<script type="math/tex; mode=display">
+\mathbb{H}(p,q)=-\sum_{i} p_i \log q_i</script><p>对于 GAN 中的样本点，其有两个出处：</p>
+<ol>
+<li>真实样本 $x$</li>
+<li>生成器的生成样本 $\tilde{x}\sim G(z)$</li>
+</ol>
+<p>其中，对于真实样本，要判别其为正确的分布 $y_i$，对于生成样本 $\tilde{x}$，要判别其为错误的分布 $(1-y_i)$</p>
+<p>对于单个样本对 $(x_1,y_1)$ 来说，$y_1$ 为真实样本分布，那么对应的 $1-y_1$ 就是生成样本分布，则 $D(x_1)$ 可表示为判别样本为正确的概率，$1-D(x_1)$ 为判别样本为错误的概率，故有：</p>
+<script type="math/tex; mode=display">
+\mathbb{H}((x_1,y_1),D) = -y_1\log D(x_1) -(1-y_1)\log (1-D(x_1))</script><p>将其推广到 $n$ 个样本上，有：</p>
+<script type="math/tex; mode=display">
+\mathbb{H}((x_1,y_1)^n_{i=1},D) = -\sum_{i=1}^n y_i\log D(x_i) -\sum_{i=1}^n (1-y_i)\log (1-D(x_i))</script><p>为便于表达，令 $y_i=\frac{1}{2}$，$G(z)$ 表示生成样本，将上式写为概率分布的期望形式，有：</p>
+<script type="math/tex; mode=display">
+\mathbb{H}((x_1,y_1)^{\infty}_{i=1},D) = -\frac{1}{2}\mathbb{E}_{x\sim p_{\text{data}}} \Big[ \log D(x) \Big] -\frac{1}{2} \mathbb{E}_{z\sim p_z(z)} \Big[ \log (1-D(G(z))) \Big]</script><p>用 $V(G,D)$ 来表示真实样本和生成样本的差异程度，那么损失函数的优化目标可写为：</p>
+<script type="math/tex; mode=display">
+\min_{G} \max_{D} V(D,G) = \mathbb{E}_{x\sim p_{\text{data}}} \Big[ \log D(x_i) \Big] + \mathbb{E}_{z\sim p_z(z)} \Big[ \log (1-D(G(z))) \Big]</script><p>对于生成器 G，其目标是让判别器 D 认为生成的数据是真的（概率 $1$），而对于判别器 $D$，其目标是让真实数据为真（概率 $1$），生成数据为假（概率 $0$）</p>
+<p>也就是说，优化目标可以理解为：</p>
+<ul>
+<li>$\max\limits_D V(D,G)$：固定生成器 G，尽可能地让判别器 D 能够最大化地判别出样本来自于真实数据还是生成数据</li>
+<li>令 $L=\max\limits_{D} V(D,G)$，有 $\min\limits_G L$：固定判别器 D，最小化真实样本与生成样本的差异</li>
+</ul>
+<h1 id="【不足】"><a href="#【不足】" class="headerlink" title="【不足】"></a>【不足】</h1><p>GAN 的巧妙在于其设计思维，而技术上是对现有算法的组合，其不可避免的存在一些不足</p>
+<ol>
+<li>需要同时训练生成器 G 和判别器 D 两个网络，训练难度大</li>
+<li>训练过程中可能会发生崩溃问题，使得生成器 G 退化，总是生成同样的样本点，无法继续学习，同时，当生成器 G 崩溃时，判别器 D 也会对相似的样本点指向相似的方向，使得训练无法继续</li>
+<li>网络难以收敛，目前所有理论都认为 GAN 应该在纳什均衡上有很好的表现，但梯度下降只有在凸函数的情况下才能保证实现纳什均衡</li>
+<li>可解释性差，生成器的分布 $p_z(z)$​ 没有显式表达</li>
+<li>多样性差，生成器的关注点在于只需要骗过判别器</li>
+<li>难以学习生成离散数据</li>
+</ol>
+
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>感谢您对我的支持，让我继续努力分享有用的技术与知识点！</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/wechatpay.jpg" alt="Alex_McAvoy 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/alipay.jpg" alt="Alex_McAvoy 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Alex_McAvoy
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://alex-mcavoy.github.io/artificial-intelligence/deep-learning/对抗生成网络/db3289e2.html" title="生成对抗网络 GAN">https://alex-mcavoy.github.io/artificial-intelligence/deep-learning/对抗生成网络/db3289e2.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/artificial-intelligence/" rel="tag"># 人工智能</a>
+              <a href="/tags/deep-learning/" rel="tag"># 深度学习</a>
+              <a href="/tags/对抗生成网络/" rel="tag"># 对抗生成网络</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/mathematics/matrix-theory/b0648662.html" rel="prev" title="瑞利商和广义瑞利商">
+      <i class="fa fa-chevron-left"></i> 瑞利商和广义瑞利商
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【概述】"><span class="nav-number">1.</span> <span class="nav-text">【概述】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【网络结构】"><span class="nav-number">2.</span> <span class="nav-text">【网络结构】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【训练流程】"><span class="nav-number">3.</span> <span class="nav-text">【训练流程】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【损失函数】"><span class="nav-number">4.</span> <span class="nav-text">【损失函数】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【不足】"><span class="nav-number">5.</span> <span class="nav-text">【不足】</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">  
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Alex_McAvoy"
+      src="/assets/img/head.jpg">
+  <p class="site-author-name" itemprop="name">Alex_McAvoy</p>
+  <div class="site-description" itemprop="description">想要成为渔夫的猎手</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">702</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">72</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">83</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Alex-McAvoy" title="GitHub → https://github.com/Alex-McAvoy" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/u011815404" title="CSDN → https://blog.csdn.net/u011815404" rel="noopener" target="_blank"><i class="fas fa-copyright fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+<!-- 访客地图 -->
+<script type="text/javascript" src="//rf.revolvermaps.com/0/0/5.js?i=50n58yo58ow&amp;m=0&amp;c=ff0000&amp;cr1=ffffff&amp;s=140" async="async"></script>
+
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdz20172133" title="https://blog.csdn.net/sdz20172133" rel="noopener" target="_blank">神仙队友</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://pxlsdz.gitee.io/" title="https://pxlsdz.gitee.io/" rel="noopener" target="_blank">神仙队友blog2</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdau_fangshifeng" title="https://blog.csdn.net/sdau_fangshifeng" rel="noopener" target="_blank">酷头</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://bycore.net" title="https://bycore.net" rel="noopener" target="_blank">凉了的某饼同学</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://kris-cn.github.io/" title="http://kris-cn.github.io/" rel="noopener" target="_blank">翟孙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://deng.fun/" title="http://deng.fun/" rel="noopener" target="_blank">芙蓉姐姐</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/wentong_Xu" title="https://blog.csdn.net/wentong_Xu" rel="noopener" target="_blank">小黑贱胖子</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.yuheng.tech/" title="https://www.yuheng.tech/" rel="noopener" target="_blank">咸于</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/lanshan1111" title="https://blog.csdn.net/lanshan1111" rel="noopener" target="_blank">肥硕硕</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdauguanweihong" title="https://blog.csdn.net/sdauguanweihong" rel="noopener" target="_blank">管少</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_41661919" title="https://blog.csdn.net/qq_41661919" rel="noopener" target="_blank">俊杰</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_40859951" title="https://blog.csdn.net/qq_40859951" rel="noopener" target="_blank">峰哥</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/LSD20164388" title="https://blog.csdn.net/LSD20164388" rel="noopener" target="_blank">狗冬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37868325" title="https://blog.csdn.net/qq_37868325" rel="noopener" target="_blank">妍大佬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://sanshuiii.github.io/" title="https://sanshuiii.github.io/" rel="noopener" target="_blank">sanshuiii</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://zjpzhao.github.io/" title="https://zjpzhao.github.io/" rel="noopener" target="_blank">brain</a>
+        </li>
+    </ul>
+  </div>
+
+		
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+  
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Alex_McAvoy</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+</br>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script><script src="/js/bookmark.js"></script>
+
+
+
+  
+
+
+
+
+  <script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '48fd73a538d3fa927f65',
+      clientSecret: '56618aefeee90bac3c20de8d51bb0b985d67252d',
+      repo        : 'Gitalk-Comment',
+      owner       : 'Alex-McAvoy',
+      admin       : ['Alex-McAvoy'],
+      id          : '32b42735273f584e99c5b1777be428c0',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+  
+  <!-- 鼠标单击粒子特效 -->
+  <script type="text/javascript" src="/js/cursor-effects.js"></script>
+  <!-- 多级目录 -->
+  <script type="text/javascript" src="/js/category.js"></script>
+  
+</body>
+</html>
