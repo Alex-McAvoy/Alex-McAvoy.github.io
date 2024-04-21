@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.9.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/img/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/assets/img/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/pace-js@1/themes/blue/pace-theme-minimal.css">
+  <script src="//cdn.jsdelivr.net/npm/pace-js@1/pace.min.js"></script>
+
+
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"alex-mcavoy.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":16,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":true,"color":"#ff0000","save":"manual"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":true},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.json"};
+  </script>
+
+  <meta name="description" content="【概述】对于 DDPM 来说，一个最大的缺点是需要设置较长的扩散步数才能得到好的效果，这导致了生成样本的速度较慢，比如扩散步数为 $1000$ 的话，那么生成一个样本就要模型推理 $1000$ 次 为此 Jiaming Song 等学者在《Denoising Diffusion Implicit Models》 中针对 DDPM 进行了改进，提出了去噪扩散隐式模型（Denoising Diffus">
+<meta name="keywords" content="人工智能,深度学习,深度生成模型">
+<meta property="og:type" content="article">
+<meta property="og:title" content="去噪扩散隐式模型 DDIM">
+<meta property="og:url" content="https://alex-mcavoy.github.io/artificial-intelligence/deep-learning/deep-generative-model/89cf9085.html">
+<meta property="og:site_name" content="Alex_McAvoy">
+<meta property="og:description" content="【概述】对于 DDPM 来说，一个最大的缺点是需要设置较长的扩散步数才能得到好的效果，这导致了生成样本的速度较慢，比如扩散步数为 $1000$ 的话，那么生成一个样本就要模型推理 $1000$ 次 为此 Jiaming Song 等学者在《Denoising Diffusion Implicit Models》 中针对 DDPM 进行了改进，提出了去噪扩散隐式模型（Denoising Diffus">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/deep-learning/deep-generative-model/10-1.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/deep-learning/deep-generative-model/10-2.png">
+<meta property="og:updated_time" content="2024-04-21T09:35:38.046Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="去噪扩散隐式模型 DDIM">
+<meta name="twitter:description" content="【概述】对于 DDPM 来说，一个最大的缺点是需要设置较长的扩散步数才能得到好的效果，这导致了生成样本的速度较慢，比如扩散步数为 $1000$ 的话，那么生成一个样本就要模型推理 $1000$ 次 为此 Jiaming Song 等学者在《Denoising Diffusion Implicit Models》 中针对 DDPM 进行了改进，提出了去噪扩散隐式模型（Denoising Diffus">
+<meta name="twitter:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/deep-learning/deep-generative-model/10-1.png">
+
+<link rel="canonical" href="https://alex-mcavoy.github.io/artificial-intelligence/deep-learning/deep-generative-model/89cf9085.html">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>去噪扩散隐式模型 DDIM | Alex_McAvoy</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Alex_McAvoy</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">想要成为渔夫的猎手</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+
+	
+	
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/artificial-intelligence/deep-learning/deep-generative-model/89cf9085.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/assets/img/head.jpg">
+      <meta itemprop="name" content="Alex_McAvoy">
+      <meta itemprop="description" content="想要成为渔夫的猎手">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Alex_McAvoy">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          去噪扩散隐式模型 DDIM
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2024-04-21 14:17:00" itemprop="dateCreated datePublished" datetime="2024-04-21T14:17:00+08:00">2024-04-21</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/artificial-intelligence/" itemprop="url" rel="index"><span itemprop="name">人工智能</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/artificial-intelligence/deep-learning/" itemprop="url" rel="index"><span itemprop="name">深度学习</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/artificial-intelligence/deep-learning/deep-generative-model/" itemprop="url" rel="index"><span itemprop="name">深度生成模型</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>5.2k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>5 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="【概述】"><a href="#【概述】" class="headerlink" title="【概述】"></a>【概述】</h1><p>对于 DDPM 来说，一个最大的缺点是需要设置较长的扩散步数才能得到好的效果，这导致了生成样本的速度较慢，比如扩散步数为 $1000$ 的话，那么生成一个样本就要模型推理 $1000$ 次</p>
+<p>为此 Jiaming Song 等学者在<a href="https://arxiv.org/abs/2010.02502" target="_blank" rel="noopener">《Denoising Diffusion Implicit Models》</a> 中针对 DDPM 进行了改进，提出了<strong>去噪扩散隐式模型（Denoising Diffusion Implicit Models，DDIM）</strong>，不再限制前向和反向过程必须是马尔卡夫链，在不牺牲质量的情况下，允许更少的采样步数来加速反向生成过程</p>
+<p>此外 DDIM 的另一个特点是从一个随机噪音生成样本的过程是一个确定的过程，即中间再额外没有加入随机噪音</p>
+<h1 id="【引入】"><a href="#【引入】" class="headerlink" title="【引入】"></a>【引入】</h1><p>对于 DDPM 的简化优化目标：</p>
+<script type="math/tex; mode=display">
+L_{t-1}^{\text{simple}} =  \mathbb{E}_{\mathbf{x}_0,\epsilon\sim\mathcal{N}(\mathbf{0},\mathbf{I})} \Big[
+\parallel
+\epsilon - \epsilon_{\theta} (\sqrt{\overline{\alpha}_t} \mathbf{x}_{0} + \sqrt{1-\overline{\alpha}_t}\epsilon,t)
+\parallel^2
+\Big] \\</script><p>可以发现，DDPM 其实仅依赖于边缘分布 $q(\mathbf{x}_t|\mathbf{x}_0)$，而不是直接作用在联合分布 $q(\mathbf{x}_{1:T}|\mathbf{x}_0)$ 上，也就是说 DDPM 这个隐变量模型可以有很多推理分布来选择，只要推理分布满足边缘分布条件（扩散过程的特性）即可，而且这些推理过程并不一定要是马尔可夫链</p>
+<p>需要注意的是，要得到 DDPM 的优化目标，还需要知道后验分布 $q(\mathbf{x}_{t-1}|\mathbf{x}_t,\mathbf{x}_0)$，在 DDPM 中，这个分布的推导是依赖于马尔可夫链和 $q(\mathbf{x}_t|\mathbf{x}_0)$ 得到的，如果要解除对前向过程的依赖，就需要直接定义 $q(\mathbf{x}_{t-1}|\mathbf{x}_t,\mathbf{x}_0)$ 这个分布</p>
+<h1 id="【原理】"><a href="#【原理】" class="headerlink" title="【原理】"></a>【原理】</h1><h2 id="非马尔可夫前向扩散过程"><a href="#非马尔可夫前向扩散过程" class="headerlink" title="非马尔可夫前向扩散过程"></a>非马尔可夫前向扩散过程</h2><p>根据 DDPM 的前向扩散过程：</p>
+<script type="math/tex; mode=display">
+\begin{gather*}
+q(\mathbf{x}_{0:T}) = q(\mathbf{x}_0) \prod_{t=1}^T q(\mathbf{x}_t|\mathbf{x}_{t-1}) \\
+q(\mathbf{x}_{t}|\mathbf{x}_{0}) = \mathcal{N}(\mathbf{x}_{t};\sqrt{\overline{\alpha}_t}\mathbf{x}_{0},(1-\overline{\alpha}_t)\mathbf{I}) \\
+\mathbf{x}_0 \sim q(\mathbf{x}_0)
+\end{gather*}</script><p>DDIM 令 $\alpha_t=\overline{\alpha}_t$，根据推导（详见论文附录），将前向扩散分布定义为：</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+&q_{\sigma}(\mathbf{x}_{1:T}|\mathbf{x}_0) = q_{\sigma}(\mathbf{x}_T|\mathbf{x}_0)\prod_{t=2}^T q_{\sigma}(\mathbf{x}_{t-1}|\mathbf{x}_t,\mathbf{x}_0) \\
+&q_{\sigma}(\mathbf{x}_{T}|\mathbf{x}_{0}) = \mathcal{N}(\sqrt{\alpha_T}\mathbf{x}_{0},(1-\alpha_T)\mathbf{I}) \\
+&q_\sigma(\mathbf{x}_{t-1}|\mathbf{x}_t,\mathbf{x}_0)=\mathcal{N}\left(\sqrt{\alpha_{t-1}}\mathbf{x}_0+\sqrt{1-\alpha_{t-1}-\sigma_t^2}\cdot\frac{\mathbf{x}_t-\sqrt{\alpha_t}\mathbf{x}_0}{\sqrt{1-\alpha_t}},\sigma_t^2I\right),\quad t\geq 2
+\end{align*}</script><p>其中，方差 $\sigma_t^2$ 是一个实数，不同的值代表了不同的高斯分布，因此 $q_{\sigma}(\mathbf{x}_{1:T}|\mathbf{x}_0) $​ 其实是一系列的前向扩散分布，而均值也被定义为依赖于 $\mathbf{x}_0$ 和 $\mathbf{x}_t$​ 的组合函数</p>
+<p>根据 $q(\mathbf{x}_T|\mathbf{x}_0)$，根据数学归纳法，可以得到对于所有 $t$，均满足：</p>
+<script type="math/tex; mode=display">
+q(\mathbf{x}_t|\mathbf{x}_0) = \mathcal{N}(\mathbf{x}_t;\sqrt{\alpha_t}\mathbf{x}_{0},(1-\alpha_t)\mathbf{I})</script><p>也就是说，这里虽然没有直接定义前向扩散过程，但满足了之前提到的两个条件：</p>
+<ol>
+<li>已知边缘分布 $q(\mathbf{x}_t|\mathbf{x}_0)$</li>
+<li>已知后验分布 $q(\mathbf{x}_{t-1}|\mathbf{x}_t,\mathbf{x}_0)$ </li>
+</ol>
+<p>此时，得到的前向扩散过程是一个非马尔可夫链的前向扩散过程，同时采用与 DDPM 一样的方式去推导优化目标，最终也会得到相同的 $L_{t-1}^{\text{simple}}$</p>
+<p>如下图所示，给出了非马尔可夫前向扩散过程的示例</p>
+<p><img src="/images/artificial-intelligence/deep-learning/deep-generative-model/10-1.png"></p>
+<h2 id="非马尔可夫反向生成过程"><a href="#非马尔可夫反向生成过程" class="headerlink" title="非马尔可夫反向生成过程"></a>非马尔可夫反向生成过程</h2><p>根据 DDPM 的反向生成过程：</p>
+<script type="math/tex; mode=display">
+\begin{gather*}
+p(\mathbf{x}_{0:T}) = p(\mathbf{x}_{T})\prod_{t=1}^T p(\mathbf{x}_{t-1}|\mathbf{x}_{t}) \\
+q(\mathbf{x}_{t-1}|\mathbf{x}_t) \sim \mathcal{N}(\frac{1}{\sqrt{\alpha}_t} \Big[ \mathbf{x}_t - \frac{1-\alpha_t}{\sqrt{1-\overline{\alpha}_t}} \epsilon_{\theta}(\mathbf{x}_t,t) \Big],\frac{(1-\alpha_{t})(1-\overline{\alpha}_{t-1})}{(1-\overline{\alpha}_{t})}) \\
+\mathbf{x}_T \sim\mathcal{N}(\mathbf{x}_T;\mathbf{0},\mathbf{I})
+\end{gather*}</script><p>根据 $q_{\sigma}(\mathbf{x}_{t-1}|\mathbf{x}_t,\mathbf{x}_0)$ 的形式，可使用如下公式来从 $\mathbf{x}_t$ 生成 $\mathbf{x}_{t-1}$：</p>
+<script type="math/tex; mode=display">
+\mathbf{x}_{t-1}=\sqrt{\alpha_{t-1}}\Big(\underbrace{\frac{\mathbf{x}_t-\sqrt{1-\alpha_t}\epsilon_\theta(\mathbf{x}_t,t)}{\sqrt{\alpha_t}}}_{\text{predicted }\mathbf{x}_0}\Big)+\underbrace{\sqrt{1-\alpha_{t-1}-\sigma_t^2}\cdot\epsilon_\theta(\mathbf{x}_t,t)}_{\text{direction pointing to }\mathbf{x}_t}+\underbrace{\sigma_t\epsilon_t}_{\text{random noise}}</script><p>这个过程分为三个部分：</p>
+<ol>
+<li>由预测的 $\mathbf{x}_0$ 来产生</li>
+<li>指向 $\mathbf{x}_t$ 的部分（$\epsilon_{\theta}(\theta{x}_t,t)$ 是与 $\mathbf{x}_t$ 无关的噪声）</li>
+<li>随机噪声</li>
+</ol>
+<p>进一步，将 $\sigma_t^2$ 定义为：</p>
+<script type="math/tex; mode=display">
+\sigma_t^2=\eta\cdot\tilde{\beta}_t=\eta\cdot\sqrt{\frac{1-\alpha_{t-1}}{1-\alpha_t}}\sqrt{\frac{1-\alpha_t}{\alpha_{t-1}}}</script><p>当 $\eta=1$ 时，$\sigma_t^2=\tilde{\beta}_t$，此时反向生成过程与 DDPM 相同；当 $\eta=0$ 时，这个时候反向生成过程就没有随机噪声了，一旦最初的与 $\mathbf{x}_t$ 无关的噪声 $\epsilon_{\theta}(\theta{x}_t,t)$ 确定，那么样本生成就变成了一个确定性的过程，这种情况即 DDIM</p>
+<h1 id="【反向生成过程的加速】"><a href="#【反向生成过程的加速】" class="headerlink" title="【反向生成过程的加速】"></a>【反向生成过程的加速】</h1><p>虽然 DDIM 和 DDPM 的训练过程一样，但 DDIM 并没有明确的前向扩散过程，这意味着可以定义一个更短时间步 $t$ 的前向扩散过程</p>
+<p>对于原始序列 $t=[1,2,\cdots,T]$，采样一个长度为 $S$ 的子序列 $\tau=[\tau_1,\tau_2,\cdots,\tau_S]$，将 $\mathbf{x}_{\tau_1},\mathbf{x}_{\tau_2},\cdots,\mathbf{x}_{\tau_S}$ 的前向扩散过程定义为一个马尔可夫链，且满足：</p>
+<script type="math/tex; mode=display">
+q(\mathbf{x}_{\tau_1}|\mathbf{x}_{0}) = \mathcal{N}(\mathbf{x}_{t};\sqrt{\alpha_{\tau_i}}\mathbf{x}_0,(1-\alpha_{\tau_i})\mathbf{I})</script><p>如下图所示，展示了 $\tau=[1,3]$ 的前向扩散过程</p>
+<p><img src="/images/artificial-intelligence/deep-learning/deep-generative-model/10-2.png"></p>
+<p>那么，反向生成过程就可以用这个子序列的<strong>反向马尔可夫链</strong>来替代，由于可以设置比原来的步数要小，就可以加速反向生成过程</p>
+<script type="math/tex; mode=display">
+\mathbf{x}_{\tau_{i-1}}=\sqrt{\alpha_{\tau_{i-1}}}\Big(\frac{\mathbf{x}_{\tau_{i}}-\sqrt{1-\alpha_{\tau_{i}}}\epsilon_{\theta}(\mathbf{x}_{\tau_{i}},\tau_{i})}{\sqrt{\alpha_{\tau_{i}}}}\Big)+\sqrt{1-\alpha_{\tau_{i-1}}-\sigma_{\tau_{i}}^{2}}\cdot\epsilon_{\theta}(\mathbf{x}_{\tau_{i}},\tau_{i})+\sigma_{\tau_{i}}\epsilon</script><p>本质上来说，上述的加速，其实是将前向扩散过程按照如下方式进行了分解，一个是由 $\{\mathbf{x}_{\tau_i}\}_{i=1}^S$ 组成的马尔可夫链，另一个是由剩余变量 $\{\mathbf{x}_t\}_{t\in\overline{\tau}}$ 组成的星状图</p>
+<script type="math/tex; mode=display">
+q_{\sigma,\tau}(\mathbf{x}_{1:T}|\mathbf{x}_0)=q_{\sigma,\tau}(\mathbf{x}_T|\mathbf{x}_0)\prod_{i=1}^Sq_\sigma(\mathbf{x}_{\tau_{i-1}}|\mathbf{x}_{\tau_i},\mathbf{x}_0)\prod_{t\in\bar{\tau}}q_{\sigma,\tau}(\mathbf{x}_t|\mathbf{x}_0)</script><p>其中，$\overline{\tau}=\{1,2,\cdots,T\}-\tau$</p>
+<p>同时，对于反向生成过程，也只用马尔可夫链的那部分进行生成：</p>
+<script type="math/tex; mode=display">
+p_\theta(\mathbf{x}_{0:T})=p(\mathbf{x}_T)\underbrace{\prod_{i=1}^Sp_\theta(\mathbf{x}_{\tau_{i-1}}|\mathbf{x}_{\tau_i})}_{\text{use to produce sample}}\times\underbrace{\prod_{t\in\bar{\tau}}p_\theta(\mathbf{x}_0|\mathbf{x}_t)}_{\text{only for VLB}}</script>
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>感谢您对我的支持，让我继续努力分享有用的技术与知识点！</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/wechatpay.jpg" alt="Alex_McAvoy 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/alipay.jpg" alt="Alex_McAvoy 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Alex_McAvoy
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://alex-mcavoy.github.io/artificial-intelligence/deep-learning/deep-generative-model/89cf9085.html" title="去噪扩散隐式模型 DDIM">https://alex-mcavoy.github.io/artificial-intelligence/deep-learning/deep-generative-model/89cf9085.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/artificial-intelligence/" rel="tag"># 人工智能</a>
+              <a href="/tags/deep-learning/" rel="tag"># 深度学习</a>
+              <a href="/tags/deep-generative-model/" rel="tag"># 深度生成模型</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/artificial-intelligence/deep-learning/deep-generative-model/eed4588a.html" rel="prev" title="去噪扩散概率模型 DDPM">
+      <i class="fa fa-chevron-left"></i> 去噪扩散概率模型 DDPM
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【概述】"><span class="nav-number">1.</span> <span class="nav-text">【概述】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【引入】"><span class="nav-number">2.</span> <span class="nav-text">【引入】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【原理】"><span class="nav-number">3.</span> <span class="nav-text">【原理】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#非马尔可夫前向扩散过程"><span class="nav-number">3.1.</span> <span class="nav-text">非马尔可夫前向扩散过程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#非马尔可夫反向生成过程"><span class="nav-number">3.2.</span> <span class="nav-text">非马尔可夫反向生成过程</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【反向生成过程的加速】"><span class="nav-number">4.</span> <span class="nav-text">【反向生成过程的加速】</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">  
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Alex_McAvoy"
+      src="/assets/img/head.jpg">
+  <p class="site-author-name" itemprop="name">Alex_McAvoy</p>
+  <div class="site-description" itemprop="description">想要成为渔夫的猎手</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">711</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">72</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">83</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Alex-McAvoy" title="GitHub → https://github.com/Alex-McAvoy" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/u011815404" title="CSDN → https://blog.csdn.net/u011815404" rel="noopener" target="_blank"><i class="fas fa-copyright fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+<!-- 访客地图 -->
+<script type="text/javascript" src="//rf.revolvermaps.com/0/0/5.js?i=50n58yo58ow&amp;m=0&amp;c=ff0000&amp;cr1=ffffff&amp;s=140" async="async"></script>
+
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdz20172133" title="https://blog.csdn.net/sdz20172133" rel="noopener" target="_blank">神仙队友</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://pxlsdz.gitee.io/" title="https://pxlsdz.gitee.io/" rel="noopener" target="_blank">神仙队友blog2</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdau_fangshifeng" title="https://blog.csdn.net/sdau_fangshifeng" rel="noopener" target="_blank">酷头</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://bycore.net" title="https://bycore.net" rel="noopener" target="_blank">凉了的某饼同学</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://kris-cn.github.io/" title="http://kris-cn.github.io/" rel="noopener" target="_blank">翟孙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://deng.fun/" title="http://deng.fun/" rel="noopener" target="_blank">芙蓉姐姐</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/wentong_Xu" title="https://blog.csdn.net/wentong_Xu" rel="noopener" target="_blank">小黑贱胖子</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.yuheng.tech/" title="https://www.yuheng.tech/" rel="noopener" target="_blank">咸于</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/lanshan1111" title="https://blog.csdn.net/lanshan1111" rel="noopener" target="_blank">肥硕硕</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdauguanweihong" title="https://blog.csdn.net/sdauguanweihong" rel="noopener" target="_blank">管少</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_41661919" title="https://blog.csdn.net/qq_41661919" rel="noopener" target="_blank">俊杰</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_40859951" title="https://blog.csdn.net/qq_40859951" rel="noopener" target="_blank">峰哥</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/LSD20164388" title="https://blog.csdn.net/LSD20164388" rel="noopener" target="_blank">狗冬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37868325" title="https://blog.csdn.net/qq_37868325" rel="noopener" target="_blank">妍大佬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://sanshuiii.github.io/" title="https://sanshuiii.github.io/" rel="noopener" target="_blank">sanshuiii</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://zjpzhao.github.io/" title="https://zjpzhao.github.io/" rel="noopener" target="_blank">brain</a>
+        </li>
+    </ul>
+  </div>
+
+		
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+  
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Alex_McAvoy</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+</br>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script><script src="/js/bookmark.js"></script>
+
+
+
+  
+
+
+
+
+  <script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '48fd73a538d3fa927f65',
+      clientSecret: '56618aefeee90bac3c20de8d51bb0b985d67252d',
+      repo        : 'Gitalk-Comment',
+      owner       : 'Alex-McAvoy',
+      admin       : ['Alex-McAvoy'],
+      id          : '7cd8354a5c076ca02675813c9e74ed3e',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+  
+  <!-- 鼠标单击粒子特效 -->
+  <script type="text/javascript" src="/js/cursor-effects.js"></script>
+  <!-- 多级目录 -->
+  <script type="text/javascript" src="/js/category.js"></script>
+  
+</body>
+</html>

@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.9.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/img/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/assets/img/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/pace-js@1/themes/blue/pace-theme-minimal.css">
+  <script src="//cdn.jsdelivr.net/npm/pace-js@1/pace.min.js"></script>
+
+
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"alex-mcavoy.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":16,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":true,"color":"#ff0000","save":"manual"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":true},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.json"};
+  </script>
+
+  <meta name="description" content="【概述】2020 年 6 月，Jonathan Ho 等学者在《Denoising Diffusion Probabilistic Models》中对之前的扩散概率模型进行了简化，并通过变分推断，将后验问题转为优化问题进行建模，提出了经典的去噪扩散概率模型（Denoising Diffusion Probabilistic Model，DDPM），将扩散概率模型的思想用于图像生成，目前所说的扩散模">
+<meta name="keywords" content="人工智能,深度学习,深度生成模型">
+<meta property="og:type" content="article">
+<meta property="og:title" content="去噪扩散概率模型 DDPM">
+<meta property="og:url" content="https://alex-mcavoy.github.io/artificial-intelligence/deep-learning/deep-generative-model/eed4588a.html">
+<meta property="og:site_name" content="Alex_McAvoy">
+<meta property="og:description" content="【概述】2020 年 6 月，Jonathan Ho 等学者在《Denoising Diffusion Probabilistic Models》中对之前的扩散概率模型进行了简化，并通过变分推断，将后验问题转为优化问题进行建模，提出了经典的去噪扩散概率模型（Denoising Diffusion Probabilistic Model，DDPM），将扩散概率模型的思想用于图像生成，目前所说的扩散模">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/deep-learning/deep-generative-model/09-1.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/deep-learning/deep-generative-model/09-2.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/deep-learning/deep-generative-model/09-3.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/deep-learning/deep-generative-model/09-4.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/deep-learning/deep-generative-model/09-5.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/deep-learning/deep-generative-model/09-6.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/deep-learning/deep-generative-model/09-7.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/deep-learning/deep-generative-model/09-8.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/deep-learning/deep-generative-model/09-9.png">
+<meta property="og:updated_time" content="2024-04-21T09:28:50.476Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="去噪扩散概率模型 DDPM">
+<meta name="twitter:description" content="【概述】2020 年 6 月，Jonathan Ho 等学者在《Denoising Diffusion Probabilistic Models》中对之前的扩散概率模型进行了简化，并通过变分推断，将后验问题转为优化问题进行建模，提出了经典的去噪扩散概率模型（Denoising Diffusion Probabilistic Model，DDPM），将扩散概率模型的思想用于图像生成，目前所说的扩散模">
+<meta name="twitter:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/deep-learning/deep-generative-model/09-1.png">
+
+<link rel="canonical" href="https://alex-mcavoy.github.io/artificial-intelligence/deep-learning/deep-generative-model/eed4588a.html">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>去噪扩散概率模型 DDPM | Alex_McAvoy</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Alex_McAvoy</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">想要成为渔夫的猎手</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+
+	
+	
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/artificial-intelligence/deep-learning/deep-generative-model/eed4588a.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/assets/img/head.jpg">
+      <meta itemprop="name" content="Alex_McAvoy">
+      <meta itemprop="description" content="想要成为渔夫的猎手">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Alex_McAvoy">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          去噪扩散概率模型 DDPM
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2024-04-20 09:21:00" itemprop="dateCreated datePublished" datetime="2024-04-20T09:21:00+08:00">2024-04-20</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/artificial-intelligence/" itemprop="url" rel="index"><span itemprop="name">人工智能</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/artificial-intelligence/deep-learning/" itemprop="url" rel="index"><span itemprop="name">深度学习</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/artificial-intelligence/deep-learning/deep-generative-model/" itemprop="url" rel="index"><span itemprop="name">深度生成模型</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>24k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>22 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="【概述】"><a href="#【概述】" class="headerlink" title="【概述】"></a>【概述】</h1><p>2020 年 6 月，Jonathan Ho 等学者在<a href="https://arxiv.org/abs/2006.11239" target="_blank" rel="noopener">《Denoising Diffusion Probabilistic Models》</a>中对之前的扩散概率模型进行了简化，并通过变分推断，将后验问题转为优化问题进行建模，提出了经典的<strong>去噪扩散概率模型（Denoising Diffusion Probabilistic Model，DDPM）</strong>，将扩散概率模型的思想用于图像生成，目前所说的扩散模型，大多是基于该模型进行改进</p>
+<p>简单来说，DDPM 包含两个过程：</p>
+<ul>
+<li><strong>前向扩散过程</strong> $\mathbf{x}_{0}\rightarrow \mathbf{x}_{T}$​：逐步加噪的前向过程，该过程从原始图片逐步添加高斯噪声，直到变为随机噪声</li>
+<li><strong>反向生成过程</strong> $\mathbf{x}_T\rightarrow \mathbf{x}_0$：逐步去噪的反向过程，该过程将随机噪声逐步去除噪声，直到还原为一张图片</li>
+</ul>
+<p><img src="/images/artificial-intelligence/deep-learning/deep-generative-model/09-1.png"></p>
+<p>其采用一个 U-Net 结构的 Autoencoder 来对 $t$​ 时刻的噪声进行预测，在训练过程中，模型会逐步学习如何从噪声中生成数据，并逐渐引入结构和模式信息</p>
+<h1 id="【引入】"><a href="#【引入】" class="headerlink" title="【引入】"></a>【引入】</h1><p>在 <a href="https://alex-mcavoy.github.io/artificial-intelligence/deep-learning/deep-generative-model/ca604948.html">扩散概率模型</a> 中，详细介绍了扩散概率模型，其是 DDPM 的起源模型，具体来说，扩散概率模型是形如</p>
+<script type="math/tex; mode=display">
+p(\mathbf{x}_{0}) = \int p(\mathbf{x}_{0:T}) d\mathbf{x}_{1:T}</script><p>的潜变量模型，其中，$\mathbf{x}_1,\cdots,\mathbf{x}_T$ 是与数据 $\mathbf{x}_0\sim q(\mathbf{x}_0)$ 相同维数的潜变量</p>
+<p>前向过程</p>
+<script type="math/tex; mode=display">
+\begin{gather*}
+q(\mathbf{x}_{0:T})  = q(\mathbf{x}_{0}) \prod_{t=1}^T q(\mathbf{x}_{t}|\mathbf{x}_{t-1}) \\
+q(\mathbf{x}_t|\mathbf{x}_{t-1}) = \mathcal{N}(\mathbf{x}_t;\sqrt{1-\beta_t} \mathbf{x}_{t-1},\beta_t\mathbf{I}) \\
+\mathbf{x}_0\sim q(\mathbf{x}_0)
+\end{gather*}</script><p>反向过程</p>
+<script type="math/tex; mode=display">
+\begin{gather*}
+p(\mathbf{x}_{0:T}) = p(\mathbf{x}_{T})\prod_{t=1}^T p(\mathbf{x}_{t-1}|\mathbf{x}_{t}) \\
+p(\mathbf{x}_{t-1}|\mathbf{x}_{t}) = \mathcal{N}(\mathbf{x}_{t-1};f_{\mu}(\mathbf{x}_{t},t),f_{\Sigma}(\mathbf{x}_{t},t)) \\
+\mathbf{x}_T \sim\mathcal{N}(\mathbf{x}_T;\mathbf{0},\mathbf{I})
+\end{gather*}</script><h1 id="【基本过程】"><a href="#【基本过程】" class="headerlink" title="【基本过程】"></a>【基本过程】</h1><h2 id="前向扩散过程"><a href="#前向扩散过程" class="headerlink" title="前向扩散过程"></a>前向扩散过程</h2><p>对于前向扩散过程，其是一个加噪过程，从满足初始分布 $ q(\mathbf{x}_0)$ 的原始数据 $\mathbf{x}_0$ 出发，产生一系列带有噪声的图片，并利用前一时刻的图片去预测下一时刻的图片</p>
+<p>对于扩散概率模型中的前向过程：</p>
+<script type="math/tex; mode=display">
+\begin{gather*}
+q(\mathbf{x}_{0:T})  = q(\mathbf{x}_{0}) \prod_{t=1}^T q(\mathbf{x}_{t}|\mathbf{x}_{t-1}) \\
+q(\mathbf{x}_t|\mathbf{x}_{t-1}) = \mathcal{N}(\mathbf{x}_t;\sqrt{1-\beta_t} \mathbf{x}_{t-1},\beta_t\mathbf{I}) \\
+\mathbf{x}_0\sim q(\mathbf{x}_0)
+\end{gather*}</script><p>$\{\beta_t\}_{t=1}^T,\beta_t\in (0,1)$ 是每一步扩散采用的方差，通常随着 $t$ 的增加 $\beta_t$ 而增大，即满足 $\beta_1&lt;\beta_2&lt;\cdots&lt;\beta_T$，当扩散步数 $T$ 足够大，那么最终得到的 $\mathbf{x}_T$ 就完全丢失了原始数据，变成一个随机噪声</p>
+<p><img src="/images/artificial-intelligence/deep-learning/deep-generative-model/09-2.png"></p>
+<p>对于原始数据 $\mathbf{x}_0$，其满足初始分布 $ q(\mathbf{x}_0)$，即 $\mathbf{x}_0\sim q(\mathbf{x}_0)$</p>
+<p>从该数据出发，总共进行 $T$ 步的扩散过程，即对于 $t\in [1,T]$ 时刻，$\mathbf{x}_{t}$ 和 $\mathbf{x}_{t-1}$ 满足：</p>
+<script type="math/tex; mode=display">
+\mathbf{x}_{t} = \sqrt{1-\beta_t} \mathbf{x}_{t-1} +\sqrt{\beta_t} \epsilon</script><p>其中，$\beta_t$ 为扩散系数，随 $t$ 的增加而增大，$\epsilon\sim \mathcal{N}(\mathbf{0},\mathbf{1)}$ 为高斯噪声</p>
+<p>令 $\alpha_t=1-\beta_t$，则有：</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+\mathbf{x}_{t} 
+&= \sqrt{\alpha_t} \mathbf{x}_{t-1} +\sqrt{1-\alpha_t} \epsilon \\
+&= \sqrt{\alpha_t} (\sqrt{\alpha_{t-1}} \mathbf{x}_{t-2}+\sqrt{1-\alpha_{t-1}} \epsilon) + \sqrt{1-\alpha_t} \epsilon \\
+&= \sqrt{\alpha_{t} \alpha_{t-1}} \mathbf{x}_{t-2} + \sqrt{\alpha_{t}}\sqrt{1-\alpha_{t-1}} \epsilon + \sqrt{1-\alpha_{t}} \epsilon
+\end{align*}</script><p>根据高斯分布的叠加性，有：</p>
+<script type="math/tex; mode=display">
+\begin{gather*}
+X_1\sim \sqrt{\alpha_t} \sqrt{1-\alpha_{t-1}} \epsilon = \mathcal{N}(0,\alpha_t(1-\alpha_{t-1})) \\
+X_2\sim \sqrt{1-\alpha_{t}} \epsilon = \mathcal{N}(0,1-\alpha_t) \\
+X_1+X_2 = N(0,1-\alpha_{t}\alpha_{t-1})
+\end{gather*}</script><p>故 $\mathbf{x}_t$ 可化简为：</p>
+<script type="math/tex; mode=display">
+\mathbf{x}_t = \sqrt{\alpha_{t} \alpha_{t-1}} \mathbf{x}_{t-2} + \sqrt{1-\alpha_{t}\alpha_{t-1}}\epsilon</script><p>以此类推，可得：</p>
+<script type="math/tex; mode=display">
+\mathbf{x}_t = \sqrt{\alpha_{t} \alpha_{t-1}\cdots\alpha_{1}\alpha_{0}} \mathbf{x}_{0} + \sqrt{1-\alpha_{t}\alpha_{t-1}\cdots\alpha_{1}\alpha_{0}}\epsilon</script><p>令 $\overline{\alpha}_t=\alpha_{t}\alpha_{t-1}\cdots\alpha_{1}\alpha_{0}$，则有：</p>
+<script type="math/tex; mode=display">
+\mathbf{x}_t = \sqrt{\overline{\alpha}_t} \mathbf{x}_{0} + \sqrt{1-\overline{\alpha}_t}\epsilon</script><p>其是一个由原始数据 $\mathbf{x}_0$ 和噪声变量 $\epsilon$ 的线性组合</p>
+<p>写为概率分布的形式，有：</p>
+<script type="math/tex; mode=display">
+q(\mathbf{x}_t|\mathbf{x}_0) = \mathcal{N}(\mathbf{x}_t;\sqrt{\overline{\alpha}_t}\mathbf{x}_0,(1-\overline{\alpha}_t)\mathbf{I})</script><p>$\mathbf{x}_t$ 可以看作是原始数据 $\mathbf{x}_0$ 和随机噪声 $\epsilon$ 的线性组合，$\sqrt{\overline{\alpha}_t}$ 和 $\sqrt{1-\overline{\alpha}_t}$ 为组合系数，它们的平方和为 $1$，这样通过设定 $\overline{\alpha}_t$ 即可直接基于原始数据 $\mathbf{x}_0$ 对任意 $t$ 步的 $\mathbf{x}_t$ 进行采样，相比于设定 $\beta_t$ 一步步进行采样更加直接</p>
+<p><img src="/images/artificial-intelligence/deep-learning/deep-generative-model/09-3.png"></p>
+<p>由于 $\beta_t$ 随着时间步 $t$ 的增加而增大，那么 $\alpha_t=1-\beta_t$ 则随着时间步 $t$ 的增加而减小，当 $t\rightarrow T$ 时，$\overline{\alpha}_t=\alpha_{t}\alpha_{t-1}\cdots\alpha_{1}\alpha_{0}\rightarrow 0$，进而有 $\mathbf{x}_T\rightarrow \epsilon$</p>
+<p>所以可以认为，在前向扩散过程中，当时间步 $t$ 足够大时，最终产生的图片 $\mathbf{x}_T$​ 近似于高斯分布</p>
+<p>综上所述，DDPM 的前向扩散过程为：</p>
+<script type="math/tex; mode=display">
+\begin{gather*}
+q(\mathbf{x}_{0:T}) = q(\mathbf{x}_0) \prod_{t=1}^T q(\mathbf{x}_t|\mathbf{x}_{t-1}) \\
+q(\mathbf{x}_{t}|\mathbf{x}_{0}) = \mathcal{N}(\mathbf{x}_{t};\sqrt{\overline{\alpha}_t}\mathbf{x}_{0},(1-\overline{\alpha}_t)\mathbf{I}) \\
+\mathbf{x}_0 \sim q(\mathbf{x}_0)
+\end{gather*}</script><p>其中，$\mathbf{x}_0$ 为原始数据，$q(\mathbf{x}_0)$ 为初始分布， $\overline{\alpha}_t=\alpha_{t}\alpha_{t-1}\cdots\alpha_{1}\alpha_{0},\alpha_t=1-\beta_t$，$\beta_t$ 为扩散系数，随 $t$ 的增加而增大，$\epsilon\sim \mathcal{N}(\mathbf{0},\mathbf{1)}$ 为高斯噪声</p>
+<h2 id="反向生成过程"><a href="#反向生成过程" class="headerlink" title="反向生成过程"></a>反向生成过程</h2><p>对于反向生成过程，其是一个去噪过程，需要根据当前时刻的图片去预测前一时刻的图片，即去除一部分噪声，还原到上一时刻的图片</p>
+<p>也就是说，如果知道反向过程中每一步的真实分布 $p(\mathbf{x}_{t-1}|\mathbf{x}_t)$，那么从一个随机噪声 $\mathbf{x}_T\sim \mathcal{N}(\mathbf{0},\mathbf{I})$​ 开始，逐渐去除噪声，就能生成一个真实的样本</p>
+<p><img src="/images/artificial-intelligence/deep-learning/deep-generative-model/09-4.png"></p>
+<p>在整个反向过程中，由于并不知道上一时刻 $\mathbf{x}_{t-1}$ 的值，只能通过当前时刻的值 $\mathbf{x}_t$ 进行预测，因此以概率的形式，采用<strong>变分推断（Variational Inference）</strong>的方式，利用 $q(\mathbf{x}_{t-1}|\mathbf{x}_t)$ 去近似 $p(\mathbf{x}_{t-1}|\mathbf{x}_t)$，并通过神经网络去拟合 $q(\mathbf{x}_{t-1}|\mathbf{x}_t)$ 的参数，一步步优化使其与后验分布  $p(\mathbf{x}_{t-1}|\mathbf{x}_t)$ 相似</p>
+<p>对于后验分布 $q(\mathbf{x}_{t-1}|\mathbf{x}_t)$，利用贝叶斯公式，有：</p>
+<script type="math/tex; mode=display">
+q(\mathbf{x}_{t-1}|\mathbf{x}_t) = \frac{q(\mathbf{x}_{t-1}\mathbf{x}_t)}{q(\mathbf{x}_t)} = \frac{q(\mathbf{x}_t|\mathbf{x}_{t-1})q(\mathbf{x}_{t-1})}{q(\mathbf{x}_t)}</script><p>在已知原图 $\mathbf{x}_{0}$ 的情况下，上式可写为：</p>
+<script type="math/tex; mode=display">
+q(\mathbf{x}_{t-1}|\mathbf{x}_{t},\mathbf{x}_{0}) = \frac{q(\mathbf{x}_{t}|\mathbf{x}_{t-1},\mathbf{x}_{0})q(\mathbf{x}_{t-1}|\mathbf{x}_{0})}{q(\mathbf{x}_{t}|\mathbf{x}_{0})}</script><p>此时，等式右边的概率均为先验分布</p>
+<p>根据马尔可夫链的无后效性，与扩散概率模型中的前向过程，有：</p>
+<script type="math/tex; mode=display">
+q(\mathbf{x}_{t-1}|\mathbf{x}_{t},\mathbf{x}_{0}) = q(\mathbf{x}_{t}|\mathbf{x}_{t-1}) = \mathcal{N}(\mathbf{x}_t;\sqrt{1-\beta_t} \mathbf{x}_{t-1},\beta_t\mathbf{I})</script><p>根据 DDPM 得到的前向扩散过程 $q(\mathbf{x}_{t}|\mathbf{x}_{0}) =\mathcal{N}(\mathbf{x}_t;\sqrt{\overline{\alpha}_t}\mathbf{x}_0,(1-\overline{\alpha}_t)\mathbf{I})$ 可知：</p>
+<script type="math/tex; mode=display">
+q(\mathbf{x}_{t-1}|\mathbf{x}_{0}) =\mathcal{N}(\mathbf{x}_{t-1};\sqrt{\overline{\alpha}_{t-1}}\mathbf{x}_0,(1-\overline{\alpha}_{t-1})\mathbf{I})</script><p>因此，$q(\mathbf{x}_{t-1}|\mathbf{x}_{t},\mathbf{x}_{0})$ 可写为：</p>
+<script type="math/tex; mode=display">
+q(\mathbf{x}_{t-1}|\mathbf{x}_{t},\mathbf{x}_{0}) = \frac{ \mathcal{N}(\mathbf{x}_t;\sqrt{1-\beta_t} \mathbf{x}_{t-1},\beta_t\mathbf{I})\mathcal{N}(\mathbf{x}_{t-1};\sqrt{\overline{\alpha}_{t-1}}\mathbf{x}_0,(1-\overline{\alpha}_{t-1})\mathbf{I})}{\mathcal{N}(\mathbf{x}_t;\sqrt{\overline{\alpha}_t}\mathbf{x}_0,(1-\overline{\alpha}_t)\mathbf{I})}</script><p>由于 $\alpha_t=1-\beta_t$，故有：</p>
+<script type="math/tex; mode=display">
+q(\mathbf{x}_{t-1}|\mathbf{x}_{t},\mathbf{x}_{0}) = \frac{ \mathcal{N}(\mathbf{x}_t;\sqrt{\alpha_t} \mathbf{x}_{t-1},(1-\alpha_t)\mathbf{I})\mathcal{N}(\mathbf{x}_{t-1};\sqrt{\overline{\alpha}_{t-1}}\mathbf{x}_0,(1-\overline{\alpha}_{t-1})\mathbf{I})}{\mathcal{N}(\mathbf{x}_t;\sqrt{\overline{\alpha}_t}\mathbf{x}_0,(1-\overline{\alpha}_t)\mathbf{I})}</script><p>根据高斯分布的概率密度函数 $f(x)=\frac{1}{\sqrt{2\pi}}\exp[-\frac{(x-\mu)^2}{2\sigma^2}]$ 进行展开，有：</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+q(\mathbf{x}_{t-1}|\mathbf{x}_{t},\mathbf{x}_{0}) 
+&\propto \exp \Bigg[-\frac{1}{2} \Big( \frac{(\mathbf{x}_t-\sqrt{\overline{\alpha}_t}\mathbf{x}_{t-1})^2}{1-\alpha_t} + \frac{(\mathbf{x}_{t-1}-\sqrt{\overline{\alpha}_{t-1}}\mathbf{x}_0)^2}{1-\overline{\alpha}_{t-1}} - \frac{(\mathbf{x}_t-\sqrt{\overline{\alpha}_t}\mathbf{x}_0)^2}{1-\overline{\alpha}_{t-1}} \Big) \Bigg] \\
+&= \exp\Bigg[-\frac{1}{2}\Big( \frac{\mathbf{x}_{t}^2-2\sqrt{\alpha_t}\mathbf{x}_{t}\mathbf{x}_{t-1}+\alpha_t\mathbf{x}_{t-1}^2}{1-\alpha_t} 
+ +\frac{\mathbf{x}_{t-1}^2-2\sqrt{\overline{\alpha}_{t-1}}\mathbf{x}_{t-1}\mathbf{x}_{0}+\overline{\alpha}_{t-1}\mathbf{x}_{0}^2}{1-\overline{\alpha}_{t-1}}  -\frac{\mathbf{x}_{t}^2-2\sqrt{\overline{\alpha}_t}\mathbf{x}_{t}\mathbf{x}_{0}+\overline{\alpha}_t\mathbf{x}_{0}^2}{1-\overline{\alpha}_{t-1}} \Big)  \Bigg]
+\end{align*}</script><p>由于 $\mathbf{x}_{t-1}$ 才是要关注的变量，因此将上式整理为关于 $\mathbf{x}_{t-1}$ 的形式，即：</p>
+<script type="math/tex; mode=display">
+q(\mathbf{x}_{t-1}|\mathbf{x}_{t},\mathbf{x}_{0}) 
+\propto \exp \Bigg[ -\frac{1}{2} \Big( (\frac{\alpha_t}{1-\alpha_t} + \frac{1}{1-\overline{\alpha}_{t-1}})\mathbf{x}_{t-1}^2 - (\frac{2\sqrt{\alpha_t}}{1-\alpha_{t}}\mathbf{x}_t+\frac{2\sqrt{\overline{\alpha}_{t-1}}}{1-\overline{\alpha}_{t-1}}\mathbf{x}_0)\mathbf{x}_{t-1} + C(\mathbf{x}_t,\mathbf{x}_0)\Big) \Bigg] \\</script><p>其中，$C(\mathbf{x}_t,\mathbf{x}_0)$ 与 $\mathbf{x}_{t-1}$ 无关，只影响成正比的系数</p>
+<p>由于标准高斯分布 $\mathcal{N}(\mathbf{0},\mathbf{1})\propto \exp [-\frac{1}{2}\frac{\mathbf{x}^2-2\mathbf{x}\mu+\mu^2}{\sigma^2}]$，那么对于上式，易得：</p>
+<script type="math/tex; mode=display">
+\begin{gather*}
+\frac{1}{\sigma^2} = \frac{\alpha_t}{1-\alpha_t} + \frac{1}{1-\overline{\alpha}_{t-1}} \\
+\mu = \frac{\sigma^2}{2} (\frac{2\sqrt{\alpha_t}}{1-\alpha_{t}}\mathbf{x}_t+\frac{2\sqrt{\overline{\alpha}_{t-1}}}{1-\overline{\alpha}_{t-1}}\mathbf{x}_0)
+\end{gather*}</script><p>对上式进行化简，可得：</p>
+<script type="math/tex; mode=display">
+\begin{gather*}
+\sigma^2 = \frac{(1-\alpha_{t})(1-\overline{\alpha}_{t-1})}{(1-\overline{\alpha}_{t})} \\
+\mu = \frac{(1-\overline{\alpha}_{t-1})\sqrt{\alpha_t}}{1-\overline{\alpha}_{t}}\mathbf{x}_t + \frac{\sqrt{\overline{\alpha}_{t-1}}(1-\alpha_t)}{1-\overline{\alpha}_{t}}\mathbf{x}_0 
+\end{gather*}</script><p>根据 DDPM 的前向过程 $\mathbf{x}_t = \sqrt{\overline{\alpha}_t} \mathbf{x}_{0} + \sqrt{1-\overline{\alpha}_t}\epsilon$，将上式中的 $\mathbf{x}_0$ 进行替换，有：</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+\mu 
+&= \frac{(1-\overline{\alpha}_{t-1})\sqrt{\alpha_t}}{1-\overline{\alpha}_{t}} \mathbf{x}_t + \frac{\sqrt{\overline{\alpha}_{t-1}}(1-\alpha_t)}{1-\overline{\alpha}_{t}}\frac{\mathbf{x}_t-\sqrt{1-\overline{\alpha}_t}\epsilon_{\theta}(\mathbf{x}_t,t)}{\sqrt{\overline{\alpha}_t}}\\
+&= \frac{1}{\sqrt{\alpha}_t}\Big[ \frac{(1-\overline{\alpha}_{t-1})\sqrt{\alpha}_t^2}{1-\overline{\alpha}_t} \mathbf{x}_t + 
+\frac{\sqrt{\alpha_t}\sqrt{\overline{\alpha}_{t-1}}(1-\alpha_t)}{1-\overline{\alpha}_{t}}\frac{\mathbf{x}_t-\sqrt{1-\overline{\alpha}_t}\epsilon_{\theta}(\mathbf{x}_t,t)}{\sqrt{\overline{\alpha}_t}} \Big] \\
+&= \frac{1}{\sqrt{\alpha}_t}\Big[ \frac{\alpha_t-\overline{\alpha}_{t}}{1-\overline{\alpha}_t} \mathbf{x}_t +
+\frac{\sqrt{\overline{\alpha}_{t}}(1-\alpha_t)}{1-\overline{\alpha}_{t}}\frac{\mathbf{x}_t-\sqrt{1-\overline{\alpha}_t}\epsilon_{\theta}(\mathbf{x}_t,t)}{\sqrt{\overline{\alpha}_t}} \Big] \\
+&= \frac{1}{\sqrt{\alpha}_t} \Big[ \frac{\alpha_t-\overline{\alpha}_{t}}{1-\overline{\alpha}_t} \mathbf{x}_t +
+\frac{1-\alpha_t}{1-\overline{\alpha}_{t}}(\mathbf{x}_t-\sqrt{1-\overline{\alpha}_t}\epsilon_{\theta}(\mathbf{x}_t,t)) \Big] \\
+&=\frac{1}{\sqrt{\alpha}_t} \Big[ \mathbf{x}_t - \frac{1-\alpha_t}{1-\overline{\alpha}_{t}} \sqrt{1-\overline{\alpha}_t}\epsilon_{\theta}(\mathbf{x}_t,t) \Big]\\
+&=\frac{1}{\sqrt{\alpha}_t} \Big[ \mathbf{x}_t - \frac{1-\alpha_t}{\sqrt{1-\overline{\alpha}_t}} \epsilon_{\theta}(\mathbf{x}_t,t) \Big]\\
+\end{align*}</script><p>综上所述，对于后验概率 $q(\mathbf{x}_{t-1}|\mathbf{x}_t)$，只需要拟合均值和方差</p>
+<script type="math/tex; mode=display">
+\begin{gather*}
+\sigma^2 = \frac{(1-\alpha_{t})(1-\overline{\alpha}_{t-1})}{(1-\overline{\alpha}_{t})} \\
+\mu =\frac{1}{\sqrt{\alpha}_t} \Big[ \mathbf{x}_t - \frac{1-\alpha_t}{\sqrt{1-\overline{\alpha}_t}} \epsilon_{\theta}(\mathbf{x}_t,t) \Big]
+\end{gather*}</script><p>即：</p>
+<script type="math/tex; mode=display">
+q(\mathbf{x}_{t-1}|\mathbf{x}_t) \sim \mathcal{N}(\frac{1}{\sqrt{\alpha}_t} \Big[ \mathbf{x}_t - \frac{1-\alpha_t}{\sqrt{1-\overline{\alpha}_t}} \epsilon_{\theta}(\mathbf{x}_t,t) \Big],\frac{(1-\alpha_{t})(1-\overline{\alpha}_{t-1})}{(1-\overline{\alpha}_{t})})</script><p>其中，均值 $\mu$ 依赖于当前时刻的值 $\mathbf{x}_t$ 和高斯噪声 $\epsilon_{\theta}(\mathbf{x}_t,t)$，方差 $\sigma^2$ 是一个由前向扩散过程 $\alpha_t$ 固定的定量，也就是说，只需要使用神经网络去拟合高斯分布 $\epsilon_{\theta}(\mathbf{x}_t,t)$​</p>
+<p>综上所述，DDPM 的反向生成过程为：</p>
+<script type="math/tex; mode=display">
+\begin{gather*}
+p(\mathbf{x}_{0:T}) = p(\mathbf{x}_{T})\prod_{t=1}^T p(\mathbf{x}_{t-1}|\mathbf{x}_{t}) \\
+q(\mathbf{x}_{t-1}|\mathbf{x}_t) \sim \mathcal{N}(\frac{1}{\sqrt{\alpha}_t} \Big[ \mathbf{x}_t - \frac{1-\alpha_t}{\sqrt{1-\overline{\alpha}_t}} \epsilon_{\theta}(\mathbf{x}_t,t) \Big],\frac{(1-\alpha_{t})(1-\overline{\alpha}_{t-1})}{(1-\overline{\alpha}_{t})}) \\
+\mathbf{x}_T \sim\mathcal{N}(\mathbf{x}_T;\mathbf{0},\mathbf{I})
+\end{gather*}</script><p>其中，$\mathbf{x}_T$ 为生成数据，$q(\mathbf{x}_{t-1}|\mathbf{x}_{t})$ 为 $p(\mathbf{x}_{t-1}|\mathbf{x}_{t})$ 的变分推断后的近似分布，$\overline{\alpha}_t=\alpha_{t}\alpha_{t-1}\cdots\alpha_{1}\alpha_{0},\alpha_t=1-\beta_t$，$\beta_t$ 为扩散系数，随 $t$ 的增加而增大，$\epsilon\sim \mathcal{N}(\mathbf{0},\mathbf{1)}$​ 为高斯噪声</p>
+<h1 id="【优化目标】"><a href="#【优化目标】" class="headerlink" title="【优化目标】"></a>【优化目标】</h1><h2 id="变分下界"><a href="#变分下界" class="headerlink" title="变分下界"></a>变分下界</h2><p>上面介绍了 DDPM 的前向扩散过程和反向生成过程，现在从另一个角度来看扩散模型：如果将中间产生的变量看成隐变量，那么扩散模型其实是包含 $T$ 个隐变量的<strong>隐变量模型（Latent Variable Model）</strong>，可以看作是一个特殊的<strong>多层变分自编码器（Hierarchical VAE）</strong></p>
+<p>前向扩散过程可以视为编码器 Encoder，反向生成过程可以视为解码器 Decoder，隐变量是与原始数据 $\mathbf{x}_0\sim q(\mathbf{x}_0)$ 同维度的中间变量 $\mathbf{x}_t$</p>
+<p><img src="/images/artificial-intelligence/deep-learning/deep-generative-model/09-5.png"></p>
+<p>从这一角度出发，对于扩散模型 $p(\mathbf{x}_{0}) = \int p(\mathbf{x}_{0:T}) d\mathbf{x}_{1:T}$ 就可以基于变分推断来得到变分上界 VLB，即：</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+\log p(\mathbf{x}_0) 
+&= \log \int p(\mathbf{x}_{0:T}) d\mathbf{x}_{1:T} \\
+&= \log \int \frac{p(\mathbf{x}_{0:T})q(\mathbf{x}_{1:T}|\mathbf{x}_0)}{q(\mathbf{x}_{1:T}|\mathbf{x}_0)} d\mathbf{x}_{1:T} \\
+&\geq \mathbb{E}_{q(\mathbf{x}_{1:T}|\mathbf{x}_0)}[\log \frac{p(\mathbf{x}_{0:T})}{q(\mathbf{x}_{1:T}|\mathbf{x}_0)}]
+\end{align*}</script><p>对于网络训练来说，其训练目标为 VLB 取负，即：</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+\mathcal{L} 
+&= -L^V \\
+&= \mathbb{E}_{q(\mathbf{x}_{1:T}|\mathbf{x}_0)}[-\log \frac{p(\mathbf{x}_{0:T})}{q(\mathbf{x}_{1:T}|\mathbf{x}_0)}] \\
+&= \mathbb{E}_{q(\mathbf{x}_{1:T}|\mathbf{x}_0)}[\log \frac{q(\mathbf{x}_{1:T}|\mathbf{x}_0)}{p(\mathbf{x}_{0:T})}]
+\end{align*}</script><p>进一步对其分解，有：</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+\mathcal{L}
+&= \mathbb{E}_{q(\mathbf{x}_{1:T}|\mathbf{x}_0)}\bigg[\log\frac{q(\mathbf{x}_{1:T}|\mathbf{x}_0)}{p(\mathbf{x}_{0:T})}\bigg] \\
+&=\mathbb{E}_{q(\mathbf{x}_{1:T}|\mathbf{x}_0)}\Big[\log\frac{\prod_{t=1}^Tq(\mathbf{x}_t|\mathbf{x}_{t-1})}{p(\mathbf{x}_T)\prod_{t=1}^Tp(\mathbf{x}_{t-1}|\mathbf{x}_t)}\Big] \\
+&=\mathbb{E}_{q(\mathbf{x}_{1:T}|\mathbf{x}_0)}\bigg[-\log p(\mathbf{x}_T)+\sum_{t=1}^T\log\frac{q(\mathbf{x}_t|\mathbf{x}_{t-1})}{p(\mathbf{x}_{t-1}|\mathbf{x}_t)}\bigg] \\
+&=\mathbb{E}_{q(\mathbf{x}_{1:T}|\mathbf{x}_0)}\Big[-\log p(\mathbf{x}_T)+\sum_{t=2}^T\log\frac{q(\mathbf{x}_t|\mathbf{x}_{t-1})}{p(\mathbf{x}_{t-1}|\mathbf{x}_t)}+\log\frac{q(\mathbf{x}_1|\mathbf{x}_0)}{p(\mathbf{x}_0|\mathbf{x}_1)}\Big] \\
+
+\end{align*}</script><p>由于马尔可夫的无后效性，且 $\mathbf{x}_0$ 已知，故 $=q(\mathbf{x}_t|\mathbf{x}_{t-1})=q(\mathbf{x}_t|\mathbf{x}_{t-1},\mathbf{x}_0)$，进而有：</p>
+<script type="math/tex; mode=display">
+\mathcal{L} =\mathbb{E}_{q(\mathbf{x}_{1:T}|\mathbf{x}_0)}\Big[-\log p(\mathbf{x}_T)+\sum_{t=2}^T\log\frac{q(\mathbf{x}_t|\mathbf{x}_{t-1},\mathbf{x}_0)}{p(\mathbf{x}_{t-1}|\mathbf{x}_t)}+\log\frac{q(\mathbf{x}_1|\mathbf{x}_0)}{p(\mathbf{x}_0|\mathbf{x}_1)}\Big]</script><p>利用贝叶斯公式，有：</p>
+<script type="math/tex; mode=display">
+\mathcal{L} = \mathbb{E}_{q(\mathbf{x}_{1:T}|\mathbf{x}_0)} \Big[
+-\log p(\mathbf{x}_T) 
++ \sum_{t=2}^T\log \big( \frac{q(\mathbf{x}_{t-1}|\mathbf{x}_t,\mathbf{x}_0)}{p(\mathbf{x}_{t-1}|\mathbf{x}_t)}\cdot\frac{q(\mathbf{x}_t|\mathbf{x}_0)}{q(\mathbf{x}_{t-1}|\mathbf{x}_0)}\big) 
++\log\frac{q(\mathbf{x}_1|\mathbf{x}_0)}{p(\mathbf{x}_0|\mathbf{x}_1)}\Big]</script><p>进一步化简，有：</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+\mathcal{L} 
+&= \mathbb{E}_{q(\mathbf{x}_{1:T}|\mathbf{x}_0)} \Big[
+-\log p(\mathbf{x}_T)
++\sum_{t=2}^T\log\frac{q(\mathbf{x}_{t-1}|\mathbf{x}_t,\mathbf{x}_0)}{p(\mathbf{x}_{t-1}|\mathbf{x}_t)}
++\sum_{t=2}^T\log\frac{q(\mathbf{x}_t|\mathbf{x}_0)}{q(\mathbf{x}_{t-1}|\mathbf{x}_0)}
++\log\frac{q(\mathbf{x}_1|\mathbf{x}_0)}{p_\theta(\mathbf{x}_0|\mathbf{x}_1)}
+\Big] \\
+&= \mathbb{E}_{q(\mathbf{x}_{1:T}|\mathbf{x}_0)} \Big[
+-\log p(\mathbf{x}_T)+\sum_{t=2}^T\log\frac{q(\mathbf{x}_{t-1}|\mathbf{x}_t,\mathbf{x}_0)}{p(\mathbf{x}_{t-1}|\mathbf{x}_t)}+\log\frac{q(\mathbf{x}_T|\mathbf{x}_0)}{q(\mathbf{x}_1|\mathbf{x}_0)}+\log\frac{q(\mathbf{x}_1|\mathbf{x}_0)}{p(\mathbf{x}_0|\mathbf{x}_1)}
+\Big] \\
+&= \mathbb{E}_{q(\mathbf{x}_{1:T}|\mathbf{x}_0)} \Big[
+\log\frac{q(\mathbf{x}_{T}|\mathbf{x}_{0})}{p(\mathbf{x}_{T})}+\sum_{t=2}^{T}\log\frac{q(\mathbf{x}_{t-1}|\mathbf{x}_{t},\mathbf{x}_{0})}{p(\mathbf{x}_{t-1}|\mathbf{x}_{t})}-\log p(\mathbf{x}_{0}|\mathbf{x}_{1})
+\Big] \\
+&= \mathbb{E}_{q(\mathbf{x}_{T}|\mathbf{x}_0)} \Big[ \log\frac{q(\mathbf{x}_{T}|\mathbf{x}_{0})}{p(\mathbf{x}_{T})} \Big] 
++ \sum_{t=2}^T\mathbb{E}_{q(\mathbf{x}_{t},\mathbf{x}_{t-1}|\mathbf{x}_0)} \Big[ \log\frac{q(\mathbf{x}_{t-1}|\mathbf{x}_{t},\mathbf{x}_{0})}{p(\mathbf{x}_{t-1}|\mathbf{x}_{t})} \Big]
+- \mathbb{E}_{q(\mathbf{x}_{1}|\mathbf{x}_0)} \Big[ \log p(\mathbf{x}_{0}|\mathbf{x}_{1}) \Big]
+\\
+&= \mathbb{E}_{q(\mathbf{x}_{T}|\mathbf{x}_0)} \Big[ \log\frac{q(\mathbf{x}_{T}|\mathbf{x}_{0})}{p(\mathbf{x}_{T})} \Big] 
++ \sum_{t=2}^T\mathbb{E}_{q(\mathbf{x}_{t}|\mathbf{x}_0)} \Big[ q(\mathbf{x}_{t-1}|\mathbf{x}_t,\mathbf{x}_0) \log\frac{q(\mathbf{x}_{t-1}|\mathbf{x}_{t},\mathbf{x}_{0})}{p(\mathbf{x}_{t-1}|\mathbf{x}_{t})} \Big]
+- \mathbb{E}_{q(\mathbf{x}_{1}|\mathbf{x}_0)} \Big[ \log p(\mathbf{x}_{0}|\mathbf{x}_{1}) \Big] \\
+&= \underbrace{D_{\mathrm{KL}}(q(\mathbf{x}_T|\mathbf{x}_0)\parallel p(\mathbf{x}_T))}_{L_T} 
++ \sum_{t=2}^T\underbrace{\mathbb{E}_{q(\mathbf{x}_t|\mathbf{x}_0)}\Big[D_{\mathrm{KL}}(q(\mathbf{x}_{t-1}|\mathbf{x}_t,\mathbf{x}_0)\parallel p(\mathbf{x}_{t-1}|\mathbf{x}_t))\Big]}_{L_{t-1}}
+-\underbrace{\mathbb{E}_{q(\mathbf{x}_1|\mathbf{x}_0)}\log p(\mathbf{x}_0|\mathbf{x}_1)}_{L_0}
+\end{align*}</script><p>此时可以看到，最终的优化目标共 $T+1$ 项</p>
+<h2 id="L-0-：原始数据重建"><a href="#L-0-：原始数据重建" class="headerlink" title="$L_0$：原始数据重建"></a>$L_0$：原始数据重建</h2><p>对于优化目标：</p>
+<script type="math/tex; mode=display">
+\mathcal{L} = \underbrace{D_{\mathrm{KL}}(q(\mathbf{x}_T|\mathbf{x}_0)\parallel p(\mathbf{x}_T))}_{L_T} 
++ \sum_{t=2}^T\underbrace{\mathbb{E}_{q(\mathbf{x}_t|\mathbf{x}_0)}\Big[D_{\mathrm{KL}}(q(\mathbf{x}_{t-1}|\mathbf{x}_t,\mathbf{x}_0)\parallel p(\mathbf{x}_{t-1}|\mathbf{x}_t))\Big]}_{L_{t-1}}
+-\underbrace{\mathbb{E}_{q(\mathbf{x}_1|\mathbf{x}_0)}\log p(\mathbf{x}_0|\mathbf{x}_1)}_{L_0}</script><p>其中，$L_0$ 可以看作是<strong>原始数据重建</strong>，优化的是负对数似然，其可以用估计的 $\mathcal{N}(\mathbf{x}_0;f_{\mu}(\mathbf{x}_1,1),f_{\Sigma}(\mathbf{x}_1,1))$ 来构建一个离散化的 Decoder 来计算，即：</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+&p(\mathbf{x}_{0}|\mathbf{x}_{1})=\prod_{i=1}^{D}\int_{\delta_{-}(\mathbf{x}_{0}^{i})}^{\delta_{+}(\mathbf{x}_{0}^{i})}\mathcal{N}(\mathbf{x}_{0};f_{\mu_i}(\mathbf{x}_{1},1),f_{\Sigma_i}(\mathbf{x}_{1},1))dx \\
+&\delta_+(x)=\left\{\begin{array}{ll}\infty&\mathrm{~if~}x=1\\x+\frac1{255}&\mathrm{~if~}x<1\end{array}\right. \\
+&\delta_+(x)=\left\{\begin{array}{ll}-\infty&\text{ if }x=-1\\x-\frac{1}{255}&\text{ if }x>-1\end{array}\right.
+\end{align*}</script><p>在 DDPM 中，会将原始图像的像素值从 $[0, 255]$ 范围归一化到 $[-1, 1]$，这样不同的像素值之间的间隔其实就是 $\frac{2}{255}$，就可以计算高斯分布落在以真实数据为中心且范围大小为 $\frac{2}{255}$ 时的概率积分（概率密度函数的积分）</p>
+<h2 id="L-t-：噪声分布与先验分布的-KL-散度"><a href="#L-t-：噪声分布与先验分布的-KL-散度" class="headerlink" title="$L_t$：噪声分布与先验分布的 KL 散度"></a>$L_t$：噪声分布与先验分布的 KL 散度</h2><p>对于优化目标：</p>
+<script type="math/tex; mode=display">
+\mathcal{L} = \underbrace{D_{\mathrm{KL}}(q(\mathbf{x}_T|\mathbf{x}_0)\parallel p(\mathbf{x}_T))}_{L_T} 
++ \sum_{t=2}^T\underbrace{\mathbb{E}_{q(\mathbf{x}_t|\mathbf{x}_0)}\Big[D_{\mathrm{KL}}(q(\mathbf{x}_{t-1}|\mathbf{x}_t,\mathbf{x}_0)\parallel p(\mathbf{x}_{t-1}|\mathbf{x}_t))\Big]}_{L_{t-1}}
+-\underbrace{\mathbb{E}_{q(\mathbf{x}_1|\mathbf{x}_0)}\log p(\mathbf{x}_0|\mathbf{x}_1)}_{L_0}</script><p>其中，$L_T$ 计算的是最后得到的噪声分布和先验分布的 KL 散度，由于先验 $p(\mathbf{x}_T)=\mathcal{N}(\mathbf{0},\mathbf{I})$，扩散过程最后得到的随机噪声 $q(\mathbf{x}_T|\mathbf{x}_0)$ 也近似于 $\mathcal{N}(\mathbf{0},\mathbf{I})$，因此这个 KL 散度没有训练参数，近似为 $0$</p>
+<h2 id="L-t-1-：估计分布与后验分布的-KL-散度"><a href="#L-t-1-：估计分布与后验分布的-KL-散度" class="headerlink" title="$L_{t-1}$：估计分布与后验分布的 KL 散度"></a>$L_{t-1}$：估计分布与后验分布的 KL 散度</h2><p>对于优化目标：</p>
+<script type="math/tex; mode=display">
+\mathcal{L} = \underbrace{D_{\mathrm{KL}}(q(\mathbf{x}_T|\mathbf{x}_0)\parallel p(\mathbf{x}_T))}_{L_T} 
++ \sum_{t=2}^T\underbrace{\mathbb{E}_{q(\mathbf{x}_t|\mathbf{x}_0)}\Big[D_{\mathrm{KL}}(q(\mathbf{x}_{t-1}|\mathbf{x}_t,\mathbf{x}_0)\parallel p(\mathbf{x}_{t-1}|\mathbf{x}_t))\Big]}_{L_{t-1}}
+-\underbrace{\mathbb{E}_{q(\mathbf{x}_1|\mathbf{x}_0)}\log p(\mathbf{x}_0|\mathbf{x}_1)}_{L_0}</script><p>其中，$L_{t-1}$ 计算的是估计分布 $p(\mathbf{x}_{t-1}|\mathbf{x}_t)$ 和真实的后验分布 $q(\mathbf{x}_{t-1}|\mathbf{x}_t,\mathbf{x})_0$ 的 KL 散度，这里希望估计的去噪过程和依赖真实数据的去噪过程近似一致： </p>
+<p><img src="/images/artificial-intelligence/deep-learning/deep-generative-model/09-6.png"></p>
+<p>之所以将 $p(\mathbf{x}_{t-1}|\mathbf{x}_t)$ 定义为一个用网络参数化的高斯分布 $\mathcal{N}(\mathbf{x}_{t-1};f_{\mu}(\mathbf{x}_t,t);f_{\Sigma}(\mathbf{x}_t,t))$，是因为要匹配的后验分布 $q(\mathbf{x}_{t-1}|\mathbf{x}_t,\mathbf{x}_0)$ 也是一个高斯分布，对于训练目标 $L_0$ 和 $L_{t-1}$ 来说，都是希望得到训练好的网络的均值 $f_{\mu}(\mathbf{x}_t,t)$ 和方差 $f_{\Sigma}(\mathbf{x}_t,t)$</p>
+<p>上文提到过，DDPM 对 $p(\mathbf{x}_{t-1}|\mathbf{x}_t)$ 做了进一步简化，采用固定的方差 $f_{\Sigma}(\mathbf{x}_t,t)=\sigma^2_t\mathbf{I}$， $\sigma^2_t$ 是一个由前向扩散过程 $\alpha_t$ 固定的定量，故有：</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+q(\mathbf{x}_{t-1}|\mathbf{x}_t,\mathbf{x}_0) 
+&= \mathcal{N}(\mathbf{x}_{t-1};f_{\tilde{\mu}}(\mathbf{x}_t,\mathbf{x}_0),\sigma^2_t\mathbf{I})p(\mathbf{x}_{t-1}|\mathbf{x}_t) \\
+&=\mathcal{N}(\mathbf{x}_{t-1};f_{\mu}(\mathbf{x}_t,t),\sigma_t^2\mathbf{I})
+\end{align*}</script><p>那么对于两个高斯分布 $q(\mathbf{x}_{t-1}|\mathbf{x}_t,\mathbf{x}_0)$ 和 $p(\mathbf{x}_{t-1}|\mathbf{x}_t) $ 的 KL 散度就有：</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+&D_{\mathrm{KL}}(q(\mathbf{x}_{t-1}|\mathbf{x}_t,\mathbf{x}_0)\parallel p(\mathbf{x}_{t-1}|\mathbf{x}_t)) \\
+&=D_{\mathrm{KL}}\left(\mathcal{N}(\mathbf{x}_{t-1};f_{\tilde{\mu}}(\mathbf{x}_t,\mathbf{x}_0),\sigma_t^2\mathbf{I})\parallel\mathcal{N}(\mathbf{x}_{t-1};f_{\mu}(\mathbf{x}_t,t),\sigma_t^2\mathbf{I})\right) \\
+&=\frac{1}{2}(n+\frac{1}{\sigma_t^2} \parallel f_{\tilde{\mu}}(\mathbf{x}_t,\mathbf{x}_0)-f_{\mu}(\mathbf{x}_t,t) \parallel^2-n+\log 1) \\
+&=\frac{1}{2\sigma_t^2} \parallel f_{\tilde{\mu}}(\mathbf{x}_t,\mathbf{x}_0)-f_{\mu}(\mathbf{x}_t,t) \parallel^2
+\end{align*}</script><p>那么优化目标 $L_{t-1}$ 即为：</p>
+<script type="math/tex; mode=display">
+L_{t-1} = \mathbb{E}_{q(\mathbf{x}_t|\mathbf{x}_0)} \Big[ \frac{1}{2\sigma_t^2} \parallel f_{\tilde{\mu}}(\mathbf{x}_t,\mathbf{x}_0)-f_{\mu}(\mathbf{x}_t,t) \parallel^2 \Big]</script><p>也就是说，希望网络学习到的均值 $f_{\tilde{\mu}}(\mathbf{x}_t,\mathbf{x}_0)$ 和后验分布的均值 $f_{\mu}(\mathbf{x}_t,t)$ 一致</p>
+<p>根据 DDPM 的前向扩散过程 $\mathbf{x}_t(\mathbf{x}_0,\epsilon) = \sqrt{\overline{\alpha}_t} \mathbf{x}_{0} + \sqrt{1-\overline{\alpha}_t}\epsilon$，将其带入到 $L_{t-1}$ 中的 $f_{\tilde{\mu}}(\mathbf{x}_t,\mathbf{x}_0)$，有：</p>
+<script type="math/tex; mode=display">
+L_{t-1} 
+= \mathbb{E}_{\mathbf{x}_0,\epsilon\sim\mathcal{N}(\mathbf{0},\mathbf{I})} \Big[
+\frac{1}{2\sigma_t^2}\parallel \frac{\sqrt{\alpha_t}(1-\overline{\alpha}_{t-1})}{1-\overline{\alpha}_t} \mathbf{x}_t(\mathbf{x}_0,\epsilon) + \frac{\sqrt{\overline{\alpha}_{t-1}}\beta_t}{1-\overline{\alpha}_{t-1}} \frac{1}{\sqrt{\overline{\alpha}_t}}(\mathbf{x}_t(\mathbf{x}_0,\epsilon)- \sqrt{1-\overline{\alpha}_t}\epsilon) - f_{\mu}(\mathbf{x}_t(\mathbf{x}_0,\epsilon),t)\parallel^2
+\Big]</script><p>化简可得：</p>
+<script type="math/tex; mode=display">
+L_{t-1} 
+= \mathbb{E}_{\mathbf{x}_0,\epsilon\sim\mathcal{N}(\mathbf{0},\mathbf{I})} \Big[
+\frac{1}{2\sigma_t^2}\parallel
+\frac{1}{\sqrt{\alpha_t}} \big( \mathbf{x}_t(\mathbf{x}_0,\epsilon) - \frac{\beta_t}{\sqrt{1-\overline{\alpha}_t}}\epsilon \big)
+- f_{\mu}(\mathbf{x}_t(\mathbf{x}_0,\epsilon),t)
+\parallel^2
+\Big]</script><p>进一步，采用 VAE 中的<strong>重参数化技巧</strong>，将 $f_{\mu}(\mathbf{x}_t(\mathbf{x}_0,\epsilon),t)$ 重参数化，有：</p>
+<script type="math/tex; mode=display">
+f_{\mu}(\mathbf{x}_t(\mathbf{x}_0,\epsilon),t) = \frac{1}{\sqrt{\alpha_t}}
+\Big(
+\mathbf{x}_t(\mathbf{x}_0,\epsilon) - \frac{\beta_t}{\sqrt{1-\overline{\alpha}_t}}\epsilon_{\theta} (\mathbf{x}_t(\mathbf{x}_0,\epsilon),t)
+\Big)</script><p>其中，$\epsilon_{\theta}$ 是一个基于神经网络的拟合函数，这意味着<strong>由原来的预测均值而换成预测噪音</strong></p>
+<p>再将重参数化后的 $f_{\mu}(\mathbf{x}_t(\mathbf{x}_0,\epsilon),t)$ 带入优化目标，可以得到：</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+L_{t-1} 
+&= \mathbb{E}_{\mathbf{x}_0,\epsilon\sim\mathcal{N}(\mathbf{0},\mathbf{I})} \Big[
+\frac{\beta_t^2}{2\sigma^2\alpha_t(1-\overline{\alpha}_t)}
+\parallel
+\epsilon - \epsilon_{\theta} (\mathbf{x}_t(\mathbf{x}_0,\epsilon),t)
+\parallel^2
+\Big] \\
+&= \mathbb{E}_{\mathbf{x}_0,\epsilon\sim\mathcal{N}(\mathbf{0},\mathbf{I})} \Big[
+\frac{\beta_t^2}{2\sigma^2\alpha_t(1-\overline{\alpha}_t)}
+\parallel
+\epsilon - \epsilon_{\theta} (\sqrt{\overline{\alpha}_t} \mathbf{x}_{0} + \sqrt{1-\overline{\alpha}_t}\epsilon,t)
+\parallel^2
+\Big] \\
+\end{align*}</script><p>进一步对上式进行简化，去掉权重系数，故有：</p>
+<script type="math/tex; mode=display">
+L_{t-1}^{\text{simple}} =  \mathbb{E}_{\mathbf{x}_0,\epsilon\sim\mathcal{N}(\mathbf{0},\mathbf{I})} \Big[
+\parallel
+\epsilon - \epsilon_{\theta} (\sqrt{\overline{\alpha}_t} \mathbf{x}_{0} + \sqrt{1-\overline{\alpha}_t}\epsilon,t)
+\parallel^2
+\Big] \\</script><p>由于去掉了不同的权重系数，所以这个简化的目标其实是 VLB 的优化目标进行了 reweight</p>
+<p>从 DDPM 的对比实验结果来看，预测噪音比预测均值效果要好，采用简化版本的优化目标比 VLB 目标效果要好</p>
+<h1 id="【模型训练】"><a href="#【模型训练】" class="headerlink" title="【模型训练】"></a>【模型训练】</h1><p>对于 DDPM 来说，前向扩散过程和反向生成过程的核心是：</p>
+<script type="math/tex; mode=display">
+\begin{gather*}
+q(\mathbf{x}_t|\mathbf{x}_0) = \mathcal{N}(\mathbf{x}_t;\sqrt{\overline{\alpha}_t}\mathbf{x}_0,(1-\overline{\alpha}_t)\mathbf{I}) \\
+q(\mathbf{x}_{t-1}|\mathbf{x}_t) \sim \mathcal{N}(\frac{1}{\sqrt{\alpha}_t} \Big[ \mathbf{x}_t - \frac{1-\alpha_t}{\sqrt{1-\overline{\alpha}_t}} \epsilon_{\theta}(\mathbf{x}_t,t) \Big],\frac{(1-\alpha_{t})(1-\overline{\alpha}_{t-1})}{(1-\overline{\alpha}_{t})})
+\end{gather*}</script><p>从这两个核心公式中可以看出，无论是前向过程还是反向过程，与 $\alpha_t$ 相关的都是常数，唯一不确定的就是 $\epsilon_{\theta}(\mathbf{x}_t,t)$</p>
+<p>重新考虑前向扩散过程，能否从当前样本 $\mathbf{x}_t$ 中提取出 $\epsilon_{\theta}(\mathbf{x}_t,t)$？显然，这个想法具备可行性，因为 $\mathbf{x}_t$ 本身就是一张图片，可以使用卷积神经网络进行提取</p>
+<p>在 DDPM 中，这一过程采用的是 Unet+Self-attention，其中 Unet 利用当前样本 $\mathbf{x}_t$ 和时间步 $t$ 预测噪声，即使用 Unet 来实现对 $\epsilon_{\theta}(\mathbf{x}_t,t)$​ 的预测，整个训练过程其实就是在训练 Unet 网络的参数</p>
+<p>如下图所示，整个 DDPM 模型可分为训练和采样两大算法</p>
+<p><img src="/images/artificial-intelligence/deep-learning/deep-generative-model/09-7.png"></p>
+<p>具体来说，对于 Unet 的训练过程如下：</p>
+<ol>
+<li>从训练数据中抽取一个样本 $\mathbf{x}_0$</li>
+<li>从 $1\sim T$ 中随机抽取一个时间步 $t$</li>
+<li>根据前向过程，随机采样一个噪声，加到 $\mathbf{x}_0$ 上，形成加噪样本 $\mathbf{x}_t$</li>
+<li>将加噪样本 $\mathbf{x}_t$ 和时间步 $t$ 输入到 Unet 中，Unet 根据时间步 $t$ 生成正弦位置编码与 $\mathbf{x}_t$ 结合，预测加的这个噪声</li>
+<li>将 Unet 预测的噪声与之前随机采样的噪声求 L2 损失，计算梯度，更新权重</li>
+<li>重复上述步骤，直到完成训练</li>
+</ol>
+<p>训练步骤中每个模块的交互如下图：</p>
+<p><img src="/images/artificial-intelligence/deep-learning/deep-generative-model/09-8.png"></p>
+<p>对于 Unet 的采样过程如下：</p>
+<ol>
+<li>从标准正态分布采样出 $x_T$​</li>
+<li>从 $T,T-1,…,2,1$ 依次重复以下步骤：<ol>
+<li>从标准正态分布 $Z\sim\mathcal{N}(\mathbf{0},\mathbf{I})$ 中采样 $z$，为重参数化做准备</li>
+<li>根据模型求出重参数化后的 $\epsilon_{\theta}$，并计算 $x_{t-1}$</li>
+</ol>
+</li>
+<li>循环结束后返回 $\mathbf{x}_0$</li>
+</ol>
+<p>采样步骤中每个模块的交互如下图：</p>
+<p><img src="/images/artificial-intelligence/deep-learning/deep-generative-model/09-9.png"></p>
+
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>感谢您对我的支持，让我继续努力分享有用的技术与知识点！</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/wechatpay.jpg" alt="Alex_McAvoy 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/alipay.jpg" alt="Alex_McAvoy 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Alex_McAvoy
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://alex-mcavoy.github.io/artificial-intelligence/deep-learning/deep-generative-model/eed4588a.html" title="去噪扩散概率模型 DDPM">https://alex-mcavoy.github.io/artificial-intelligence/deep-learning/deep-generative-model/eed4588a.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/artificial-intelligence/" rel="tag"># 人工智能</a>
+              <a href="/tags/deep-learning/" rel="tag"># 深度学习</a>
+              <a href="/tags/deep-generative-model/" rel="tag"># 深度生成模型</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/artificial-intelligence/deep-learning/deep-generative-model/ca604948.html" rel="prev" title="扩散概率模型 DPM">
+      <i class="fa fa-chevron-left"></i> 扩散概率模型 DPM
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/artificial-intelligence/deep-learning/deep-generative-model/89cf9085.html" rel="next" title="去噪扩散隐式模型 DDIM">
+      去噪扩散隐式模型 DDIM <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【概述】"><span class="nav-number">1.</span> <span class="nav-text">【概述】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【引入】"><span class="nav-number">2.</span> <span class="nav-text">【引入】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【基本过程】"><span class="nav-number">3.</span> <span class="nav-text">【基本过程】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#前向扩散过程"><span class="nav-number">3.1.</span> <span class="nav-text">前向扩散过程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#反向生成过程"><span class="nav-number">3.2.</span> <span class="nav-text">反向生成过程</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【优化目标】"><span class="nav-number">4.</span> <span class="nav-text">【优化目标】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#变分下界"><span class="nav-number">4.1.</span> <span class="nav-text">变分下界</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#L-0-：原始数据重建"><span class="nav-number">4.2.</span> <span class="nav-text">$L_0$：原始数据重建</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#L-t-：噪声分布与先验分布的-KL-散度"><span class="nav-number">4.3.</span> <span class="nav-text">$L_t$：噪声分布与先验分布的 KL 散度</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#L-t-1-：估计分布与后验分布的-KL-散度"><span class="nav-number">4.4.</span> <span class="nav-text">$L_{t-1}$：估计分布与后验分布的 KL 散度</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【模型训练】"><span class="nav-number">5.</span> <span class="nav-text">【模型训练】</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">  
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Alex_McAvoy"
+      src="/assets/img/head.jpg">
+  <p class="site-author-name" itemprop="name">Alex_McAvoy</p>
+  <div class="site-description" itemprop="description">想要成为渔夫的猎手</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">711</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">72</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">83</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Alex-McAvoy" title="GitHub → https://github.com/Alex-McAvoy" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/u011815404" title="CSDN → https://blog.csdn.net/u011815404" rel="noopener" target="_blank"><i class="fas fa-copyright fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+<!-- 访客地图 -->
+<script type="text/javascript" src="//rf.revolvermaps.com/0/0/5.js?i=50n58yo58ow&amp;m=0&amp;c=ff0000&amp;cr1=ffffff&amp;s=140" async="async"></script>
+
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdz20172133" title="https://blog.csdn.net/sdz20172133" rel="noopener" target="_blank">神仙队友</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://pxlsdz.gitee.io/" title="https://pxlsdz.gitee.io/" rel="noopener" target="_blank">神仙队友blog2</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdau_fangshifeng" title="https://blog.csdn.net/sdau_fangshifeng" rel="noopener" target="_blank">酷头</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://bycore.net" title="https://bycore.net" rel="noopener" target="_blank">凉了的某饼同学</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://kris-cn.github.io/" title="http://kris-cn.github.io/" rel="noopener" target="_blank">翟孙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://deng.fun/" title="http://deng.fun/" rel="noopener" target="_blank">芙蓉姐姐</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/wentong_Xu" title="https://blog.csdn.net/wentong_Xu" rel="noopener" target="_blank">小黑贱胖子</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.yuheng.tech/" title="https://www.yuheng.tech/" rel="noopener" target="_blank">咸于</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/lanshan1111" title="https://blog.csdn.net/lanshan1111" rel="noopener" target="_blank">肥硕硕</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdauguanweihong" title="https://blog.csdn.net/sdauguanweihong" rel="noopener" target="_blank">管少</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_41661919" title="https://blog.csdn.net/qq_41661919" rel="noopener" target="_blank">俊杰</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_40859951" title="https://blog.csdn.net/qq_40859951" rel="noopener" target="_blank">峰哥</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/LSD20164388" title="https://blog.csdn.net/LSD20164388" rel="noopener" target="_blank">狗冬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37868325" title="https://blog.csdn.net/qq_37868325" rel="noopener" target="_blank">妍大佬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://sanshuiii.github.io/" title="https://sanshuiii.github.io/" rel="noopener" target="_blank">sanshuiii</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://zjpzhao.github.io/" title="https://zjpzhao.github.io/" rel="noopener" target="_blank">brain</a>
+        </li>
+    </ul>
+  </div>
+
+		
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+  
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Alex_McAvoy</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+</br>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script><script src="/js/bookmark.js"></script>
+
+
+
+  
+
+
+
+
+  <script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '48fd73a538d3fa927f65',
+      clientSecret: '56618aefeee90bac3c20de8d51bb0b985d67252d',
+      repo        : 'Gitalk-Comment',
+      owner       : 'Alex-McAvoy',
+      admin       : ['Alex-McAvoy'],
+      id          : '81203cea7ce875be4066b1330ecba5d6',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+  
+  <!-- 鼠标单击粒子特效 -->
+  <script type="text/javascript" src="/js/cursor-effects.js"></script>
+  <!-- 多级目录 -->
+  <script type="text/javascript" src="/js/category.js"></script>
+  
+</body>
+</html>
