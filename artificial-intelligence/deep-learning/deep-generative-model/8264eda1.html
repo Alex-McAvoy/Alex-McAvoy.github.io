@@ -33,7 +33,7 @@
 <meta property="og:site_name" content="Alex_McAvoy">
 <meta property="og:description" content="【发展历史】在扩散模型（Diffusion Model）之前，深度生成模型领域的研究方向大多是对抗生成网络 GAN、变分自编码器 VAE 等，随着 DDPM 的发展，一些改进的方法被不断涌现，扩散模型也在生成模型领域缓缓地迈向成熟 扩散模型起源于 2015 年 《Deep Unsupervised Learning using Nonequilibrium Thermodynamics》，Jasc">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2024-04-21T10:21:59.677Z">
+<meta property="og:updated_time" content="2024-04-26T08:25:47.997Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="扩散模型的发展">
 <meta name="twitter:description" content="【发展历史】在扩散模型（Diffusion Model）之前，深度生成模型领域的研究方向大多是对抗生成网络 GAN、变分自编码器 VAE 等，随着 DDPM 的发展，一些改进的方法被不断涌现，扩散模型也在生成模型领域缓缓地迈向成熟 扩散模型起源于 2015 年 《Deep Unsupervised Learning using Nonequilibrium Thermodynamics》，Jasc">
@@ -276,8 +276,8 @@
 <p>对于 DDPM 来说，一个最大的缺点是需要设置较长的扩散步数才能得到好的效果，这导致了生成样本的速度较慢，比如扩散步数为 $1000$ 的话，那么生成一个样本就要模型推理 $1000$​ 次，为此 Jiaming Song 等学者在<a href="https://arxiv.org/abs/2010.02502" target="_blank" rel="noopener">《Denoising Diffusion Implicit Models》</a> 中针对 DDPM 进行了改进，提出了<strong>去噪扩散隐式模型（Denoising Diffusion Implicit Models，DDIM）</strong>，不再限制前向和反向过程必须是马尔卡夫链，在不牺牲质量的情况下，允许更少的采样步数来加速反向生成过程，此外 DDIM 的另一个特点是从一个随机噪音生成样本的过程是一个确定的过程，即中间再额外没有加入随机噪音</p>
 <p>2021 年 2 月，Alex Nichol 等学者在 <a href="https://arxiv.org/abs/2102.09672" target="_blank" rel="noopener">《Improved Denoising Diffusion Probabilistic Models》</a>中对 DDPM 做了改进，将 DDPM 中用常数指代的<strong>方差使用模型进行学习</strong>，同时将添加噪声的函数从线性改成了余弦</p>
 <p>同年 5 月，Alex Nichol 等学者在 <a href="https://arxiv.org/abs/2105.05233" target="_blank" rel="noopener">《Diffusion models beat GAN on image Synthesis》</a>中首次提出了<strong>分类器引导扩散（Classifier Guidance Diffusion）</strong>，额外训练了一个分类器来指导扩散模型生成图像。反向生成过程中的隐变量会通过分类器计算得到一个梯度，利用该梯度指导扩散模型的迭代过程，能够更好的告诉网络在反向过程生成新图片时，当前图片有多像需要生成的物体。此外，本文从 GAN 的实验中得到启发，对扩散模型进行了大量的消融实验，找到了更好的架构更深更宽的模型</p>
+<p>2021 年，Jonathan Ho 等学者在<a href="https://arxiv.org/abs/2207.12598" target="_blank" rel="noopener">《Classifier-Free Diffusion Guidance》</a>中基于分类器引导扩散发现了<strong>用生成模型自己做引导而无需训练分类器</strong>。该方法中联合训练了条件和非条件的扩散模型，并且结合了两个模型的分数估计，以实现样本质量和多样性之间的均衡。最终的输出为有条件生成的输出（和图片匹配的文本对 $c$）减去无条件生成的输出（对文本对 $c$ 设置为空集），可以将无条件生成的输出看作是偏差，用正常训练的网络减去有偏差的网络能得到想要的输出</p>
 <p>在随着扩散模型的不断发展，尤其是当引导技术被证明扩散模型也能生成高质量的图像后，OpenAI 开始探索文本条件下的图像生成，2021 年 12 月，Alex Nichol 等学者在<a href="https://arxiv.org/abs/2112.10741" target="_blank" rel="noopener">《GLIDE: Towards Photorealistic Image Generation and Editing with Text-Guided Diffusion Models》</a>中对比了 CLIP 引导和<strong>无分类器（Classifier-free）</strong>两种不同的引导策略，验证了使用无分类器引导的方式生成的图片更真实，与提示的文本有更好的相关性，并且使用无分类器引导的 GLIDE 模型在 35 亿参数的情况下优于 120 亿参数的 DALL-E 模型，其最大的贡献是<strong>开始用文本作为条件引导图像的生成</strong></p>
-<p>2022 年，Jonathan Ho 等学者在<a href="https://arxiv.org/abs/2207.12598" target="_blank" rel="noopener">《Classifier-Free Diffusion Guidance》</a>中基于分类器引导扩散发现了<strong>用生成模型自己做引导而无需训练分类器</strong>。该方法中联合训练了条件和非条件的扩散模型，并且结合了两个模型的分数估计，以实现样本质量和多样性之间的均衡。最终的输出为有条件生成的输出（和图片匹配的文本对 $c$）减去无条件生成的输出（对文本对 $c$​ 设置为空集），可以将无条件生成的输出看作是偏差，用正常训练的网络减去有偏差的网络能得到想要的输出</p>
 <p>在 GLIDE 取得成功之后，OpenAI 又进一步在 GLIDE 的基础上开发了 <a href="https://cdn.openai.com/papers/dall-e-2.pdf" target="_blank" rel="noopener">Dalle-2</a>，此后图片生成工作迎来了大爆发，Google 提出了 <a href="https://arxiv.org/abs/2205.11487" target="_blank" rel="noopener">Imagen</a> 以及 <a href="https://deepmind.google/technologies/imagen-2/" target="_blank" rel="noopener">Imagen2</a>，Stability AI提出了 <a href="https://arxiv.org/abs/2112.10752" target="_blank" rel="noopener">Stable Diffusion</a> 以及火爆全网的 <a href="https://www.midjourney.com/home/%3FcallbackUrl%3D%2Fapp%2F" target="_blank" rel="noopener">Midjourney</a></p>
 
     </div>
@@ -418,7 +418,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">711</span>
+          <span class="site-state-item-count">712</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
