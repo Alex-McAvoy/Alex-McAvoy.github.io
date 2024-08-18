@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.9.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/img/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/assets/img/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/pace-js@1/themes/blue/pace-theme-minimal.css">
+  <script src="//cdn.jsdelivr.net/npm/pace-js@1/pace.min.js"></script>
+
+
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"alex-mcavoy.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":16,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":true,"color":"#ff0000","save":"manual"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":true},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.json"};
+  </script>
+
+  <meta name="description" content="【概述】潜在狄利克雷分配 LDA 模型的学习是一个复杂的最优化问题，难以精确求解，只能近似求解，常用的求解方法有吉布斯抽样和变分推理，本文仅介绍使用吉布斯抽样进行 LDA 模型的学习 对于给定文本的集合 $D=\{\mathbf{w}_1,\mathbf{w}_2,\cdots,\mathbf{w}_M\}$，其中 $\mathbf{w}_m=(w_{m1},w_{m2},\cdots,w_{mN">
+<meta name="keywords" content="人工智能,自然语言处理,无监督学习">
+<meta property="og:type" content="article">
+<meta property="og:title" content="LDA 的吉布斯抽样算法">
+<meta property="og:url" content="https://alex-mcavoy.github.io/artificial-intelligence/nlp/6d5b477.html">
+<meta property="og:site_name" content="Alex_McAvoy">
+<meta property="og:description" content="【概述】潜在狄利克雷分配 LDA 模型的学习是一个复杂的最优化问题，难以精确求解，只能近似求解，常用的求解方法有吉布斯抽样和变分推理，本文仅介绍使用吉布斯抽样进行 LDA 模型的学习 对于给定文本的集合 $D=\{\mathbf{w}_1,\mathbf{w}_2,\cdots,\mathbf{w}_M\}$，其中 $\mathbf{w}_m=(w_{m1},w_{m2},\cdots,w_{mN">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2024-08-17T18:47:02.681Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="LDA 的吉布斯抽样算法">
+<meta name="twitter:description" content="【概述】潜在狄利克雷分配 LDA 模型的学习是一个复杂的最优化问题，难以精确求解，只能近似求解，常用的求解方法有吉布斯抽样和变分推理，本文仅介绍使用吉布斯抽样进行 LDA 模型的学习 对于给定文本的集合 $D=\{\mathbf{w}_1,\mathbf{w}_2,\cdots,\mathbf{w}_M\}$，其中 $\mathbf{w}_m=(w_{m1},w_{m2},\cdots,w_{mN">
+
+<link rel="canonical" href="https://alex-mcavoy.github.io/artificial-intelligence/nlp/6d5b477.html">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>LDA 的吉布斯抽样算法 | Alex_McAvoy</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Alex_McAvoy</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">想要成为渔夫的猎手</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+
+	
+	
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/artificial-intelligence/nlp/6d5b477.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/assets/img/head.jpg">
+      <meta itemprop="name" content="Alex_McAvoy">
+      <meta itemprop="description" content="想要成为渔夫的猎手">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Alex_McAvoy">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          LDA 的吉布斯抽样算法
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2023-12-23 10:03:00" itemprop="dateCreated datePublished" datetime="2023-12-23T10:03:00+08:00">2023-12-23</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/artificial-intelligence/" itemprop="url" rel="index"><span itemprop="name">人工智能</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/artificial-intelligence/nlp/" itemprop="url" rel="index"><span itemprop="name">自然语言处理</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>9.5k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>9 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="【概述】"><a href="#【概述】" class="headerlink" title="【概述】"></a>【概述】</h1><p>潜在狄利克雷分配 LDA 模型的学习是一个复杂的最优化问题，难以精确求解，只能近似求解，常用的求解方法有吉布斯抽样和变分推理，本文仅介绍使用吉布斯抽样进行 LDA 模型的学习</p>
+<p>对于给定文本的集合 $D=\{\mathbf{w}_1,\mathbf{w}_2,\cdots,\mathbf{w}_M\}$，其中 $\mathbf{w}_m=(w_{m1},w_{m2},\cdots,w_{mN_m})$ 是第 $m$ 个文本，以 $\mathbf{w}$ 表示文本集合的单词序列，即：</p>
+<script type="math/tex; mode=display">
+\mathbf{w}=(w_{11},w_{12},\cdots,w_{1N_1},w_{22},\cdots,w_{2N_2},\cdots,w_{M1},w_{M_2},\cdots,w_{MN_M})</script><p>在超参数 $\boldsymbol{\alpha},\boldsymbol{\beta}$ 已知的情况下，潜在狄利克雷分配 LDA 的学习就是推断：</p>
+<ol>
+<li>话题序列集合 $\mathbf{z}=\{\mathbf{z}_{1},\mathbf{z}_{2},\cdots,\mathbf{z}_{M}\}$ 的后验概率分布，其中 $\mathbf{z}_{m}=(z_{m1},z_{m2},\cdots,z_{mN_m})$ 是第 $m$ 个文本的话题序列</li>
+<li>参数 $\boldsymbol{\Theta}=\{\boldsymbol{\theta}_{1},\boldsymbol{\theta}_{2},\cdots,\boldsymbol{\theta}_{M}\}$，其中 $\boldsymbol{\theta}_{M}$ 是文本 $\mathbf{w}_m$ 的话题分布的参数</li>
+<li>参数 $\boldsymbol{\phi}=\{\boldsymbol{\varphi}_{1},\boldsymbol{\varphi}_{2},\cdots,\boldsymbol{\varphi}_{K}\}$，其中 $\boldsymbol{\varphi}_{K}$ 是话题 $z_k$ 的单词分布的参数</li>
+</ol>
+<p>也就是说，对联合概率分布 $p(\mathbf{w},\mathbf{z},\boldsymbol{\Theta},\boldsymbol{\phi}|\boldsymbol{\alpha},\boldsymbol{\beta})$ 进行估计，其中 $\mathbf{w}$ 是观测变量，$\mathbf{z},\boldsymbol{\Theta},\boldsymbol{\phi}$​ 是隐变量</p>
+<p>使用吉布斯抽样进行 LDA 的学习通常采用<strong>收缩的吉布斯抽样（Collapsed Gibbs sampling）</strong>方法，其基本思路是对隐变量 $\boldsymbol{\Theta},\boldsymbol{\phi}$ 积分，得到边缘概率分布 $p(\mathbf{w},\mathbf{z}|\boldsymbol{\alpha},\boldsymbol{\beta})$，再对后验概率分布 $p(\mathbf{z}|\mathbf{w},\boldsymbol{\alpha},\boldsymbol{\beta})$ 进行吉布斯抽样，得到分布 $p(\mathbf{z}|\mathbf{w},\boldsymbol{\alpha},\boldsymbol{\beta})$ 的样本集合，进而利用这个样本集合对参数 $\boldsymbol{\Theta},\boldsymbol{\phi}$ 进行估计，最终得到 LDA 模型 $p(\mathbf{w},\mathbf{z},\boldsymbol{\Theta},\boldsymbol{\phi}|\boldsymbol{\alpha},\boldsymbol{\beta})$ 的所有参数估计</p>
+<h1 id="【基本思想】"><a href="#【基本思想】" class="headerlink" title="【基本思想】"></a>【基本思想】</h1><h2 id="抽样分布的表达式"><a href="#抽样分布的表达式" class="headerlink" title="抽样分布的表达式"></a>抽样分布的表达式</h2><p>对于后验概率分布 $p(\mathbf{z}|\mathbf{w},\boldsymbol{\alpha},\boldsymbol{\beta})$，有：</p>
+<script type="math/tex; mode=display">
+p(\mathbf{z}|\mathbf{w},\boldsymbol{\alpha},\boldsymbol{\beta})
+= \frac{p(\mathbf{w},\mathbf{z}|\boldsymbol{\alpha},\boldsymbol{\beta})}{p(\mathbf{w}|\boldsymbol{\alpha},\boldsymbol{\beta})} 
+\propto p(\mathbf{w},\mathbf{z}|\boldsymbol{\alpha},\boldsymbol{\beta})</script><p>由于分布相同，可以不予考虑，只考虑联合分布概率 $p(\mathbf{w},\mathbf{z}|\boldsymbol{\alpha},\boldsymbol{\beta})$，其可以分解为：</p>
+<script type="math/tex; mode=display">
+p(\mathbf{w},\mathbf{z}|\boldsymbol{\alpha},\boldsymbol{\beta})
+= p(\mathbf{w}|\mathbf{z},\boldsymbol{\alpha},\boldsymbol{\beta}) p(\mathbf{z}|\boldsymbol{\alpha},\boldsymbol{\beta}) 
+= p(\mathbf{w}|\mathbf{z},\boldsymbol{\beta})p(\mathbf{z}|\boldsymbol{\alpha})</script><p>其中，两个因子 $ p(\mathbf{w}|\mathbf{z},\boldsymbol{\beta})$ 和 $p(\mathbf{z}|\boldsymbol{\alpha})$ 可分别进行处理</p>
+<p>对于第一个因子 $ p(\mathbf{w}|\mathbf{z},\boldsymbol{\beta})$，由于 $p(\mathbf{w}|\mathbf{z},\boldsymbol{\phi})=\prod\limits_{k=1}^K\prod\limits_{v=1}^V\varphi_{kv}^{n_{kv}}$，故有：</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+ p(\mathbf{w}|\mathbf{z},\boldsymbol{\beta}) 
+ &= \int p(\mathbf{w}|\mathbf{z},\boldsymbol{\phi}) p(\boldsymbol{\phi}|\boldsymbol{\beta}) d\boldsymbol{\phi} \\
+ &= \int \prod_{k=1}^K \frac{1}{\text{B}(\boldsymbol{\beta})} \prod_{v=1}^V \varphi_{kv}^{n_{kv}+\beta_v-1} d\boldsymbol{\phi} \\
+ &= \prod_{k=1}^K \frac{1}{\text{B}(\boldsymbol{\beta})} \int \prod_{v=1}^V \varphi_{kv}^{n_{kv}+\beta_v-1} d\boldsymbol{\phi} \\
+ &= \prod_{k=1}^K \frac{\text{B}(\boldsymbol{n}_k+\boldsymbol{\beta})}{\text{B}(\boldsymbol{\beta})}
+\end{align*}</script><p>其中，$\varphi_{kv}$ 是第 $k$ 个话题生成单词集合第 $v$ 个单词的概率，$\boldsymbol{n}_k=\{n_{k1},n_{k2},\cdots,n_{kV}\}$，$n_{kv}$ 是数据中第 $k$ 个话题生成第 $v$ 个单词的次数</p>
+<p>对于第二个因子 $p(\mathbf{z}|\boldsymbol{\alpha})$，由于 $p(\mathbf{z}|\boldsymbol{\Theta})=\prod\limits_{m=1}^M\prod\limits_{k=1}^K\theta_{mk}^{n_{mk}}$，故有：</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+ p(\mathbf{z}|\boldsymbol{\alpha}) 
+ &= \int p(\mathbf{z}|\boldsymbol{\Theta}) p(\boldsymbol{\Theta}|\boldsymbol{\alpha}) d\boldsymbol{\Theta} \\
+ &= \int \prod_{m=1}^M \frac{1}{\text{B}(\boldsymbol{\alpha})} \prod_{k=1}^K \theta_{mk}^{n_{mk}+\alpha_k-1} d\boldsymbol{\Theta} \\
+ &= \prod_{m=1}^M \frac{1}{\text{B}(\boldsymbol{\alpha})} \int \prod_{k=1}^K \theta_{mk}^{n_{mk}+\alpha_k-1} d\boldsymbol{\Theta} \\
+ &= \prod_{m=1}^M \frac{\text{B}(\boldsymbol{n}_m+\boldsymbol{\alpha})}{\text{B}(\boldsymbol{\alpha})}
+\end{align*}</script><p>其中，$\theta_{mk}$ 是第 $m$ 个文本生成单词集合第 $k$ 个话题的概率，$\boldsymbol{n}_m=\{n_{m1},n_{m2},\cdots,n_{mK}\}$，$n_{mk}$ 是数据中第 $m$ 个文本生成第 $k$​ 个话题的次数</p>
+<p>因此，对于 $p(\mathbf{w},\mathbf{z}|\boldsymbol{\alpha},\boldsymbol{\beta})$ 就有：</p>
+<script type="math/tex; mode=display">
+p(\mathbf{w},\mathbf{z}|\boldsymbol{\alpha},\boldsymbol{\beta}) 
+= p(\mathbf{w}|\mathbf{z},\boldsymbol{\beta})p(\mathbf{z}|\boldsymbol{\alpha})
+= \prod_{k=1}^K \frac{\text{B}(\boldsymbol{n}_k+\boldsymbol{\beta})}{\text{B}(\boldsymbol{\beta})} \cdot  \prod_{m=1}^M \frac{\text{B}(\boldsymbol{n}_m+\boldsymbol{\alpha})}{\text{B}(\boldsymbol{\alpha})}</script><p>故而有：</p>
+<script type="math/tex; mode=display">
+p(\mathbf{z}|\mathbf{w},\boldsymbol{\alpha},\boldsymbol{\beta})
+\propto \prod_{k=1}^K \frac{\text{B}(\boldsymbol{n}_k+\boldsymbol{\beta})}{\text{B}(\boldsymbol{\beta})} \cdot  \prod_{m=1}^M \frac{\text{B}(\boldsymbol{n}_m+\boldsymbol{\alpha})}{\text{B}(\boldsymbol{\alpha})}</script><h2 id="满条件分布的表达式"><a href="#满条件分布的表达式" class="headerlink" title="满条件分布的表达式"></a>满条件分布的表达式</h2><p>分布 $p(\mathbf{z}|\mathbf{w},\boldsymbol{\alpha},\boldsymbol{\beta})$ 的满条件分布可写为：</p>
+<script type="math/tex; mode=display">
+p(z_i|\mathbf{z}_{-i},\mathbf{w},\boldsymbol{\alpha},\boldsymbol{\beta}) 
+= \frac{1}{Z_{z_i}} p(\mathbf{z}|\mathbf{w},\boldsymbol{\alpha},\boldsymbol{\beta})</script><p>其中，$w_i$ 表示所有文本的单词序列的第 $i$ 个位置的单词，$z_i$ 表示单词 $w_i$ 对应的话题，$i=(m,n),i=1,2,\cdots,I$，$\mathbf{z}_{-i}=\{z_j:j\neq i\}$ ，$Z_{z_i}$ 表示分布 $p(\mathbf{z}|\mathbf{w},\boldsymbol{\alpha},\boldsymbol{\beta})$ 对变量 $z_i$ 的边缘化因子</p>
+<p>上式可理解为在所有文本单词序列、其他位置话题序列给定条件下，第 $i$ 个位置的话题的条件概率分布</p>
+<p>根据抽样分布的表达式，可推出：</p>
+<script type="math/tex; mode=display">
+p(z_i|\mathbf{z}_{-i},\mathbf{w},\boldsymbol{\alpha},\boldsymbol{\beta}) 
+\propto \frac{n_{kv}+\beta_v}{\sum\limits_{v=1}^V (n_{kv}+\beta_v)} \cdot \frac{n_{mk}+\alpha_k}{\sum\limits_{k=1}^K(n_{mk}+\alpha_k)}</script><p>其中，第 $m$ 个文本的第 $n$ 个位置的单词 $w_i$ 是单词集合的第 $v$ 个单词，其话题 $z_{i}$ 是话题集合的第 $k$ 个话题，$n_{kv}$ 是第 $k$ 个话题中第 $v$ 个单词的减去当前单词的计数，$n_{mk}$ 是第 $m$ 个文本中第 $k$ 个话题减去当前单词的话题的计数</p>
+<h2 id="算法的后处理"><a href="#算法的后处理" class="headerlink" title="算法的后处理"></a>算法的后处理</h2><p>对于参数 $\boldsymbol{\Theta}=\{\boldsymbol{\theta}_m\}$ 的估计，根据 LDA 模型的定义，后验概率满足：</p>
+<script type="math/tex; mode=display">
+p(\boldsymbol{\theta}_m|\mathbf{z}_m,\boldsymbol{\alpha}) 
+= \frac{1}{Z_{\boldsymbol{\theta}_{m}}} \prod_{n=1}^{N_m} p(z_{mn}|\boldsymbol{\theta}_{m}) p(\boldsymbol{\theta}_m|\boldsymbol{\alpha})
+= \text{Dir}(\boldsymbol{\theta}_{m}|\boldsymbol{n}_{m}+ \boldsymbol{\alpha})</script><p>其中，$\boldsymbol{n}_m=\{n_{m1},n_{m2},\cdots,n_{mK}\}$ 是第 $m$ 个文本的话题的计数，$Z_{\boldsymbol{\theta}_m}$ 表示分布 $p(\boldsymbol{\theta}_m,\mathbf{z}_m|\boldsymbol{\alpha})$ 对变量 $\boldsymbol{\theta}_{m}$​ 的边缘化因子</p>
+<p>故而可以得到参数 $\boldsymbol{\Theta}=\{\boldsymbol{\theta}_m\}$ 的估计式：</p>
+<script type="math/tex; mode=display">
+\theta_{mk} = \frac{n_{mk}+\alpha_k}{\sum\limits_{k=1}^K (n_{mk}+\alpha_k)},
+\quad m=1,2,\cdots,M;\quad k=1,2,\cdots,K</script><p>对于参数 $\boldsymbol{\phi}=\{\boldsymbol{\varphi}_m\}$ 的估计，根据 LDA 模型的定义，后验概率满足：</p>
+<script type="math/tex; mode=display">
+p(\boldsymbol{\varphi}_k|\mathbf{w},\mathbf{z},\boldsymbol{\beta}) 
+= \frac{1}{Z_{\boldsymbol{\varphi}_{k}}} \prod_{i=1}^{I} p(w_{i}|\boldsymbol{\varphi}_{k}) p(\boldsymbol{\varphi}_k|\boldsymbol{\beta})
+= \text{Dir}(\boldsymbol{\varphi}_{k}|\boldsymbol{n}_{k}+ \boldsymbol{\beta})</script><p>其中，$\boldsymbol{n}_k=\{n_{mk},n_{k2},\cdots,n_{kV}\}$ 是第 $k$ 个话题的单词的计数，$Z_{\boldsymbol{\varphi}_m}$ 表示分布 $p(\boldsymbol{\varphi}_k|\mathbf{w},\mathbf{z},\boldsymbol{\beta}) $ 对变量 $\boldsymbol{\varphi}_{k}$ 的边缘化因子，$I$ 是文本集合单词序列 $\mathbf{w}$ 的单词总数</p>
+<p>故而可以得到参数 $\boldsymbol{\phi}=\{\boldsymbol{\varphi}_m\}$ 的估计式：</p>
+<script type="math/tex; mode=display">
+\varphi_{kv} = \frac{n_{kv}+\beta_v}{\sum\limits_{v=1}^V(n_{kv}+\beta_v)},
+\quad k=1,2,\cdots,K; \quad v=1,2,\cdots,V</script><h2 id="基本流程"><a href="#基本流程" class="headerlink" title="基本流程"></a>基本流程</h2><p>综上所述，可以总结 LDA 的吉布斯抽样的具体算法</p>
+<p>对于给定的所有文本的单词序列 $\mathbf{w}$，每个位置上随机指派一个话题，整体构成所有文本的话题序列 $\mathbf{z}$，然后循环执行以下操作：在每个位置上计算在该位置上的话题的满条件概率分布，然后随机抽样，得到该位置的新的话题，分派给这个位置</p>
+<script type="math/tex; mode=display">
+p(z_i|\mathbf{z}_{-i},\mathbf{w},\boldsymbol{\alpha},\boldsymbol{\beta}) 
+\propto \frac{n_{kv}+\beta_v}{\sum\limits_{v=1}^V (n_{kv}+\beta_v)} \cdot \frac{n_{mk}+\alpha_k}{\sum\limits_{k=1}^K(n_{mk}+\alpha_k)}</script><p>这个条件概率分布由两个因子组成，第一个因子表示话题生成该位置的单词的概率，第二个因子表示该位置的文本生成话题的概率</p>
+<p>整体准备两个计数矩阵：话题-单词矩阵 $N_{K\times V}=[n_{kv}]$、文本-话题矩阵 $N_{M\times K}=[n_{mk}]$，在每一个位置，对两个矩阵中该位置的已有话题的计数减 $1$，计算满条件概率分布，然后进行抽样，得到该位置的新话题，之后对两个矩阵中该位置的新话题的计数加 $1$，计算移到下一个位置</p>
+<p>在燃烧期后得到的所有文本的话题序列，即条件概率分布的样本 $p(\mathbf{z}|\mathbf{w},\boldsymbol{\alpha},\boldsymbol{\beta})$</p>
+<h1 id="【算法流程】"><a href="#【算法流程】" class="headerlink" title="【算法流程】"></a>【算法流程】</h1><p>输入：文本的单词序列 $\mathbf{w}=\{\mathbf{w}_1,\mathbf{w}_2,\cdots,\mathbf{w}_M\}$，其中 $\mathbf{w}_m=(w_{m1},w_{m2},\cdots,w_{mN_m})$ 是第 $m$ 个文本</p>
+<p>输出：模型参数 $\boldsymbol{\Theta},\boldsymbol{\phi}$ 的估计值、文本的话题序列 $\mathbf{z}=\{\mathbf{z}_{1},\mathbf{z}_{2},\cdots,\mathbf{z}_{M}\}$ 的后验概率分布 $p(\mathbf{z}|\mathbf{w},\boldsymbol{\alpha},\boldsymbol{\beta})$ 的样本计数，其中 $\mathbf{z}_{m}=(z_{m1},z_{m2},\cdots,z_{mN_m})$ 是第 $m$ 个文本的话题序列</p>
+<p>参数：超参数 $\boldsymbol{\alpha},\boldsymbol{\beta}$、话题个数 $K$</p>
+<p>算法流程：</p>
+<p>Step 1：设所有计数矩阵的元素 $n_{mk},n_{kv}$，计数向量的元素 $\boldsymbol{n}_m,\boldsymbol{n}_k$ 的初值为 $0$</p>
+<p>Step 2：对所有文本 $\mathbf{w}_m,m=1,2\cdots,M$，第 $m$ 个文本中的所有单词 $w_{mn},n=1,2,\cdots N_m$ </p>
+<ol>
+<li><p>抽样话题：$z_{mn} = \mathbf{z}_{k} \sim \text{Mult}(\frac{1}{K})$</p>
+</li>
+<li><p>增加文本-话题计数：$n_{mk}=n_{mk}+1$</p>
+</li>
+<li>增加文本-话题和计数：$\boldsymbol{n}_m=\boldsymbol{n}_m+\mathbf{1}$</li>
+<li>增加话题-单词计数：$n_{kv}=n_{kv}+1$</li>
+<li>增加话题-单词和计数：$\boldsymbol{n}_k=\boldsymbol{n}_k+\mathbf{1}$</li>
+</ol>
+<p>Step 3：循环执行以下操作，直到进入燃烧期</p>
+<p>对所有文本 $\mathbf{w}_m,m=1,2\cdots,M$，第 $m$ 个文本中的所有单词 $w_{mn},n=1,2,\cdots N_m$ </p>
+<p>1）若当前的单词 $w_{mn}$ 是第 $v$ 个单词，话题指派 $z_{mn}$ 是第 $k$ 个话题，减少计数</p>
+<script type="math/tex; mode=display">
+\begin{gather*}
+n_{mk}=n_{mk}-1 \\
+\boldsymbol{n}_m=\boldsymbol{n}_m-\mathbf{1} \\
+n_{kv}=n_{kv}-1 \\
+\boldsymbol{n}_k=\boldsymbol{n}_k-\mathbf{1}
+\end{gather*}</script><p>2）按照满条件分布</p>
+<script type="math/tex; mode=display">
+p(z_i|\mathbf{z}_{-i},\mathbf{w},\boldsymbol{\alpha},\boldsymbol{\beta}) 
+\propto \frac{n_{kv}+\beta_v}{\sum\limits_{v=1}^V (n_{kv}+\beta_v)} \cdot \frac{n_{mk}+\alpha_k}{\sum\limits_{k=1}^K(n_{mk}+\alpha_k)}</script><p>进行抽样，得到新的第 $k’$ 个话题，分配给 $z_{mn}$</p>
+<p>3）增加计数</p>
+<script type="math/tex; mode=display">
+\begin{gather*}
+n_{mk'}=n_{mk'}+1 \\
+\boldsymbol{n}_m=\boldsymbol{n}_m+\mathbf{1} \\
+n_{k'v}=n_{k'v}+1 \\
+\boldsymbol{n}_k'=\boldsymbol{n}_k'+\mathbf{1}
+\end{gather*}</script><p>4）得到更新的两个计数矩阵：话题-单词矩阵 $N_{K\times V}=[n_{kv}]$、文本-话题矩阵 $N_{M\times K}=[n_{mk}]$，表示后验概率分布 $p(\mathbf{z}|\mathbf{w},\boldsymbol{\alpha},\boldsymbol{\beta})$ 的样本计数</p>
+<p>Step 4：利用得到的样本计数，计算模型参数 $\boldsymbol{\Theta},\boldsymbol{\phi}$ 的估计值</p>
+<script type="math/tex; mode=display">
+\begin{gather*}
+\theta_{mk} = \frac{n_{mk}+\alpha_k}{\sum\limits_{k=1}^K (n_{mk}+\alpha_k)} \\
+\varphi_{kv} = \frac{n_{kv}+\beta_v}{\sum\limits_{v=1}^V(n_{kv}+\beta_v)}
+\end{gather*}</script>
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>感谢您对我的支持，让我继续努力分享有用的技术与知识点！</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/wechatpay.jpg" alt="Alex_McAvoy 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/alipay.jpg" alt="Alex_McAvoy 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Alex_McAvoy
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://alex-mcavoy.github.io/artificial-intelligence/nlp/6d5b477.html" title="LDA 的吉布斯抽样算法">https://alex-mcavoy.github.io/artificial-intelligence/nlp/6d5b477.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/artificial-intelligence/" rel="tag"># 人工智能</a>
+              <a href="/tags/nlp/" rel="tag"># 自然语言处理</a>
+              <a href="/tags/unsupervised-learning/" rel="tag"># 无监督学习</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/artificial-intelligence/nlp/80565736.html" rel="prev" title="潜在狄利克雷分配 LDA">
+      <i class="fa fa-chevron-left"></i> 潜在狄利克雷分配 LDA
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/artificial-intelligence/nlp/49c80c5d.html" rel="next" title="LDA 的变分 EM 算法">
+      LDA 的变分 EM 算法 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【概述】"><span class="nav-number">1.</span> <span class="nav-text">【概述】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【基本思想】"><span class="nav-number">2.</span> <span class="nav-text">【基本思想】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#抽样分布的表达式"><span class="nav-number">2.1.</span> <span class="nav-text">抽样分布的表达式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#满条件分布的表达式"><span class="nav-number">2.2.</span> <span class="nav-text">满条件分布的表达式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#算法的后处理"><span class="nav-number">2.3.</span> <span class="nav-text">算法的后处理</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#基本流程"><span class="nav-number">2.4.</span> <span class="nav-text">基本流程</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【算法流程】"><span class="nav-number">3.</span> <span class="nav-text">【算法流程】</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">  
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Alex_McAvoy"
+      src="/assets/img/head.jpg">
+  <p class="site-author-name" itemprop="name">Alex_McAvoy</p>
+  <div class="site-description" itemprop="description">想要成为渔夫的猎手</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">723</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">72</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">83</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Alex-McAvoy" title="GitHub → https://github.com/Alex-McAvoy" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/u011815404" title="CSDN → https://blog.csdn.net/u011815404" rel="noopener" target="_blank"><i class="fas fa-copyright fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+<!-- 访客地图 -->
+<script type="text/javascript" src="//rf.revolvermaps.com/0/0/5.js?i=50n58yo58ow&amp;m=0&amp;c=ff0000&amp;cr1=ffffff&amp;s=140" async="async"></script>
+
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdz20172133" title="https://blog.csdn.net/sdz20172133" rel="noopener" target="_blank">神仙队友</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://pxlsdz.gitee.io/" title="https://pxlsdz.gitee.io/" rel="noopener" target="_blank">神仙队友blog2</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdau_fangshifeng" title="https://blog.csdn.net/sdau_fangshifeng" rel="noopener" target="_blank">酷头</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://bycore.net" title="https://bycore.net" rel="noopener" target="_blank">凉了的某饼同学</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://kris-cn.github.io/" title="http://kris-cn.github.io/" rel="noopener" target="_blank">翟孙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://deng.fun/" title="http://deng.fun/" rel="noopener" target="_blank">芙蓉姐姐</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/wentong_Xu" title="https://blog.csdn.net/wentong_Xu" rel="noopener" target="_blank">小黑贱胖子</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.yuheng.tech/" title="https://www.yuheng.tech/" rel="noopener" target="_blank">咸于</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/lanshan1111" title="https://blog.csdn.net/lanshan1111" rel="noopener" target="_blank">肥硕硕</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdauguanweihong" title="https://blog.csdn.net/sdauguanweihong" rel="noopener" target="_blank">管少</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_41661919" title="https://blog.csdn.net/qq_41661919" rel="noopener" target="_blank">俊杰</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_40859951" title="https://blog.csdn.net/qq_40859951" rel="noopener" target="_blank">峰哥</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/LSD20164388" title="https://blog.csdn.net/LSD20164388" rel="noopener" target="_blank">狗冬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37868325" title="https://blog.csdn.net/qq_37868325" rel="noopener" target="_blank">妍大佬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://sanshuiii.github.io/" title="https://sanshuiii.github.io/" rel="noopener" target="_blank">sanshuiii</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://zjpzhao.github.io/" title="https://zjpzhao.github.io/" rel="noopener" target="_blank">brain</a>
+        </li>
+    </ul>
+  </div>
+
+		
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+  
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Alex_McAvoy</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+</br>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script><script src="/js/bookmark.js"></script>
+
+
+
+  
+
+
+
+
+  <script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '48fd73a538d3fa927f65',
+      clientSecret: '56618aefeee90bac3c20de8d51bb0b985d67252d',
+      repo        : 'Gitalk-Comment',
+      owner       : 'Alex-McAvoy',
+      admin       : ['Alex-McAvoy'],
+      id          : '148c642b33d9d0e4a00ef39dbd41e9b1',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+  
+  <!-- 鼠标单击粒子特效 -->
+  <script type="text/javascript" src="/js/cursor-effects.js"></script>
+  <!-- 多级目录 -->
+  <script type="text/javascript" src="/js/category.js"></script>
+  
+</body>
+</html>
