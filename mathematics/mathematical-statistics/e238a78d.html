@@ -25,18 +25,18 @@
     var CONFIG = {"hostname":"alex-mcavoy.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":16,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":true,"color":"#ff0000","save":"manual"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":true},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.json"};
   </script>
 
-  <meta name="description" content="【概述】">
+  <meta name="description" content="【概述】变分推断（Variational Inference）是贝叶斯统计中常用的、含有隐变量模型的推理方法，其与马尔可夫链蒙特卡罗法属于不同的技巧 MCMC 通过随机抽样的方法近似计算后验概率，变分推断通过解析的方法计算后验概率的近似值">
 <meta name="keywords" content="数学,数理统计">
 <meta property="og:type" content="article">
 <meta property="og:title" content="变分推断">
 <meta property="og:url" content="https://alex-mcavoy.github.io/mathematics/mathematical-statistics/e238a78d.html">
 <meta property="og:site_name" content="Alex_McAvoy">
-<meta property="og:description" content="【概述】">
+<meta property="og:description" content="【概述】变分推断（Variational Inference）是贝叶斯统计中常用的、含有隐变量模型的推理方法，其与马尔可夫链蒙特卡罗法属于不同的技巧 MCMC 通过随机抽样的方法近似计算后验概率，变分推断通过解析的方法计算后验概率的近似值">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2024-08-18T16:03:23.289Z">
+<meta property="og:updated_time" content="2024-08-18T17:17:56.531Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="变分推断">
-<meta name="twitter:description" content="【概述】">
+<meta name="twitter:description" content="【概述】变分推断（Variational Inference）是贝叶斯统计中常用的、含有隐变量模型的推理方法，其与马尔可夫链蒙特卡罗法属于不同的技巧 MCMC 通过随机抽样的方法近似计算后验概率，变分推断通过解析的方法计算后验概率的近似值">
 
 <link rel="canonical" href="https://alex-mcavoy.github.io/mathematics/mathematical-statistics/e238a78d.html">
 
@@ -247,14 +247,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>4</span>
+              <span>2.1k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>1 分钟</span>
+              <span>2 分钟</span>
             </span>
 
         </div>
@@ -266,7 +266,46 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <h1 id="【概述】"><a href="#【概述】" class="headerlink" title="【概述】"></a>【概述】</h1>
+        <h1 id="【概述】"><a href="#【概述】" class="headerlink" title="【概述】"></a>【概述】</h1><p><strong>变分推断（Variational Inference）</strong>是贝叶斯统计中常用的、含有隐变量模型的推理方法，其与马尔可夫链蒙特卡罗法属于不同的技巧</p>
+<p>MCMC 通过随机抽样的方法近似计算后验概率，变分推断通过解析的方法计算后验概率的近似值</p>
+<h1 id="【概率分布映射】"><a href="#【概率分布映射】" class="headerlink" title="【概率分布映射】"></a>【概率分布映射】</h1><p>假设有一批数据样本 $\{X_1,X_2,\cdots,X_n\}$，整体用 $X$ 来描述，如果能够根据这些样本来得到 $X$ 的分布 $p(X)$，那么根据 $p(X)$ 进行采样，就可能得到所有可能的 $X$，这就是终极理想的生成模型</p>
+<p>但这个理想的模型难以实现，考虑概率分布映射，从一个简单的分布（例如高斯分布）映射到分布 $p(X)$，那么有：</p>
+<script type="math/tex; mode=display">
+p(X) = \sum_{Z} p(x|z)p(z) = \int p(x|z)p(z)dz</script><p>然而，潜在空间 $Z$ 通常是高维且包含复杂相互作用的，直接去积分来计算 $p(X)$​ 几乎是不可能的，那么就需要将这个问题简化、近似化</p>
+<h1 id="【变分推断】"><a href="#【变分推断】" class="headerlink" title="【变分推断】"></a>【变分推断】</h1><p>对于</p>
+<script type="math/tex; mode=display">
+p(X) = \int p(x|z)p(z)dz</script><p>考虑 $z\sim p(Z)$，可以发现其大部分采样对于 $p(X)$ 的计算都没有贡献，也就是它们的 $p(z|x)$ 都近乎为零，与 $X$ 没有什么关系，因此如果需要近似，可以从这个角度切入，剔除掉没有什么贡献的 $z$，只需要计算使得 $p(z|x)$ 更大的那部分的 $z$ 即可</p>
+<p>在给定 $X$ 的情况下，$Z$ 的后验分布 $p(z|x)$ 约等于使得 $X$ 的生成概率最大的 $Z$ 的分布，那么问题就变为如何计算后验分布 $p(z|x)$，但是这个后验分布本身是不好求的，因此使用另一个可伸缩的近似后验分布 $q(z|x)$ 来近似 $p(z|x)$，这个过程即<strong>变分推断（Variational Inference）</strong></p>
+<script type="math/tex; mode=display">
+p(z|x) \approx q(z|x)</script><h1 id="【变分下界】"><a href="#【变分下界】" class="headerlink" title="【变分下界】"></a>【变分下界】</h1><p>为使得 $p(z|x)$ 和 $q(z|x)$ 这两个分布尽可能的相似，就要最小化近似后验分布 $q(z|x)$ 和真实后验分布 $p(z|x)$ 的差距，使用 KL 散度衡量二者的差距，即优化目标是：</p>
+<script type="math/tex; mode=display">
+\min D_{KL} [q(z|x) \parallel p(z|x)]</script><p>对于二者的 KL 散度，有：</p>
+<script type="math/tex; mode=display">
+D_{KL} [q(z|x) || p(z|x)]  = \mathbb{E}_{z\sim q(z|x)}[\log q(z|x) - \log p(z|x)]</script><p>利用贝叶斯公式对上式进行化简，有：</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+D_{KL} [q(z|x) || p(z|x)]  
+&= \mathbb{E}_{z\sim q(z|x)}[\log q(z|x) - \log \frac{p(x|z)p(z)}{p(x)}] \\
+&= \mathbb{E}_{z\sim q(z|x)}[\log q(z|x) - \log p(x|z)-\log p(z)+\log p(x)] \\
+\end{align*}</script><p>由于 $p(x)$ 是确定量，将其抽出：</p>
+<script type="math/tex; mode=display">
+D_{KL}[q(z|x) || p(z|x)]  = \mathbb{E}_{z\sim q(z|x)}[\log q(z|x) - \log p(x|z)-\log p(z)]+\log p(x)</script><p>移项化简，有：</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+\log p(x) -D_{KL} [q(z|x) || p(z|x)]
+&=  \mathbb{E}_{z\sim q(z|x)}[-\log q(z|x) + \log p(x|z)+\log p(z)] \\
+&=  \mathbb{E}_{z\sim q(z|x)}[\log p(x|z)] -E[\log q(z|x) -\log p(z)] \\
+&=  \mathbb{E}_{z\sim q(z|x)}[\log p(x|z)] - D_{KL}[q(z|x) || \log p(z)] \\
+\end{align*}</script><p>记 $L=\log p(x),L^{VLB}=\mathbb{E}_{z\sim q(z|x)}[\log p(x|z)] - D_{KL}[q(z|x) || \log p(z)]$，有：</p>
+<script type="math/tex; mode=display">
+L =L^{VLB} + D_{KL} [q(z|x) \parallel p(z|x)]</script><p>由于 KL 散度非负，那么显然有：</p>
+<script type="math/tex; mode=display">
+L\geq L^{VLB}</script><p>其中，$L^{VLB}$ 被称为 $L$ 的变分推断的<strong>证据下界（Evidence Lower Bound，ELBO）</strong>，也称为<strong>变分下界（Variational Lower Bound，VLB）</strong></p>
+<p>由于 $p(x)$ 是固定的，即 $L$ 是一个定值，那么如果想要最小化近似后验分布 $q(z|x)$ 和真实后验分布 $p(z|x)$ 的差距的话，就要使变分下界 $L^{VLB}$ 最大化，即：</p>
+<script type="math/tex; mode=display">
+\max \mathbb{E}_{z\sim q(z|x)}[\log p(x|z)] - D_{KL}[q(z|x) \parallel \log p(z)]</script><p>也就是说，在最大化 $p(x|z)$ 的期望 $\mathbb{E}_{z\sim q(z|x)}[\log p(x|z)]$ 的同时，最小化近似后验分布 $q(z|x)$ 与 $Z$ 的先验分布 $p(z)$ 的 KL 散度 $D_{KL}[q(z|x) || \log p(z)]$</p>
+<p>因此，变分推断可以理解为求解变分下界最大化问题</p>
+
     </div>
 
     
@@ -388,7 +427,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【概述】"><span class="nav-number">1.</span> <span class="nav-text">【概述】</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【概述】"><span class="nav-number">1.</span> <span class="nav-text">【概述】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【概率分布映射】"><span class="nav-number">2.</span> <span class="nav-text">【概率分布映射】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【变分推断】"><span class="nav-number">3.</span> <span class="nav-text">【变分推断】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【变分下界】"><span class="nav-number">4.</span> <span class="nav-text">【变分下界】</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -404,7 +443,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">723</span>
+          <span class="site-state-item-count">722</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>

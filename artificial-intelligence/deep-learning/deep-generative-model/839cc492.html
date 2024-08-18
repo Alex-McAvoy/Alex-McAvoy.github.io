@@ -37,7 +37,7 @@
 <meta property="og:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/deep-learning/deep-generative-model/06-2.png">
 <meta property="og:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/deep-learning/deep-generative-model/06-3.png">
 <meta property="og:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/deep-learning/deep-generative-model/06-4.png">
-<meta property="og:updated_time" content="2024-04-20T14:05:48.072Z">
+<meta property="og:updated_time" content="2024-08-18T17:16:24.964Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="变分自编码器 VAE">
 <meta name="twitter:description" content="【概述】变分自编码器（Variational Auto-Encoders，VAE）是深度生成模型的一种形式，是由 Kingma 等人于 2014  年提出的基于变分贝叶斯（Variational Bayes，VB）推断的生成式网络结构 与传统的自编码器 AE 通过数值的方式描述潜在空间不同，它以概率的方式描述对潜在空间的观察，在数据生成方面表现出了巨大的应用价值">
@@ -256,14 +256,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>5.5k</span>
+              <span>3.6k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>5 分钟</span>
+              <span>3 分钟</span>
             </span>
 
         </div>
@@ -280,45 +280,8 @@
 <p>VAE 一经提出就迅速获得了深度生成模型领域广泛的关注，并和生成对抗网络 GAN 被视为无监督式学习领域最具研究价值的方法之一，在深度生成模型领域得到越来越多的应用</p>
 <h1 id="【从-AE-到-VAE】"><a href="#【从-AE-到-VAE】" class="headerlink" title="【从 AE 到 VAE】"></a>【从 AE 到 VAE】</h1><p>VAE 继承了传统 AE 的架构，并用其来学习数据生成分布，具体来说，其与自编码器的不同点在于：AE 的编码器是学习输入 $X$ 的潜在表示 $\mathbf{h}$ ，中间输出的是 $\mathbf{h}$ 的具体取值，VAE 的编码器是学习输入 $X$ 的潜在空间 $Z$，中间输出的是 $Z$ 的具体分布，这样一来，就可以从这个分布中进行采样，然后送入到解码器，由解码器还原并生成类似输入样本 $X$ 的样本 $\hat{X}$</p>
 <p><img width="500" src="/images/artificial-intelligence/deep-learning/deep-generative-model/06-1.png"></p>
-<h1 id="【原理】"><a href="#【原理】" class="headerlink" title="【原理】"></a>【原理】</h1><h2 id="概率分布映射"><a href="#概率分布映射" class="headerlink" title="概率分布映射"></a>概率分布映射</h2><p>假设有一批数据样本 $\{X_1,X_2,\cdots,X_n\}$，整体用 $X$ 来描述，如果能够根据这些样本来得到 $X$ 的分布 $p(X)$，那么根据 $p(X)$ 进行采样，就可能得到所有可能的 $X$，这就是终极理想的生成模型</p>
-<p>但这个理想的模型难以实现，考虑概率分布映射，从一个简单的分布（例如高斯分布）映射到分布 $p(X)$，那么有：</p>
-<script type="math/tex; mode=display">
-p(X) = \sum_{Z} p(x|z)p(z) = \int p(x|z)p(z)dz</script><p>然而，潜在空间 $Z$ 通常是高维且包含复杂相互作用的，直接去积分来计算 $p(X)$​ 几乎是不可能的，那么就需要将这个问题简化、近似化</p>
-<h2 id="变分下界"><a href="#变分下界" class="headerlink" title="变分下界"></a>变分下界</h2><p>对于</p>
-<script type="math/tex; mode=display">
-p(X) = \int p(x|z)p(z)dz</script><p>考虑 $z\sim p(Z)$，可以发现其大部分采样对于 $p(X)$ 的计算都没有贡献，也就是它们的 $p(z|x)$ 都近乎为零，与 $X$ 没有什么关系，因此如果需要近似，可以从这个角度切入，剔除掉没有什么贡献的 $z$，只需要计算使得 $p(z|x)$ 更大的那部分的 $z$ 即可</p>
-<p>在给定 $X$ 的情况下，$Z$ 的后验分布 $p(z|x)$ 约等于使得 $X$ 的生成概率最大的 $Z$ 的分布，那么问题就变为如何计算后验分布 $p(z|x)$，但是这个后验分布本身是不好求的，因此使用另一个可伸缩的近似后验分布 $q(z|x)$ 来近似 $p(z|x)$，并通过深度网络来学习 $ q(z|x)$ 的参数，一步步优化使其与后验分布 $p(z|x)$ 相似，以完成对复杂分布的近似推理，这个过程即<strong>变分推断（Variational Inference）</strong></p>
-<p>为使得 $p(z|x)$ 和 $q(z|x)$ 这两个分布尽可能的相似，就要最小化近似后验分布 $q(z|x)$ 和真实后验分布 $p(z|x)$ 的差距，使用 KL 散度衡量二者的差距，即优化目标是：</p>
-<script type="math/tex; mode=display">
-\min D_{KL} [q(z|x) \parallel p(z|x)]</script><p>对于二者的 KL 散度，有：</p>
-<script type="math/tex; mode=display">
-D_{KL} [q(z|x) || p(z|x)]  = \mathbb{E}_{z\sim q(z|x)}[\log q(z|x) - \log p(z|x)]</script><p>利用贝叶斯公式对上式进行化简，有：</p>
-<script type="math/tex; mode=display">
-\begin{align*}
-D_{KL} [q(z|x) || p(z|x)]  
-&= \mathbb{E}_{z\sim q(z|x)}[\log q(z|x) - \log \frac{p(x|z)p(z)}{p(x)}] \\
-&= \mathbb{E}_{z\sim q(z|x)}[\log q(z|x) - \log p(x|z)-\log p(z)+\log p(x)] \\
-\end{align*}</script><p>由于 $p(x)$ 是确定量，将其抽出：</p>
-<script type="math/tex; mode=display">
-D_{KL}[q(z|x) || p(z|x)]  = \mathbb{E}_{z\sim q(z|x)}[\log q(z|x) - \log p(x|z)-\log p(z)]+\log p(x)</script><p>移项化简，有：</p>
-<script type="math/tex; mode=display">
-\begin{align*}
-\log p(x) -D_{KL} [q(z|x) || p(z|x)]
-&=  \mathbb{E}_{z\sim q(z|x)}[-\log q(z|x) + \log p(x|z)+\log p(z)] \\
-&=  \mathbb{E}_{z\sim q(z|x)}[\log p(x|z)] -E[\log q(z|x) -\log p(z)] \\
-&=  \mathbb{E}_{z\sim q(z|x)}[\log p(x|z)] - D_{KL}[q(z|x) || \log p(z)] \\
-\end{align*}</script><p>记 $L=\log p(x),L^{VLB}=\mathbb{E}_{z\sim q(z|x)}[\log p(x|z)] - D_{KL}[q(z|x) || \log p(z)]$，有：</p>
-<script type="math/tex; mode=display">
-L =L^{VLB} + D_{KL} [q(z|x) \parallel p(z|x)]</script><p>由于 KL 散度非负，那么显然有：</p>
-<script type="math/tex; mode=display">
-L\geq L^{VLB}</script><p>其中，$L^{VLB}$ 被称为 $L$ 的变分推断的<strong>证据下界（Evidence Lower Bound，ELBO）</strong>，也称为<strong>变分下界（Variational Lower Bound，VLB）</strong></p>
-<p>由于 $p(x)$ 是固定的，即 $L$ 是一个定值，那么如果想要最小化近似后验分布 $q(z|x)$ 和真实后验分布 $p(z|x)$ 的差距的话，就要使变分下界 $L^{VLB}$ 最大化，即：</p>
-<script type="math/tex; mode=display">
-\max \mathbb{E}_{z\sim q(z|x)}[\log p(x|z)] - D_{KL}[q(z|x) \parallel \log p(z)]</script><p>也就是说，在最大化 $p(x|z)$ 的期望 $\mathbb{E}_{z\sim q(z|x)}[\log p(x|z)]$ 的同时，最小化近似后验分布 $q(z|x)$ 与 $Z$ 的先验分布 $p(z)$ 的 KL 散度 $D_{KL}[q(z|x) || \log p(z)]$</p>
-<p>对于最大化 $\mathbb{E}_{z\sim q(z|x)}[\log p(x|z)]$ 的过程，就是模型想要尽可能地从潜在空间 $Z$ 中重组 $x$，也就是从解码器 Decoder 上下手</p>
-<p>而对于最小化 $D_{KL}[q(z|x) || \log p(z)]$ 的过程，就是模型想要尽可能地让 $z$ 避免过拟合，使得 $z$ 的近似后验分布 $q(z|x)$ 尽可能接近其先验分布 $p(z)$，即也就是从编码器 Encoder 上下手</p>
-<h1 id="【模型架构】"><a href="#【模型架构】" class="headerlink" title="【模型架构】"></a>【模型架构】</h1><h2 id="基本架构"><a href="#基本架构" class="headerlink" title="基本架构"></a>基本架构</h2><p>在有了核心公式和知道要做的任务后，就可以着手搭建模型了</p>
-<p>对于最小化 $D_{KL}[q(z|x) || \log p(z)]$ 来说，核心问题就是要确定潜在空间 $Z$，VAE 认为 $Z$ 没有一种合适的阐述方式，只是直接假定 $Z$ 的样本可以从采用标准正态分布 $\mathcal{N}(\mathbf{0},\mathbf{I})$ 中抽取，因为任意维度 $d$ 的分布都可以用一组 $d$ 个服从高斯分布的变量，通过复杂函数映射而生成</p>
+<p>VAE 采用<a href="https://alex-mcavoy.github.io/mathematics/mathematical-statistics/e238a78d.html">变分推断</a>的方法，整个编码器和解码器就是变分推断的过程，对于最大化 $\mathbb{E}_{z\sim q(z|x)}[\log p(x|z)]$ 的过程，就是模型想要尽可能地从潜在空间 $Z$ 中重组 $x$，也就是从解码器 Decoder 上下手；而对于最小化 $D_{KL}[q(z|x) || \log p(z)]$ 的过程，就是模型想要尽可能地让 $z$ 避免过拟合，使得 $z$ 的近似后验分布 $q(z|x)$ 尽可能接近其先验分布 $p(z)$，即也就是从编码器 Encoder 上下手</p>
+<h1 id="【模型架构】"><a href="#【模型架构】" class="headerlink" title="【模型架构】"></a>【模型架构】</h1><h2 id="基本架构"><a href="#基本架构" class="headerlink" title="基本架构"></a>基本架构</h2><p>对于最小化 $D_{KL}[q(z|x) || \log p(z)]$ 来说，核心问题就是要确定潜在空间 $Z$，VAE 认为 $Z$ 没有一种合适的阐述方式，只是直接假定 $Z$ 的样本可以从采用标准正态分布 $\mathcal{N}(\mathbf{0},\mathbf{I})$ 中抽取，因为任意维度 $d$ 的分布都可以用一组 $d$ 个服从高斯分布的变量，通过复杂函数映射而生成</p>
 <p>那么此时问题就转化为找到一个合适的映射函数并获取其输出，即高斯分布的均值和方差，VAE 采用两个神经网络分别输出均值和方差，即：</p>
 <script type="math/tex; mode=display">
 \begin{gather*}
@@ -489,7 +452,7 @@ z=\mu + \varepsilon \sigma</script><p>使得梯度计算可以通过 $\mu$ 和 $
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【概述】"><span class="nav-number">1.</span> <span class="nav-text">【概述】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【从-AE-到-VAE】"><span class="nav-number">2.</span> <span class="nav-text">【从 AE 到 VAE】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【原理】"><span class="nav-number">3.</span> <span class="nav-text">【原理】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#概率分布映射"><span class="nav-number">3.1.</span> <span class="nav-text">概率分布映射</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#变分下界"><span class="nav-number">3.2.</span> <span class="nav-text">变分下界</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【模型架构】"><span class="nav-number">4.</span> <span class="nav-text">【模型架构】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#基本架构"><span class="nav-number">4.1.</span> <span class="nav-text">基本架构</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#架构调整"><span class="nav-number">4.2.</span> <span class="nav-text">架构调整</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#损失函数的理解"><span class="nav-number">4.3.</span> <span class="nav-text">损失函数的理解</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#重参数技巧"><span class="nav-number">4.4.</span> <span class="nav-text">重参数技巧</span></a></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【概述】"><span class="nav-number">1.</span> <span class="nav-text">【概述】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【从-AE-到-VAE】"><span class="nav-number">2.</span> <span class="nav-text">【从 AE 到 VAE】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【模型架构】"><span class="nav-number">3.</span> <span class="nav-text">【模型架构】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#基本架构"><span class="nav-number">3.1.</span> <span class="nav-text">基本架构</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#架构调整"><span class="nav-number">3.2.</span> <span class="nav-text">架构调整</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#损失函数的理解"><span class="nav-number">3.3.</span> <span class="nav-text">损失函数的理解</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#重参数技巧"><span class="nav-number">3.4.</span> <span class="nav-text">重参数技巧</span></a></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -505,7 +468,7 @@ z=\mu + \varepsilon \sigma</script><p>使得梯度计算可以通过 $\mu$ 和 $
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">723</span>
+          <span class="site-state-item-count">722</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
