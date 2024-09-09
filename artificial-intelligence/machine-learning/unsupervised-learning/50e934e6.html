@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.9.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/img/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/assets/img/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/pace-js@1/themes/blue/pace-theme-minimal.css">
+  <script src="//cdn.jsdelivr.net/npm/pace-js@1/pace.min.js"></script>
+
+
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"alex-mcavoy.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":16,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":true,"color":"#ff0000","save":"manual"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":true},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.json"};
+  </script>
+
+  <meta name="description" content="【概述】PageRank 算法于 1996 年由 Page 和 Brin 提出，最初用于谷歌搜索引擎的网页排序，其是定义在网页集合上的一个函数，其对每个网页给出一个正实数，表示网页的重要程度，整体构成一个向量，PageRank 值越高，网页越重要，在互联网搜索的排序中可能就被排在前面 PageRank 假设互联网是一个有向图，每个网页是图中的一个结点，浏览者在每个网页依照连接出去的超链接以等概率跳">
+<meta name="keywords" content="人工智能,无监督学习,机器学习">
+<meta property="og:type" content="article">
+<meta property="og:title" content="PageRank">
+<meta property="og:url" content="https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/unsupervised-learning/50e934e6.html">
+<meta property="og:site_name" content="Alex_McAvoy">
+<meta property="og:description" content="【概述】PageRank 算法于 1996 年由 Page 和 Brin 提出，最初用于谷歌搜索引擎的网页排序，其是定义在网页集合上的一个函数，其对每个网页给出一个正实数，表示网页的重要程度，整体构成一个向量，PageRank 值越高，网页越重要，在互联网搜索的排序中可能就被排在前面 PageRank 假设互联网是一个有向图，每个网页是图中的一个结点，浏览者在每个网页依照连接出去的超链接以等概率跳">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/machine-learning/unsupervised-learning/17-1.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/machine-learning/unsupervised-learning/17-1.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/machine-learning/unsupervised-learning/17-1.png">
+<meta property="og:updated_time" content="2024-09-09T06:45:34.817Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="PageRank">
+<meta name="twitter:description" content="【概述】PageRank 算法于 1996 年由 Page 和 Brin 提出，最初用于谷歌搜索引擎的网页排序，其是定义在网页集合上的一个函数，其对每个网页给出一个正实数，表示网页的重要程度，整体构成一个向量，PageRank 值越高，网页越重要，在互联网搜索的排序中可能就被排在前面 PageRank 假设互联网是一个有向图，每个网页是图中的一个结点，浏览者在每个网页依照连接出去的超链接以等概率跳">
+<meta name="twitter:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/machine-learning/unsupervised-learning/17-1.png">
+
+<link rel="canonical" href="https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/unsupervised-learning/50e934e6.html">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>PageRank | Alex_McAvoy</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Alex_McAvoy</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">想要成为渔夫的猎手</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+
+	
+	
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/unsupervised-learning/50e934e6.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/assets/img/head.jpg">
+      <meta itemprop="name" content="Alex_McAvoy">
+      <meta itemprop="description" content="想要成为渔夫的猎手">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Alex_McAvoy">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          PageRank
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-11-04 15:09:00" itemprop="dateCreated datePublished" datetime="2021-11-04T15:09:00+08:00">2021-11-04</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/artificial-intelligence/" itemprop="url" rel="index"><span itemprop="name">人工智能</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/artificial-intelligence/machine-learning/" itemprop="url" rel="index"><span itemprop="name">机器学习</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/artificial-intelligence/machine-learning/unsupervised-learning/" itemprop="url" rel="index"><span itemprop="name">无监督学习</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>5.3k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>5 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="【概述】"><a href="#【概述】" class="headerlink" title="【概述】"></a>【概述】</h1><p>PageRank 算法于 1996 年由 Page 和 Brin 提出，最初用于谷歌搜索引擎的网页排序，其是定义在网页集合上的一个函数，其对每个网页给出一个正实数，表示网页的重要程度，整体构成一个向量，PageRank 值越高，网页越重要，在互联网搜索的排序中可能就被排在前面</p>
+<p>PageRank 假设互联网是一个有向图，每个网页是图中的一个结点，浏览者在每个网页依照连接出去的超链接以等概率跳转到下一个网页，并持续不断进行这样的随机跳转，整个沿着有向图随机访问各网页结点的过程，被定义成一个随机游走模型，即一阶马尔可夫链</p>
+<p>在一定条件下，极限情况访问每个结点的概率收敛到平稳分布，此时各个结点的 PageRank 值就是平稳概率，表示结点的重要度</p>
+<p>如下图所示，结点 A、B、C、D 表示网页，结点间的有向边表示网页间的超链接，边权表示网页间随机跳转的概率。假设有一个浏览者在网上随机游走，若其在网页 A，则下一步有 $\frac{1}{3}$ 的概率转移到网页 B、C、D；若其在网页 B，则下一步有 $\frac{1}{2}$ 的概率转移到网页 A、D；若在网页 C，则下一步以概率 $1$ 转移到网页 A；若在网页 D，则下一步以 $\frac{1}{2}$ 的概率转移到网页 B、C</p>
+<p><img src="/images/artificial-intelligence/machine-learning/unsupervised-learning/17-1.png"></p>
+<p>直观来看，对于一个网页来说，如果指向这个网页的超链接越多，随机跳转到该网页的概率也就越大，该网页的 PageRank 值也就越高，这个网页也就越重要</p>
+<p>PageRank 值依赖于网络的拓扑结构，一旦网络的拓扑关系确定，PageRank 值也随之确定，其计算通常是一个迭代过程，即先假设一个初始分布，通过迭代不断计算所有网页的 PageRank 值，直到收敛为止</p>
+<h1 id="【定义】"><a href="#【定义】" class="headerlink" title="【定义】"></a>【定义】</h1><h2 id="有向图的随机游走模型"><a href="#有向图的随机游走模型" class="headerlink" title="有向图的随机游走模型"></a>有向图的随机游走模型</h2><p>给定一个含 $n$ 个结点的有向图，在这个有向图上定义<a href="https://alex-mcavoy.github.io/mathematics/stochastic-process/48358828.html">随机游走模型</a>，即一阶马尔可夫链，其中结点表示状态，有向边表示状态间的转移</p>
+<p>假设从一个结点到通过有向边相连的所有结点的转移概率相等，则转移矩阵是一个 $n$ 阶矩阵：</p>
+<script type="math/tex; mode=display">
+M=[m_{ij}]_{n\times n}</script><p>其中，第 $i$ 行第 $j$ 列的元素 $m_{ij}$ 取值规则为：若结点 $j$ 有 $k$ 个有向边连出，且结点 $i$ 是其连出的一个结点，则 $m_{ij}=\frac{1}{k}$，否则 $m_{ij}=0$​</p>
+<p>在下图所示的有向图中，可以定义随机游走模型，即转移矩阵为：</p>
+<script type="math/tex; mode=display">
+M=\begin{bmatrix}
+0 & \frac{1}{2} & 1 & 0 \\
+\frac{1}{3} & 0 & 0 & \frac{1}{2} \\
+\frac{1}{3} & 0 & 0 & \frac{1}{2} \\
+\frac{1}{3} & \frac{1}{2} & 0 & 0 \\
+\end{bmatrix}</script><p><img src="/images/artificial-intelligence/machine-learning/unsupervised-learning/17-1.png"></p>
+<p>转移矩阵的每个元素非负，且每列元素和为 $1$，其是一个随机矩阵，即：</p>
+<script type="math/tex; mode=display">
+\begin{gather*}
+m_{ij} \geq 0 \\
+\sum_{i=1}^n m_{ij}=1
+\end{gather*}</script><p>在有向图上随机游走形成马尔可夫链，即游走者每经过一个单位时间转移一个状态，若当前时刻在第 $j$ 个状态（结点），那么下一个时刻在第 $i$ 个状态（结点）的概率是 $m_{ij}$，这一概率只依赖于当前状态，与过去无关，即具有马尔可夫性</p>
+<p>随机游走在某时刻 $t$ 访问各个结点的概率分布就是马尔可夫链在时刻 $t$ 的状态分布，可用一个 $n$ 维列向量 $R_t$ 表示，那么在 $t+1$ 时刻访问各结点的概率分布 $R_{t+1}$ 满足：</p>
+<script type="math/tex; mode=display">
+R_{t+1}=MR_t</script><h2 id="PageRank-的基本定义"><a href="#PageRank-的基本定义" class="headerlink" title="PageRank 的基本定义"></a>PageRank 的基本定义</h2><p>给定一个包含 $n$ 个结点 $v_1,v_2,\cdots,v_n$ 的<strong>强连通且非周期的有向图</strong>，在其基础上定义随机游走模型，假设转移矩阵为 $M$，且从一个结点到其连出的所有结点的转移概率相等，那么在时刻 $0,1,2,\cdots,t,\cdots$ 访问各个结点的概率分布为：</p>
+<script type="math/tex; mode=display">
+R_0,MR_0,M^2R_0,\cdots,M^tR_0,\cdots</script><p>根据<strong>马尔可夫链平稳分布定理</strong>：不可约且非周期的有限状态马尔可夫链，有唯一平稳分布存在，且当时间趋于无穷时，状态分布收敛于唯一的平稳分布，即极限 $\lim\limits_{t\rightarrow\infty} M^tR_0=R$ 存在，且极限向量 $R$ 表示马尔可夫链的平稳分布，并满足：</p>
+<script type="math/tex; mode=display">
+MR=R</script><p>其中，平稳分布 $R$ 即这个有向图的 PageRank，$R$ 的各个分量被称为各个结点的 PageRank 值</p>
+<script type="math/tex; mode=display">
+R=\begin{bmatrix}
+PR(v_1) \\
+PR(v_2) \\
+\vdots \\
+PR(v_n)
+\end{bmatrix}</script><p>其中，$PR(v_i)$ 表示结点 $v_i$ 的 PageRank 值</p>
+<p>对于 $i=1,2,\cdots,n$，有：</p>
+<script type="math/tex; mode=display">
+\begin{gather*}
+PR(v_i) \geq 0 \\
+\sum_{i=1}^n PR(v_i) = 1 \\
+PR(v_i) = \sum_{v_j \in M(v_i)} \frac{PR(v_j)}{L(v_j)}
+\end{gather*}</script><p>其中，$M(v_i)$ 表示指向结点 $v_i$ 的结点集合，$L(v_j)$ 表示结点 $v_j$ 连出有向边的个数</p>
+<hr>
+<p>在下图所示的有向图中，根据 PageRank 的基本定义，可以求出相应的 PageRank 值</p>
+<p><img src="/images/artificial-intelligence/machine-learning/unsupervised-learning/17-1.png"></p>
+<p>易得，转移矩阵：</p>
+<script type="math/tex; mode=display">
+M=\begin{bmatrix}
+0 & \frac{1}{2} & 1 & 0 \\
+\frac{1}{3} & 0 & 0 & \frac{1}{2} \\
+\frac{1}{3} & 0 & 0 & \frac{1}{2} \\
+\frac{1}{3} & \frac{1}{2} & 0 & 0 \\
+\end{bmatrix}</script><p>假设初始时访问各结点的概率相等，即初始分布向量 $R_0$ 为：</p>
+<script type="math/tex; mode=display">
+R_0 = \begin{bmatrix}
+\frac{1}{4} \\
+\frac{1}{4} \\
+\frac{1}{4} \\
+\frac{1}{4} \\
+\end{bmatrix}</script><p>将转移矩阵 $M$ 连乘初始向量 $R_0$ 可得向量序列：</p>
+<script type="math/tex; mode=display">
+\begin{bmatrix}
+\frac{1}{4} \\
+\frac{1}{4} \\
+\frac{1}{4} \\
+\frac{1}{4} \\
+\end{bmatrix},\begin{bmatrix}
+\frac{9}{24} \\
+\frac{5}{24} \\
+\frac{5}{24} \\
+\frac{5}{24} \\
+\end{bmatrix},\begin{bmatrix}
+\frac{15}{48} \\
+\frac{11}{48} \\
+\frac{11}{48} \\
+\frac{11}{48} \\
+\end{bmatrix},\begin{bmatrix}
+\frac{11}{32} \\
+\frac{7}{32} \\
+\frac{7}{32} \\
+\frac{7}{32} \\
+\end{bmatrix},\cdots,\begin{bmatrix}
+\frac{3}{9} \\
+\frac{2}{9} \\
+\frac{2}{9} \\
+\frac{2}{9} \\
+\end{bmatrix},\cdots</script><p>最终可得极限向量：</p>
+<script type="math/tex; mode=display">
+R = \begin{bmatrix}
+\frac{3}{9} \\
+\frac{2}{9} \\
+\frac{2}{9} \\
+\frac{2}{9} \\
+\end{bmatrix}</script><p>即有向图的 PageRank 值</p>
+<h2 id="PageRank-的一般定义"><a href="#PageRank-的一般定义" class="headerlink" title="PageRank 的一般定义"></a>PageRank 的一般定义</h2><p>PageRank 的基本定义是理想化的情况，在这种情况下，PageRank 存在，且可以通过不断迭代求得 PageRank 值，但现实中一般的有向图未必满足强连通且非周期的条件，随着时间步 $t$ 的推移，访问各结点的概率将变为 $0$，因此 PageRank 的基本定义并不适用于现实情况</p>
+<p>基于现实情况的考虑，PageRank 的一般定义是在基本定义的基础上导入<strong>平滑项</strong>，即给定一个包含 $n$ 个结点 $v_1,v_2,\cdots,v_n$ 的<strong>任意有向图</strong>，在其基础上定义随机游走模型，假设转移矩阵为 $M$，且从一个结点到其连出的所有结点的转移概率相等</p>
+<p>由于这个马尔可夫链未必具有平稳分布，因此假设另一个完全随机游走的模型，其转移矩阵的元素全部为 $\frac{1}{n}$，即从任意一个结点到任意一个结点的转移概率均为 $\frac{1}{n}$，将两个转移矩阵进行线性组合，即构成一个新的转移矩阵，在其上可以定义一个新的马尔可夫链，容易证明这个马尔可夫链一定具有平稳分布，且平稳分布满足：</p>
+<script type="math/tex; mode=display">
+R=dMR+\frac{1-d}{n} \mathbf{1}</script><p>其中，第一项表示状态分布是平稳分布时依照转移矩阵 $M$ 访问各个结点的概率，第二项称为<strong>平滑项</strong>，表示完全随机访问各个结点的概率，保证所有 PageRank 的值都不会为 $0$，$0&lt; d&lt; 1$ 是为<strong>阻尼因子（Damping Factor）</strong>，其取值由经验决定，当 $d$ 接近 $1$ 时，随机游走依照转移矩阵 $M$ 进行，当 $d$ 接近 $0$​ 时，随机游走以等概率随机访问各个结点</p>
+<p>$\mathbf{1}$ 是所有分量为 $1$ 的 $n$ 维向量，平稳分布 $R$ 即这个有向图的 PageRank，$R$ 的各个分量被称为各个结点的 PageRank 值</p>
+<script type="math/tex; mode=display">
+R=\begin{bmatrix}
+PR(v_1) \\
+PR(v_2) \\
+\vdots \\
+PR(v_n)
+\end{bmatrix}</script><p>其中，$PR(v_i)$ 表示结点 $v_i$ 的 PageRank 值</p>
+<p>对于 $i=1,2,\cdots,n$，有：</p>
+<script type="math/tex; mode=display">
+\begin{gather*}
+PR(v_i) \geq 0 \\
+\sum_{i=1}^n PR(v_i) = 1 \\
+PR(v_i) = d\Big( \sum_{v_j \in M(v_i)} \frac{PR(v_j)}{L(v_j)} \Big) + \frac{1-d}{n}
+\end{gather*}</script><p>其中，$M(v_i)$ 表示指向结点 $v_i$ 的结点集合，$L(v_j)$ 表示结点 $v_j$​ 连出有向边的个数</p>
+<p>一般的 PageRank 定义意味着浏览者将按照以下规则在网上随机游走：在任意一个网页上，浏览者以概率 $d$ 决定按照按照超链接随机跳转，此时以等概率从连接出去的超链接跳转到下一个网页，或者以概率 $1-d$ 决定完全随机跳转，此时以等概率 $\frac{1}{n}$ 跳转到任意一个网页</p>
+<h1 id="【计算】"><a href="#【计算】" class="headerlink" title="【计算】"></a>【计算】</h1><p>PageRank 的定义是构造性的，即定义本身就给出了算法，其常用的计算方法包括：迭代算法、幂法、代数算法</p>
+<h2 id="迭代算法"><a href="#迭代算法" class="headerlink" title="迭代算法"></a>迭代算法</h2><p>PageRank 的迭代算法就是按照 PageRank 的一般定义进行迭代，直到收敛，即：</p>
+<script type="math/tex; mode=display">
+R_{t+1}=dMR_t+\frac{1-d}{n} \mathbf{1}</script><hr>
+<p><strong>输入：</strong>含有 $n$ 个结点的有向图，转移矩阵 $M$，阻尼因子 $d$，初始向量 $R_0$</p>
+<p><strong>输出：</strong>任意有向图 PageRank 向量 $R$</p>
+<p><strong>算法流程：</strong></p>
+<p>Step 1：令 $t=0$</p>
+<p>Step 2：计算</p>
+<script type="math/tex; mode=display">
+R_{t+1}=dMR_t+\frac{1-d}{n} \mathbf{1}</script><p>Step 3：若 $R_{t+1}$ 和 $R_t$ 充分接近，令 $R=R_{t+1}$，停止迭代</p>
+<p>Step 4：令 $t=t+1$，执行 Step 2</p>
+<h2 id="幂法"><a href="#幂法" class="headerlink" title="幂法"></a>幂法</h2><p><a href="https://alex-mcavoy.github.io/mathematics/matrix-theory/4f2e09e5.html">幂法</a>主要用于近似计算矩阵的主特征值和主特征向量，按照 PageRank 的一般定义，其可以改写为：</p>
+<script type="math/tex; mode=display">
+R=\Big(dM+\frac{1-d}{n} E\Big)R = AR</script><p>其中，$0&lt; d&lt; 1$ 为阻尼因子，$E$ 是所有元素为 $1$ 的 $n$ 阶方阵，根据 Perron-Frobenius 定理，一般 PageRank 的向量 $R$ 是矩阵 $A$ 的主特征向量，主特征值是 $1$，因此可以采用幂法来近似计算一般 PageRank</p>
+<hr>
+<p><strong>输入：</strong>含有 $n$ 个结点的有向图，转移矩阵 $M$，阻尼因子 $d$，初始向量 $\mathbf{x}_0$，计算精度 $\varepsilon$</p>
+<p><strong>输出：</strong>任意有向图 PageRank 向量 $R$</p>
+<p><strong>算法流程：</strong></p>
+<p>Step 1：令 $t=0$，选择初始向量 $\mathbf{x}_0$</p>
+<p>Step 2：计算有向图的一般转移矩阵 $A$</p>
+<script type="math/tex; mode=display">
+A=dM+\frac{1-d}{n}E</script><p>Step 3：迭代并规范化结果向量</p>
+<script type="math/tex; mode=display">
+\begin{gather*}
+\mathbf{y}_{t+1} = A\mathbf{x}_t \\
+\mathbf{x}_{t+1} = \frac{\mathbf{y}_{t+1}}{\Vert \mathbf{y}_{t+1}\Vert} \\
+\end{gather*}</script><p>Step 4：当 $\Vert \mathbf{x}_{t+1}-\mathbf{x}_t \Vert &lt; \varepsilon$ 时，令 $R=\mathbf{x}_t$，停止迭代</p>
+<p>Step 5：令 $t=t+1$，执行 Step 3</p>
+<p>Step 6：对 $R$ 规范化处理，使其表示概率分布</p>
+<h2 id="代数算法"><a href="#代数算法" class="headerlink" title="代数算法"></a>代数算法</h2><p>代数算法通过一般转移矩阵的逆矩阵计算有向图的一般 PageRank</p>
+<p>根据一般 PageRank 的定义：</p>
+<script type="math/tex; mode=display">
+R=dMR+\frac{1-d}{n} \mathbf{1}</script><p>有：</p>
+<script type="math/tex; mode=display">
+(I-dM)R=\frac{1-d}{n} \mathbf{1}</script><p>即得：</p>
+<script type="math/tex; mode=display">
+R=(I-dM)^{-1}\frac{1-d}{n}\mathbf{1}</script><p>其中，$I$ 是单位矩阵，当 $0&lt;d&lt;1$ 时，$R$ 的解存在且唯一，这样可以通过求逆矩阵 $(I-dM)^{-1}$ 得到有向图的一般 PageRank</p>
+
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>感谢您对我的支持，让我继续努力分享有用的技术与知识点！</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/wechatpay.jpg" alt="Alex_McAvoy 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/alipay.jpg" alt="Alex_McAvoy 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Alex_McAvoy
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/unsupervised-learning/50e934e6.html" title="PageRank">https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/unsupervised-learning/50e934e6.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/artificial-intelligence/" rel="tag"># 人工智能</a>
+              <a href="/tags/unsupervised-learning/" rel="tag"># 无监督学习</a>
+              <a href="/tags/machine-learning/" rel="tag"># 机器学习</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/artificial-intelligence/machine-learning/unsupervised-learning/1ffb1021.html" rel="prev" title="流形学习">
+      <i class="fa fa-chevron-left"></i> 流形学习
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/hexo/5db06912.html" rel="next" title="Next 7.0+ 不蒜子站点访问计数">
+      Next 7.0+ 不蒜子站点访问计数 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【概述】"><span class="nav-number">1.</span> <span class="nav-text">【概述】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【定义】"><span class="nav-number">2.</span> <span class="nav-text">【定义】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#有向图的随机游走模型"><span class="nav-number">2.1.</span> <span class="nav-text">有向图的随机游走模型</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#PageRank-的基本定义"><span class="nav-number">2.2.</span> <span class="nav-text">PageRank 的基本定义</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#PageRank-的一般定义"><span class="nav-number">2.3.</span> <span class="nav-text">PageRank 的一般定义</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【计算】"><span class="nav-number">3.</span> <span class="nav-text">【计算】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#迭代算法"><span class="nav-number">3.1.</span> <span class="nav-text">迭代算法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#幂法"><span class="nav-number">3.2.</span> <span class="nav-text">幂法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#代数算法"><span class="nav-number">3.3.</span> <span class="nav-text">代数算法</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">  
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Alex_McAvoy"
+      src="/assets/img/head.jpg">
+  <p class="site-author-name" itemprop="name">Alex_McAvoy</p>
+  <div class="site-description" itemprop="description">想要成为渔夫的猎手</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">725</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">72</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">83</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Alex-McAvoy" title="GitHub → https://github.com/Alex-McAvoy" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/u011815404" title="CSDN → https://blog.csdn.net/u011815404" rel="noopener" target="_blank"><i class="fas fa-copyright fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+<!-- 访客地图 -->
+<script type="text/javascript" src="//rf.revolvermaps.com/0/0/5.js?i=50n58yo58ow&amp;m=0&amp;c=ff0000&amp;cr1=ffffff&amp;s=140" async="async"></script>
+
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdz20172133" title="https://blog.csdn.net/sdz20172133" rel="noopener" target="_blank">神仙队友</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://pxlsdz.gitee.io/" title="https://pxlsdz.gitee.io/" rel="noopener" target="_blank">神仙队友blog2</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdau_fangshifeng" title="https://blog.csdn.net/sdau_fangshifeng" rel="noopener" target="_blank">酷头</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://bycore.net" title="https://bycore.net" rel="noopener" target="_blank">凉了的某饼同学</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://kris-cn.github.io/" title="http://kris-cn.github.io/" rel="noopener" target="_blank">翟孙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://deng.fun/" title="http://deng.fun/" rel="noopener" target="_blank">芙蓉姐姐</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/wentong_Xu" title="https://blog.csdn.net/wentong_Xu" rel="noopener" target="_blank">小黑贱胖子</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.yuheng.tech/" title="https://www.yuheng.tech/" rel="noopener" target="_blank">咸于</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/lanshan1111" title="https://blog.csdn.net/lanshan1111" rel="noopener" target="_blank">肥硕硕</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdauguanweihong" title="https://blog.csdn.net/sdauguanweihong" rel="noopener" target="_blank">管少</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_41661919" title="https://blog.csdn.net/qq_41661919" rel="noopener" target="_blank">俊杰</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_40859951" title="https://blog.csdn.net/qq_40859951" rel="noopener" target="_blank">峰哥</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/LSD20164388" title="https://blog.csdn.net/LSD20164388" rel="noopener" target="_blank">狗冬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37868325" title="https://blog.csdn.net/qq_37868325" rel="noopener" target="_blank">妍大佬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://sanshuiii.github.io/" title="https://sanshuiii.github.io/" rel="noopener" target="_blank">sanshuiii</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://zjpzhao.github.io/" title="https://zjpzhao.github.io/" rel="noopener" target="_blank">brain</a>
+        </li>
+    </ul>
+  </div>
+
+		
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+  
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Alex_McAvoy</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+</br>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script><script src="/js/bookmark.js"></script>
+
+
+
+  
+
+
+
+
+  <script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '48fd73a538d3fa927f65',
+      clientSecret: '56618aefeee90bac3c20de8d51bb0b985d67252d',
+      repo        : 'Gitalk-Comment',
+      owner       : 'Alex-McAvoy',
+      admin       : ['Alex-McAvoy'],
+      id          : '6ac18027685b8642d6a040dce554f5bb',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+  
+  <!-- 鼠标单击粒子特效 -->
+  <script type="text/javascript" src="/js/cursor-effects.js"></script>
+  <!-- 多级目录 -->
+  <script type="text/javascript" src="/js/category.js"></script>
+  
+</body>
+</html>
