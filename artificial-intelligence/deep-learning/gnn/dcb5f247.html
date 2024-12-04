@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.9.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/img/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/assets/img/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/pace-js@1/themes/blue/pace-theme-minimal.css">
+  <script src="//cdn.jsdelivr.net/npm/pace-js@1/pace.min.js"></script>
+
+
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"alex-mcavoy.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":16,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":true,"color":"#ff0000","save":"manual"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":true},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.json"};
+  </script>
+
+  <meta name="description" content="【概述】随着机器学习、深度学习的发展，语音、图像、自然语言处理逐渐取得了很大的突破，语音、图像、文本都是简单的序列或网格数据，深度学习很擅长处理该类的结构化数据 但现实世界中并非所有事物都是结构化数据，即并非都可以表示为一个序列或者一个网络，例如社交网络、知识图谱、复杂的文件系统等">
+<meta name="keywords" content="人工智能,深度学习,图神经网络">
+<meta property="og:type" content="article">
+<meta property="og:title" content="图神经网络 GNN">
+<meta property="og:url" content="https://alex-mcavoy.github.io/artificial-intelligence/deep-learning/gnn/dcb5f247.html">
+<meta property="og:site_name" content="Alex_McAvoy">
+<meta property="og:description" content="【概述】随着机器学习、深度学习的发展，语音、图像、自然语言处理逐渐取得了很大的突破，语音、图像、文本都是简单的序列或网格数据，深度学习很擅长处理该类的结构化数据 但现实世界中并非所有事物都是结构化数据，即并非都可以表示为一个序列或者一个网络，例如社交网络、知识图谱、复杂的文件系统等">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/deep-learning/gnn/01-1.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/deep-learning/gnn/01-2.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/deep-learning/gnn/01-3.png">
+<meta property="og:updated_time" content="2024-09-21T12:53:29.930Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="图神经网络 GNN">
+<meta name="twitter:description" content="【概述】随着机器学习、深度学习的发展，语音、图像、自然语言处理逐渐取得了很大的突破，语音、图像、文本都是简单的序列或网格数据，深度学习很擅长处理该类的结构化数据 但现实世界中并非所有事物都是结构化数据，即并非都可以表示为一个序列或者一个网络，例如社交网络、知识图谱、复杂的文件系统等">
+<meta name="twitter:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/deep-learning/gnn/01-1.png">
+
+<link rel="canonical" href="https://alex-mcavoy.github.io/artificial-intelligence/deep-learning/gnn/dcb5f247.html">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>图神经网络 GNN | Alex_McAvoy</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Alex_McAvoy</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">想要成为渔夫的猎手</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+
+	
+	
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/artificial-intelligence/deep-learning/gnn/dcb5f247.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/assets/img/head.jpg">
+      <meta itemprop="name" content="Alex_McAvoy">
+      <meta itemprop="description" content="想要成为渔夫的猎手">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Alex_McAvoy">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          图神经网络 GNN
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2024-09-21 09:24:00" itemprop="dateCreated datePublished" datetime="2024-09-21T09:24:00+08:00">2024-09-21</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/artificial-intelligence/" itemprop="url" rel="index"><span itemprop="name">人工智能</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/artificial-intelligence/deep-learning/" itemprop="url" rel="index"><span itemprop="name">深度学习</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/artificial-intelligence/deep-learning/gnn/" itemprop="url" rel="index"><span itemprop="name">图神经网络</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>5.5k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>5 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="【概述】"><a href="#【概述】" class="headerlink" title="【概述】"></a>【概述】</h1><p>随着机器学习、深度学习的发展，语音、图像、自然语言处理逐渐取得了很大的突破，语音、图像、文本都是简单的序列或网格数据，深度学习很擅长处理该类的结构化数据</p>
+<p>但现实世界中并非所有事物都是结构化数据，即并非都可以表示为一个序列或者一个网络，例如社交网络、知识图谱、复杂的文件系统等</p>
+<p>相比于简单的文本、图像，这种网络类型的非结构化数据十分复杂，处理这类数据的难点包括：</p>
+<ol>
+<li>图的大小是任意的，且拓扑结构复杂，没有像图像一样的空间局部性</li>
+<li>图没有固定的结点顺序，即没有一个参考结点</li>
+<li>图通常是动态图，且包括多模态特征</li>
+</ol>
+<p>针对这类非结构化数据的处理和建模，Franco Scarselli 等人首次在《The Graph Neural Network Model》中提出了<strong>图神经网络（Graph Neural Network Model，GNN）</strong>，将神经网络应用在图数据结构上，并详细叙述了网络模型的结构组成、计算方法、优化算法、流程实现等</p>
+<p>其基本思想是基于信息传播机制，在每一个结点通过相互交互信息来更新自己的结点状态，直到达到某一稳定值，输出就是在每个结点处，根据当前结点状态分别计算输出</p>
+<h1 id="【图领域应用】"><a href="#【图领域应用】" class="headerlink" title="【图领域应用】"></a>【图领域应用】</h1><p>对于机器学习中的图领域问题，假设函数 $\tau$ 是一个将图 $G$ 和图中一个结点 $n$ 转换为一个实值 $m$ 维向量的函数：</p>
+<script type="math/tex; mode=display">
+\tau(G,n) \in \mathbb{R}^{m}</script><p>那么机器学习的任务就在于从已知样本中学习得到这样的函数</p>
+<p>图领域的应用主要可以分为两种类型：</p>
+<ol>
+<li><strong>专注于图的应用（Graph-focused）</strong>：函数 $\tau$ 和具体的结点无关，即 $\tau(G)$，训练时在图数据集中进行分类或回归</li>
+<li><strong>专注于结点的应用（Node-focused）</strong>：函数 $\tau$ 依赖于具体的结点 $n$，即 $\tau(G,n)$，分类或回归取决于每个结点的属性</li>
+</ol>
+<p>如下图所示：</p>
+<ul>
+<li>图 a 是化学分支结构，能够用图 $G$ 表示，函数 $\tau(G)$ 可能用于估计这种化学分子对人有害的概率，因此不关注分子中具体原子（结点），所以属于 Graph-focused</li>
+<li>图 b 是城堡图片，图中每一种结构都由结点表示，函数 $\tau(G,n)$ 可能用于预测每一个结点是否属于城堡，所以属于 Node-focused</li>
+<li>图 c 是网页分类，图中每一个网页都代表一个结点，函数 $\tau(G,n)$ 可能用于预测网页分类，所以属于 Node-focused</li>
+</ul>
+<p><img width="500" src="/images/artificial-intelligence/deep-learning/gnn/01-1.png"></p>
+<h1 id="【模型】"><a href="#【模型】" class="headerlink" title="【模型】"></a>【模型】</h1><h2 id="符号假设"><a href="#符号假设" class="headerlink" title="符号假设"></a>符号假设</h2><ul>
+<li>图 $G$ 表示为：$G(N,E)$，其中 $N$ 为结点集，$E$ 为边集</li>
+<li>$\text{ne}[n]$ 表示结点 $n$ 的邻居集合</li>
+<li>$\text{co}[n]$ 表示以结点 $n$ 为顶点的边集</li>
+<li>$\mathbf{l}_n\in \mathbb{R}^{l_N}$ 表示结点 $n$ 的特征向量</li>
+<li>$\mathbf{l}_{(n_1,n_2)}\in\mathbb{R}^{l_E}$ 表示边 $(n_1,n_2)$ 的特征向量</li>
+<li>$\mathbf{l}$ 表示所有特征向量堆叠在一起的向量</li>
+</ul>
+<p>考虑图可以是<strong>位置图（Positional Graph）</strong>也可以<strong>非位置图（Non-positional Graph）</strong>，对于位置图来说，对于每一个结点 $n$，都会给该结点的邻居结点 $u$ 赋予一个位置值 $v_n(u)$，该值是一个单射函数，即：</p>
+<script type="math/tex; mode=display">
+v_n: \text{ne}[n] \rightarrow \{1,2,\cdots,|N|\}</script><p>假设存在一个图-结点对的集合 $\mathcal{D}=\mathcal{G}\times \mathcal{N}$，$\mathcal{G}$ 为图的集合，$\mathcal{N}$ 为结点集合，那么图领域问题可以表示为有如下数据集的监督学习框架：</p>
+<script type="math/tex; mode=display">
+\mathcal{L} = \{ (G_i,n_{ij},\mathbf{t}_{ij}) | G_i=(N_i,E_i)\in\mathcal{G};n_{ij}\in N_{i};\mathbf{t}_{ij}\in\mathbb{R}^m;1\leq i\leq p,1\leq j \leq q_i \}</script><p>其中，$n_{ij}\in N_i$ 表示集合 $N_i \in \mathcal{N}$ 中的第 $j$ 个结点，$\mathbf{t}_{ij}$ 表示结点 $n_{ij}$ 的期望目标（标签），$p\leq |\mathcal{G}|,q_{i}\leq |\mathcal{N_i}|$</p>
+<h2 id="模型表示"><a href="#模型表示" class="headerlink" title="模型表示"></a>模型表示</h2><p>对于图中的结点 $n$，其状态用 $\mathbf{x}_n\in \mathbb{R}^s$ 表示，输出用 $\mathbf{o}_n$ 表示，那么状态和输出可以表示为：</p>
+<script type="math/tex; mode=display">
+\begin{gather*}
+\mathbf{x}_n = f_w(\mathbf{l}_n,\mathbf{l}_{\text{co}[n]},\mathbf{x}_{\text{ne}[n]},\mathbf{l}_{\text{ne}[n]}) \\
+\mathbf{o}_n = g_w(\mathbf{x}_n,\mathbf{l}_n)
+\end{gather*}</script><p>其中，$f_w$ 被称为<strong>局部转移函数（Local Transition Function）</strong>，其表达了结点对其领域的依赖关系，$g_w$ 被称为<strong>局部输出函数（Local Output Function）</strong>，其描述了输出如何产生的，$\mathbf{l}_n$ 是结点 $n$ 的特征向量，$\mathbf{l}_{\text{co}[n]}$ 是以结点 $n$ 为顶点的边的特征向量，$\mathbf{x}_{\text{ne}[n]}$ 是结点 $n$ 的邻居结点的状态，$\mathbf{l}_{\text{ne}}[n]$ 是结点 $n$ 的邻居结点的特征向量</p>
+<p>令 $\mathbf{x},\mathbf{o},\mathbf{l},\mathbf{l}_N$ 表示所有结点的状态、输出、特征向量、所有结点特征向量叠加构造的向量，那么上式可写为：</p>
+<script type="math/tex; mode=display">
+\mathbf{x} = F_w(\mathbf{x},\mathbf{l}) \\
+\mathbf{o} = G_w(\mathbf{x},\mathbf{l}_N)</script><p>其中，$F_w$ 被称为<strong>全局转移函数（Global Transition Function）</strong>，$G_w$ 被称为<strong>全局输出函数（Global Output Function）</strong>，分别是 $|N|$ 个 $f_w$ 和 $g_w$ 的叠加</p>
+<p>综上可以发现，要实现 GNN 模型，必须提供以下三项：</p>
+<ol>
+<li>求解状态 $\mathbf{x}_n$ 和输出 $\mathbf{o}_n$ 的方法</li>
+<li>学习算法</li>
+<li>转换和输出功能的实现，即局部转移函数 $f_w$ 和局部输出函数 $g_w$</li>
+</ol>
+<h2 id="状态计算"><a href="#状态计算" class="headerlink" title="状态计算"></a>状态计算</h2><p>根据 Banach 的不动点理论，假设 $F_w$ 是一个压缩映射函数，那么上式有唯一不动点解，且可以通过迭代方式逼近该不动点</p>
+<script type="math/tex; mode=display">
+\mathbf{x}(t+1) = F_w(\mathbf{x},\mathbf{l})</script><p>其中，$\mathbf{x}(t)$ 表示 $\mathbf{x}$ 在第 $t$ 个迭代时刻的值</p>
+<p>对于任意初值，迭代的误差是以指数速度减小的，使用迭代的形式可以写出状态和输出的更新表达式：</p>
+<script type="math/tex; mode=display">
+\begin{gather*}
+\mathbf{x}_n(t+1)=f_w(\mathbf{l}_n,\mathbf{l}_{\text{co}[n]},\mathbf{x}_{\text{ne}[n]}(t),\mathbf{l}_{\text{ne}[n]}) \\
+\mathbf{o}_n(t) = g_w(\mathbf{x}_n(t),\mathbf{l}_n),&n\in N
+\end{gather*}</script><p>上述的更新表达式可以理解为由单元组成的网络表示，这样的网络被称为<strong>编码网络（Encoding Network）</strong></p>
+<p>为构建编码网络，图中的每个结点被函数 $f_w$ 的单元代替，每个单元存储当前结点 $n$ 的状态 $\mathbf{x}_n(t)$，在激活时，利用结点的特征向量和邻居结点中的信息去计算新的状态 $\mathbf{x}_n(t+1)$，结点 $n$ 的输出由另一个单元 $g_w$ 产生</p>
+<p>如下图所示，顶端的图是原始图，中间的图表示状态向量和输出向量的计算流图，底端的图表示将更新流程迭代 $T$ 次并展开后得到的等效网络图</p>
+<p><img width="500" src="/images/artificial-intelligence/deep-learning/gnn/01-2.png"></p>
+<h2 id="学习算法"><a href="#学习算法" class="headerlink" title="学习算法"></a>学习算法</h2><p>GNN 的学习就是估计参数 $w$，使得函数 $\varphi_w$ 能够近似估计训练集：</p>
+<script type="math/tex; mode=display">
+\mathcal{L} = \{ (G_i,n_{ij},\mathbf{t}_{ij}) | G_i=(N_i,E_i)\in\mathcal{G};n_{ij}\in N_{i};\mathbf{t}_{ij}\in\mathbb{R}^m;1\leq i\leq p,1\leq j \leq q_i \}</script><p>其中，$q_i$ 是图 $G_i$ 中监督学习的结点个数，对于 Graph-focused 的任务，需要增加一个特殊结点 $q_i=1$，该结点用于作为目标结点，从而使得 Graph-focused 任务和 Node-focused 任务统一到结点预测任务上</p>
+<p>学习任务可以表示为如下的二次损失函数的最小化：</p>
+<script type="math/tex; mode=display">
+e_{w} = \sum_{i=1}^p\sum_{j=1}^{q_i} (\mathbf{t}_{ij}-\varphi(G_i,n_{ij}))^2</script><p>优化算法基于随机梯度下降法，按照如下步骤进行：</p>
+<ol>
+<li>按照迭代方程进行迭代，更新状态 $\mathbf{x}_n(t)$，直到 $T$ 时刻逼近不动点解 $\mathbf{x}(T)\approx \mathbf{x}$</li>
+<li>计算参数权重的梯度 $\frac{\partial e_w(T)}{\partial w}$</li>
+<li>根据梯度更新权重</li>
+</ol>
+<p>算法流程图如下，其中 FORWARD 用于迭代计算出收敛点，BACKWARD 用于计算梯度</p>
+<p><img width="300" src="/images/artificial-intelligence/deep-learning/gnn/01-3.png"></p>
+<h2 id="转换和输出功能"><a href="#转换和输出功能" class="headerlink" title="转换和输出功能"></a>转换和输出功能</h2><p>在 GNN 中，局部输出函数 $g_w$ 不需要满足特定约束，直接使用多层前馈网络即可，而局部转移函数 $f_w$ 由于需要满足压缩映射的条件，且与不动点计算相关，因此需要着重考虑</p>
+<h3 id="Linear-GNN"><a href="#Linear-GNN" class="headerlink" title="Linear GNN"></a>Linear GNN</h3><p>对于结点状态的计算，将 $\mathbf{x}_n = f_w(\mathbf{l}_n,\mathbf{l}_{\text{co}[n]},\mathbf{x}_{\text{ne}[n]},\mathbf{l}_{\text{ne}[n]})$ 中的 $f_w$ 改为如下形式：</p>
+<script type="math/tex; mode=display">
+\mathbf{x}_n = \sum_{u\in \text{ne}[n]} h_w (\mathbf{l}_n,\mathbf{l}_{(n,u)},\mathbf{x}_u,\mathbf{l}_u),
+\quad n\in N</script><p>相当于是对结点 $n$ 的邻居结点使用函数 $h_w$，并将得到的值求和作为结点 $n$ 的状态，由此，可按如下方式实现：</p>
+<script type="math/tex; mode=display">
+h_w(\mathbf{l}_n,\mathbf{l}_{(n,u)},\mathbf{x}_u,\mathbf{l}_u) = A_{nu}\mathbf{x}_u + \mathbf{b}_n</script><p>其中，向量 $\mathbf{b}_n\in \mathbb{R}^s$，矩阵 $A_{nu}\in \mathbb{R}^{s\times s}$，定义为两个前馈神经网络的输出</p>
+<p>更准确来说，产生矩阵 $A_{nu}$ 的前馈网络是<strong>过渡网络（Transition Network）</strong>，产生向量 $\mathbf{b}_n$ 的前馈网络是<strong>强迫网络（Forcing Network）</strong></p>
+<p>由于过渡网络 $\phi_w$ 和强迫网络 $\rho_w$ 分别可以表示为：</p>
+<script type="math/tex; mode=display">
+\begin{gather*}
+\phi_w:\mathbb{R}^{2\mathbf{l}_N+\mathbf{l}_E} \rightarrow \mathbb{R}^{s^2} \\
+\rho_w:\mathbb{R}^{\mathbf{l}_n} \rightarrow \mathbb{R}^s
+\end{gather*}</script><p>那么由此就可以定义矩阵 $A_{nu}$ 和向量 $\mathbf{b}_n$，即：</p>
+<script type="math/tex; mode=display">
+\begin{gather*}
+A_{nu} = \frac{\mu}{s| \text{ne}[u] |} \cdot \Xi \\
+\mathbf{b}_n = \rho_w(\mathbf{l}_n)
+\end{gather*}</script><p>其中，$\mu\in (0,1),\Xi=\text{resize}(\phi_w(\mathbf{l}_n,\mathbf{l}_{(n,u)},\mathbf{l}_u))$，$\text{resize}(\cdot)$ 表示将 $s^2$ 维向量 reshape 成 $s\times s$ 的矩阵</p>
+<p>简单来说，就是将过渡网络的输出 reshape 成方形矩阵，然后乘以一个系数 $\frac{\mu}{s| \text{ne}[u] |}$ 即得到矩阵 $A_{nu}$，向量 $\mathbf{b}_n$ 直接就是强迫矩阵的输出</p>
+<h3 id="Non-linear-GNN"><a href="#Non-linear-GNN" class="headerlink" title="Non-linear GNN"></a>Non-linear GNN</h3><p>对于非线性 GNN 来说，$h_w$ 通过多层前馈网络实现，但不是所有的参数 $w$ 都会被使用，因为需要保证 $F_w$ 是一个压缩映射函数，这可以通过惩罚项来实现：</p>
+<script type="math/tex; mode=display">
+e_w = \sum_{i=1}^p \sum_{j=1}^{q_i} (\mathbf{t}_{ij}-\varphi_w(G_i,n_{ij}))^2 +\beta L(\Vert\frac{\partial F_w}{\partial \mathbf{x}}\Vert)</script><p>其中，惩罚项 $L(y)$ 在 $y&gt;\mu$ 时为 $(y-\mu)^2$，在 $y\leq \mu$ 时为 $0$，参数 $\mu\in(0,1)$ 被定义为期望的 $F_w$ 的压缩系数</p>
+
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>感谢您对我的支持，让我继续努力分享有用的技术与知识点！</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/wechatpay.jpg" alt="Alex_McAvoy 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/alipay.jpg" alt="Alex_McAvoy 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Alex_McAvoy
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://alex-mcavoy.github.io/artificial-intelligence/deep-learning/gnn/dcb5f247.html" title="图神经网络 GNN">https://alex-mcavoy.github.io/artificial-intelligence/deep-learning/gnn/dcb5f247.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/artificial-intelligence/" rel="tag"># 人工智能</a>
+              <a href="/tags/deep-learning/" rel="tag"># 深度学习</a>
+              <a href="/tags/gnn/" rel="tag"># 图神经网络</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/essay/daily/14d183bc.html" rel="prev" title="那些忧伤的年轻人">
+      <i class="fa fa-chevron-left"></i> 那些忧伤的年轻人
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#【概述】"><span class="nav-number">1.</span> <span class="nav-text">【概述】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【图领域应用】"><span class="nav-number">2.</span> <span class="nav-text">【图领域应用】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#【模型】"><span class="nav-number">3.</span> <span class="nav-text">【模型】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#符号假设"><span class="nav-number">3.1.</span> <span class="nav-text">符号假设</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#模型表示"><span class="nav-number">3.2.</span> <span class="nav-text">模型表示</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#状态计算"><span class="nav-number">3.3.</span> <span class="nav-text">状态计算</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#学习算法"><span class="nav-number">3.4.</span> <span class="nav-text">学习算法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#转换和输出功能"><span class="nav-number">3.5.</span> <span class="nav-text">转换和输出功能</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Linear-GNN"><span class="nav-number">3.5.1.</span> <span class="nav-text">Linear GNN</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Non-linear-GNN"><span class="nav-number">3.5.2.</span> <span class="nav-text">Non-linear GNN</span></a></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">  
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Alex_McAvoy"
+      src="/assets/img/head.jpg">
+  <p class="site-author-name" itemprop="name">Alex_McAvoy</p>
+  <div class="site-description" itemprop="description">想要成为渔夫的猎手</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">726</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">73</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">84</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Alex-McAvoy" title="GitHub → https://github.com/Alex-McAvoy" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/u011815404" title="CSDN → https://blog.csdn.net/u011815404" rel="noopener" target="_blank"><i class="fas fa-copyright fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+<!-- 访客地图 -->
+<script type="text/javascript" src="//rf.revolvermaps.com/0/0/5.js?i=50n58yo58ow&amp;m=0&amp;c=ff0000&amp;cr1=ffffff&amp;s=140" async="async"></script>
+
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdz20172133" title="https://blog.csdn.net/sdz20172133" rel="noopener" target="_blank">神仙队友</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://pxlsdz.gitee.io/" title="https://pxlsdz.gitee.io/" rel="noopener" target="_blank">神仙队友blog2</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdau_fangshifeng" title="https://blog.csdn.net/sdau_fangshifeng" rel="noopener" target="_blank">酷头</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://bycore.net" title="https://bycore.net" rel="noopener" target="_blank">凉了的某饼同学</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://kris-cn.github.io/" title="http://kris-cn.github.io/" rel="noopener" target="_blank">翟孙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://deng.fun/" title="http://deng.fun/" rel="noopener" target="_blank">芙蓉姐姐</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/wentong_Xu" title="https://blog.csdn.net/wentong_Xu" rel="noopener" target="_blank">小黑贱胖子</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.yuheng.tech/" title="https://www.yuheng.tech/" rel="noopener" target="_blank">咸于</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/lanshan1111" title="https://blog.csdn.net/lanshan1111" rel="noopener" target="_blank">肥硕硕</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdauguanweihong" title="https://blog.csdn.net/sdauguanweihong" rel="noopener" target="_blank">管少</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_41661919" title="https://blog.csdn.net/qq_41661919" rel="noopener" target="_blank">俊杰</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_40859951" title="https://blog.csdn.net/qq_40859951" rel="noopener" target="_blank">峰哥</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/LSD20164388" title="https://blog.csdn.net/LSD20164388" rel="noopener" target="_blank">狗冬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37868325" title="https://blog.csdn.net/qq_37868325" rel="noopener" target="_blank">妍大佬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://sanshuiii.github.io/" title="https://sanshuiii.github.io/" rel="noopener" target="_blank">sanshuiii</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://zjpzhao.github.io/" title="https://zjpzhao.github.io/" rel="noopener" target="_blank">brain</a>
+        </li>
+    </ul>
+  </div>
+
+		
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+  
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Alex_McAvoy</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+</br>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/pisces.js"></script>
+<script src="/js/next-boot.js"></script><script src="/js/bookmark.js"></script>
+
+
+
+  
+
+
+
+
+  <script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '48fd73a538d3fa927f65',
+      clientSecret: '56618aefeee90bac3c20de8d51bb0b985d67252d',
+      repo        : 'Gitalk-Comment',
+      owner       : 'Alex-McAvoy',
+      admin       : ['Alex-McAvoy'],
+      id          : '948597b93a31b09b8160390a0a2aecde',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+  
+  <!-- 鼠标单击粒子特效 -->
+  <script type="text/javascript" src="/js/cursor-effects.js"></script>
+  <!-- 多级目录 -->
+  <script type="text/javascript" src="/js/category.js"></script>
+  
+</body>
+</html>
