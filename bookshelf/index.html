@@ -1,0 +1,239 @@
+<!--
+ * @Description   主页
+ * @Author        Alex_McAvoy
+ * @Date          2026-03-10 20:53:24
+-->
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>我的书架</title>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Language" content="zh-cn">
+    <script src="./resources/js/jquery-3.6.0.min.js" charset="UTF-8"></script>
+    <script src="./resources/js/markdown.js" charset="UTF-8"></script>
+    <script src="./resources/js/bookUtils.js" charset="UTF-8"></script>
+    <script src="./resources/js/button.js" charset="UTF-8"></script>
+    <script src="./resources/js/count.js" charset="UTF-8"></script>
+    <link rel="stylesheet" href="./resources/css/base.css">
+    <link rel="stylesheet" href="./resources/css/bookCollection.css">
+    <link rel="stylesheet" href="./resources/css/book.css">
+    <link rel="stylesheet" href="./resources/css/option.css">
+    <link rel="stylesheet" href="./resources/css/bookSwitch.css">
+    <link href="./resources/images/common/favicon.png" rel="shortcut icon">
+</head>
+
+<body>
+    <!-- 书籍样式切换 -->
+    <div class="bookInfo-switch">
+        <div class="bookInfo-detail button-switch" onclick="setBookInfoOption('detail')">详情模式</div>
+        <div class="bookInfo-bigImage button-switch" onclick="setBookInfoOption('bigImage')">大图模式</div>
+        <div class="bookInfo-smallImage button-switch" onclick="setBookInfoOption('smallImage')">小图模式</div>
+    </div>
+    <!-- 在读 -->
+    <div class="bookCollectionWrapper">
+        <div class="bookCollection" id="readingBooks">
+            <h1>在读 <span class="count" id="readingCount"></span></h1>
+            <div id="readingBookList" class="bookInfo-detail"></div>
+        </div>
+    </div>
+
+    <!-- 读过 -->
+    <div class="bookCollectionWrapper">
+        <div class="bookCollection" id="readBooks">
+            <h1>读过 <span class="count" id="readCount"></span></h1>
+            <div class="filterPanel">
+                <div class="options splitOptions" id="readMediaOptions">
+                    <div class="optionGroup mediaFilterGroup">
+                        <div class="option active" id="media-all" onclick="onMediaFilterClick(this)">
+                            <span>all</span>
+                            <span class="count" id="allBookCount"></span>
+                        </div>
+                        <div class="option" id="media-pBook" onclick="onMediaFilterClick(this)">
+                            <span>纸质书</span>
+                            <span class="count" id="pBookCount"></span>
+                        </div>
+                        <div class="option" id="media-eBook" onclick="onMediaFilterClick(this)">
+                            <span>电子书</span>
+                            <span class="count" id="eBookCount"></span>
+                        </div>
+                    </div>
+
+                    <div class="optionGroup groupModeGroup">
+                        <div class="option active" id="group-none" onclick="onGroupModeClick(this)">
+                            <span>不分组</span>
+                        </div>
+                        <div class="option" id="group-year" onclick="onGroupModeClick(this)">
+                            <span>按年</span>
+                        </div>
+                        <div class="option" id="group-month" onclick="onGroupModeClick(this)">
+                            <span>按月</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="subOptionsWrapper" id="readSubOptions" style="display: none;">
+                    <div class="options subOptions" id="readPageOptions" style="display: none;">
+                        <div class="option active" id="page-all" onclick="onPageFilterClick(this)">
+                            <span>all</span>
+                            <span class="count" id="pageAllCount"></span>
+                        </div>
+                        <div class="option" id="page-lt200" onclick="onPageFilterClick(this)">
+                            <span>200页以下</span>
+                            <span class="count" id="pageLt200Count"></span>
+                        </div>
+                        <div class="option" id="page-200to500" onclick="onPageFilterClick(this)">
+                            <span>200页到500页</span>
+                            <span class="count" id="page200to500Count"></span>
+                        </div>
+                        <div class="option" id="page-gt500" onclick="onPageFilterClick(this)">
+                            <span>500页以上</span>
+                            <span class="count" id="pageGt500Count"></span>
+                        </div>
+                        <div class="option" id="page-unknown" onclick="onPageFilterClick(this)">
+                            <span>未知</span>
+                            <span class="count" id="pageUnknownCount"></span>
+                        </div>
+
+                        <div class="optionGroup groupModeGroup" id="pageCategoryGroupOptions" style="display: none;">
+                            <div class="option active" id="page-category-none" onclick="onCategoryFilterClick(this)">
+                                <span>不分组</span>
+                            </div>
+                            <div class="option" id="page-category-group" onclick="onCategoryFilterClick(this)">
+                                <span>按类别</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="options subOptions" id="readWordOptions" style="display: none;">
+                        <div class="option active" id="word-all" onclick="onWordFilterClick(this)">
+                            <span>all</span>
+                            <span class="count" id="wordAllCount"></span>
+                        </div>
+                        <div class="option" id="word-lt100" onclick="onWordFilterClick(this)">
+                            <span>100万字以下</span>
+                            <span class="count" id="wordLt100Count"></span>
+                        </div>
+                        <div class="option" id="word-100to300" onclick="onWordFilterClick(this)">
+                            <span>100万字到300万字</span>
+                            <span class="count" id="word100to300Count"></span>
+                        </div>
+                        <div class="option" id="word-300to500" onclick="onWordFilterClick(this)">
+                            <span>300万字到500万字</span>
+                            <span class="count" id="word300to500Count"></span>
+                        </div>
+                        <div class="option" id="word-gt500" onclick="onWordFilterClick(this)">
+                            <span>500万字以上</span>
+                            <span class="count" id="wordGt500Count"></span>
+                        </div>
+                        <div class="option" id="word-unknown" onclick="onWordFilterClick(this)">
+                            <span>未知</span>
+                            <span class="count" id="wordUnknownCount"></span>
+                        </div>
+
+                        <div class="optionGroup groupModeGroup" id="wordCategoryGroupOptions" style="display: none;">
+                            <div class="option active" id="word-category-none" onclick="onCategoryFilterClick(this)">
+                                <span>不分组</span>
+                            </div>
+                            <div class="option" id="word-category-group" onclick="onCategoryFilterClick(this)">
+                                <span>按类别</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="options categoryDetailOptions" id="readCategoryDetailOptions" style="display: none;">
+                    </div>
+                </div>
+            </div>
+            <div id="readBookList" class="bookInfo-detail"></div>
+        </div>
+    </div>
+
+    <!-- 已购买 -->
+    <div class="bookCollectionWrapper">
+        <div class="bookCollection" id="boughtBooks">
+            <h1>已购买 <span class="count" id="boughtCount"></span></h1>
+            <div id="boughtBookList" class="bookInfo-detail"></div>
+        </div>
+    </div>
+    <!-- 计划购买 -->
+    <div class="bookCollectionWrapper">
+        <div class="bookCollection" id="purchaseBooks">
+            <h1>计划购买 <span class="count" id="purchaseCount"></span></h1>
+            <div id="purchaseBookList" class="bookInfo-detail"></div>
+        </div>
+    </div>
+</body>
+<script>
+    $(function () {
+        // 读取书籍数据
+        $.get("./resources/markdown/books.md", function (md) {
+            // 解析书籍信息
+            var BOOKS = parseMarkdownTable(md);
+            window.BOOK_COLLECTIONS = {
+                readingBooks: BOOKS.reading,
+                boughtBooks: BOOKS.bought,
+                suspendedBooks: BOOKS.suspended,
+                readingHistory: BOOKS.read,
+                purchaseBooks: BOOKS.purchase
+            };
+
+            // 渲染在读
+            $("#readingCount").text(BOOKS.reading.length);
+            $("#readingBookList").html(
+                renderBookList(BOOKS.reading, {
+                    showComment: false,
+                    showRating: false,
+                    showReadDate: false
+                })
+            );
+
+            // 渲染读过
+            $("#readCount").text(BOOKS.read.length);
+            $("#readBookList").html(
+                renderBookList(BOOKS.read, {
+                    showComment: true,
+                    showRating: true,
+                })
+            );
+
+            // 渲染已购买
+            $("#boughtCount").text(BOOKS.bought.length);
+            $("#boughtBookList").html(
+                renderBookList(BOOKS.bought, {
+                    showComment: false,
+                    showRating: false,
+                    showReadDate: false
+                })
+            );
+
+            // 渲染计划购买
+            $("#purchaseCount").text(BOOKS.purchase.length);
+            $("#purchaseBookList").html(
+                renderBookList(BOOKS.purchase, {
+                    showComment: false,
+                    showRating: false,
+                    showReadDate: false
+                })
+            );
+
+            // 媒介过滤按钮
+            var bookList = BOOKS.read
+            $("#allBookCount").text(bookList.length);
+            $("#pBookCount").html(getBookCount(bookList, "media", "纸质书"));
+            $("#eBookCount").html(getBookCount(bookList, "media", "电子书"));
+            $("#pageAllCount").text(getPageCount(bookList, "all"));
+            $("#pageLt200Count").text(getPageCount(bookList, "page-lt200"));
+            $("#page200to500Count").text(getPageCount(bookList, "page-200to500"));
+            $("#pageGt500Count").text(getPageCount(bookList, "page-gt500"));
+            $("#pageUnknownCount").text(getPageCount(bookList, "page-unknown"));
+            $("#wordAllCount").text(getWordCount(bookList, "all"));
+            $("#wordLt100Count").text(getWordCount(bookList, "word-lt100"));
+            $("#word100to300Count").text(getWordCount(bookList, "word-100to300"));
+            $("#word300to500Count").text(getWordCount(bookList, "word-300to500"));
+            $("#wordGt500Count").text(getWordCount(bookList, "word-gt500"));
+            $("#wordUnknownCount").text(getWordCount(bookList, "word-unknown"));
+
+
+        });
+    });
+</script>
+
+</html>
