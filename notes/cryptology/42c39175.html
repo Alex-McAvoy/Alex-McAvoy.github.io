@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 8.1.2">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/img/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/assets/img/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/pace-js@1/themes/blue/pace-theme-minimal.css">
+  <script src="//cdn.jsdelivr.net/npm/pace-js@1/pace.min.js"></script>
+
+
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"alex-mcavoy.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":16,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":true,"color":"#ff0000","save":"manual"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":true},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.json"};
+  </script>
+
+  <meta name="description" content="【概述】密码学（Cryptography）一直与设计和分析加密方案的问题相关，即通过不安全通信媒介提供秘密通信的方案。自 20 世纪 70 年代以来，诸如构建不可伪造的数字签名、设计容错协议等问题也被视为密码学范畴。事实上，密码学可被视为一门研究如何设计任何需要抵御恶意滥用企图的系统的学科 单向函数（One-way Function）是在密码学中具重要意义的函数，其是一个单射函数，对于每一个输入">
+<meta property="og:type" content="article">
+<meta property="og:title" content="密码学概述">
+<meta property="og:url" content="https://alex-mcavoy.github.io/notes/cryptology/42c39175.html">
+<meta property="og:site_name" content="Alex_McAvoy">
+<meta property="og:description" content="【概述】密码学（Cryptography）一直与设计和分析加密方案的问题相关，即通过不安全通信媒介提供秘密通信的方案。自 20 世纪 70 年代以来，诸如构建不可伪造的数字签名、设计容错协议等问题也被视为密码学范畴。事实上，密码学可被视为一门研究如何设计任何需要抵御恶意滥用企图的系统的学科 单向函数（One-way Function）是在密码学中具重要意义的函数，其是一个单射函数，对于每一个输入">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/cryptology/01-1.png">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/cryptology/01-2.png">
+<meta property="article:published_time" content="2026-05-09T05:30:00.000Z">
+<meta property="article:modified_time" content="2026-06-03T13:42:32.545Z">
+<meta property="article:author" content="Alex_McAvoy">
+<meta property="article:tag" content="学习笔记">
+<meta property="article:tag" content="密码学">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://alex-mcavoy.github.io/images/notes/cryptology/01-1.png">
+
+<link rel="canonical" href="https://alex-mcavoy.github.io/notes/cryptology/42c39175.html">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>密码学概述 | Alex_McAvoy</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Alex_McAvoy</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">想要成为渔夫的猎手</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+
+	
+	
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/notes/cryptology/42c39175.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/assets/img/head.jpg">
+      <meta itemprop="name" content="Alex_McAvoy">
+      <meta itemprop="description" content="想要成为渔夫的猎手">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Alex_McAvoy">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          密码学概述
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2026-05-09 13:30:00" itemprop="dateCreated datePublished" datetime="2026-05-09T13:30:00+08:00">2026-05-09</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/notes/" itemprop="url" rel="index"><span itemprop="name">学习笔记</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/notes/cryptology/" itemprop="url" rel="index"><span itemprop="name">密码学</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>5.7k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>5 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="【概述】"><a href="#【概述】" class="headerlink" title="【概述】"></a>【概述】</h1><p><strong>密码学（Cryptography）</strong>一直与设计和分析加密方案的问题相关，即通过不安全通信媒介提供秘密通信的方案。自 20 世纪 70 年代以来，诸如构建不可伪造的数字签名、设计容错协议等问题也被视为密码学范畴。事实上，密码学可被视为一门研究如何设计任何需要抵御恶意滥用企图的系统的学科</p>
+<p><strong>单向函数（One-way Function）</strong>是在密码学中具重要意义的函数，其是一个单射函数，对于每一个输入 $x$，可以在多项式时间内计算出函数值 $f(x)$，但是给定一个函数值 $y$，要找到一个输入 $x$ 使得 $f(x)=y$ 在计算上是困难的</p>
+<p>单向函数的定义刻画了整个密码学方法中内在的<strong>计算困难性（Computational Difficultly）</strong>，因此密码学的许多内容均建立在“单向函数是存在的”这一假设之上。这种方法试图利用攻击者的计算能力有限这一事实，从而构造能够抵御恶意攻击的密码系统</p>
+<p>因此，如果不仅存在困难问题，而且这些困难问题的实例还可以被高效生成，那么这些困难问题就可以被有效利用</p>
+<h1 id="【加密方案】"><a href="#【加密方案】" class="headerlink" title="【加密方案】"></a>【加密方案】</h1><h2 id="基本模型"><a href="#基本模型" class="headerlink" title="基本模型"></a>基本模型</h2><p>在不安全媒介上实现秘密通信，是密码学中最传统、最基本的问题。这个问题的基本场景包括两个通信方，他们通过一个可能被窃听的信道进行通信，通信双方希望彼此交换信息，同时尽可能使窃听者无法了解这些信息的内容。窃听信道的窃听者常被称为<strong>敌手（Adversary）</strong></p>
+<p>简单来说，加密方案是一种允许通信双方秘密通信的协议。通常，一个加密方案由一对算法组成，其中一个算法是由发送方使用的<strong>加密算法（Encryption Algorithm）</strong>，另一个算法是由接收方使用的<strong>解密算法（Decryption Algorithm）</strong></p>
+<p>因此，为了发送一条消息，发送方首先将加密算法应用于该消息，并将结果通过信道发送出去；接收方在收到密文后，将解密算法应用于该密文，从而恢复出原始消息。消息加密得到的结果称为<strong>密文（Ciphertext）</strong>，密文解密后得到的原始消息称为<strong>明文（Plaintext）</strong></p>
+<p>为使该方案提供秘密通信，通信双方或接收方必须知道窃听者某些不知道的消息，否则窃听者就可以像接收方一样解密密文。这些额外知识被称为<strong>解密秘钥（Decryption Key）</strong>，可能表现为解密算法本身，或者是解密算法所使用的某些参数、辅助输入</p>
+<p>为不失一般性，通常假设窃听者知道解密算法，且解密算法需要一个密文和一个解密秘钥作为输入，但窃听者不知道解密秘钥的具体内容</p>
+<h2 id="安全观念"><a href="#安全观念" class="headerlink" title="安全观念"></a>安全观念</h2><p>安全观念主要有两种：基于信息论的传统观念、基于计算复杂性的现代观念</p>
+<ol>
+<li><strong>基于信息论的传统观念</strong>：关注的是密文中是否包含关于明文的信息。如果密文中包含关于明文的信息，那么该加密方案就是不安全的</li>
+<li><strong>基于计算复杂度的现代观念</strong>：不关心密文中是否包含关于明文的信息，而是关注这些信息能否被高效提取出来。即不再询问窃听者是否有可能提取出某些特定信息，而是询问窃听者提取这些信息在计算上是否可行</li>
+</ol>
+<p>传统观念认为，只有当秘钥长度至少等于通过加密方案发送的消息总长度一样长时，才可能实现较高的安全性。但这种秘钥比使用它交互的信息还要长的方案，极大的限制了这类加密方案的适用性；而对于现代观念，即使秘钥远短于加密方案发送的消息总长度时，也能够提供安全性</p>
+<h2 id="加密方案"><a href="#加密方案" class="headerlink" title="加密方案"></a>加密方案</h2><p>基于计算复杂性的现代安全观念，不仅改变了对加密方案安全性的定义，也允许引入一些在信息论方法下无法存在的概念和密码学原语，一个典型的例子就是公钥加密</p>
+<p>在前面的讨论中，主要关注的是解密算法及其使用的解密秘钥，但实际上，加密算法除了消息本身作为输入外，还需要一个依赖于解密秘钥的辅助输入，即<strong>加密秘钥（Encryption Key）</strong></p>
+<p>根据加密秘钥与解密秘钥之间的关系，可以区分两类加密方案：</p>
+<ol>
+<li><strong>私钥加密（Private-key Encryption）</strong>：加密秘钥等于解密秘钥，即同一个秘钥既用于加密，也用于解密。窃听者必须不知道加密秘钥，否则方案的安全性会受到破坏</li>
+<li><strong>公钥加密（Public-key Encryption）</strong>：解密秘钥不同于加密秘钥，且从加密秘钥计算出解密秘钥在计算上是不可行的。加密秘钥可以被窃听者知道，但不会破坏加密方案的安全性</li>
+</ol>
+<p>传统加密方案会带来秘钥<strong>密钥分发问题（Key-distribution Problem）</strong>，即两个希望通过不安全信道通信的参与方，如何协商出一个秘密的加密/解密密钥。而公钥加密方案可以公开发布加密秘钥，因此密钥分发问题可以被直接解决</p>
+<p><img src='/images/notes/cryptology/01-1.png'/></p>
+<h1 id="【伪随机生成器】"><a href="#【伪随机生成器】" class="headerlink" title="【伪随机生成器】"></a>【伪随机生成器】</h1><p><strong>伪随机生成器（Pseudorandom Generators）</strong>在加密方案以及相关密码学方案的构造中具有核心作用，特别是其能给出私钥加密方案的简单构造</p>
+<p>虽然伪随机生成器这一术语被广泛使用，但其很少被赋予精确的含义。简单来说，伪随机生成器是一种确定性算法，其将较短的<strong>随机种子（Random Seeds）</strong>扩展为更长的比特序列，这些比特序列看起来是随机的，但实际上并非真正随机</p>
+<p>换言之，伪随机生成器的输出并不是真正的随机序列，但很难在计算上区分它与真正随机序列之间的差别。因此，伪随机性的关键不在于输出本身是否真正随机，而在于是否能够高效地区分其输出与真正随机输出</p>
+<p>伪随机生成器可基于多种不可处理假设来构造，因此其与计算困难性之间有更根本的联系</p>
+<p>此外，伪随机生成器与单向函数间存在十分紧密的关系，即：伪随机生成器存在，当且仅当单向函数存在</p>
+<h1 id="【数字签名】"><a href="#【数字签名】" class="headerlink" title="【数字签名】"></a>【数字签名】</h1><h2 id="基本概念"><a href="#基本概念" class="headerlink" title="基本概念"></a>基本概念</h2><p>在过去几个世纪中，人们曾讨论过<strong>不可伪造签名（Unforgeable Signatures）</strong>，但当时讨论的对象是手写签名，因此并没有将其视为与密码学相关。但随着计算机通信在商业环境中的引入，参与方往往需要对其提出的建议或作出的声明进行承诺，<strong>数字签名（Digital Signature）</strong>的需求便产生了</p>
+<p>随着加密方法与签名方法都被数字化，并且基于计算复杂性的安全方法被引入，加密方法与签名方法之间的联系成为可能。简单来说，一个不可伪造签名方案需要满足以下三个要求：</p>
+<ol>
+<li>每个用户都能高效地在自己选择的文档上生成自己的签名</li>
+<li>每个用户都能高效地验证某个给定的字符串，是否是另一个特定用户在某个特定文档上的签名</li>
+<li>没有人能够高效地为其他用户没有签名过的文档，生成这些用户的签名</li>
+</ol>
+<p>不可伪造签名方案的要求，也清楚说明了手写签名的基本要素，这些要素包括：</p>
+<ul>
+<li>每个人都能为自己签名</li>
+<li>存在一个被普遍认可的验证过程</li>
+<li>人们相信能够通过验证过程的方式伪造签名是不可行的（至少是困难的）</li>
+</ul>
+<p>很难说明手写签名在多大程度上满足这些基本要求，但数字签名可以提供精确表述，以说明数字签名在多大程度上满足上述要求</p>
+<p>此外，不可伪造数字签名方案可以使用与构造私钥加密方案相同的计算假设来构造</p>
+<h2 id="消息认证"><a href="#消息认证" class="headerlink" title="消息认证"></a>消息认证</h2><p><strong>消息认证（Message Authentication）</strong>是一个与加密方案所考虑的场景相关的任务，即在不安全信道中进行通信，但消息认证考虑的是一种更主动的敌手情形。</p>
+<p>假设信道上存在一个<strong>主动敌手（Active Adversary）</strong>，这个敌手不仅会监听信道，还可能修改信道上传输的消息。因此，通过不安全信道通信的双方希望对他们发送的消息进行认证，使得预期接收方能够区分一条消息到底是发送方发送的原始消息，还是被敌手篡改过的消息</p>
+<p>简单来说，一个消息认证方案需满足以下要求：</p>
+<ol>
+<li>每个通信方都能高效地为自己选择的任意消息生成一个<strong>认证标签（Authentication Tag）</strong></li>
+<li>每个通信方都能高效地验证某个给定字符串是否是某条给定消息的认证标签</li>
+<li>对于通信双方外的任意第三方，都不能高效地为通信双方没有发送过的消息生成认证标签</li>
+</ol>
+<p>因此，消息认证的核心目标不是隐藏消息内容，而是保证接收方能够判断消息是否是发送方原本的消息，即消息认证关注的是消息在传输过程中是否被敌手篡改</p>
+<p>从某种意义上来说，消息认证类似于数字签名，二者都涉及对某个消息或文档生成某种可验证的字符串，并通过验证过程判断其有效性，二者的区别在于验证者的范围不同：</p>
+<ol>
+<li>消息认证：不要求第三方能够验证指定用户生成的认证标签是否有效</li>
+<li>数字签名：要求第三方能够验证其他用户生成的签名是否有效</li>
+</ol>
+<p>由于数字签名允许验证某个消息是否由特定用户签署，因此，数字签名可以为消息认证提供一种解决方案，从而帮助判断消息是否被伪造或篡改</p>
+<p>但是，消息认证不要求第三方具备验证认证标签有效性的能力，因此消息认证方案不一定构成数字签名方案</p>
+<h2 id="密码学范围的扩展"><a href="#密码学范围的扩展" class="headerlink" title="密码学范围的扩展"></a>密码学范围的扩展</h2><p>将数字签名问题看作密码学的一部分，会扩展密码学的研究范围。此时，密码学不再只关注传统的秘密通信问题，而是进一步关注一类更广泛的问题：如何限制系统中不诚实行为所能带来的收益</p>
+<p>这里的不诚实放既可能是系统外部的参与方，也可能是系统内部的参与方。因此，从更广泛的意义上来看，密码学不仅研究如何隐藏通信内容，也研究如何限制不诚实用户对系统造成的影响</p>
+<p>具体来说，可以从以下三个问题理解密码学范围的扩展：</p>
+<ol>
+<li><strong>秘密通信问题</strong>：通过使用加密方案来解决，其目标是尽可能减少潜在窃听者能够从两个指定用户之间通信中提取到的消息</li>
+<li><strong>消息认证问题</strong>：阻止任何外部窃听者修改两个指定用户之间的通信，即不关注的不是信息隐藏，而是防止通信内容在传输过程中被外部敌手篡改</li>
+<li><strong>数字签名问题</strong>：为系统中的所有用户提供一种方式，使他们能够作出对自己具约束力的声明，同时确保一个用户不会作出约束另一个用户的声明</li>
+</ol>
+<p>因此，从广义上来说，密码学关注的是任何希望限制不诚实用户影响的问题，即只要某个问题的核心目标是限制不诚实行为所能造成的收益，就可以被纳入广义密码学的讨论范围</p>
+<h1 id="【容错协议】"><a href="#【容错协议】" class="headerlink" title="【容错协议】"></a>【容错协议】</h1><h2 id="容错协议与协议问题"><a href="#容错协议与协议问题" class="headerlink" title="容错协议与协议问题"></a>容错协议与协议问题</h2><p>一旦考虑数字签名，自然就会产生一个问题：在什么情况下，一方应该向另一方提供自己的签名？</p>
+<p>这类问题通常通过<strong>容错协议（Fault-tolerant Protocols）</strong>，也可称为<strong>密码协议（Cryptographic Protocols）</strong>来处理。此时，主要会引出两类协议问题：</p>
+<ol>
+<li><strong>同时性问题（Simultaneity Problems）</strong>：如何保证多个参与方在协议执行中获得某种同步的结果？</li>
+<li><strong>函数的安全实现（Secure Implementation of Functionalities）</strong>：如何在不完全信任参与方的情况下，安全地计算由多个用户共同输入决定的函数？</li>
+</ol>
+<h3 id="同时性问题"><a href="#同时性问题" class="headerlink" title="同时性问题"></a>同时性问题</h3><p>同时性问题一个典型例子是秘密的同时交换，而合同签署可以视为其中的一个特殊情形</p>
+<p>秘密的同时交换涉及到两个参与方，每一方都持有一个秘密。目标是执行一个协议，使得双方如果均正确遵守协议，那么协议结束时，每一方都能得到对方的秘密。并且在任何情况下，即使一方作弊，也应当满足：第一方得到第二方的秘密，当且仅当第二方也得到第一方的秘密</p>
+<p>完全同时的秘密交换，只有在假设存在某种程度上可信的第三方时才能实现。事实上，如果有一个可信的第三方主动参与，那么秘密的同时交换就很容易实现：每一方通过安全信道把自己的秘密发送给可信第三方，第三方在收到两个秘密后，把第一方的秘密发送给第二方，把第二方的秘密发送给第一方</p>
+<p>但是这种解决方法存在两个问题：</p>
+<ol>
+<li>在所有情况下都需要一个外部参与方的主动参与，即使双方都是诚实的，也仍需要第三方参与</li>
+<li>要求存在一个完全可信的第三方实体，但这样的实体不一定存在</li>
+</ol>
+<h3 id="函数的安全实现"><a href="#函数的安全实现" class="headerlink" title="函数的安全实现"></a>函数的安全实现</h3><p>另一类协议问题关注的是函数的安全实现，即讨论如何计算一个函数，这个函数的输入分别由不同用户持有</p>
+<p>这类问题的一个典型的例子是投票。在投票问题中，需要计算的函数是多数函数，而用户 A 持有的输入是一个表示其投票选择的二元值，例如支持或反对</p>
+<p>简单来说，一个用于安全计算某个特定函数的协议，需要满足以下条件：</p>
+<ol>
+<li><strong>隐私性（Privacy）</strong>：除可以从函数值本身推导出的信息外，任何参与方都不能获得其他参与方的输入</li>
+<li><strong>鲁棒性（Robustness）</strong>：除通过选择自己的输入所产生的影响外，任何参与方都不能影响函数值</li>
+</ol>
+<p>有时，上述条件还于要求对于小的参与方联盟成立，而不仅仅是针对单个参与方</p>
+<p>显然，如果已知某个用户是完全可信的，那么任何函数的安全计算都存在一个简单的解决方案：每个用户只需要通过安全信道把自己的输入发送给可信方，可信方在收到所有输入后计算函数，将结果发送给所有用户，并从自己的存储中删除收到的所有输入以及中间计算结果</p>
+<p>但是，一个参与方被信任到这种程度是不现实的。例如，很难相信它会主动删除自己已经“学到”的内容。尽管如此，函数的安全实现可归约为可信第三方的实现问题，即如果能够实现一个可信第三方，就可以进一步实现函数的安全计算</p>
+<h2 id="零知识证明"><a href="#零知识证明" class="headerlink" title="零知识证明"></a>零知识证明</h2><p><strong>零知识证明（Zero-knowledge Proofs）</strong>是构造容错协议的重要工具之一，其核心依据是：如果单向函数存在，那么所有 NP 语言均存在计算零知识证明系统</p>
+<p>简单来说，零知识证明可以在不泄露任何额外信息（除断言本身成立这一事实）的情况下，向验证者证明某个断言为真，即：验证者能够确信断言为真，但无法从证明过程中获取到除“断言为真”这一事实外的任何额外信息，尤其不能获得用于证明该断言的证据</p>
+<p>这一工具在容错协议设计中尤为重要，其迫使参与方诚实遵守协议，同时不泄露其私有输入，从而实现隐私保护下的正确性验证</p>
+<p>为说明零知识的作用，考虑以下场景：Alice 从 Bob 那里收到一条加密消息后，需要向 Carol 发送这条消息的最低有效位</p>
+<blockquote>
+<p>在这个场景中，需要证明的断言是：Alice 发送给 Carol 的这个比特，确实是原消息的最低有效位</p>
+<p>能够证明该断言为真的证明材料是：完整的原始消息以及对应的解密秘钥</p>
+</blockquote>
+<p>显然，如果 Alice 只发送这条消息的最低有效位，那么 Carol 无法判断 Alice 是否作弊，即 Carol 并不知道 Alice 发送的这一位是否真的是原消息的最低有效位</p>
+<p>Alice 可以通过向 Carol 公开整条加密消息以及对应的解密秘钥来证明自己没有作弊，但这样会泄漏远超原本要求的信息</p>
+<p>更好的方法是：Alice 在向 Carol 发送这一位时，附加一个零知识证明，来证明这一位确实是原消息的最低有效位。这样一来，Carol 可以确认 Alice 没有作弊，但不会获得除该断言有效性外的任何其他信息</p>
+<p>因此，如果所有 NP 断言都存在零知识证明，那么 Alice 就可以在不泄露任何额外信息的情况下，证明自己发送的这一位确实是原消息的最低有效位</p>
+<p>也就是说，零知识证明在这里的作用是：既保证协议参与方的行为可以被验证，又避免验证过程泄露不必要的信息</p>
+<p><img src='/images/notes/cryptology/01-2.png'/></p>
+
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>感谢您对我的支持，让我继续努力分享有用的技术与知识点！</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/wechatpay.jpg" alt="Alex_McAvoy 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/alipay.jpg" alt="Alex_McAvoy 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Alex_McAvoy
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://alex-mcavoy.github.io/notes/cryptology/42c39175.html" title="密码学概述">https://alex-mcavoy.github.io/notes/cryptology/42c39175.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/notes/" rel="tag"># 学习笔记</a>
+              <a href="/tags/cryptology/" rel="tag"># 密码学</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/essay/daily/971044cd.html" rel="prev" title="20251230">
+      <i class="fa fa-chevron-left"></i> 20251230
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/notes/cryptology/44517af4.html" rel="next" title="密码学的计算复杂性">
+      密码学的计算复杂性 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E3%80%90%E6%A6%82%E8%BF%B0%E3%80%91"><span class="nav-number">1.</span> <span class="nav-text">【概述】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E3%80%90%E5%8A%A0%E5%AF%86%E6%96%B9%E6%A1%88%E3%80%91"><span class="nav-number">2.</span> <span class="nav-text">【加密方案】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9F%BA%E6%9C%AC%E6%A8%A1%E5%9E%8B"><span class="nav-number">2.1.</span> <span class="nav-text">基本模型</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%89%E5%85%A8%E8%A7%82%E5%BF%B5"><span class="nav-number">2.2.</span> <span class="nav-text">安全观念</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8A%A0%E5%AF%86%E6%96%B9%E6%A1%88"><span class="nav-number">2.3.</span> <span class="nav-text">加密方案</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E3%80%90%E4%BC%AA%E9%9A%8F%E6%9C%BA%E7%94%9F%E6%88%90%E5%99%A8%E3%80%91"><span class="nav-number">3.</span> <span class="nav-text">【伪随机生成器】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E3%80%90%E6%95%B0%E5%AD%97%E7%AD%BE%E5%90%8D%E3%80%91"><span class="nav-number">4.</span> <span class="nav-text">【数字签名】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5"><span class="nav-number">4.1.</span> <span class="nav-text">基本概念</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B6%88%E6%81%AF%E8%AE%A4%E8%AF%81"><span class="nav-number">4.2.</span> <span class="nav-text">消息认证</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AF%86%E7%A0%81%E5%AD%A6%E8%8C%83%E5%9B%B4%E7%9A%84%E6%89%A9%E5%B1%95"><span class="nav-number">4.3.</span> <span class="nav-text">密码学范围的扩展</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E3%80%90%E5%AE%B9%E9%94%99%E5%8D%8F%E8%AE%AE%E3%80%91"><span class="nav-number">5.</span> <span class="nav-text">【容错协议】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%B9%E9%94%99%E5%8D%8F%E8%AE%AE%E4%B8%8E%E5%8D%8F%E8%AE%AE%E9%97%AE%E9%A2%98"><span class="nav-number">5.1.</span> <span class="nav-text">容错协议与协议问题</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%90%8C%E6%97%B6%E6%80%A7%E9%97%AE%E9%A2%98"><span class="nav-number">5.1.1.</span> <span class="nav-text">同时性问题</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%87%BD%E6%95%B0%E7%9A%84%E5%AE%89%E5%85%A8%E5%AE%9E%E7%8E%B0"><span class="nav-number">5.1.2.</span> <span class="nav-text">函数的安全实现</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%9B%B6%E7%9F%A5%E8%AF%86%E8%AF%81%E6%98%8E"><span class="nav-number">5.2.</span> <span class="nav-text">零知识证明</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">  
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Alex_McAvoy"
+      src="/assets/img/head.jpg">
+  <p class="site-author-name" itemprop="name">Alex_McAvoy</p>
+  <div class="site-description" itemprop="description">想要成为渔夫的猎手</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">752</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">75</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">86</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Alex-McAvoy" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;Alex-McAvoy" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/u011815404" title="CSDN → https:&#x2F;&#x2F;blog.csdn.net&#x2F;u011815404" rel="noopener" target="_blank"><i class="fas fa-copyright fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+<!-- 静态项目链接 -->
+<div class="links-of-blogroll motion-element">
+  <div class="links-of-blogroll-title">
+    <i class="fas fa-external-link-alt fa-fw"></i> 站点静态项目
+  </div>
+  <ul class="links-of-blogroll-list">
+  <li class="links-of-blogroll-item">
+      <a href="https://alex-mcavoy.github.io/bookshelf/index.html" target="_blank" title="终末之诗">
+        我的书架（施工中...）
+      </a>
+    </li>
+    <li class="links-of-blogroll-item">
+      <a href="https://alex-mcavoy.github.io/end_poem/index.html" target="_blank" title="终末之诗">
+        终末之诗
+      </a>
+    </li>
+	<li class="links-of-blogroll-item">
+      <a href="https://alex-mcavoy.github.io/2nd_anniversary_of_pyc-zwx/index.html" target="_blank" title="逄总与张总的两周年纪念页（朋友已分手，该项目无限延期）">
+        <del>逄总与张总的两周年纪念页<br/>（朋友已分手，该项目无限延期）</del>
+      </a>
+    </li>
+  </ul>
+</div>
+
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdz20172133" title="https:&#x2F;&#x2F;blog.csdn.net&#x2F;sdz20172133" rel="noopener" target="_blank">神仙队友</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://pxlsdz.gitee.io/" title="https:&#x2F;&#x2F;pxlsdz.gitee.io&#x2F;" rel="noopener" target="_blank">神仙队友blog2</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdau_fangshifeng" title="https:&#x2F;&#x2F;blog.csdn.net&#x2F;sdau_fangshifeng" rel="noopener" target="_blank">酷头</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://bycore.net/" title="https:&#x2F;&#x2F;bycore.net" rel="noopener" target="_blank">凉了的某饼同学</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://kris-cn.github.io/" title="http:&#x2F;&#x2F;kris-cn.github.io&#x2F;" rel="noopener" target="_blank">翟孙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://deng.fun/" title="http:&#x2F;&#x2F;deng.fun&#x2F;" rel="noopener" target="_blank">芙蓉姐姐</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/wentong_Xu" title="https:&#x2F;&#x2F;blog.csdn.net&#x2F;wentong_Xu" rel="noopener" target="_blank">小黑贱胖子</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.yuheng.tech/" title="https:&#x2F;&#x2F;www.yuheng.tech&#x2F;" rel="noopener" target="_blank">咸于</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/lanshan1111" title="https:&#x2F;&#x2F;blog.csdn.net&#x2F;lanshan1111" rel="noopener" target="_blank">肥硕硕</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdauguanweihong" title="https:&#x2F;&#x2F;blog.csdn.net&#x2F;sdauguanweihong" rel="noopener" target="_blank">管少</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_41661919" title="https:&#x2F;&#x2F;blog.csdn.net&#x2F;qq_41661919" rel="noopener" target="_blank">俊杰</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_40859951" title="https:&#x2F;&#x2F;blog.csdn.net&#x2F;qq_40859951" rel="noopener" target="_blank">峰哥</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/LSD20164388" title="https:&#x2F;&#x2F;blog.csdn.net&#x2F;LSD20164388" rel="noopener" target="_blank">狗冬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37868325" title="https:&#x2F;&#x2F;blog.csdn.net&#x2F;qq_37868325" rel="noopener" target="_blank">妍大佬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://sanshuiii.github.io/" title="https:&#x2F;&#x2F;sanshuiii.github.io&#x2F;" rel="noopener" target="_blank">sanshuiii</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://zjpzhao.github.io/" title="https:&#x2F;&#x2F;zjpzhao.github.io&#x2F;" rel="noopener" target="_blank">brain</a>
+        </li>
+    </ul>
+  </div>
+
+		
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+  
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2026</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Alex_McAvoy</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+</br>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+<script src="/js/bookmark.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '48fd73a538d3fa927f65',
+      clientSecret: '56618aefeee90bac3c20de8d51bb0b985d67252d',
+      repo        : 'Gitalk-Comment',
+      owner       : 'Alex-McAvoy',
+      admin       : ['Alex-McAvoy'],
+      id          : '915da0a88069d99d5cb0b2898aa86877',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+  
+  <!-- 鼠标单击粒子特效 -->
+  <script type="text/javascript" src="/js/cursor-effects.js"></script>
+  <!-- 多级目录 -->
+  <script type="text/javascript" src="/js/category.js"></script>
+  
+</body>
+</html>

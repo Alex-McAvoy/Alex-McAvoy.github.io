@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 8.1.2">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/img/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/assets/img/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/pace-js@1/themes/blue/pace-theme-minimal.css">
+  <script src="//cdn.jsdelivr.net/npm/pace-js@1/pace.min.js"></script>
+
+
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"alex-mcavoy.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":16,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":true,"color":"#ff0000","save":"manual"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":true},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.json"};
+  </script>
+
+  <meta name="description" content="【在部分长度上定义的单向函数】基本思想单向函数默认定义在整个字符串集合上，即：">
+<meta property="og:type" content="article">
+<meta property="og:title" content="单向函数的长度约束">
+<meta property="og:url" content="https://alex-mcavoy.github.io/notes/cryptology/eead5969.html">
+<meta property="og:site_name" content="Alex_McAvoy">
+<meta property="og:description" content="【在部分长度上定义的单向函数】基本思想单向函数默认定义在整个字符串集合上，即：">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-05-24T11:29:00.000Z">
+<meta property="article:modified_time" content="2026-06-03T13:42:32.549Z">
+<meta property="article:author" content="Alex_McAvoy">
+<meta property="article:tag" content="学习笔记">
+<meta property="article:tag" content="密码学">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://alex-mcavoy.github.io/notes/cryptology/eead5969.html">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>单向函数的长度约束 | Alex_McAvoy</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Alex_McAvoy</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">想要成为渔夫的猎手</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+
+	
+	
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/notes/cryptology/eead5969.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/assets/img/head.jpg">
+      <meta itemprop="name" content="Alex_McAvoy">
+      <meta itemprop="description" content="想要成为渔夫的猎手">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Alex_McAvoy">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          单向函数的长度约束
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2026-05-24 19:29:00" itemprop="dateCreated datePublished" datetime="2026-05-24T19:29:00+08:00">2026-05-24</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/notes/" itemprop="url" rel="index"><span itemprop="name">学习笔记</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/notes/cryptology/" itemprop="url" rel="index"><span itemprop="name">密码学</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>957</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>1 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="【在部分长度上定义的单向函数】"><a href="#【在部分长度上定义的单向函数】" class="headerlink" title="【在部分长度上定义的单向函数】"></a>【在部分长度上定义的单向函数】</h1><h2 id="基本思想"><a href="#基本思想" class="headerlink" title="基本思想"></a>基本思想</h2><p>单向函数默认定义在整个字符串集合上，即：</p>
+<script type="math/tex; mode=display">
+f:\{0,1\}^{*} \to \{0,1\}^{*}</script><p>但在很多情况下，考虑定义域是所有二进制集合的一个子集的单向函数，会更加方便。也就是说，单向函数不一定要定义在所有长度的字符串上，可以只定义在某些特定长度的字符串上，以便于在定义域中引入某些结构</p>
+<p>一种特别重要的情形是，函数的定义域为：</p>
+<script type="math/tex; mode=display">
+\bigcup_{n\in \mathbb{N}} \{0,1\}^{l(n)}</script><p>其中，$l(\cdot)$ 是某个多项式。此时，单向函数只在长度属于某个多项式形式的字符串集合上定义</p>
+<h2 id="长度集合与后继函数"><a href="#长度集合与后继函数" class="headerlink" title="长度集合与后继函数"></a>长度集合与后继函数</h2><p>设 $I\subseteq \mathbb{N}$ 是一个自然数集合，用 $s_I(n)$ 表示 $n$ 关于集合 $l$ 的<strong>后继（Successor）</strong>，即：</p>
+<script type="math/tex; mode=display">
+s_I(n)\overset{\mathrm{def}}{=}\min\{i\in I:i>n\}</script><p>也就是说，$s_I(n)$ 是集合 $I$ 中大于 $n$ 的最小整数</p>
+<p>如果存在一个算法，使得该算法在输入 $n$ 后，能够在 $\mathrm{poly}(n)$ 的时间内停机，并输出：</p>
+<script type="math/tex; mode=display">
+1^{s_I(n)}</script><p>那么则称集合 $I$ 是<strong>多项式时间可枚举的（Polynomial-time-enumerable）</strong></p>
+<p>这里要求输出的是一元形式 $1^{s_I(n)}$，因为算法必须在多项式时间内输出这么长的字符串，所以输出长度本身不能超过多项式规模。因此，这一要求隐含地保证了：</p>
+<script type="math/tex; mode=display">
+s_I(n)\leq \mathrm{poly}(n)</script><p>也就是说，集合 $I$ 中下一个可用长度不会距离当前长度太远</p>
+<h2 id="指定长度集合上的单向函数"><a href="#指定长度集合上的单向函数" class="headerlink" title="指定长度集合上的单向函数"></a>指定长度集合上的单向函数</h2><p>设 $I$ 是一个多项式时间可枚举的集合，函数 $f$ 的定义域为 $\bigcup\limits_{n\in I}{0,1}^{n}$，即 $f$ 只在长度属于集合 $I$ 上的二进制串上定义。如果 $f$ 是多项式时间可计算的，且在所有属于 $I$ 的长度 $n$ 上都难以求逆函数，那么 $f$ 就是在长度集合 $I$ 上的强单向函数或弱单向函数</p>
+<p>以强单向函数为例，其困难性条件可表述为：对于任意概率多项式时间算法 $A’$，任意正多项式 $\mathrm{poly}(\cdot)$，以及所有充分大的 $n\in I$，都有</p>
+<script type="math/tex; mode=display">
+P [A'(f(U_n),1^n)\in f^{-1}(f(U_n))]<\frac{1}{\mathrm{poly}(n)}</script><p>其中，$U_n$ 是在 ${0,1}^n$ 上均匀选取的随机变量。该式表明，即使给定 $f(U_n)$ 和长度信息 $1^n$，任何高效算法成功找到一个原像的概率也只能是可忽略的</p>
+<p>普通单向函数可以看作上述定义的特殊情形，即<a href="https://alex-mcavoy.github.io/notes/cryptology/eac1cf74.html">强单向函数与弱单向函数</a>中定义的普通单向函数等价于在长度集合 $I=\mathbb{N}$ 上的单向函数</p>
+<h2 id="部分长度单向函数构造普通单向函数"><a href="#部分长度单向函数构造普通单向函数" class="headerlink" title="部分长度单向函数构造普通单向函数"></a>部分长度单向函数构造普通单向函数</h2><p>定义在某些特定长度集合 $I$ 上的单向函数，可以转化为定义在所有二进制串集合 ${0,1}^{*}$ 上的普通单向函数</p>
+<p>设函数 $f$ 的定义域为 $\bigcup\limits_{n\in I}{0,1}^n$，则可以构造一个函数 $g:{0,1}^{*}\to {0,1}^{*}$，定义为：</p>
+<script type="math/tex; mode=display">
+g(x)\overset{\mathrm{def}}{=}f(x')</script><p>其中，$x’$ 是 $x$ 的最长前缀，且 $|x’|\in I$</p>
+<p>也就是说，对于任意输入 $x$，即使它的长度不属于 $I$，也可以从它前面截取一个长度属于 $I$ 的最长前缀 $x’$，然后将 $f$ 作用在这个前缀上，这样就把原来只在部分长度上定义的函数 $f$，扩展成了一个定义在所有字符串上的函数 $g$</p>
+<p>进一步，如果原函数 $f$ 是长度保持的，那么还可以构造一个长度保持的函数 $g’$，即：</p>
+<script type="math/tex; mode=display">
+g'(x)\overset{\mathrm{def}}{=}f(x')x''</script><p>其中，$x’$ 是 $x$ 中长度属于 $I$ 的最长前缀，$x’’$ 是剩余部分，即 $x=x’x’’$</p>
+<p>由于 $f$ 是长度保持的，所以 $|f(x’)|=|x’|$，因此：</p>
+<script type="math/tex; mode=display">
+|g'(x)|=|f(x')x''|=|x'|+|x''|=|x|</script><p>所以 $g’$ 也是长度保持的</p>
+<p>由此，具有如下命题：</p>
+<blockquote>
+<p><strong>Proposition</strong>：设 $I$ 是一个多项式时间可枚举集合，并且函数 $f$ 在长度集合 $I$ 上是强单向的或弱单向的。那么，前面定义的两个函数：</p>
+<script type="math/tex; mode=display">
+g(x)\overset{\mathrm{def}}{=}f(x')</script><p>以及</p>
+<script type="math/tex; mode=display">
+g'(x)\overset{\mathrm{def}}{=}f(x')x''</script><p>在普通意义下也是强单向函数或弱单向函数。其中，$x’$ 是 $x$ 中长度属于 $I$ 的最长前缀，且在第二个定义中有 $x=x’x’’$</p>
+</blockquote>
+<p>也就是说，如果函数 $f$ 只在某些特定长度上难以求逆函数，那么通过上述方式扩展得到的 $g$ 和 $g’$，在所有二进制串 ${0,1}^{*}$ 上仍然难以求逆函数</p>
+<h1 id="【可归约性论证】"><a href="#【可归约性论证】" class="headerlink" title="【可归约性论证】"></a>【可归约性论证】</h1><h2 id="证明思想"><a href="#证明思想" class="headerlink" title="证明思想"></a>证明思想</h2><p>假设函数 $g$ 可以被某个高效算法以不允许的成功概率求逆函数，那么就可以利用这个算法构造出另一个高效算法，用来以不允许的成功概率对函数 $f$ 求逆，这就与 $f$ 在长度集合 $I$ 上是单向函数的假设矛盾</p>
+<p>换句话说，证明要说明：对函数 $f$ 求逆可以被高效地归约为对函数 $g$ 求逆</p>
+<p>这里的归约比通常意义下的归约更强，因为它不仅要保证算法可以被高效模拟，还要保证求逆函数成功概率能够被适当地保留下来</p>
+<p>也就是说，如果存在高效算法能够以不可忽略概率对函数 $g$ 求逆，那么由它构造出的算法也能够以不可忽略概率对函数 $f$ 求逆。由于这与 $f$ 的单向性假设矛盾，因此 $g$ 也必须保持求逆困难性</p>
+<h2 id="多项式时间可计算性"><a href="#多项式时间可计算性" class="headerlink" title="多项式时间可计算性"></a>多项式时间可计算性</h2><p>证明函数 $g$ 和 $g’$ 都可以在多项式时间内计算</p>
+<blockquote>
+<p>采用<strong>直接证明</strong>：</p>
+<p>由于 $I$ 是多项式时间可枚举的，那么给定 $n$，可以在多项式时间内计算 $s_I(n)$。进一步地，可以在多项式时间内判断一个整数 $m$ 是否属于 $I$，即：</p>
+<script type="math/tex; mode=display">
+m\in I \Longleftrightarrow s_I(m-1)=m</script><p>也就是说，如果 $m-1$ 在集合 $I$ 中的后继正好是 $m$，那么 $m$ 就属于 $I$</p>
+<p>因此，对于任意输入 $x$，可以在多项式时间内找到满足如下条件的最大整数 $m$：</p>
+<script type="math/tex; mode=display">
+m\leq |x|,\quad m\in I</script><p>找到 $m$ 后，取 $x$ 的前 $m$ 位作为 $x’$，然后计算 $f(x’)$，即可得到 $g(x)=f(x)$。同理，对于 $g’$，只需要保留剩余后缀 $x’’$，并输出 $g’(x)=f(x’)x’’$</p>
+<p>因此，只要 $f(x)$ 是多项式时间可计算的，$g(x)$ 和 $g’(x)$ 也是多项式时间可计算的</p>
+</blockquote>
+<h2 id="求逆困难性"><a href="#求逆困难性" class="headerlink" title="求逆困难性"></a>求逆困难性</h2><p>接下来证明函数 $g$ 保留了函数 $f$ 的求逆困难性，函数 $g’$ 的证明类似。同时，只讨论 $f$ 是强单向函数的情形，弱单向函数的情形可以用类似方式证明</p>
+<h3 id="证明思路"><a href="#证明思路" class="headerlink" title="证明思路"></a>证明思路</h3><p>采用<strong>反证法</strong></p>
+<p>原命题是函数 $g$ 保留了函数 $f$ 的求逆困难性，假设命题不成立，即存在一个概率多项式时间算法 $B’$，它可以以不可忽略的成功概率对函数 $g$ 求逆，也就是说，给定 $y=g(x)$ 和长度信息 $1^m$，算法 $B’$ 能够以不可忽略的概率输出某个 $z\in g^{-1}(y)$</p>
+<p>进一步，利用 $B’$ 构造一个概率多项式时间算法 $A’$，使得 $A’$ 可以以不可忽略的成功概率对函数 $f$ 求逆，即在输入 $y=f(x’)$ 和长度信息 $1^n$ 时，输出某个 $x’\in f^{-1}(y)$</p>
+<p>那这就与函数 $f$ 在长度集合 $I$ 上是强单向函数的假设矛盾，原命题成立</p>
+<p>这个归约的关键是：当输入长度属于 $I$ 时，函数 $g$ 与 $f$ 的行为是一致的</p>
+<p>更一般地，如果 $n\in I$，并且输入字符串可以写成 $x=x’x’’$，且 $|x’|=n$，$|x’’|$ 不超过下一个属于 $I$ 的长度之前的间隔，那么 $x’$ 仍然是 $x$ 中长度属于 $I$ 的最长前缀，因此：</p>
+<script type="math/tex; mode=display">
+g(x'x'')=f(x')</script><p>这意味着，如果能够对函数 $g$ 求逆，即给定 $y$ 找到某个满足 $g(z)=y$ 的原像 $z$，那么就有可能从 $z$ 中取出长度为 $n$ 的前缀，从而得到 $f$ 的一个原像。也就是说，对函数 $f$ 求逆可以归约为对函数 $g$ 求逆</p>
+<h3 id="证明"><a href="#证明" class="headerlink" title="证明"></a>证明</h3><h4 id="对函数-f-求逆到对函数-g-求逆的归约"><a href="#对函数-f-求逆到对函数-g-求逆的归约" class="headerlink" title="对函数 $f$ 求逆到对函数 $g$ 求逆的归约"></a>对函数 $f$ 求逆到对函数 $g$ 求逆的归约</h4><p>算法 $A’$ 的输入为 $(y,1^n)$，其中 $y$ 来自 $f(U_n)$，且 $n\in I$。对于任意：</p>
+<script type="math/tex; mode=display">
+m\in \{n,n+1,\dots,s_I(n)-1\}</script><p>长度为 $m$ 的随机串 $U_m$ 的前 $n$ 位服从 ${0,1}^{n}$ 上的均匀分布，并且由于在区间 $n,\dots,s_I(n)-1$ 内不存在新的属于 $I$ 的长度，所以 $U_m$ 中长度属于 $I$ 的最长前缀正好是前 $n$ 位。因此，$g(U_m)$ 与 $f(U_n)$ 具有相同分布</p>
+<p>换句话说，函数 $g$ 作用在长度为 $m$ 的随机串上时，本质上就是对其前 $n$ 位应用函数 $f$</p>
+<p>于是，$A’$ 可以调用函数 $g$ 的求逆算法 $B’$，尝试在不同长度 $m$ 上求逆 $y$。如果 $B’$ 返回一个长度为 $m$ 的字符串 $z$，并且满足 $g(z)=y$，那么 $A’$ 取 $z$ 的长度为 $n$ 的前缀作为函数 $f$ 的原像</p>
+<p>此时的问题在于：$m$ 应该如何选取？</p>
+<p>由于 $I$ 是多项式时间可枚举的，所以：</p>
+<script type="math/tex; mode=display">
+s_I(n)=\mathrm{poly}(n)</script><p>因此，从 $n$ 到 $s_I(n)-1$ 的所有长度数量仍然是多项式级别，可以全部进行枚举以选取合适的 $m$</p>
+<h4 id="求逆算法-A’-的构造"><a href="#求逆算法-A’-的构造" class="headerlink" title="求逆算法 $A’$ 的构造"></a>求逆算法 $A’$ 的构造</h4><p>在此基础上，给定一个对函数 $g$ 求逆的算法 $B’$，构造一个对函数 $f$ 求逆的算法 $A’$</p>
+<p>在输入 $y$ 和 $1^n$ 时，$y$ 被认为来自 $f(U_n)$，并且 $n\in I$，算法 $A’$ 执行如下步骤：</p>
+<p>（1）计算 $s_I(n)$，并令：</p>
+<script type="math/tex; mode=display">
+k\overset{\mathrm{def}}{=}s_I(n)-n-1\geq 0</script><p>此时，对于所有 $i=1,\dots,k$，都有 $n+i\notin I$</p>
+<p>（2）对于每个 $i=0,1,\dots,k$，算法 $A’$ 调用 $B’$：</p>
+<script type="math/tex; mode=display">
+z_i\leftarrow B'(y,1^{n+i})</script><p>如果 $g(z_i)=y$，则 $A’$ 输出 $z_i$ 的长度为 $n$ 的前缀</p>
+<h4 id="A’-的正确性分析"><a href="#A’-的正确性分析" class="headerlink" title="$A’$ 的正确性分析"></a>$A’$ 的正确性分析</h4><p>下面说明上述算法 $A’$ 的输出确实是函数 $f$ 的合法原像，并且 $A’$ 仍然是概率多项式时间算法</p>
+<p>在长度区间 $n,n+1,\dots,s_I(n)-1$ 之内，唯一属于 $I$ 的相关前缀长度就是 $n$，那么 $x’x’’$ 中长度属于 $I$ 的最长前缀是 $x’$。因此，对于任意 $x’\in {0,1}^n$，以及任意满足 $|x’’|\leq k$ 的字符串 $x’’$，都有：</p>
+<script type="math/tex; mode=display">
+g(x'x'')=f(x')</script><p>所以，如果算法 $B’$ 返回的某个 $z_i$ 满足 $g(z_i)=y$，那么由于 $z_i$ 的长度为 $n+i$，且 $0\leq i\leq k$，所以 $z_i$ 中长度属于 $I$ 的最长前缀就是其前 $n$ 位。取 $z_i$ 的前 $n$ 位，记为 $x’$，则由 $g$ 的定义可得：</p>
+<script type="math/tex; mode=display">
+f(x')=y</script><p>因此，$A’$ 输出的是 $f$ 的合法原像</p>
+<p>又因为 $s_I(n)=\mathrm{poly}(n)$，并且 $s_I(n)$ 可以在多项式时间内计算，所以 $k=s_I(n)-n-1$ 也是多项式规模。算法 $A’$ 只需要对 $i=0,1,\dots,k$ 进行多项式次数的枚举，并在每次枚举中调用一次 $B’$。因此，如果 $B’$ 是概率多项式时间算法，那么 $A’$ 也仍然是概率多项式时间算法</p>
+<h4 id="矛盾推出"><a href="#矛盾推出" class="headerlink" title="矛盾推出"></a>矛盾推出</h4><p>上一节已经说明，算法 $A’$ 的输出是函数 $f$ 的合法原像，且当 $B’$ 是概率多项式时间算法时，$A’$ 也是概率多项式时间算法。那么，只需要说明：如果 $B’$ 能够以不可忽略概率对函数 $g$ 求逆，那么 $A’$ 也能够以不可忽略概率对函数 $f$ 求逆，原命题即可得证</p>
+<p>设 $B’$ 在输入 $(g(U_m),1^m)$ 时成功对函数 $g$ 求逆的概率为 $\varepsilon(m)$，由于整数可以按照如下形式被划分为若干区间：</p>
+<script type="math/tex; mode=display">
+[n,\dots,s_I(n)-1]</script><p>其中，每个区间对应某个 $n\in I$，所以任意长度 $m\in\mathbb{N}$ 都会落入某个这样的区间。也就是说，对于某个 $n\in I$，有：</p>
+<script type="math/tex; mode=display">
+m\in \{n,\dots,s_I(n)-1\}</script><p>在这种情况下，算法 $A’$ 在输入 $(f(U_n),1^n)$ 时，会枚举到长度 $m$，并调用</p>
+<script type="math/tex; mode=display">
+B'(f(U_n),1^m)</script><p>而在该长度区间内，$g(U_m)$ 与 $f(U_n)$ 具有相同分布。换言之，这次调用等价于让 $B’$ 在输入 $(g(U_m),1^m)$ 上进行求逆。因此，$A’$ 至少能够继承 $B’$ 在长度 $m$ 上的成功概率</p>
+<p>也就是说，若 $B’$ 在无限多个长度 $m$ 上以不可忽略概率成功对函数 $g$ 求逆，那么 $A’$ 也会在无限多个长度 $n\in I$ 上以不可忽略概率成功对函数 $f$ 求逆，这与 $f$ 在长度集合 $I$ 上是强单向函数的假设矛盾</p>
+<p>因此，不存在这样的高效算法 $B’$，所以 $g$ 也是强单向函数</p>
+<h3 id="成功概率分析的严格化"><a href="#成功概率分析的严格化" class="headerlink" title="成功概率分析的严格化"></a>成功概率分析的严格化</h3><p>下面，对矛盾推出进行更严格的成功概率分析</p>
+<h4 id="反设与长度集合"><a href="#反设与长度集合" class="headerlink" title="反设与长度集合"></a>反设与长度集合</h4><p>反设命题不成立，即：函数 $g$ 不是强单向函数</p>
+<p>那么，存在一个概率多项式时间算法 $B’$，以及一个多项式 $\mathrm{poly}(\cdot)$，使得对于无限多个长度 $m$，算法 $B’$ 在输入 $(g(U_m),1^m)$ 时能够以至少 $\frac{1}{\mathrm{poly}(m)}$ 的概率成功对函数 $g$ 求逆</p>
+<p>记这些长度构成的集合为 $M$​，则对所有 $m\in M$，都有：</p>
+<script type="math/tex; mode=display">
+P[B'(g(U_m),1^m)\in g^{-1}(g(U_m))]\geq \frac{1}{\mathrm{poly}(m)}</script><p>但是，$f$ 的单向性只定义在长度集合 $I$ 上，而攻击长度 $m$ 是普通长度，未必属于 $I$。因此，不能直接说 $B’$ 在长度 $m$ 上攻击 $g$ 成功，就立刻推出存在一个算法在同一长度 $m$ 上攻击 $f$ 成功</p>
+<p>为了解决长度对应问题，需要把每个普通长度 $m$ 映射回一个属于 $I$ 的合法长度，定义函数：</p>
+<script type="math/tex; mode=display">
+\ell (m)\overset{\mathrm{def}}{=}\max\{i\in I:i\leq m\}</script><p>这里为了避免和集合 $I$ 混淆，将 $I(m)$ 记为 $\ell(m)$，它表示不超过 $m$ 的、属于集合 $I$ 的最大长度</p>
+<p>显然，对任意 $m$，都有 $\ell(m)\leq m$ 且 $m\leq s_I(\ell(m))-1$，因此任意长度 $m$ 都落在某个由 $\ell(m)\in I$ 决定的区间中：</p>
+<script type="math/tex; mode=display">
+[\ell(m),\dots,s_I(\ell(m))-1]</script><p>进一步，考虑这个长度对应关系为什么能够把 $B’$ 对 $g$ 的攻击转化为 $A’$ 对 $f$ 的攻击。令 $n=\ell(m)$，则有：</p>
+<script type="math/tex; mode=display">
+m\in \{n,\dots,s_I(n)-1\}</script><p>根据算法 $A’$ 的构造，当 $A’$ 在输入 $(f(U_n),1^n)$ 时，它会枚举所有长度 $n,n+1,\dots,s_I(n)-1$，并在每个长度 $t$ 上调用 $B’(f(U_n),1^t)$。由于 $m$ 正好落在这个区间中，所以 $A’$ 一定会枚举到长度 $m$，并调用 $B’(f(U_n),1^m)$</p>
+<p>另一方面，在这个长度区间内，长度为 $m$ 的随机串 $U_m$ 的前 $n$ 位服从 ${0,1}^n$ 上的均匀分布，并且其长度属于 $I$ 的最长前缀正好是前 $n$ 位。因此，$g(U_m)$ 与 $f(U_n)$ 具有相同分布</p>
+<p>所以，$A’$ 调用 $B’(f(U_n),1^m)$，本质上等价于让 $B’$ 在输入 $(g(U_m),1^m)$ 上对函数 $g$ 求逆</p>
+<p>这就说明，如果 $B’$ 在长度 $m$ 上能够成功对函数 $g$ 求逆，那么 $A’$ 在对应的合法长度 $n=\ell(m)$ 上就能够继承这次成功</p>
+<h4 id="断言一"><a href="#断言一" class="headerlink" title="断言一"></a>断言一</h4><blockquote>
+<p><strong>Claim</strong>：$A’$ 至少继承 $B’$ 的成功概率</p>
+</blockquote>
+<p>令 $m$ 是任意整数，并令 $n=\ell(m)$​，根据 $\ell(m)$ 的定义，$n$ 是不超过 $m$ 的最大合法长度，因此有：</p>
+<script type="math/tex; mode=display">
+n\leq m\leq s_I(n)-1</script><p>这说明长度 $m$ 落在算法 $A’$ 需要枚举的长度区间中</p>
+<p>根据算法 $A’$ 的构造，当输入为 $(f(x’),1^n)$ 时，算法 $A’$ 会依次调用 $B’(f(x’),1^t)$，其中 $t\in{n,\dots,s_I(n)-1}$。由于 $m$ 正好属于这个区间，所以 $A’$ 一定会调用到 $B’(f(x’),1^m)$</p>
+<p>另一方面，对任意 $x’’\in{0,1}^{m-n}$，字符串 $x’x’’$ 的长度属于 $I$ 的最长前缀就是 $x’$，因此：</p>
+<script type="math/tex; mode=display">
+g(x'x'')=f(x')</script><p>这说明，$B’$ 在输入 $(g(U_m),1^m)$ 上对函数 $g$ 求逆的过程，可以被看作是在输入 $(f(U_n),1^m)$ 上寻找某个原像。若 $B’$ 成功输出 $g(U_m)$ 的一个原像，那么 $A’$ 在输入 $(f(U_n),1^n)$ 时，也能够通过取该原像的前 $n$ 位，得到 $f(U_n)$ 的一个合法原像</p>
+<p>因此，$B’$ 在长度 $m$ 上的每一次成功，都可以转化为 $A’$ 在长度 $n=\ell(m)$ 上的一次成功。所以，算法 $A’$ 在长度 $n=\ell(m)$ 上对函数 $f$ 求逆的成功概率，至少不低于算法 $B’$ 在长度 $m$ 上对函数 $g$ 求逆的成功概率，即：</p>
+<script type="math/tex; mode=display">
+P[A'(f(U_n),1^n)\in f^{-1}(f(U_n))]
+\geq
+P[B'(g(U_m),1^m)\in g^{-1}(g(U_m))]</script><p>所以，$A’$ 的成功概率至少不低于 $B’$ 在对应长度上的成功概率</p>
+<h4 id="断言二"><a href="#断言二" class="headerlink" title="断言二"></a>断言二</h4><blockquote>
+<p><strong>Claim</strong>：长度 $m$ 受 $\ell(m)$ 多项式控制</p>
+</blockquote>
+<p>断言一已经说明，算法 $B’$ 在长度 $m$ 上的成功可以转化为算法 $A’$ 在长度 $n=\ell(m)$ 上的成功。接下来还需要保证长度 $m$ 不会比对应的合法长度 $\ell(m)$ 大得过分</p>
+<p>这是因为强单向性的成功概率需要按照输入长度来衡量，如果 $m$ 相对于 $\ell(m)$ 过大，那么即使 $B’$ 在长度 $m$ 上具有不可忽略的成功概率，也不一定能够推出 $A’$ 在长度 $\ell(m)$ 上具有不可忽略的成功概率。因此，需要证明 $m$ 可以被 $\ell(m)$ 的某个多项式上界控制</p>
+<p>由于 $I$ 是多项式时间可枚举的，所以存在某个多项式 $\mathrm{poly}’(\cdot)$，使得对所有 $n\in I$，都有：</p>
+<script type="math/tex; mode=display">
+s_I(n)<\mathrm{poly}'(n)</script><p>又因为 $\ell(m)$ 是不超过 $m$ 的最大合法长度，所以 $m$ 一定小于 $\ell(m)$ 的下一个合法长度，即：</p>
+<script type="math/tex; mode=display">
+m<s_I(\ell(m))</script><p>于是有：</p>
+<script type="math/tex; mode=display">
+m<s_I(\ell(m))<\mathrm{poly}'(\ell(m))</script><p>因此，存在某个多项式 $\mathrm{poly}’(\cdot)$，使得对所有 $m$ 都有：</p>
+<script type="math/tex; mode=display">
+m<\mathrm{poly}'(\ell(m))</script><p>这说明，普通长度 $m$ 与其对应的合法长度 $\ell(m)$ 之间只相差多项式规模，即长度从 $m$ 转换到 $\ell(m)$ 时，不可忽略成功概率不会因为输入长度的改变而消失</p>
+<h4 id="无限多个成功长度的传递"><a href="#无限多个成功长度的传递" class="headerlink" title="无限多个成功长度的传递"></a>无限多个成功长度的传递</h4><p>由上述的形式化部分可以知道，$B’$ 在集合 $M$ 中的无限多个长度 $m$ 上，可以以不可忽略概率成功对函数 $g$ 求逆。但是，为了推出函数 $f$ 不是强单向函数，需要说明这些长度 $m$ 对应到长度集合 $I$ 后，仍然能够得到无限多个合法长度</p>
+<p>为此，定义集合 $S$ 表示那些由 $M$ 中的长度 $m$ 映射得到的、属于 $I$ 的合法长度：</p>
+<script type="math/tex; mode=display">
+S\overset{\mathrm{def}}{=}\{\ell(m):m\in M\}</script><p>根据断言二，$S$ 必须是无限集合。否则，如果 $S$ 是有限集合，那么存在一个上界 $\mu$，使得对所有 $\ell(m)\in S$，都有：</p>
+<script type="math/tex; mode=display">
+\ell(m)\leq \mu</script><p>于是，对所有 $m\in M$，都有：</p>
+<script type="math/tex; mode=display">
+m<\mathrm{poly}'(\ell(m))\leq \mathrm{poly}'(\mu)</script><p>这意味着 $M$ 中所有元素都被常数 $\mathrm{poly}’(\mu)$ 这一上界控制，因此 $M$ 只能是有限集合，与 $M$ 是无限集合矛盾。</p>
+<p>所以，$S$ 必须是无限集合</p>
+<h4 id="成功概率不可忽略性的传递"><a href="#成功概率不可忽略性的传递" class="headerlink" title="成功概率不可忽略性的传递"></a>成功概率不可忽略性的传递</h4><p>上一节已经说明，集合 $S$ 是无限集合。也就是说，$B’$ 在无限多个普通长度 $m\in M$ 上的成功，可以对应到无限多个合法长度 $n\in I$ 上。那么，只需要说明在这些合法长度 $n$ 上，算法 $A’$ 对函数 $f$ 求逆的成功概率仍然是不可忽略的，即可证明函数 $g$ 必须是强单向函数</p>
+<p>任取一个长度 $n\in S$，根据 $S$ 的定义，存在某个 $m\in M$，使得：</p>
+<script type="math/tex; mode=display">
+n=\ell(m)</script><p>由于 $m\in M$，根据反设中对 $M$ 的定义，算法 $B’$ 在长度 $m$ 上成功对函数 $g$ 求逆的概率至少为 $\frac{1}{\mathrm{poly}(m)}$，再根据断言一，算法 $A’$ 在长度 $n=\ell(m)$ 上成功对函数 $f$ 求逆的概率至少不低于算法 $B’$ 在长度 $m$ 上成功对函数 $g$ 求逆的概率。因此：</p>
+<script type="math/tex; mode=display">
+P[A'(f(U_n),1^n)\in f^{-1}(f(U_n))]
+\geq
+\frac{1}{\mathrm{poly}(m)}</script><p>进一步，根据断言二，有：</p>
+<script type="math/tex; mode=display">
+m<\mathrm{poly}'(\ell(m))=\mathrm{poly}'(n)</script><p>由于 $\mathrm{poly}(\cdot)$ 是正多项式，可以不失一般性地假设其单调递增，因此：</p>
+<script type="math/tex; mode=display">
+\frac{1}{\mathrm{poly}(m)}
+>
+\frac{1}{\mathrm{poly}(\mathrm{poly}'(\ell(m)))}
+=
+\frac{1}{\mathrm{poly}(\mathrm{poly}'(n))}
+=
+\frac{1}{\mathrm{poly}(n)}</script><p>因此，算法 $A’$ 在每个 $n\in S$ 上都能以至少 $\frac{1}{\mathrm{poly}(n)}$ 级别的概率成功对函数 $f$ 求逆，又因为 $S$ 是无限集合，所以 $A’$ 在无限多个合法长度 $n\in I$ 上都能以不可忽略概率成功对函数 $f$ 求逆，这与函数 $f$ 在长度集合 $I$ 上是强单向函数的假设矛盾</p>
+<p>因此，反设不成立，函数 $g$ 必须是强单向函数</p>
+<h2 id="长度保持情形下的证明"><a href="#长度保持情形下的证明" class="headerlink" title="长度保持情形下的证明"></a>长度保持情形下的证明</h2><p>对于长度保持版本的单向函数 $g’(x)=f(x’)x’’$，其证明方法与函数 $g$ 的证明类似</p>
+<p>如果能够高效对函数 $g’$ 求逆，那么也可以利用该算法构造出对函数 $f$ 求逆的算法。因为在 $g’$ 的输出中，$f(x’)$ 仍然是由 $f$ 作用在最长合法前缀 $x’$ 上得到的，而后缀 $x’’$ 只是为了保持整体长度不变。因此，函数 $g’$ 的求逆同样会暴露出可以用来恢复 $f$ 原像前缀的信息</p>
+<p>所以，$g’$ 也保持了 $f$ 的强单向性或弱单向性</p>
+
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>感谢您对我的支持，让我继续努力分享有用的技术与知识点！</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/wechatpay.jpg" alt="Alex_McAvoy 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/alipay.jpg" alt="Alex_McAvoy 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Alex_McAvoy
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://alex-mcavoy.github.io/notes/cryptology/eead5969.html" title="单向函数的长度约束">https://alex-mcavoy.github.io/notes/cryptology/eead5969.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/notes/" rel="tag"># 学习笔记</a>
+              <a href="/tags/cryptology/" rel="tag"># 密码学</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/notes/cryptology/eac1cf74.html" rel="prev" title="强单向函数与弱单向函数">
+      <i class="fa fa-chevron-left"></i> 强单向函数与弱单向函数
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/notes/cryptology/aecf5b32.html" rel="next" title="长度规则单向函数与长度保持单向函数">
+      长度规则单向函数与长度保持单向函数 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E3%80%90%E5%9C%A8%E9%83%A8%E5%88%86%E9%95%BF%E5%BA%A6%E4%B8%8A%E5%AE%9A%E4%B9%89%E7%9A%84%E5%8D%95%E5%90%91%E5%87%BD%E6%95%B0%E3%80%91"><span class="nav-number">1.</span> <span class="nav-text">【在部分长度上定义的单向函数】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9F%BA%E6%9C%AC%E6%80%9D%E6%83%B3"><span class="nav-number">1.1.</span> <span class="nav-text">基本思想</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%95%BF%E5%BA%A6%E9%9B%86%E5%90%88%E4%B8%8E%E5%90%8E%E7%BB%A7%E5%87%BD%E6%95%B0"><span class="nav-number">1.2.</span> <span class="nav-text">长度集合与后继函数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%8C%87%E5%AE%9A%E9%95%BF%E5%BA%A6%E9%9B%86%E5%90%88%E4%B8%8A%E7%9A%84%E5%8D%95%E5%90%91%E5%87%BD%E6%95%B0"><span class="nav-number">1.3.</span> <span class="nav-text">指定长度集合上的单向函数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%83%A8%E5%88%86%E9%95%BF%E5%BA%A6%E5%8D%95%E5%90%91%E5%87%BD%E6%95%B0%E6%9E%84%E9%80%A0%E6%99%AE%E9%80%9A%E5%8D%95%E5%90%91%E5%87%BD%E6%95%B0"><span class="nav-number">1.4.</span> <span class="nav-text">部分长度单向函数构造普通单向函数</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E3%80%90%E5%8F%AF%E5%BD%92%E7%BA%A6%E6%80%A7%E8%AE%BA%E8%AF%81%E3%80%91"><span class="nav-number">2.</span> <span class="nav-text">【可归约性论证】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AF%81%E6%98%8E%E6%80%9D%E6%83%B3"><span class="nav-number">2.1.</span> <span class="nav-text">证明思想</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%A4%9A%E9%A1%B9%E5%BC%8F%E6%97%B6%E9%97%B4%E5%8F%AF%E8%AE%A1%E7%AE%97%E6%80%A7"><span class="nav-number">2.2.</span> <span class="nav-text">多项式时间可计算性</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B1%82%E9%80%86%E5%9B%B0%E9%9A%BE%E6%80%A7"><span class="nav-number">2.3.</span> <span class="nav-text">求逆困难性</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AF%81%E6%98%8E%E6%80%9D%E8%B7%AF"><span class="nav-number">2.3.1.</span> <span class="nav-text">证明思路</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AF%81%E6%98%8E"><span class="nav-number">2.3.2.</span> <span class="nav-text">证明</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%AF%B9%E5%87%BD%E6%95%B0-f-%E6%B1%82%E9%80%86%E5%88%B0%E5%AF%B9%E5%87%BD%E6%95%B0-g-%E6%B1%82%E9%80%86%E7%9A%84%E5%BD%92%E7%BA%A6"><span class="nav-number">2.3.2.1.</span> <span class="nav-text">对函数 $f$ 求逆到对函数 $g$ 求逆的归约</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%B1%82%E9%80%86%E7%AE%97%E6%B3%95-A%E2%80%99-%E7%9A%84%E6%9E%84%E9%80%A0"><span class="nav-number">2.3.2.2.</span> <span class="nav-text">求逆算法 $A’$ 的构造</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#A%E2%80%99-%E7%9A%84%E6%AD%A3%E7%A1%AE%E6%80%A7%E5%88%86%E6%9E%90"><span class="nav-number">2.3.2.3.</span> <span class="nav-text">$A’$ 的正确性分析</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%9F%9B%E7%9B%BE%E6%8E%A8%E5%87%BA"><span class="nav-number">2.3.2.4.</span> <span class="nav-text">矛盾推出</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%88%90%E5%8A%9F%E6%A6%82%E7%8E%87%E5%88%86%E6%9E%90%E7%9A%84%E4%B8%A5%E6%A0%BC%E5%8C%96"><span class="nav-number">2.3.3.</span> <span class="nav-text">成功概率分析的严格化</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%8F%8D%E8%AE%BE%E4%B8%8E%E9%95%BF%E5%BA%A6%E9%9B%86%E5%90%88"><span class="nav-number">2.3.3.1.</span> <span class="nav-text">反设与长度集合</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%96%AD%E8%A8%80%E4%B8%80"><span class="nav-number">2.3.3.2.</span> <span class="nav-text">断言一</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%96%AD%E8%A8%80%E4%BA%8C"><span class="nav-number">2.3.3.3.</span> <span class="nav-text">断言二</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%97%A0%E9%99%90%E5%A4%9A%E4%B8%AA%E6%88%90%E5%8A%9F%E9%95%BF%E5%BA%A6%E7%9A%84%E4%BC%A0%E9%80%92"><span class="nav-number">2.3.3.4.</span> <span class="nav-text">无限多个成功长度的传递</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%88%90%E5%8A%9F%E6%A6%82%E7%8E%87%E4%B8%8D%E5%8F%AF%E5%BF%BD%E7%95%A5%E6%80%A7%E7%9A%84%E4%BC%A0%E9%80%92"><span class="nav-number">2.3.3.5.</span> <span class="nav-text">成功概率不可忽略性的传递</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%95%BF%E5%BA%A6%E4%BF%9D%E6%8C%81%E6%83%85%E5%BD%A2%E4%B8%8B%E7%9A%84%E8%AF%81%E6%98%8E"><span class="nav-number">2.4.</span> <span class="nav-text">长度保持情形下的证明</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">  
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Alex_McAvoy"
+      src="/assets/img/head.jpg">
+  <p class="site-author-name" itemprop="name">Alex_McAvoy</p>
+  <div class="site-description" itemprop="description">想要成为渔夫的猎手</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">752</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">75</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">86</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Alex-McAvoy" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;Alex-McAvoy" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/u011815404" title="CSDN → https:&#x2F;&#x2F;blog.csdn.net&#x2F;u011815404" rel="noopener" target="_blank"><i class="fas fa-copyright fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+<!-- 静态项目链接 -->
+<div class="links-of-blogroll motion-element">
+  <div class="links-of-blogroll-title">
+    <i class="fas fa-external-link-alt fa-fw"></i> 站点静态项目
+  </div>
+  <ul class="links-of-blogroll-list">
+  <li class="links-of-blogroll-item">
+      <a href="https://alex-mcavoy.github.io/bookshelf/index.html" target="_blank" title="终末之诗">
+        我的书架（施工中...）
+      </a>
+    </li>
+    <li class="links-of-blogroll-item">
+      <a href="https://alex-mcavoy.github.io/end_poem/index.html" target="_blank" title="终末之诗">
+        终末之诗
+      </a>
+    </li>
+	<li class="links-of-blogroll-item">
+      <a href="https://alex-mcavoy.github.io/2nd_anniversary_of_pyc-zwx/index.html" target="_blank" title="逄总与张总的两周年纪念页（朋友已分手，该项目无限延期）">
+        <del>逄总与张总的两周年纪念页<br/>（朋友已分手，该项目无限延期）</del>
+      </a>
+    </li>
+  </ul>
+</div>
+
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdz20172133" title="https:&#x2F;&#x2F;blog.csdn.net&#x2F;sdz20172133" rel="noopener" target="_blank">神仙队友</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://pxlsdz.gitee.io/" title="https:&#x2F;&#x2F;pxlsdz.gitee.io&#x2F;" rel="noopener" target="_blank">神仙队友blog2</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdau_fangshifeng" title="https:&#x2F;&#x2F;blog.csdn.net&#x2F;sdau_fangshifeng" rel="noopener" target="_blank">酷头</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://bycore.net/" title="https:&#x2F;&#x2F;bycore.net" rel="noopener" target="_blank">凉了的某饼同学</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://kris-cn.github.io/" title="http:&#x2F;&#x2F;kris-cn.github.io&#x2F;" rel="noopener" target="_blank">翟孙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://deng.fun/" title="http:&#x2F;&#x2F;deng.fun&#x2F;" rel="noopener" target="_blank">芙蓉姐姐</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/wentong_Xu" title="https:&#x2F;&#x2F;blog.csdn.net&#x2F;wentong_Xu" rel="noopener" target="_blank">小黑贱胖子</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.yuheng.tech/" title="https:&#x2F;&#x2F;www.yuheng.tech&#x2F;" rel="noopener" target="_blank">咸于</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/lanshan1111" title="https:&#x2F;&#x2F;blog.csdn.net&#x2F;lanshan1111" rel="noopener" target="_blank">肥硕硕</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdauguanweihong" title="https:&#x2F;&#x2F;blog.csdn.net&#x2F;sdauguanweihong" rel="noopener" target="_blank">管少</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_41661919" title="https:&#x2F;&#x2F;blog.csdn.net&#x2F;qq_41661919" rel="noopener" target="_blank">俊杰</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_40859951" title="https:&#x2F;&#x2F;blog.csdn.net&#x2F;qq_40859951" rel="noopener" target="_blank">峰哥</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/LSD20164388" title="https:&#x2F;&#x2F;blog.csdn.net&#x2F;LSD20164388" rel="noopener" target="_blank">狗冬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37868325" title="https:&#x2F;&#x2F;blog.csdn.net&#x2F;qq_37868325" rel="noopener" target="_blank">妍大佬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://sanshuiii.github.io/" title="https:&#x2F;&#x2F;sanshuiii.github.io&#x2F;" rel="noopener" target="_blank">sanshuiii</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://zjpzhao.github.io/" title="https:&#x2F;&#x2F;zjpzhao.github.io&#x2F;" rel="noopener" target="_blank">brain</a>
+        </li>
+    </ul>
+  </div>
+
+		
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+  
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2026</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Alex_McAvoy</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+</br>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+<script src="/js/bookmark.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '48fd73a538d3fa927f65',
+      clientSecret: '56618aefeee90bac3c20de8d51bb0b985d67252d',
+      repo        : 'Gitalk-Comment',
+      owner       : 'Alex-McAvoy',
+      admin       : ['Alex-McAvoy'],
+      id          : '44fa92289ae7036742cb84635bbb998a',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+  
+  <!-- 鼠标单击粒子特效 -->
+  <script type="text/javascript" src="/js/cursor-effects.js"></script>
+  <!-- 多级目录 -->
+  <script type="text/javascript" src="/js/category.js"></script>
+  
+</body>
+</html>

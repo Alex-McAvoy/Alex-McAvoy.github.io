@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 8.1.2">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/img/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/assets/img/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/pace-js@1/themes/blue/pace-theme-minimal.css">
+  <script src="//cdn.jsdelivr.net/npm/pace-js@1/pace.min.js"></script>
+
+
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"alex-mcavoy.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":16,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":true,"color":"#ff0000","save":"manual"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":true},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.json"};
+  </script>
+
+  <meta name="description" content="【强单向函数】定义若函数 $f:{0,1}^{*} \to {0,1}^{*}$ 满足：">
+<meta property="og:type" content="article">
+<meta property="og:title" content="强单向函数与弱单向函数">
+<meta property="og:url" content="https://alex-mcavoy.github.io/notes/cryptology/eac1cf74.html">
+<meta property="og:site_name" content="Alex_McAvoy">
+<meta property="og:description" content="【强单向函数】定义若函数 $f:{0,1}^{*} \to {0,1}^{*}$ 满足：">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-05-23T15:36:00.000Z">
+<meta property="article:modified_time" content="2026-06-03T13:42:32.549Z">
+<meta property="article:author" content="Alex_McAvoy">
+<meta property="article:tag" content="学习笔记">
+<meta property="article:tag" content="密码学">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://alex-mcavoy.github.io/notes/cryptology/eac1cf74.html">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>强单向函数与弱单向函数 | Alex_McAvoy</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Alex_McAvoy</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">想要成为渔夫的猎手</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+
+	
+	
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/notes/cryptology/eac1cf74.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/assets/img/head.jpg">
+      <meta itemprop="name" content="Alex_McAvoy">
+      <meta itemprop="description" content="想要成为渔夫的猎手">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Alex_McAvoy">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          强单向函数与弱单向函数
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2026-05-23 23:36:00" itemprop="dateCreated datePublished" datetime="2026-05-23T23:36:00+08:00">2026-05-23</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/notes/" itemprop="url" rel="index"><span itemprop="name">学习笔记</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/notes/cryptology/" itemprop="url" rel="index"><span itemprop="name">密码学</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>4.7k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>4 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="【强单向函数】"><a href="#【强单向函数】" class="headerlink" title="【强单向函数】"></a>【强单向函数】</h1><h2 id="定义"><a href="#定义" class="headerlink" title="定义"></a>定义</h2><p>若函数 $f:{0,1}^{*} \to {0,1}^{*}$ 满足：</p>
+<p>（1）容易计算：存在一个确定性多项式时间算法 $A$，使得对于任意输入 $x$，算法 $A$ 都能输出 $f(x)$，即：</p>
+<script type="math/tex; mode=display">
+A(x) = f(x)</script><p>（2）难以反演：对于任意概率多项式时间算法 $A’$，任意正多项式 $\mathrm{poly}(\cdot)$ 以及所有充分大的 $n$，都有：</p>
+<script type="math/tex; mode=display">
+P[A'(f(U_n),1^n) \in f^{(-1)}(f(U_n)) ] < \frac{1}{\mathrm{poly}(n)}</script><p>则称该函数被称为<strong>强单向函数（Strong One-way Function）</strong>。其中，$U_n$ 表示 ${0,1}^{n}$ 上均匀分布的随机变量</p>
+<p>需要注意的是，如果 $f(x)$ 是单射函数，那么 $x$ 是唯一原像。但在一般情况下，$f(x)$ 未必是单射函数，同一函数值可能对应多个原像。因此，反演算法 $A’$ 不一定要输出最初的输入 $x$ 本身，其只需要输出任意一个原像就算反演成功，即只要输出某个 $x’$，满足：</p>
+<script type="math/tex; mode=display">
+f(x')=f(x)</script><h2 id="辅助输入-1-n-的作用"><a href="#辅助输入-1-n-的作用" class="headerlink" title="辅助输入 $1^n$ 的作用"></a>辅助输入 $1^n$ 的作用</h2><p>在上述定义中，反演算法 $A’$ 的输入不仅包括函数 $f(x)$，还包括 $1^n$，这里的 $1^n$ 是用一元表示法给出的输入长度信息，其作用是告诉反演算法期望输出的原像长度</p>
+<p>引入 $1^n$ 的主要原因，是为了排除一种不合理情况：某个函数之所以难以反演，并不是因为它真的具有计算困难性，而只是因为它把输入长度大幅压缩，导致反演算法连输出原像的时间都不够</p>
+<p>例如，考虑函数 $f_{len}$，其将输入 $x$ 映射为 $|x|$ 的二进制表示：</p>
+<script type="math/tex; mode=display">
+f_{len}(x)=|x|</script><p>由于输出长度为 $|f<em>{len}(x)|=\log_2 |x|$，反演算法的运行时间只能是关于 $|f</em>{len}(x)|$ 多项式，它甚至没有足够时间输出长度为 $|x|$ 的原像。因此，这种难以反演并不是真正的密码学困难性，而只是由输出过短造成的形式困难</p>
+<p>因此，在给定辅助输入 $1^{|x|}$ 后，反演算法可以在关于主输入 $f(x)$ 和目标输出长度的总长度多项式时间内运行。这样，定义就避免了把极端压缩导致无法输出误认为真正的单向性</p>
+<p>如果函数 $f$ 是<strong>长度保持函数（Length Preserving Function）</strong>，即对所有 $x$ 都有：</p>
+<script type="math/tex; mode=display">
+|f(x)|=|x|</script><p>那么辅助输入 $1^n$ 就是冗余的。更一般地，如果仅根据 $f(x)$ 就能在关于 $|x|$ 的多项式时间内生成 $1^{|x|}$，那么该辅助输入同样可以省略</p>
+<h2 id="反演困难性的概率空间"><a href="#反演困难性的概率空间" class="headerlink" title="反演困难性的概率空间"></a>反演困难性的概率空间</h2><p>单向函数中的难以反演应理解为：对所有高效反演算法，其成功概率都有一个可忽略的上界</p>
+<p>这个成功概率不是只对算法本身的随机性取概率，而是同时对两类随机性取概率：</p>
+<ol>
+<li><strong>输入分布的随机性</strong>：先从 ${0,1}^{n}$ 中均匀随机选取 $x$，再计算 $f(x)$ 作为反演算法的输入</li>
+<li><strong>算法内部的随机性</strong>：反演算法 $A’$ 可能是概率算法，因此它自身也有随机性</li>
+</ol>
+<p>如果函数 $f$ 在 ${0,1}^n$ 上诱导一个置换，那么 $f(U_n)$ 仍然是在 ${0,1}^n$ 上均匀分布的。但一般情况下，函数 $f$ 未必是单向函数，因此 $f(U_n)$ 的分布可能与均匀分布相差很大</p>
+<p>故而无论是哪种情况，定义都要求反演算法在上述概率空间中的成功概率是可忽略的</p>
+<h2 id="可忽略概率与显著概率"><a href="#可忽略概率与显著概率" class="headerlink" title="可忽略概率与显著概率"></a>可忽略概率与显著概率</h2><h3 id="显著函数"><a href="#显著函数" class="headerlink" title="显著函数"></a>显著函数</h3><p>在<a href="https://alex-mcavoy.github.io/notes/cryptology/12e05d6c.html">概率多项式实际模型</a>中，介绍了可忽略函数。与其相对的，若对于任意多项式 $\mathrm{poly}(\cdot)$，均 $\exists N\in\mathbb{N}$，使得 $\forall n&gt;N$，都有：</p>
+<script type="math/tex; mode=display">
+\nu(n)>\frac{1}{\mathrm{poly}(n)},\quad \nu: \mathbb{N}\to \mathbb{R}</script><p>则 $\nu(\cdot)$ 称为<strong>显著函数（Noticeable Function）</strong>。</p>
+<h3 id="可忽略概率与显著概率-1"><a href="#可忽略概率与显著概率-1" class="headerlink" title="可忽略概率与显著概率"></a>可忽略概率与显著概率</h3><p>单向函数定义中的成功概率必须是<strong>可忽略概率（Negligible Probability）</strong>，即当输入长度 $n$ 增大时，攻击算法成功的概率必须小于任意多项式倒数。与可忽略概率相对的是<strong>显著概率（Noticeable Probability）</strong>，即当输入长度 $n$ 增大时，攻击算法成功的概率必须大于任意多项式倒数</p>
+<p>需要注意的是，一个函数可能既不是可忽略的，也不是显著的。也就是说，不可忽略与显著在这里并不完全等价，二者之间还可能存在中间情形</p>
+<p>这种定义方式与多项式时间计算自然对应：如果一个事件以可忽略概率发生，那么即使把实验重复多项式次，它发生的概率仍然是可忽略的</p>
+<p>因此，在密码学中，把可行计算定义为多项式时间计算，把不可接受的攻击成功率定义为非可忽略成功率，二者是相互匹配的</p>
+<h2 id="反演算法的碰撞概率"><a href="#反演算法的碰撞概率" class="headerlink" title="反演算法的碰撞概率"></a>反演算法的碰撞概率</h2><p>单向函数的定义并不是要求反演绝对不可能，而是要求任何概率多项式时间算法都不能显著优于平凡策略</p>
+<h3 id="随机猜测算法"><a href="#随机猜测算法" class="headerlink" title="随机猜测算法"></a>随机猜测算法</h3><p>考虑一个平凡算法 $A_1$​，在输入 $(y,1^n)$ 后，均匀随机地输出一个长度为 $n$ 的字符串。也就是说，它并不真正利用 $y$ 的结构，而只是随机猜测一个可能的原像 $x$</p>
+<p>令 $U’_n$ 表示另一个独立地、均匀分布在 ${0,1}^n$ 上的随机变量，则 $A_1$ 的成功概率为：</p>
+<script type="math/tex; mode=display">
+\begin{aligned}
+P[A_1(f(U_n),1^n)\in f^{-1}(f(U_n))]
+&= P[f(U^{'}_n)=f(U_n)] \\
+&= \sum_{y} P[ f(U_n)=y \wedge f(U_n^{'})=y ] \\
+&= \sum_{y} P[ f(U_n)=y] P[f(U_n^{'})=y ] \\
+&= \sum_{y} P[ f(U_n)=y]^2  \\
+\end{aligned}</script><p>这个概率被称为 $f(x)$ 的<strong>碰撞概率（Collision Probability）</strong></p>
+<p>进一步，考虑其下界。令 $p<em>y=P[f(U_n)=y]$，由于 $U_n$ 均匀分布在 ${0,1}^{n}$ 上，而 ${0,1}^n$ 中共有 $2^n$ 个输入，故 $f(U_n)$ 最多有 $2^n$ 个可能的输出。为使碰撞概率 $\sum\limits</em>{y} p_y^2$ 尽可能小，那就应该使这些概率尽量平均。最理想的一种情况是，一共有 $2^n$ 个可能输出，每个输出的概率都是 $\frac{1}{2^n}$，此时碰撞概率为：</p>
+<script type="math/tex; mode=display">
+\sum\limits_{y} p_y^2=2^n \cdot (\frac{1}{2^n})^2 = 2^n \cdot \frac{1}{2^{2n}} = 2^{-n}</script><p>所以一般情况下必有：</p>
+<script type="math/tex; mode=display">
+P[A_1(f(U_n),1^n)\in f^{-1}(f(U_n))] = \sum_{y} P[ f(U_n)=y]^2  \geq 2^{-n}</script><p>也就是说，哪怕 $A_1$ 只是随机猜测一个与原像相同的长度的输出，它的成功概率至少是 $2^{-n}$，因此单向函数的定义不能要求反演算法成功概率等于 $0$，因为平凡随机猜测总有非零成功概率</p>
+<p>由此可以得到三个结论：</p>
+<ol>
+<li>对于任意函数 $f$，随机猜测算法 $A_1$ 的成功概率都严格大于 $0$。因此，单向函数的定义不能要求所有高效算法永远反演失败</li>
+<li>如果 $f$ 是单射函数，那么 $A_1$ 反演成功的概率是可忽略的。但这并不能说明 $f$ 是单向函数，只能说明 $A_1$ 本身是一个很弱的平凡算法</li>
+<li>由于 $A_1$ 本身是一个概率多项式时间算法，它的成功概率也必须满足单向函数定义中的可忽略上界。即如果 $f$ 是单向函数，那么 $f(U_n)$ 的碰撞概率必须是可忽略的</li>
+</ol>
+<h3 id="固定输出算法"><a href="#固定输出算法" class="headerlink" title="固定输出算法"></a>固定输出算法</h3><p>再考虑另一个平凡算法 $A_2$，其对所有相同长度的输入都输出同一个固定字符串，例如：</p>
+<script type="math/tex; mode=display">
+A_2(y,1^n)=0^n</script><p>那么，对于任意函数 $f$，该算法的成功概率为：</p>
+<script type="math/tex; mode=display">
+P[A_2(f(U_n),1^n)\in f^{-1}(f(U_n))]
+=
+P[f(0^n)=f(U_n)]</script><p>由于 $U_n$ 在 $2^n$ 个字符串中均匀随机选择，其中有 $|f^{-1}(f(0^n))|$ 个字符串满足条件，因此有：</p>
+<script type="math/tex; mode=display">
+P[U_n\in f^{-1}(f(0^n))] = \frac{|f^{-1}(f(0^n))|}{2^n}</script><p>故有：</p>
+<script type="math/tex; mode=display">
+P[A_2(f(U_n),1^n)\in f^{-1}(f(U_n))] = \frac{|f^{-1}(f(0^n))|}{2^n}</script><p>进一步，考虑其下界。按照原像集合的定义：</p>
+<script type="math/tex; mode=display">
+f^{-1}(f(0^n)) = \{x: f(x)=f(0^n) \}</script><p>显然，令 $x=0^n$，即有：</p>
+<script type="math/tex; mode=display">
+0^n \in f^{-1}(f(0^n))</script><p>因此，原像集合中至少有一个元素，故：</p>
+<script type="math/tex; mode=display">
+|f^{-1}(f(0^n))| \geq 1</script><p>于是，对于 $\frac{|f^{-1}(f(0^n))|}{2^n}$，有：</p>
+<script type="math/tex; mode=display">
+\frac{|f^{-1}(f(0^n))|}{2^n} \geq \frac{1}{2^n} = 2^{-n}</script><p>即：</p>
+<script type="math/tex; mode=display">
+P[A_2(f(U_n),1^n)\in f^{-1}(f(U_n))] = \frac{|f^{-1}(f(0^n))|}{2^n} \geq 2^{-n}</script><p>也就是说，哪怕 $A_2$ 只是固定的输出 $0^n$，它的成功概率至少是 $2^{-n}$，即在真实输入本来就是 $0^n$ 时成功。如果还有其他的 $x\neq 0^n$ 也满足 $f(x)=f(0^n)$，那么 $A_2$ 的成功概率会更大</p>
+<p>由此，也可以得到三个结论：</p>
+<ol>
+<li>对于任意函数 $f$，固定输出算法 $A_2$ 的成功概率也严格大于 $0$</li>
+<li>如果 $f$ 是单射函数，那么 $A_2$ 反演成功的概率是可忽略的</li>
+<li>如果 $f$ 是单向函数，那么被 $f$ 映射到 $f(0^n)$ 的输入所占比例必须是可忽略的</li>
+</ol>
+<h1 id="【弱单向函数】"><a href="#【弱单向函数】" class="headerlink" title="【弱单向函数】"></a>【弱单向函数】</h1><h2 id="定义-1"><a href="#定义-1" class="headerlink" title="定义"></a>定义</h2><p>若函数 $f:{0,1}^{*} \to {0,1}^{*}$ 满足：</p>
+<p>（1）容易计算：存在一个确定性多项式时间算法 $A$，使得对于任意输入 $x$，算法 $A$ 都能输出 $f(x)$，即：</p>
+<script type="math/tex; mode=display">
+A(x) = f(x)</script><p>（2）轻微难以反演：存在一个正多项式 $\mathrm{poly}(\cdot)$，使得对任意概率多项式时间算法 $A’$，以及所有充分大的 $n$，算法 $A’$ 反演 $f(U_n)$ 的失败概率至少为 $\frac{1}{\mathrm{poly}(n)}$，即</p>
+<script type="math/tex; mode=display">
+P[A'(f(U_n),1^n) \notin f^{(-1)}(f(U_n)) ] > \frac{1}{\mathrm{poly}(n)}</script><p>则称该函数被称为<strong>弱单向函数（Weak One-way Function）</strong>。其中，$U_n$ 表示 ${0,1}^{n}$ 上均匀分布的随机变量</p>
+<p>等价地，对于失败概率，可以写为成功概率的上界形式：</p>
+<script type="math/tex; mode=display">
+P[A'(f(U_n),1^n) \in f^{(-1)}(f(U_n)) ] < 1 - \frac{1}{\mathrm{poly}(n)}</script><p>需要注意的是，不是说每个算法 $A’$ 都可以有自己对应的多项式 $\mathrm{poly}_{A’}(\cdot)$，而是存在一个统一的多项式 $\mathrm{poly}(\cdot)$，可以同时约束所有高效反演算法的成功概率与失败概率</p>
+<h2 id="与强单向函数的区别"><a href="#与强单向函数的区别" class="headerlink" title="与强单向函数的区别"></a>与强单向函数的区别</h2><p>两者的差异主要体现在对反演成功概率的要求不同。对强单向函数来说，要求任意高效反演算法的成功概率都必须是可忽略的，即对任何概率多项式时间算法都几乎不可能成功反演</p>
+<script type="math/tex; mode=display">
+P[\mathrm{反演成功}] < \frac{1}{\mathrm{poly}(n)}</script><p>而弱单向函数不要求所有高效反演算法的成功概率都是可忽略的，只要求所有高效反演算法都会以某个显著概率失败</p>
+<script type="math/tex; mode=display">
+P[\mathrm{反演失败}] > \frac{1}{\mathrm{poly}(n)}</script><p>简单来说，强单向函数要求高效算法几乎总是失败，而弱单向函数只要求高效算法不能总是成功</p>
+
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>感谢您对我的支持，让我继续努力分享有用的技术与知识点！</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/wechatpay.jpg" alt="Alex_McAvoy 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/alipay.jpg" alt="Alex_McAvoy 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Alex_McAvoy
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://alex-mcavoy.github.io/notes/cryptology/eac1cf74.html" title="强单向函数与弱单向函数">https://alex-mcavoy.github.io/notes/cryptology/eac1cf74.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/notes/" rel="tag"># 学习笔记</a>
+              <a href="/tags/cryptology/" rel="tag"># 密码学</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/notes/cryptology/a931fc09.html" rel="prev" title="单向函数的动机">
+      <i class="fa fa-chevron-left"></i> 单向函数的动机
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/notes/cryptology/eead5969.html" rel="next" title="单向函数的长度约束">
+      单向函数的长度约束 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E3%80%90%E5%BC%BA%E5%8D%95%E5%90%91%E5%87%BD%E6%95%B0%E3%80%91"><span class="nav-number">1.</span> <span class="nav-text">【强单向函数】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%9A%E4%B9%89"><span class="nav-number">1.1.</span> <span class="nav-text">定义</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%BE%85%E5%8A%A9%E8%BE%93%E5%85%A5-1-n-%E7%9A%84%E4%BD%9C%E7%94%A8"><span class="nav-number">1.2.</span> <span class="nav-text">辅助输入 $1^n$ 的作用</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%8D%E6%BC%94%E5%9B%B0%E9%9A%BE%E6%80%A7%E7%9A%84%E6%A6%82%E7%8E%87%E7%A9%BA%E9%97%B4"><span class="nav-number">1.3.</span> <span class="nav-text">反演困难性的概率空间</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%AF%E5%BF%BD%E7%95%A5%E6%A6%82%E7%8E%87%E4%B8%8E%E6%98%BE%E8%91%97%E6%A6%82%E7%8E%87"><span class="nav-number">1.4.</span> <span class="nav-text">可忽略概率与显著概率</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%98%BE%E8%91%97%E5%87%BD%E6%95%B0"><span class="nav-number">1.4.1.</span> <span class="nav-text">显著函数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%AF%E5%BF%BD%E7%95%A5%E6%A6%82%E7%8E%87%E4%B8%8E%E6%98%BE%E8%91%97%E6%A6%82%E7%8E%87-1"><span class="nav-number">1.4.2.</span> <span class="nav-text">可忽略概率与显著概率</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%8D%E6%BC%94%E7%AE%97%E6%B3%95%E7%9A%84%E7%A2%B0%E6%92%9E%E6%A6%82%E7%8E%87"><span class="nav-number">1.5.</span> <span class="nav-text">反演算法的碰撞概率</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%9A%8F%E6%9C%BA%E7%8C%9C%E6%B5%8B%E7%AE%97%E6%B3%95"><span class="nav-number">1.5.1.</span> <span class="nav-text">随机猜测算法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%9B%BA%E5%AE%9A%E8%BE%93%E5%87%BA%E7%AE%97%E6%B3%95"><span class="nav-number">1.5.2.</span> <span class="nav-text">固定输出算法</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E3%80%90%E5%BC%B1%E5%8D%95%E5%90%91%E5%87%BD%E6%95%B0%E3%80%91"><span class="nav-number">2.</span> <span class="nav-text">【弱单向函数】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%9A%E4%B9%89-1"><span class="nav-number">2.1.</span> <span class="nav-text">定义</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%8E%E5%BC%BA%E5%8D%95%E5%90%91%E5%87%BD%E6%95%B0%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="nav-number">2.2.</span> <span class="nav-text">与强单向函数的区别</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">  
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Alex_McAvoy"
+      src="/assets/img/head.jpg">
+  <p class="site-author-name" itemprop="name">Alex_McAvoy</p>
+  <div class="site-description" itemprop="description">想要成为渔夫的猎手</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">752</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">75</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">86</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Alex-McAvoy" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;Alex-McAvoy" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/u011815404" title="CSDN → https:&#x2F;&#x2F;blog.csdn.net&#x2F;u011815404" rel="noopener" target="_blank"><i class="fas fa-copyright fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+<!-- 静态项目链接 -->
+<div class="links-of-blogroll motion-element">
+  <div class="links-of-blogroll-title">
+    <i class="fas fa-external-link-alt fa-fw"></i> 站点静态项目
+  </div>
+  <ul class="links-of-blogroll-list">
+  <li class="links-of-blogroll-item">
+      <a href="https://alex-mcavoy.github.io/bookshelf/index.html" target="_blank" title="终末之诗">
+        我的书架（施工中...）
+      </a>
+    </li>
+    <li class="links-of-blogroll-item">
+      <a href="https://alex-mcavoy.github.io/end_poem/index.html" target="_blank" title="终末之诗">
+        终末之诗
+      </a>
+    </li>
+	<li class="links-of-blogroll-item">
+      <a href="https://alex-mcavoy.github.io/2nd_anniversary_of_pyc-zwx/index.html" target="_blank" title="逄总与张总的两周年纪念页（朋友已分手，该项目无限延期）">
+        <del>逄总与张总的两周年纪念页<br/>（朋友已分手，该项目无限延期）</del>
+      </a>
+    </li>
+  </ul>
+</div>
+
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdz20172133" title="https:&#x2F;&#x2F;blog.csdn.net&#x2F;sdz20172133" rel="noopener" target="_blank">神仙队友</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://pxlsdz.gitee.io/" title="https:&#x2F;&#x2F;pxlsdz.gitee.io&#x2F;" rel="noopener" target="_blank">神仙队友blog2</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdau_fangshifeng" title="https:&#x2F;&#x2F;blog.csdn.net&#x2F;sdau_fangshifeng" rel="noopener" target="_blank">酷头</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://bycore.net/" title="https:&#x2F;&#x2F;bycore.net" rel="noopener" target="_blank">凉了的某饼同学</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://kris-cn.github.io/" title="http:&#x2F;&#x2F;kris-cn.github.io&#x2F;" rel="noopener" target="_blank">翟孙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://deng.fun/" title="http:&#x2F;&#x2F;deng.fun&#x2F;" rel="noopener" target="_blank">芙蓉姐姐</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/wentong_Xu" title="https:&#x2F;&#x2F;blog.csdn.net&#x2F;wentong_Xu" rel="noopener" target="_blank">小黑贱胖子</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.yuheng.tech/" title="https:&#x2F;&#x2F;www.yuheng.tech&#x2F;" rel="noopener" target="_blank">咸于</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/lanshan1111" title="https:&#x2F;&#x2F;blog.csdn.net&#x2F;lanshan1111" rel="noopener" target="_blank">肥硕硕</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdauguanweihong" title="https:&#x2F;&#x2F;blog.csdn.net&#x2F;sdauguanweihong" rel="noopener" target="_blank">管少</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_41661919" title="https:&#x2F;&#x2F;blog.csdn.net&#x2F;qq_41661919" rel="noopener" target="_blank">俊杰</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_40859951" title="https:&#x2F;&#x2F;blog.csdn.net&#x2F;qq_40859951" rel="noopener" target="_blank">峰哥</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/LSD20164388" title="https:&#x2F;&#x2F;blog.csdn.net&#x2F;LSD20164388" rel="noopener" target="_blank">狗冬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37868325" title="https:&#x2F;&#x2F;blog.csdn.net&#x2F;qq_37868325" rel="noopener" target="_blank">妍大佬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://sanshuiii.github.io/" title="https:&#x2F;&#x2F;sanshuiii.github.io&#x2F;" rel="noopener" target="_blank">sanshuiii</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://zjpzhao.github.io/" title="https:&#x2F;&#x2F;zjpzhao.github.io&#x2F;" rel="noopener" target="_blank">brain</a>
+        </li>
+    </ul>
+  </div>
+
+		
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+  
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2026</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Alex_McAvoy</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+</br>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+<script src="/js/bookmark.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '48fd73a538d3fa927f65',
+      clientSecret: '56618aefeee90bac3c20de8d51bb0b985d67252d',
+      repo        : 'Gitalk-Comment',
+      owner       : 'Alex-McAvoy',
+      admin       : ['Alex-McAvoy'],
+      id          : '7a38a5953dd212eac5cfe4abef315000',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+  
+  <!-- 鼠标单击粒子特效 -->
+  <script type="text/javascript" src="/js/cursor-effects.js"></script>
+  <!-- 多级目录 -->
+  <script type="text/javascript" src="/js/category.js"></script>
+  
+</body>
+</html>

@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 8.1.2">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/img/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/assets/img/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/pace-js@1/themes/blue/pace-theme-minimal.css">
+  <script src="//cdn.jsdelivr.net/npm/pace-js@1/pace.min.js"></script>
+
+
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"alex-mcavoy.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":16,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":true,"color":"#ff0000","save":"manual"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":true},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.json"};
+  </script>
+
+  <meta name="description" content="【严格化处理】密码学需要一种严格化处理（Rigorous Treatment），即通过精确定义、形式化模型和严格证明来讨论安全性问题。严格化处理主要涉及三个方面：  为什么密码学本身需要严格化处理 严格化处理在实践中具有什么意义和后果 为什么这种处理方式往往具有某种“保守性”">
+<meta property="og:type" content="article">
+<meta property="og:title" content="密码学的严格化处理">
+<meta property="og:url" content="https://alex-mcavoy.github.io/notes/cryptology/a2d2c84c.html">
+<meta property="og:site_name" content="Alex_McAvoy">
+<meta property="og:description" content="【严格化处理】密码学需要一种严格化处理（Rigorous Treatment），即通过精确定义、形式化模型和严格证明来讨论安全性问题。严格化处理主要涉及三个方面：  为什么密码学本身需要严格化处理 严格化处理在实践中具有什么意义和后果 为什么这种处理方式往往具有某种“保守性”">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-05-16T09:05:00.000Z">
+<meta property="article:modified_time" content="2026-06-03T13:42:32.547Z">
+<meta property="article:author" content="Alex_McAvoy">
+<meta property="article:tag" content="学习笔记">
+<meta property="article:tag" content="密码学">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://alex-mcavoy.github.io/notes/cryptology/a2d2c84c.html">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>密码学的严格化处理 | Alex_McAvoy</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Alex_McAvoy</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">想要成为渔夫的猎手</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+
+	
+	
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/notes/cryptology/a2d2c84c.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/assets/img/head.jpg">
+      <meta itemprop="name" content="Alex_McAvoy">
+      <meta itemprop="description" content="想要成为渔夫的猎手">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Alex_McAvoy">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          密码学的严格化处理
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2026-05-16 17:05:00" itemprop="dateCreated datePublished" datetime="2026-05-16T17:05:00+08:00">2026-05-16</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/notes/" itemprop="url" rel="index"><span itemprop="name">学习笔记</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/notes/cryptology/" itemprop="url" rel="index"><span itemprop="name">密码学</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>5.1k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>5 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="【严格化处理】"><a href="#【严格化处理】" class="headerlink" title="【严格化处理】"></a>【严格化处理】</h1><p>密码学需要一种<strong>严格化处理（Rigorous Treatment）</strong>，即通过精确定义、形式化模型和严格证明来讨论安全性问题。严格化处理主要涉及三个方面：</p>
+<ol>
+<li>为什么密码学本身需要严格化处理</li>
+<li>严格化处理在实践中具有什么意义和后果</li>
+<li>为什么这种处理方式往往具有某种“保守性”</li>
+</ol>
+<p>之所以需要严格化处理，是因为密码学中的许多基本概念虽然看起来自然，但并不是自明的。例如安全加密、不可伪造签名、选择消息攻击等概念，如果没有精确定义，就很容易被不同的人按照不同直觉理解，从而导致错误结论</p>
+<p>例如，在 1979 年，Ron Rivest 曾声称：不存在一种“在假设因子分解困难的前提下被证明安全”的签名方案，能够抵抗选择消息攻击。他的论证依赖于一个隐含假设，即他对“基于因子分解困难性的安全性证明”具有某种特定理解，但这个隐含假设本身并没有被充分论证</p>
+<p>在之后的几年里，人们一度认为必须在两种目标之间做出选择：</p>
+<ol>
+<li>要么构造一个“在因子分解困难性假设下可证明不可伪造”的签名方案</li>
+<li>要么构造一个能够抵抗选择消息攻击的签名方案</li>
+</ol>
+<p>也就是说，当时人们认为这两种目标不能同时实现。而在 1984 年，Goldwasser、Micali 和 Rivest 指出了 Rivest 论证中的错误，并且在一般假设下给出了能够抵抗选择消息攻击的签名方案。特别地，因子分解的难解性足以推出：存在一种签名方案，即使在选择消息攻击下，也能够抵抗伪造</p>
+<h1 id="【严格化处理的动机】"><a href="#【严格化处理的动机】" class="headerlink" title="【严格化处理的动机】"></a>【严格化处理的动机】</h1><h2 id="必要性"><a href="#必要性" class="headerlink" title="必要性"></a>必要性</h2><p>密码学研究的是如何构造一种方案，使其在面对恶意攻击时，仍然保持预先规定的功能。也就是说，给定一个希望实现的功能，密码学家不仅要设计一个在正常运行条件下能够工作的方案，还要保证这个方案在敌手攻击时仍然能够保持其安全目标</p>
+<p>困难在于：敌手是在方案已公开后才开始设计攻击策略的。也就是说，敌手可以充分研究方案的结构，并尝试采取设计者没有预料到的攻击方式</p>
+<p>因此，密码方案的评估不能只考虑设计者已经想到的几种攻击，而必须考虑一个实际上近乎无限的敌手策略集合。也就是说，在评估密码方案时，假设敌手会采用某种具体攻击策略是没有意义的，真正合理的假设只能关于敌手的计算能力，例如：敌手是否被限制为概率多项式时间算法</p>
+<p>密码方案的安全性评估，本质上是在研究一个没有被显式列出的、无限大的潜在攻击策略集合，如果没有严格定义和严谨证明就难以进行这样复杂的研究</p>
+<h2 id="启发式方法的危险"><a href="#启发式方法的危险" class="headerlink" title="启发式方法的危险"></a>启发式方法的危险</h2><p>密码系统的设计必须建立在坚实基础之上，相比之下，临时性的、经验性的或启发式的设计方法是非常危险的</p>
+<p>在某些普通工程场景中，如果设计者非常了解系统所处的环境，那么启发式方法可能仍然有一定意义，因为设计者知道系统会在什么条件下运行，也大致知道可能遇到什么问题</p>
+<p>但是，密码方案面对的不是普通环境，而是由敌手恶意选择的环境。敌手会主动寻找设计者没有考虑到的情况，并试图让方案偏离其预期功能，这种恶意选择的环境通常会超出设计者的直觉和视野</p>
+<p>因此，在密码学中，启发式方法即使有意义，也非常有限。相比之下，密码方案更需要精确定义、形式化模型和严格证明</p>
+<h2 id="未验证的直觉"><a href="#未验证的直觉" class="headerlink" title="未验证的直觉"></a>未验证的直觉</h2><p>科学的一个重要作用，就是形成、检验并修正对现实的直觉。为了认真检验直觉，必须先把直觉形式化，只有经过形式化之后，才能判断这个直觉是否正确，或者它是否只在某些特定条件下成立。最初的直觉可能是正确的，也可能最终会被证明是错误的。随着对领域理解得更深入，直觉才会逐渐变得可靠</p>
+<p>然而，就当前密码学的研究而言，我们对高效计算的本质仍然理解不深入，甚至不知道一些基础问题的答案，例如 $\mathcal{P} = \mathcal{NP}?$。此外，我们也没有真正理解，为什么某些计算问题很难，而另一些看似相关的问题却可能很容易</p>
+<p>因此，当断言某个任务能否被高效计算时，必须非常谨慎。不幸的是，密码学恰恰就是围绕这类断言展开的：我们总是在讨论敌手能否高效破解某个方案、能否高效伪造某个对象、能否高效区分某些分布</p>
+<p>更糟糕的是，密码学中的许多问题比复杂性理论中常见的问题描述更加复杂、更加繁琐。这意味着，密码学一方面必须处理非常复杂的计算概念，另一方面又建立在对简单的计算概念都尚未完全理解的基础之上</p>
+<p>因此，当前关于密码学的直觉必须被看作是不可靠的，除非它们能够被形式化并经过仔细检验。也就是说，在密码学这样一个高度敏感、并且与尚未充分理解的高效计算问题密切相关的领域中，形式化和严格证明的必要性更加突出</p>
+<h1 id="【严格化处理的意义】"><a href="#【严格化处理的意义】" class="headerlink" title="【严格化处理的意义】"></a>【严格化处理的意义】</h1><h2 id="渐近表述与安全性的关系"><a href="#渐近表述与安全性的关系" class="headerlink" title="渐近表述与安全性的关系"></a>渐近表述与安全性的关系</h2><p>在复杂性理论中，通常使用算法的<strong>渐近分析（Asymptotic Analysis）</strong>来讨论计算问题的难度。这种分析也可以称为对运行时间的<strong>函数式分析（Functional Analysis of Running Time）</strong>，即关心算法运行时间如何随着输入规模增长而变化</p>
+<p>这种处理方式使理论表述更加简洁，但它并不是密码学严格化思想的本质。也就是说，即使不采用渐近语言，密码学中的许多定义方法仍然是有效的。例如单向函数、伪随机生成器、零知识证明等，这些概念虽然通常以抽象方式给出，但其背后的定义范式可以适用于任何合理的计算模型，并且可以被具体化到实际参数下进行解释</p>
+<p>因此，严格化处理并不是脱离实践的形式主义，它的作用在于：先用抽象定义明确什么叫安全，再通过安全证明说明攻破该方案至少需要解决什么困难问题，最后结合具体安全参数和实际计算能力，判断该方案在现实应用中是否足够安全</p>
+<p>换句话说，渐近分析提供的是理论框架，而具体安全参数决定的是实践意义。前者保证安全概念和证明逻辑是清楚的，后者帮助判断某个具体方案在现实中是否可用</p>
+<h2 id="抽象安全定理的具体含义"><a href="#抽象安全定理的具体含义" class="headerlink" title="抽象安全定理的具体含义"></a>抽象安全定理的具体含义</h2><p>密码学中的安全性证明通常不是直接证明某个方案“永远不可能被攻破”，而是采用一种<strong>归约证明（Reduction Proof）</strong>的方式，其基本思想是：如果存在一个高效敌手能够攻破某个密码方案，那么就可以利用这个敌手去解决一个被认为难以求解的计算问题</p>
+<p>例如，假设某个加密方案的安全性建立在整数分解问题的困难性之上，那么安全性证明要表达的并不是简单地说这个加密方案很安全，而是说明：如果有人能够高效攻破这个加密方案，那么我们就可以利用这个攻击者来高效分解整数</p>
+<p>如果我们相信整数分解问题在当前计算能力下是困难的，那么根据上述归约关系，就可以认为该加密方案也是难以被攻破的。因为一旦存在高效攻击算法，就会推出一个高效整数分解算法，而这与整数分解困难性的假设相矛盾</p>
+<p>形式化地，设安全参数为 $n$，例如密钥长度。如果某个敌手能够在时间 $T(n)$ 内攻破该加密方案，那么归约证明会构造出一个新的算法，用这个敌手作为子程序，去分解长度为 $m$ 的整数。这个分解算法的运行时间可以表示为：</p>
+<script type="math/tex; mode=display">
+T'(m)=f(m,T(g(m)))</script><p>其中，$f$ 和 $g$ 是由归约过程决定的固定多项式，$f$ 表示归约算法本身带来的计算开销，$g$ 表示底层困难问题规模与密码方案安全参数间的对应关系</p>
+<p>如果 $f$ 和 $g$ 的增长较温和，那么在合理的安全参数下，该证明就可能给出实际可用的安全保证。也就是说，只要相信相应规模的底层问题在现实中不可行，就可以认为对应参数下的密码方案也难以被现实敌手攻破</p>
+<p>所以，抽象安全定理的实践意义在于：它把攻破密码方案的难度转化为解决底层困难问题的难度。只要归约中的多项式开销不大，并且底层困难性假设在所选参数下是合理的，那么这个抽象安全结论就可以转化为具体的安全保证</p>
+<h2 id="理论结果的实践层次"><a href="#理论结果的实践层次" class="headerlink" title="理论结果的实践层次"></a>理论结果的实践层次</h2><p>严格化处理并不意味着所有理论结果都能直接转化为实际系统，根据结果与实践之间的距离，可以大致分为三类：</p>
+<p>（1）<strong>理论可行性结果</strong></p>
+<p>这类结果的重点不是给出一个可以直接部署的高效方案，而是说明某些概念之间在理论上存在联系，或者说明某一类问题在原则上可以被解决，这类结果可以分为两种情况：</p>
+<ul>
+<li>某个工具 $X$ 可以用来构造某个有用对象 $Y$。证明中给出的构造可能非常低效，因此并不适合直接用于实际系统。但是，这类结果仍然有价值，因为它说明 $X$ 和 $Y$ 之间确实存在理论联系，从而为后续研究提供方向。研究者可以进一步尝试寻找更高效的构造，或者解释为什么从 $X$ 到 $Y$ 难以得到实用方案</li>
+<li>某个问题类 $\mathcal{C}$ 中的所有任务在理论上都可以解决。虽然证明中的通用构造可能并不实用，但它至少说明：如果一个具体问题属于 $\mathcal{C}$，那么它原则上存在解决方案。不过，在真实系统中，通常不应直接使用这种通用构造，而应针对具体问题重新设计更高效的实现</li>
+</ul>
+<p>因此，原则性结果的意义不在于直接给出可部署方案，而在于揭示概念之间的联系，证明某些构造在理论上是可能的，并为后续实用方案提供研究方向</p>
+<p>（2）<strong>引入可实践的范式与技术</strong></p>
+<p>第二类结果是引入新的范式、模型、工具或技术。这类结果通常比原则性结果更接近实践，它们的价值不仅体现在某个具体构造上，更体现在提出了一种新的思考方式或技术方法</p>
+<p>有些技术可以按照最初提出的形式直接使用，有些技术需要进一步改进后才能进入实际应用，还有一些技术虽然本身不直接构成实用方案，但会启发后续更高效的构造</p>
+<p>许多密码学方法的发展，正是先从一个理论技术开始，再经过不断改进，逐渐变成可用于实际设计的工具</p>
+<p>（3）<strong>适合实际应用的方案</strong></p>
+<p>第三类结果是直接给出适合实际应用的密码方案。这类结果不仅有明确的安全定义和安全证明，而且其构造效率、归约损失和参数选择都足以支持实际部署。也就是说，它们不仅在理论上成立，而且在合理安全参数下也具有现实可用性</p>
+<p>因此，判断一个理论结果的实践意义时，不能简单地问它有没有证明，而要进一步看它属于哪一类：它只是说明某种构造原则上可行，还是引入了一种可复用的技术，或者已经给出了可以在合理参数下使用的具体方案</p>
+<h2 id="具体参数下的安全解释"><a href="#具体参数下的安全解释" class="headerlink" title="具体参数下的安全解释"></a>具体参数下的安全解释</h2><p>在得到归约关系之后，严格化处理还可以进一步用于解释具体安全参数下的安全性。也就是说，安全证明并不只是给出一个抽象结论，而是允许我们在选定安全参数 $n$ 后，结合归约损失和底层难解问题的复杂度估计，判断该参数是否足以支撑实际应用</p>
+<p>这种判断通常取决于三个方面：</p>
+<ol>
+<li><strong>构造本身的效率</strong>：方案在加密、解密、签名、验证或协议执行时是否足够高效</li>
+<li><strong>归约损失的大小</strong>：从攻破方案到解决底层难解问题的转换是否引入了过大的额外开销</li>
+<li><strong>安全参数的选择</strong>：在当前参数下，底层困难问题是否仍然可以被合理认为是不可行的</li>
+</ol>
+<p>如果构造效率较高、归约损失较小，并且所选安全参数足够支撑底层难解性假设，那么抽象安全证明就可以转化为具体的安全保证。反之，如果构造效率过低或归约损失过大，那么该结果虽然在理论上成立，却未必适合实际部署</p>
+<h1 id="【严格化处理的保守性】"><a href="#【严格化处理的保守性】" class="headerlink" title="【严格化处理的保守性】"></a>【严格化处理的保守性】</h1><p>在密码学中，安全定义往往会显得比较保守，即定义安全性时，通常会提出比实际应用表面上看起来更强的要求；而定义不安全性时，则会采取更宽泛的标准。也就是说，只要敌手能够以某种方式破坏方案的安全目标，即使这种攻击在某些具体应用中看起来不一定会发生，也可能被视为一种不安全性</p>
+<p>这种处理方式在技术上并不会带来问题。因为如果一个密码原语在很强的安全定义下都是安全的，那么它当然也满足那些更弱、更受限制的安全需求。换句话说，强安全性通常可以推出弱安全性：</p>
+<script type="math/tex; mode=display">
+\text{强安全性}
+\Longrightarrow
+\text{弱安全性}</script><p>同时，许多满足强安全定义的密码原语可以在合理的难解性假设下实现。在很多情况下，即使只想实现远弱于强安全定义的安全目标，也仍然需要类似的难解性假设。因此，采用较强的安全定义并不是无端提高要求，而是为了获得更稳健、更通用的安全保证</p>
+<p>之所以在定义安全性时采取这种保守态度，是因为很难准确刻画某一个具体应用到底需要什么样的安全性。不同应用场景对安全性的要求可能不同：有的场景只需要抵抗被动窃听，有的场景还需要抵抗主动篡改，有的场景只要求消息内容不泄露，有的场景还要求密文在交互式攻击中仍然保持安全。如果每遇到一个新的应用，就重新设计一套安全定义和密码系统，那么不仅会使理论和实践都变得非常复杂，也很难保证这些方案能够适应未来未知的应用环境</p>
+<p>因此，密码学更倾向于定义一种足够强的安全概念，使其不仅能够覆盖当前已知应用中的安全需求，也尽量能够覆盖未来未知应用中可能出现的安全需求。换句话说，安全定义不应只针对某个具体场景中刚好够用的安全要求，而应尽可能预先考虑更广泛的攻击方式和使用环境</p>
+<p>这种保守性可以理解为一种面向未来应用的安全冗余。现实系统的运行环境可能会发生变化，今天看似不会出现的攻击能力，未来可能因为协议组合、接口暴露、系统部署方式变化而变得现实。如果安全定义一开始只覆盖非常狭窄的场景，那么当使用环境变化时，原有的安全保证可能就不再适用</p>
+<p>因此，密码学中的保守安全定义并不是脱离实践，而是为了避免安全概念过于依赖某个具体应用。它希望用更强、更统一的定义覆盖更多可能场景，从而使密码原语在当前和未来的应用中都具有更可靠的安全保证</p>
+
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>感谢您对我的支持，让我继续努力分享有用的技术与知识点！</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/wechatpay.jpg" alt="Alex_McAvoy 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/alipay.jpg" alt="Alex_McAvoy 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Alex_McAvoy
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://alex-mcavoy.github.io/notes/cryptology/a2d2c84c.html" title="密码学的严格化处理">https://alex-mcavoy.github.io/notes/cryptology/a2d2c84c.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/notes/" rel="tag"># 学习笔记</a>
+              <a href="/tags/cryptology/" rel="tag"># 密码学</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/notes/cryptology/4de5aa62.html" rel="prev" title="预言机与预言机机器">
+      <i class="fa fa-chevron-left"></i> 预言机与预言机机器
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/notes/cryptology/a931fc09.html" rel="next" title="单向函数的动机">
+      单向函数的动机 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E3%80%90%E4%B8%A5%E6%A0%BC%E5%8C%96%E5%A4%84%E7%90%86%E3%80%91"><span class="nav-number">1.</span> <span class="nav-text">【严格化处理】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E3%80%90%E4%B8%A5%E6%A0%BC%E5%8C%96%E5%A4%84%E7%90%86%E7%9A%84%E5%8A%A8%E6%9C%BA%E3%80%91"><span class="nav-number">2.</span> <span class="nav-text">【严格化处理的动机】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BF%85%E8%A6%81%E6%80%A7"><span class="nav-number">2.1.</span> <span class="nav-text">必要性</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%90%AF%E5%8F%91%E5%BC%8F%E6%96%B9%E6%B3%95%E7%9A%84%E5%8D%B1%E9%99%A9"><span class="nav-number">2.2.</span> <span class="nav-text">启发式方法的危险</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9C%AA%E9%AA%8C%E8%AF%81%E7%9A%84%E7%9B%B4%E8%A7%89"><span class="nav-number">2.3.</span> <span class="nav-text">未验证的直觉</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E3%80%90%E4%B8%A5%E6%A0%BC%E5%8C%96%E5%A4%84%E7%90%86%E7%9A%84%E6%84%8F%E4%B9%89%E3%80%91"><span class="nav-number">3.</span> <span class="nav-text">【严格化处理的意义】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B8%90%E8%BF%91%E8%A1%A8%E8%BF%B0%E4%B8%8E%E5%AE%89%E5%85%A8%E6%80%A7%E7%9A%84%E5%85%B3%E7%B3%BB"><span class="nav-number">3.1.</span> <span class="nav-text">渐近表述与安全性的关系</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%8A%BD%E8%B1%A1%E5%AE%89%E5%85%A8%E5%AE%9A%E7%90%86%E7%9A%84%E5%85%B7%E4%BD%93%E5%90%AB%E4%B9%89"><span class="nav-number">3.2.</span> <span class="nav-text">抽象安全定理的具体含义</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%90%86%E8%AE%BA%E7%BB%93%E6%9E%9C%E7%9A%84%E5%AE%9E%E8%B7%B5%E5%B1%82%E6%AC%A1"><span class="nav-number">3.3.</span> <span class="nav-text">理论结果的实践层次</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%B7%E4%BD%93%E5%8F%82%E6%95%B0%E4%B8%8B%E7%9A%84%E5%AE%89%E5%85%A8%E8%A7%A3%E9%87%8A"><span class="nav-number">3.4.</span> <span class="nav-text">具体参数下的安全解释</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E3%80%90%E4%B8%A5%E6%A0%BC%E5%8C%96%E5%A4%84%E7%90%86%E7%9A%84%E4%BF%9D%E5%AE%88%E6%80%A7%E3%80%91"><span class="nav-number">4.</span> <span class="nav-text">【严格化处理的保守性】</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">  
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Alex_McAvoy"
+      src="/assets/img/head.jpg">
+  <p class="site-author-name" itemprop="name">Alex_McAvoy</p>
+  <div class="site-description" itemprop="description">想要成为渔夫的猎手</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">752</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">75</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">86</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Alex-McAvoy" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;Alex-McAvoy" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/u011815404" title="CSDN → https:&#x2F;&#x2F;blog.csdn.net&#x2F;u011815404" rel="noopener" target="_blank"><i class="fas fa-copyright fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+<!-- 静态项目链接 -->
+<div class="links-of-blogroll motion-element">
+  <div class="links-of-blogroll-title">
+    <i class="fas fa-external-link-alt fa-fw"></i> 站点静态项目
+  </div>
+  <ul class="links-of-blogroll-list">
+  <li class="links-of-blogroll-item">
+      <a href="https://alex-mcavoy.github.io/bookshelf/index.html" target="_blank" title="终末之诗">
+        我的书架（施工中...）
+      </a>
+    </li>
+    <li class="links-of-blogroll-item">
+      <a href="https://alex-mcavoy.github.io/end_poem/index.html" target="_blank" title="终末之诗">
+        终末之诗
+      </a>
+    </li>
+	<li class="links-of-blogroll-item">
+      <a href="https://alex-mcavoy.github.io/2nd_anniversary_of_pyc-zwx/index.html" target="_blank" title="逄总与张总的两周年纪念页（朋友已分手，该项目无限延期）">
+        <del>逄总与张总的两周年纪念页<br/>（朋友已分手，该项目无限延期）</del>
+      </a>
+    </li>
+  </ul>
+</div>
+
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdz20172133" title="https:&#x2F;&#x2F;blog.csdn.net&#x2F;sdz20172133" rel="noopener" target="_blank">神仙队友</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://pxlsdz.gitee.io/" title="https:&#x2F;&#x2F;pxlsdz.gitee.io&#x2F;" rel="noopener" target="_blank">神仙队友blog2</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdau_fangshifeng" title="https:&#x2F;&#x2F;blog.csdn.net&#x2F;sdau_fangshifeng" rel="noopener" target="_blank">酷头</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://bycore.net/" title="https:&#x2F;&#x2F;bycore.net" rel="noopener" target="_blank">凉了的某饼同学</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://kris-cn.github.io/" title="http:&#x2F;&#x2F;kris-cn.github.io&#x2F;" rel="noopener" target="_blank">翟孙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://deng.fun/" title="http:&#x2F;&#x2F;deng.fun&#x2F;" rel="noopener" target="_blank">芙蓉姐姐</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/wentong_Xu" title="https:&#x2F;&#x2F;blog.csdn.net&#x2F;wentong_Xu" rel="noopener" target="_blank">小黑贱胖子</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.yuheng.tech/" title="https:&#x2F;&#x2F;www.yuheng.tech&#x2F;" rel="noopener" target="_blank">咸于</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/lanshan1111" title="https:&#x2F;&#x2F;blog.csdn.net&#x2F;lanshan1111" rel="noopener" target="_blank">肥硕硕</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdauguanweihong" title="https:&#x2F;&#x2F;blog.csdn.net&#x2F;sdauguanweihong" rel="noopener" target="_blank">管少</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_41661919" title="https:&#x2F;&#x2F;blog.csdn.net&#x2F;qq_41661919" rel="noopener" target="_blank">俊杰</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_40859951" title="https:&#x2F;&#x2F;blog.csdn.net&#x2F;qq_40859951" rel="noopener" target="_blank">峰哥</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/LSD20164388" title="https:&#x2F;&#x2F;blog.csdn.net&#x2F;LSD20164388" rel="noopener" target="_blank">狗冬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37868325" title="https:&#x2F;&#x2F;blog.csdn.net&#x2F;qq_37868325" rel="noopener" target="_blank">妍大佬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://sanshuiii.github.io/" title="https:&#x2F;&#x2F;sanshuiii.github.io&#x2F;" rel="noopener" target="_blank">sanshuiii</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://zjpzhao.github.io/" title="https:&#x2F;&#x2F;zjpzhao.github.io&#x2F;" rel="noopener" target="_blank">brain</a>
+        </li>
+    </ul>
+  </div>
+
+		
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+  
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2026</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Alex_McAvoy</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+</br>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+<script src="/js/bookmark.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '48fd73a538d3fa927f65',
+      clientSecret: '56618aefeee90bac3c20de8d51bb0b985d67252d',
+      repo        : 'Gitalk-Comment',
+      owner       : 'Alex-McAvoy',
+      admin       : ['Alex-McAvoy'],
+      id          : '5f2e6aad14ffcbd82c788f2304cb81b7',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+  
+  <!-- 鼠标单击粒子特效 -->
+  <script type="text/javascript" src="/js/cursor-effects.js"></script>
+  <!-- 多级目录 -->
+  <script type="text/javascript" src="/js/category.js"></script>
+  
+</body>
+</html>
