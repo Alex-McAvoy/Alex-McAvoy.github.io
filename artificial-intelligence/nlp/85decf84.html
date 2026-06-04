@@ -280,7 +280,7 @@
 <p>对于一个给定的文本集合，每个文本包含若干话题，每个话题由若干单词表示，话题是潜在的，一个话题表示一个语义内容，无法从文本集合中的数据直接观察到，对文本集合进行 PLSA 就能够发现每个文本的话题以及每个话题的单词，即从文本集合中发现由隐变量表示的话题，即<strong>潜在语义（Latent Semantic）</strong></p>
 <p>如下图所示，每一行对应一个单词，每一列对应一个文本，每一个元素表示单词在文本中出现的次数，红、绿、蓝框各自表示一个话题</p>
 <p><img width=500 src="/images/artificial-intelligence/nlp/07-1.png"/></p>
-<h1 id="【生成模型与共现模型】"><a href="#【生成模型与共现模型】" class="headerlink" title="【生成模型与共现模型】"></a>【生成模型与共现模型】</h1><h2 id="生成模型"><a href="#生成模型" class="headerlink" title="生成模型"></a>生成模型</h2><p>对于一个含有 $N$ 个文本的文本集合 $D={d_1,d_2,\cdots,d_N}$，以及在所有文本中出现的 $M$ 个单词的集合 $W={w_1,w_2,\cdots,w_M}$，假设文本集合中共存在 $K$ 个话题，话题集合为 $Z={z_1,z_2,\cdots,z_K}$</p>
+<h1 id="【生成模型与共现模型】"><a href="#【生成模型与共现模型】" class="headerlink" title="【生成模型与共现模型】"></a>【生成模型与共现模型】</h1><h2 id="生成模型"><a href="#生成模型" class="headerlink" title="生成模型"></a>生成模型</h2><p>对于一个含有 $N$ 个文本的文本集合 $D=\{d_1,d_2,\cdots,d_N\}$，以及在所有文本中出现的 $M$ 个单词的集合 $W=\{w_1,w_2,\cdots,w_M\}$，假设文本集合中共存在 $K$ 个话题，话题集合为 $Z=\{z_1,z_2,\cdots,z_K\}$</p>
 <p>从文本集合 $D$ 中取随机变量 $d$，从单词集合 $W$ 中取随机变量 $w$，从话题集 $Z$ 中取随机变量 $z$，概率分布 $P(d)$、条件概率 $P(z|d)$、条件概率分布 $P(w|z)$ 均属于多项分布，其中，$P(d)$ 表示生成文本 $d$ 的概率，$P(z|d)$ 表示文本 $d$ 生成话题 $z$ 的概率，$P(w|z)$ 表示话题 $z$ 生成单词 $w$​ 的概率</p>
 <p>由于每个文本的内容由其相关话题决定，每个话题的内容由其相关单词决定，也就是说每个文本 $d$ 拥有自己的话题概率分布 $P(z|d)$，每个话题 $z$ 拥有自己的单词概率分布 $P(w|z)$​</p>
 <p>生成模型假设在话题 $z$ 给定的条件下，单词 $w$ 与文本 $d$ 条件独立，即：</p>
@@ -336,8 +336,8 @@ P(w|d) = \sum_{z} P(z|d) P(w|z)</script><p>概率分布 $P(w|z)$ 表示话题 $z
 <p>如下图所示，为 $M=3,K=3$ 时生成模型的情况</p>
 <p><img width=500 src="/images/artificial-intelligence/nlp/07-6.png"/></p>
 <h1 id="【PLSA-的学习算法】"><a href="#【PLSA-的学习算法】" class="headerlink" title="【PLSA 的学习算法】"></a>【PLSA 的学习算法】</h1><h2 id="基本思想"><a href="#基本思想" class="headerlink" title="基本思想"></a>基本思想</h2><p>概率潜在语义分析模型是含有隐变量的模型，其学习通常采用 <a href="https://alex-mcavoy.github.io/mathematics/mathematical-statistics/90a5934.html">EM 算法</a></p>
-<p>对于一个含有 $N$ 个文本的文本集合 $D={d_1,d_2,\cdots,d_N}$，以及在所有文本中出现的 $M$ 个单词的集合 $W={w_1,w_2,\cdots,w_M}$，假设文本集合中共存在 $K$ 个话题，话题集合为 $Z={z_1,z_2,\cdots,z_K}$</p>
-<p>给定单词-文本共现数据 $T={n(w_i,d_j)},i=1,2\cdots,M,j=1,2,\cdots,N$，目标是概率潜在语义分析（生成模型）的参数</p>
+<p>对于一个含有 $N$ 个文本的文本集合 $D=\{d_1,d_2,\cdots,d_N\}$，以及在所有文本中出现的 $M$ 个单词的集合 $W=\{w_1,w_2,\cdots,w_M\}$，假设文本集合中共存在 $K$ 个话题，话题集合为 $Z=\{z_1,z_2,\cdots,z_K\}$</p>
+<p>给定单词-文本共现数据 $T=\{n(w_i,d_j)\},i=1,2\cdots,M,j=1,2,\cdots,N$，目标是概率潜在语义分析（生成模型）的参数</p>
 <p>若使用极大似然估计，则对数似然函数为：</p>
 <script type="math/tex; mode=display">
 \begin{align*}
@@ -346,7 +346,7 @@ L
 &= \sum_{i=1}^M \sum_{j=1}^N n(w_i,d_j) \log \Big[ P(w_i|z_k) P(z_k |d_j) \Big]
 \end{align*}</script><p>但由于模型含有隐变量，对数似然函数的优化无法用解析方法求解，此时使用 EM 算法，应用 EM 算法的第一步是 E 步，即计算 Q 函数，其是完全数据的对数似然函数对不完全数据的条件分布的期望，即：</p>
 <script type="math/tex; mode=display">
-Q = \sum_{k=1}^K \Bigg\{ \sum_{j=1}^N n(d_j) \Big[ \log P(d_j) + \sum_{i=1}^M \frac{n(w_i,d_j)}{n(d_j)} \log [P(w_i|z_k) P(z_k|d_j) ]\Big] \Bigg\} P(z_k|w_i,d_j)</script><p>其中，$n(d<em>j)=\sum\limits</em>{i=1}^M n(w_i,d_j)$ 表示文本 $d_j$ 中的单词个数，$n(w_i,d_j)$ 表示单词 $w_i$ 在文本 $d_j$ 中出现的次数，条件概率分布 $P(z_k|w_i,d_j)$ 表示不完全数据，是已知变量，条件概率分布 $P(w_i|z_k)$ 和 $P(z_k|d_j)$ 的乘积代表完全数据，是未知变量</p>
+Q = \sum_{k=1}^K \Bigg\{ \sum_{j=1}^N n(d_j) \Big[ \log P(d_j) + \sum_{i=1}^M \frac{n(w_i,d_j)}{n(d_j)} \log [P(w_i|z_k) P(z_k|d_j) ]\Big] \Bigg\} P(z_k|w_i,d_j)</script><p>其中，$n(d_j)=\sum\limits_{i=1}^M n(w_i,d_j)$ 表示文本 $d_j$ 中的单词个数，$n(w_i,d_j)$ 表示单词 $w_i$ 在文本 $d_j$ 中出现的次数，条件概率分布 $P(z_k|w_i,d_j)$ 表示不完全数据，是已知变量，条件概率分布 $P(w_i|z_k)$ 和 $P(z_k|d_j)$ 的乘积代表完全数据，是未知变量</p>
 <p>由于可以从数据中直接统计得出 $P(d_j)$ 的估计，因此只考虑 $P(w_i|z_k),P(z_k|d_j)$ 的估计即可，故而可将 Q 函数进行简化：</p>
 <script type="math/tex; mode=display">
 Q'= \sum_{i=1}^M \sum_{j=1}^N n(w_i,d_j) \sum_{k=1}^K P(z_k|w_i,d_j) \log [P(w_i|z_k) P(z_k|d_j)]</script><p>其中，$P(z_k|w_i,d_j)$ 可以根据贝叶斯公式计算，即：</p>
@@ -371,7 +371,7 @@ i=1,2,\cdots,M;\quad j=1,2,\cdots,M;\quad k=1,2,\cdots,K
 \begin{gather*}
 P(w_i|z_k) = \frac{\sum\limits_{j=1}^N n(w_i,d_j)P(z_k|w_i,d_j)}{\sum\limits_{m=1}^M\sum\limits_{j=1}^N n(w_m,d_j)P(z_k|w_m,d_j)} \\
 P(z_k|d_j) = \frac{\sum\limits_{i=1}^M n(w_i,d_j)P(z_k|w_i,d_j)}{n(d_j)}
-\end{gather*}</script><h2 id="算法流程"><a href="#算法流程" class="headerlink" title="算法流程"></a>算法流程</h2><p>输入：含有 $N$ 个文本的文本集合 $D={d_1,d_2,\cdots,d_N}$，在所有文本中出现的 $M$ 个单词的集合 $W={w_1,w_2,\cdots,w_M}$，存在 $K$ 个话题的话题集合为 $Z={z_1,z_2,\cdots,z_K}$，单词-文本共现数据 $T={n(w_i,d_j)},i=1,2\cdots,M,j=1,2,\cdots,N$</p>
+\end{gather*}</script><h2 id="算法流程"><a href="#算法流程" class="headerlink" title="算法流程"></a>算法流程</h2><p>输入：含有 $N$ 个文本的文本集合 $D=\{d_1,d_2,\cdots,d_N\}$，在所有文本中出现的 $M$ 个单词的集合 $W=\{w_1,w_2,\cdots,w_M\}$，存在 $K$ 个话题的话题集合为 $Z=\{z_1,z_2,\cdots,z_K\}$，单词-文本共现数据 $T=\{n(w_i,d_j)\},i=1,2\cdots,M,j=1,2,\cdots,N$</p>
 <p>输出：条件概率分布 $P(w_i|z_k)$ 和 $P(z_k|d_j)$ </p>
 <p>算法流程：</p>
 <p>Step1：设置参数 $P(w_i|z_k)$ 和 $P(z_k|d_j)$ 的初始值</p>
@@ -522,7 +522,7 @@ P(z_k|d_j) = \frac{\sum\limits_{i=1}^M n(w_i,d_j)P(z_k|w_i,d_j)}{n(d_j)}
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">752</span>
+          <span class="site-state-item-count">757</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>

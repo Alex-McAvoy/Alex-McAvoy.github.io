@@ -276,13 +276,13 @@
 <p>若将有标记的样本所对应的结点视为染色，未标记的样本所对应的结点视为尚未染色，则半监督学习就对应于颜色在图上扩散或传播的过程，由于一个图对应了一个矩阵，这就使得能够基于矩阵运算来进行半监督学习算法的推导和分析</p>
 <p>图半监督学习方法在概念上相当清晰，且易于通过对所涉矩阵运算的分析来探索算法性质，但这类算法在存储开销上较大，难以直接处理大规模数据</p>
 <p>此外，由于构图过程仅能考虑训练样本集，难以判知新样本在图中的位置，因此在接收到新样本时，通常将其加入原数据集对图进行重构并重新进行标记传播，或是引入额外的预测机制，另外训练一个学习器来对新样本进行预测</p>
-<h1 id="【二分类问题的标记传播方法】"><a href="#【二分类问题的标记传播方法】" class="headerlink" title="【二分类问题的标记传播方法】"></a>【二分类问题的标记传播方法】</h1><p><strong>标记传播方法（Label Propagation）</strong>是较为常用的图半监督学习方法，常用于二分类和多分类问题，对于二分类问题来说，对于给定有标记样本集 $D<em>l={(\mathbf{x}_1,y_1),(\mathbf{x}_2,y_2),\cdots,(\mathbf{x}_l,y_l)}$ 和未标记样本集 $D_u={\mathbf{x}</em>{l+1},\mathbf{x}<em>{l+2},\cdots,\mathbf{x}</em>{l+u}}$，其中 $l$ 和 $u$ 满足 $l\ll u,l+u=n$，标记 $y_i\in {-1,1}$</p>
-<p>基于 $D<em>l\cup D_u$ 建立一个图 $G=(V,E)$，其中结点集 $V={\mathbf{x}_1,\mathbf{x}_2,\cdots,\mathbf{x}_l,\mathbf{x}</em>{l+1},\cdots,\mathbf{x}_{l+u}}$，边集 $E$ 可表示为一个<strong>亲和矩阵（Affinity Matrix）</strong>，其中的元素常基于高斯函数定义为：</p>
+<h1 id="【二分类问题的标记传播方法】"><a href="#【二分类问题的标记传播方法】" class="headerlink" title="【二分类问题的标记传播方法】"></a>【二分类问题的标记传播方法】</h1><p><strong>标记传播方法（Label Propagation）</strong>是较为常用的图半监督学习方法，常用于二分类和多分类问题，对于二分类问题来说，对于给定有标记样本集 $D_l=\{(\mathbf{x}_1,y_1),(\mathbf{x}_2,y_2),\cdots,(\mathbf{x}_l,y_l)\}$ 和未标记样本集 $D_u=\{\mathbf{x}_{l+1},\mathbf{x}_{l+2},\cdots,\mathbf{x}_{l+u}\}$，其中 $l$ 和 $u$ 满足 $l\ll u,l+u=n$，标记 $y_i\in \{-1,1\}$</p>
+<p>基于 $D_l\cup D_u$ 建立一个图 $G=(V,E)$，其中结点集 $V=\{\mathbf{x}_1,\mathbf{x}_2,\cdots,\mathbf{x}_l,\mathbf{x}_{l+1},\cdots,\mathbf{x}_{l+u}\}$，边集 $E$ 可表示为一个<strong>亲和矩阵（Affinity Matrix）</strong>，其中的元素常基于高斯函数定义为：</p>
 <script type="math/tex; mode=display">
 w_{ij} = \left\{\begin{array}{cl}
 \exp\Big( \frac{-\Vert \mathbf{x}_i-\mathbf{x}_j \Vert_2^2}{2\sigma^2} \Big), & i\neq j \\
 0, & \text{otherwise}
-\end{array}\right.</script><p>其中，$i,j\in {1,2,\cdots,n}$，$\sigma&gt;0$ 是用户指定的高斯函数带宽参数</p>
+\end{array}\right.</script><p>其中，$i,j\in \{1,2,\cdots,n\}$，$\sigma&gt;0$ 是用户指定的高斯函数带宽参数</p>
 <p>假定从图 $G=(V,E)$ 中将要学得一个实值函数 $f:V\rightarrow \mathbb{R}$，其对应的分类规则为：</p>
 <script type="math/tex; mode=display">
 y_i=\text{sign}[f(\mathbf{x}_i)],\quad y_i\in \{-1,1\}</script><p>直观来看，相似的样本应具有相似的标记，于是可定义关于 $f$ 的能量函数：</p>
@@ -293,7 +293,7 @@ E(f)
 &= \frac{1}{2} \Big( \sum_{i=1}^n d_i f^2(\mathbf{x}_i) + \sum_{j=1}^nd_j f^2(\mathbf{x}_j) -2\sum_{i=1}^n\sum_{j=1}^n w_{ij}f(\mathbf{x}_i)f(\mathbf{x}_j) \Big) \\
 &= \sum_{i=1}^n d_i f^2(\mathbf{x}_i) - \sum_{i=1}^n\sum_{j=1}^n w_{ij} f(\mathbf{x}_i)f(\mathbf{x}_j) \\
 &= \mathbf{f}^T (\mathbf{D}-\mathbf{W})\mathbf{f}
-\end{align*}</script><p>其中，$\mathbf{f}=(\mathbf{f}<em>l^T\mathbf{f}_u^T)^T$，$\mathbf{f}_l=(f(\mathbf{x}_1),f(\mathbf{x}_2),\cdots,f(\mathbf{x}_l))$，$\mathbf{f}_u=(f(\mathbf{x}</em>{l+1});f(\mathbf{x}<em>{l+2});\cdots;f(\mathbf{x}</em>{l+u}))$ 分别为函数 $f$ 在有标记样本和未标记样本上的预测结果，$\mathbf{D}=\text{diag}(d<em>l,d_2,\cdots,d</em>{l+u})$ 是度数矩阵，其对角元素 $d<em>i=\sum\limits</em>{j=1}^{n} w_{ij}$ 为矩阵 $\mathbf{W}$ 的第 $i$ 行元素和</p>
+\end{align*}</script><p>其中，$\mathbf{f}=(\mathbf{f}_l^T\mathbf{f}_u^T)^T$，$\mathbf{f}_l=(f(\mathbf{x}_1),f(\mathbf{x}_2),\cdots,f(\mathbf{x}_l))$，$\mathbf{f}_u=(f(\mathbf{x}_{l+1});f(\mathbf{x}_{l+2});\cdots;f(\mathbf{x}_{l+u}))$ 分别为函数 $f$ 在有标记样本和未标记样本上的预测结果，$\mathbf{D}=\text{diag}(d_l,d_2,\cdots,d_{l+u})$ 是度数矩阵，其对角元素 $d_i=\sum\limits_{j=1}^{n} w_{ij}$ 为矩阵 $\mathbf{W}$ 的第 $i$ 行元素和</p>
 <p>具有最小能量的函数 $f$ 在有标记样本上满足 $f(\mathbf{x}_i)=y_i,i=1,2,\cdots,l$，在未标记样本上满足 $\Delta \mathbf{f}=\mathbf{0}$，其中 $\Delta = \mathbf{D}-\mathbf{W}$ 为拉普拉斯矩阵</p>
 <p>若以第 $l$ 行和第 $l$ 列为界，采用分块矩阵表示方式：</p>
 <script type="math/tex; mode=display">
@@ -336,7 +336,7 @@ E(f)
 \mathbf{D}_{ll}^{-1}\mathbf{W}_{ll} & \mathbf{D}_{ll}^{-1}\mathbf{W}_{lu} \\
 \mathbf{D}_{uu}^{-1}\mathbf{W}_{ul} & \mathbf{D}_{uu}^{-1}\mathbf{W}_{uu}
 \end{bmatrix}
-\end{align*}</script><p>即 $\mathbf{P}<em>{uu}=\mathbf{D}</em>{uu}^{-1}\mathbf{W}<em>{uu},\mathbf{P}</em>{ul}=\mathbf{D}<em>{uu}^{-1}\mathbf{W}</em>{ul}$，此时，对于 $\mathbf{f}_u$ 有：</p>
+\end{align*}</script><p>即 $\mathbf{P}_{uu}=\mathbf{D}_{uu}^{-1}\mathbf{W}_{uu},\mathbf{P}_{ul}=\mathbf{D}_{uu}^{-1}\mathbf{W}_{ul}$，此时，对于 $\mathbf{f}_u$ 有：</p>
 <script type="math/tex; mode=display">
 \begin{align*}
 \mathbf{f}_u
@@ -344,14 +344,14 @@ E(f)
 &= (\mathbf{I}-\mathbf{D}_{uu}^{-1}\mathbf{W}_{uu})^{-1} \mathbf{D}_{uu}^{-1} \mathbf{W}_{ul} \mathbf{f}_l \\
 &= (\mathbf{I}-\mathbf{P}_{uu})^{-1} \mathbf{P}_{ul} \mathbf{f}_l
 \end{align*}</script><p>于是，将 $D_l$ 上的标记信息作为 $\mathbf{f}_l=(y_1;y_2;\cdots;y_l)$ 代入上式，即可利用求得 $\mathbf{f}_u$ 的对未标记样本进行预测</p>
-<h1 id="【多分类问题的标记传播方法】"><a href="#【多分类问题的标记传播方法】" class="headerlink" title="【多分类问题的标记传播方法】"></a>【多分类问题的标记传播方法】</h1><p><strong>标记传播方法（Label Propagation）</strong>是较为常用的图半监督学习方法，常用于二分类和多分类问题，对于多分类问题来说，对于给定有标记样本集 $D<em>l={(\mathbf{x}_1,y_1),(\mathbf{x}_2,y_2),\cdots,(\mathbf{x}_l,y_l)}$ 和未标记样本集 $D_u={\mathbf{x}</em>{l+1},\mathbf{x}<em>{l+2},\cdots,\mathbf{x}</em>{l+u}}$，其中 $l$ 和 $u$ 满足 $l\ll u,l+u=n$，标记 $y_i\in \mathcal{Y}$</p>
-<p>仍基于 $D<em>l\cup D_u$ 建立一个图 $G=(V,E)$，其中结点集 $V={\mathbf{x}_1,\mathbf{x}_2,\cdots,\mathbf{x}_l,\mathbf{x}</em>{l+1},\cdots,\mathbf{x}_{l+u}}$，边集 $E$ 所对应的亲和矩阵中的元素仍基于高斯函数定义，即：</p>
+<h1 id="【多分类问题的标记传播方法】"><a href="#【多分类问题的标记传播方法】" class="headerlink" title="【多分类问题的标记传播方法】"></a>【多分类问题的标记传播方法】</h1><p><strong>标记传播方法（Label Propagation）</strong>是较为常用的图半监督学习方法，常用于二分类和多分类问题，对于多分类问题来说，对于给定有标记样本集 $D_l=\{(\mathbf{x}_1,y_1),(\mathbf{x}_2,y_2),\cdots,(\mathbf{x}_l,y_l)\}$ 和未标记样本集 $D_u=\{\mathbf{x}_{l+1},\mathbf{x}_{l+2},\cdots,\mathbf{x}_{l+u}\}$，其中 $l$ 和 $u$ 满足 $l\ll u,l+u=n$，标记 $y_i\in \mathcal{Y}$</p>
+<p>仍基于 $D_l\cup D_u$ 建立一个图 $G=(V,E)$，其中结点集 $V=\{\mathbf{x}_1,\mathbf{x}_2,\cdots,\mathbf{x}_l,\mathbf{x}_{l+1},\cdots,\mathbf{x}_{l+u}\}$，边集 $E$ 所对应的亲和矩阵中的元素仍基于高斯函数定义，即：</p>
 <script type="math/tex; mode=display">
 w_{ij} = \left\{\begin{array}{cl}
 \exp\Big( \frac{-\Vert \mathbf{x}_i-\mathbf{x}_j \Vert_2^2}{2\sigma^2} \Big), & i\neq j \\
 0, & \text{otherwise}
-\end{array}\right.</script><p>度数矩阵 $\mathbf{D}=\text{diag}(d<em>l,d_2,\cdots,d</em>{l+u})$ 其对角元素 $d<em>i=\sum\limits</em>{j=1}^{n} w_{ij}$ 为矩阵 $\mathbf{W}$ 的第 $i$ 行元素和</p>
-<p>定义一个 $n\times |\mathcal{Y}|$ 的非负标记矩阵 $\mathbf{F}=(\mathbf{F}<em>1^{T},\mathbf{F}_2^{T},\cdots,\mathbf{F}</em>{l+u}^{T})^T$，其第 $i$ 行元素 $\mathbf{F}<em>i=(\mathbf{F}</em>{i1},\mathbf{F}<em>{i2},\cdots,\mathbf{F}</em>{i|\mathcal{Y}|})$ 为样本 $\mathbf{x}_i$ 的标记向量，相应的分类规则为：</p>
+\end{array}\right.</script><p>度数矩阵 $\mathbf{D}=\text{diag}(d_l,d_2,\cdots,d_{l+u})$ 其对角元素 $d_i=\sum\limits_{j=1}^{n} w_{ij}$ 为矩阵 $\mathbf{W}$ 的第 $i$ 行元素和</p>
+<p>定义一个 $n\times |\mathcal{Y}|$ 的非负标记矩阵 $\mathbf{F}=(\mathbf{F}_1^{T},\mathbf{F}_2^{T},\cdots,\mathbf{F}_{l+u}^{T})^T$，其第 $i$ 行元素 $\mathbf{F}_i=(\mathbf{F}_{i1},\mathbf{F}_{i2},\cdots,\mathbf{F}_{i|\mathcal{Y}|})$ 为样本 $\mathbf{x}_i$ 的标记向量，相应的分类规则为：</p>
 <script type="math/tex; mode=display">
 y_i=\arg \max_{1\leq j\leq |\mathcal{Y}|} \mathbf{F}_{ij},\quad y_i\in \mathcal{Y}</script><p>对于 $i=1,2,\cdots,n,j=1,2,\cdots,|\mathcal{Y}|$，将 $\mathbf{F}$ 初始化为：</p>
 <script type="math/tex; mode=display">
@@ -368,7 +368,7 @@ y_i=\arg \max_{1\leq j\leq |\mathcal{Y}|} \mathbf{F}_{ij},\quad y_i\in \mathcal{
 \mathbf{F}(t+1) = \alpha \mathbf{S}\mathbf{F}(t) + (1-\alpha) \mathbf{Y}</script><p>其中，$\alpha\in(0,1)$ 为用户指定的参数，用于对标记传播项 $\mathbf{S}\mathbf{F}(t)$ 与初始化项 $\mathbf{Y}$ 的重要性进行折中</p>
 <p>对于上式，迭代至收敛，有：</p>
 <script type="math/tex; mode=display">
-\mathbf{F}^* = \lim_{t\rightarrow \infty} \mathbf{F}(t) = (1-\alpha)(\mathbf{I}-\alpha \mathbf{S})^{-1}\mathbf{Y}</script><p>由 $\mathbf{F}^*$ 即可得未标记样本集 $D<em>u$ 中样本的标记 $(\hat{y}</em>{l+1},\hat{y}<em>{l+2},\cdots,\hat{y}</em>{l+u})$</p>
+\mathbf{F}^* = \lim_{t\rightarrow \infty} \mathbf{F}(t) = (1-\alpha)(\mathbf{I}-\alpha \mathbf{S})^{-1}\mathbf{Y}</script><p>由 $\mathbf{F}^*$ 即可得未标记样本集 $D_u$ 中样本的标记 $(\hat{y}_{l+1},\hat{y}_{l+2},\cdots,\hat{y}_{l+u})$</p>
 
     </div>
 
@@ -508,7 +508,7 @@ y_i=\arg \max_{1\leq j\leq |\mathcal{Y}|} \mathbf{F}_{ij},\quad y_i\in \mathcal{
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">752</span>
+          <span class="site-state-item-count">757</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>

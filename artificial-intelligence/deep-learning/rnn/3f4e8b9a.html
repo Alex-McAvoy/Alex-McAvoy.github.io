@@ -257,7 +257,7 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>3.5k</span>
+              <span>3.6k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
@@ -304,19 +304,19 @@ o_t &= \text{softmax} (V\cdot s_t +\mathbf{b}_o) \\
 E_t &= -y_t\log(o_t) \\
 E &= \sum_{t}^T E_t
 \end{align*}\right.</script><h2 id="更新梯度"><a href="#更新梯度" class="headerlink" title="更新梯度"></a>更新梯度</h2><p>从 RNN 的循环单元结构来说，对于每个循环单元，均需计算 $t$ 时刻当前层损失 $E_t$ 对于当前隐层状态输出值 $s_t$ 的梯度，即：$\frac{\partial E_t}{\partial s_t}=ds_t$</p>
-<p>除最后一个循环单元，其他的循环单元还需计算后一层梯度 $ds<em>t$ 对于当前层梯度 $ds</em>{t-1}$ 的梯度，即： $\frac{ds<em>{t+1}}{ds</em>{t}}$</p>
+<p>除最后一个循环单元，其他的循环单元还需计算后一层梯度 $ds_t$ 对于当前层梯度 $ds_{t-1}$ 的梯度，即： $\frac{ds_{t+1}}{ds_{t}}$</p>
 <p>因此，最终各循环单元的更新梯度为：</p>
 <ul>
 <li>最后一个循环单元：$\frac{\partial E}{\partial s_t}=ds_t$</li>
-<li>除最后一个循环单元的其他单元：$ds<em>t+\frac{ds</em>{t+1}}{ds_{t}}$</li>
+<li>除最后一个循环单元的其他单元：$ds_t+\frac{ds_{t+1}}{ds_{t}}$</li>
 </ul>
 <p>以下图为例，对于最后一个循环单元 $\text{E}4$，其只需计算 $t=4$ 时刻当前层损失 $\text{E}4$ 对于当前隐层状态输出值 $s_4$ 的梯度 $ds_4$</p>
-<p>对于其他的循环单元 $\text{E}<em>i,i=0,1,2,3$，除了计算当前层梯度 $ds_i$ 外，还需计算后一层梯度对当前层梯度的梯度 $\frac{ds</em>{i+1}}{ds_i}$</p>
+<p>对于其他的循环单元 $\text{E}_i,i=0,1,2,3$，除了计算当前层梯度 $ds_i$ 外，还需计算后一层梯度对当前层梯度的梯度 $\frac{ds_{i+1}}{ds_i}$</p>
 <p><img width=500 src="/images/artificial-intelligence/deep-learning/rnn/03-3.png"/></p>
 <h2 id="循环单元内部的梯度"><a href="#循环单元内部的梯度" class="headerlink" title="循环单元内部的梯度"></a>循环单元内部的梯度</h2><h3 id="激活函数的导数"><a href="#激活函数的导数" class="headerlink" title="激活函数的导数"></a>激活函数的导数</h3><p>对于 RNN 中的 $t$ 时刻的隐藏层状态输出为：</p>
 <script type="math/tex; mode=display">
 s_t= \tanh(U\cdot x_{t} + W\cdot s_{t-1}+\mathbf{b}_h)</script><p>同时，$t$ 时刻当前层损失 $E_t$ 对于隐藏层状态输出 $s_t$ 的梯度是 $\frac{\partial E_t}{\partial s_t}=ds_t$</p>
-<p>考虑到激活函数 $\tanh(\cdot)$，其导数为 $1-\tanh^2(\cdot)$，因此，先求损失函数对激活函数的导数，令 $\mathbf{x}=U\cdot x<em>{t} + W\cdot s</em>{t-1}+\mathbf{b}_h$，则有 $s_t=\tanh(\mathbf{x})$，故：</p>
+<p>考虑到激活函数 $\tanh(\cdot)$，其导数为 $1-\tanh^2(\cdot)$，因此，先求损失函数对激活函数的导数，令 $\mathbf{x}=U\cdot x_{t} + W\cdot s_{t-1}+\mathbf{b}_h$，则有 $s_t=\tanh(\mathbf{x})$，故：</p>
 <script type="math/tex; mode=display">
 \begin{align*}
 \frac{\partial E_t}{\partial \mathbf{x}}
@@ -325,7 +325,7 @@ s_t= \tanh(U\cdot x_{t} + W\cdot s_{t-1}+\mathbf{b}_h)</script><p>同时，$t$ �
 &= ds_t\cdot(1-\tanh^2(\mathbf{x})) \\
 &= (1-s_t^2)ds_t
 \end{align*}</script><h3 id="U-、-W-、-mathbf-b-h-的导数"><a href="#U-、-W-、-mathbf-b-h-的导数" class="headerlink" title="$U$、$W$、$\mathbf{b}_h$ 的导数"></a>$U$、$W$、$\mathbf{b}_h$ 的导数</h3><p>对于每个循环单元内部的 $U$、$W$、$\mathbf{b}_h$ 进行更新时，需要损失函数对它们的各时刻的导数</p>
-<p>令 $\mathbf{x}=U\cdot x<em>{t} + W\cdot s</em>{t-1}+\mathbf{b}_h$，有 $s_t=\tanh(\mathbf{x})$</p>
+<p>令 $\mathbf{x}=U\cdot x_{t} + W\cdot s_{t-1}+\mathbf{b}_h$，有 $s_t=\tanh(\mathbf{x})$</p>
 <p>可得 $t$ 时刻损失函数 $E_t$ 对激活函数 $\tanh(\cdot)$ 的导数为：</p>
 <script type="math/tex; mode=display">
 \frac{\partial E_t}{\partial \mathbf{x}}=(1-s_t^2)ds_t</script><p>那么，$t$ 时刻当前层损失 $E_t$ 对输入层的连接权重矩阵 $U$ 的导数为：</p>
@@ -346,8 +346,8 @@ s_t= \tanh(U\cdot x_{t} + W\cdot s_{t-1}+\mathbf{b}_h)</script><p>同时，$t$ �
 \frac{\partial E_t}{\partial \mathbf{b}_h} 
 &= \frac{\partial E_t}{\partial \mathbf{x}} \cdot \frac{\partial \mathbf{x}}{\partial \mathbf{b}_h} \\
 &=\sum (1-s_t^2)ds_t
-\end{align*}</script><h3 id="xt-与-s-t-1-导数"><a href="#xt-与-s-t-1-导数" class="headerlink" title="$xt$ 与 $s{t-1}$ 导数"></a>$x<em>t$ 与 $s</em>{t-1}$ 导数</h3><p>对于循环单元之间反向传播，需要损失函数对 $x<em>t$ 与 $s</em>{t-1}$ 的导数</p>
-<p>令 $\mathbf{x}=U\cdot x<em>{t} + W\cdot s</em>{t-1}+\mathbf{b}_h$，有 $s_t=\tanh(\mathbf{x})$</p>
+\end{align*}</script><h3 id="x-t-与-s-t-1-导数"><a href="#x-t-与-s-t-1-导数" class="headerlink" title="$x_t$ 与 $s_{t-1}$ 导数"></a>$x_t$ 与 $s_{t-1}$ 导数</h3><p>对于循环单元之间反向传播，需要损失函数对 $x_t$ 与 $s_{t-1}$ 的导数</p>
+<p>令 $\mathbf{x}=U\cdot x_{t} + W\cdot s_{t-1}+\mathbf{b}_h$，有 $s_t=\tanh(\mathbf{x})$</p>
 <p>可得 $t$ 时刻损失函数 $E_t$ 对激活函数 $\tanh(\cdot)$ 的导数为：</p>
 <script type="math/tex; mode=display">
 \frac{\partial E_t}{\partial \mathbf{x}}=(1-s_t^2)ds_t</script><p>那么，$t$ 时刻当前层损失 $E_t$ 对输入 $x_t$ 的导数为：</p>
@@ -356,7 +356,7 @@ s_t= \tanh(U\cdot x_{t} + W\cdot s_{t-1}+\mathbf{b}_h)</script><p>同时，$t$ �
 \frac{\partial E_t}{\partial x_t} 
 &= \frac{\partial E_t}{\partial  \mathbf{x}}  \cdot \frac{\partial \mathbf{x}}{\partial x_t} \\
 &=U (1-s_t^2)ds_t
-\end{align*}</script><p>$t$ 时刻当前层损失 $E<em>t$ 对 $t-1$ 时刻隐藏层输出 $s</em>{t-1}$ 的导数为：</p>
+\end{align*}</script><p>$t$ 时刻当前层损失 $E_t$ 对 $t-1$ 时刻隐藏层输出 $s_{t-1}$ 的导数为：</p>
 <script type="math/tex; mode=display">
 \begin{align*}
 \frac{\partial E_t}{\partial s_{t-1}} 
@@ -485,7 +485,7 @@ s_t= \tanh(U\cdot x_{t} + W\cdot s_{t-1}+\mathbf{b}_h)</script><p>同时，$t$ �
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E3%80%90%E6%A6%82%E8%BF%B0%E3%80%91"><span class="nav-number">1.</span> <span class="nav-text">【概述】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E3%80%90%E7%AE%97%E6%B3%95%E5%8E%9F%E7%90%86%E3%80%91"><span class="nav-number">2.</span> <span class="nav-text">【算法原理】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AC%A6%E5%8F%B7%E5%81%87%E8%AE%BE"><span class="nav-number">2.1.</span> <span class="nav-text">符号假设</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9B%B4%E6%96%B0%E6%A2%AF%E5%BA%A6"><span class="nav-number">2.2.</span> <span class="nav-text">更新梯度</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BE%AA%E7%8E%AF%E5%8D%95%E5%85%83%E5%86%85%E9%83%A8%E7%9A%84%E6%A2%AF%E5%BA%A6"><span class="nav-number">2.3.</span> <span class="nav-text">循环单元内部的梯度</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%BF%80%E6%B4%BB%E5%87%BD%E6%95%B0%E7%9A%84%E5%AF%BC%E6%95%B0"><span class="nav-number">2.3.1.</span> <span class="nav-text">激活函数的导数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#U-%E3%80%81-W-%E3%80%81-mathbf-b-h-%E7%9A%84%E5%AF%BC%E6%95%B0"><span class="nav-number">2.3.2.</span> <span class="nav-text">$U$、$W$、$\mathbf{b}_h$ 的导数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#xt-%E4%B8%8E-s-t-1-%E5%AF%BC%E6%95%B0"><span class="nav-number">2.3.3.</span> <span class="nav-text">$xt$ 与 $s{t-1}$ 导数</span></a></li></ol></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E3%80%90%E6%A6%82%E8%BF%B0%E3%80%91"><span class="nav-number">1.</span> <span class="nav-text">【概述】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E3%80%90%E7%AE%97%E6%B3%95%E5%8E%9F%E7%90%86%E3%80%91"><span class="nav-number">2.</span> <span class="nav-text">【算法原理】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AC%A6%E5%8F%B7%E5%81%87%E8%AE%BE"><span class="nav-number">2.1.</span> <span class="nav-text">符号假设</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9B%B4%E6%96%B0%E6%A2%AF%E5%BA%A6"><span class="nav-number">2.2.</span> <span class="nav-text">更新梯度</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BE%AA%E7%8E%AF%E5%8D%95%E5%85%83%E5%86%85%E9%83%A8%E7%9A%84%E6%A2%AF%E5%BA%A6"><span class="nav-number">2.3.</span> <span class="nav-text">循环单元内部的梯度</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%BF%80%E6%B4%BB%E5%87%BD%E6%95%B0%E7%9A%84%E5%AF%BC%E6%95%B0"><span class="nav-number">2.3.1.</span> <span class="nav-text">激活函数的导数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#U-%E3%80%81-W-%E3%80%81-mathbf-b-h-%E7%9A%84%E5%AF%BC%E6%95%B0"><span class="nav-number">2.3.2.</span> <span class="nav-text">$U$、$W$、$\mathbf{b}_h$ 的导数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#x-t-%E4%B8%8E-s-t-1-%E5%AF%BC%E6%95%B0"><span class="nav-number">2.3.3.</span> <span class="nav-text">$x_t$ 与 $s_{t-1}$ 导数</span></a></li></ol></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -501,7 +501,7 @@ s_t= \tanh(U\cdot x_{t} + W\cdot s_{t-1}+\mathbf{b}_h)</script><p>同时，$t$ �
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">752</span>
+          <span class="site-state-item-count">757</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>

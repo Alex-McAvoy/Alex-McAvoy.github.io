@@ -272,7 +272,7 @@
       
         <h1 id="【概述】"><a href="#【概述】" class="headerlink" title="【概述】"></a>【概述】</h1><p>N-Gram 模型是一种基于统计语言模型的算法，常用于预测一个文本中下一个单词出现的概率</p>
 <p>其基本思想是将文本内容按词进行大小为 $N$ 的滑动窗口操作，形成长度是 $N$ 的词片段序列，每一个词片段被称为 gram，通过这种序列信息，来预测下一个项的出现概率</p>
-<h1 id="【基本思想】"><a href="#【基本思想】" class="headerlink" title="【基本思想】"></a>【基本思想】</h1><h2 id="概率计算"><a href="#概率计算" class="headerlink" title="概率计算"></a>概率计算</h2><p>假设有一个由 $n$ 个词组成的句子 $S=(w<em>1,w_2,\cdots,w_n)$，每一个单词 $w_i$ 都依赖于从第 $w_1$ 个词到它前一个词 $w</em>{i-1}$ 的影响，整句的概率就是各个词出现概率的乘积，那么这个句子的概率为：</p>
+<h1 id="【基本思想】"><a href="#【基本思想】" class="headerlink" title="【基本思想】"></a>【基本思想】</h1><h2 id="概率计算"><a href="#概率计算" class="headerlink" title="概率计算"></a>概率计算</h2><p>假设有一个由 $n$ 个词组成的句子 $S=(w_1,w_2,\cdots,w_n)$，每一个单词 $w_i$ 都依赖于从第 $w_1$ 个词到它前一个词 $w_{i-1}$ 的影响，整句的概率就是各个词出现概率的乘积，那么这个句子的概率为：</p>
 <script type="math/tex; mode=display">
 \begin{align*}
 P(S)
@@ -317,7 +317,7 @@ P(S)
 p(w_1,w_2,\cdots,w_n) 
 &= \prod_{i=1}^n p(w_i|w_{i-1}\cdots w_1) \\
 &\approx \prod_{i=1}^n p(w_i|w_{i-1}\cdots w_{i-N+1})
-\end{align*}</script><p>此时问题的核心就是如何计算每一项的条件概率 $p(w<em>i|w</em>{i-1}\cdots w_2 w_1)$，由于整句的概率就是各个词出现概率的乘积，那么有：</p>
+\end{align*}</script><p>此时问题的核心就是如何计算每一项的条件概率 $p(w_i|w_{i-1}\cdots w_2 w_1)$，由于整句的概率就是各个词出现概率的乘积，那么有：</p>
 <script type="math/tex; mode=display">
 p(w_i|w_{i-1}\cdots w_{i-N+1}) = \frac{C(w_1w_2\cdots w_i)}{C(w_1w_2\cdots w_{i-1})}</script><p>其中，函数 $C(*)$ 代表取参数 $*$​​ 的频数</p>
 <p>可以发现，对于词袋法来说，其本质上就是一个 Uni-Gram 模型</p>
@@ -358,7 +358,7 @@ PP(S)
 <p>为解决这种稀疏性问题，在计算条件概率时引入<strong>数据平滑（Data Smoothing）</strong>，重新分配整个概率空间，使得已经出现的 N-Gram 的概率降低，补充给未曾出现过的 N-Gram</p>
 <p>常见的数据平滑方法有内插法、回溯法、拉普拉斯平滑、add-K、Absolute Discounting、Kneser-Ney 平滑等，这里仅介绍最简单的两种</p>
 <h2 id="内插法"><a href="#内插法" class="headerlink" title="内插法"></a>内插法</h2><p><strong>内插法（Interpolation）</strong>有点像滑动平均，其核心思想是：既然高阶组合可能出现次数为 $0$，那稍微低阶一点的组合总有不为 $0$ 的，因此利用低阶的组合来计算高阶组合的概率</p>
-<p>例如，对于一个三阶组合 $p(w<em>{i}|w</em>{i-1}w<em>{i-2})=0$，有 $p(w</em>{i}|w_{i-1})&gt;0$ 且 $p(w_i)&gt;0$，那么加权平均后有：</p>
+<p>例如，对于一个三阶组合 $p(w_{i}|w_{i-1}w_{i-2})=0$，有 $p(w_{i}|w_{i-1})&gt;0$ 且 $p(w_i)&gt;0$，那么加权平均后有：</p>
 <script type="math/tex; mode=display">
 \tilde{p}(w_{i}|w_{i-1}w_{i-2}) = \lambda_3 p(w_{i}|w_{i-1}w_{i-2}) + \lambda_2 p(w_{i}|w_{i-1}) + \lambda_1 p(w_i)</script><h2 id="拉普拉斯平滑"><a href="#拉普拉斯平滑" class="headerlink" title="拉普拉斯平滑"></a>拉普拉斯平滑</h2><p><strong>拉普拉斯平滑（Laplacian Smoothing）</strong>，是强制让所有的 N-Gram 至少出现一次，只需要在分子和分母上分别做加法即可，但由于大部分的 N-Gram 都是没有出现过的，该方法很容易为他们分配过多的概率空间</p>
 <script type="math/tex; mode=display">
@@ -501,7 +501,7 @@ p(w_i|w_{i-1}\cdots w_{i-N+1}) = \frac{C(w_1w_2\cdots w_i)+1}{C(w_1w_2\cdots w_{
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">752</span>
+          <span class="site-state-item-count">757</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>

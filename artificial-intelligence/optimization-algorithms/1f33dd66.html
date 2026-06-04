@@ -280,7 +280,7 @@ s.t. && g_i(\mathbf{x})\leq 0 ,&& i=1,2,\cdots,k \\
 && h_i(\mathbf{x}) = 0, && i=1,2,\cdots,l
 \end{matrix}</script><p>其中，目标函数 $f(\mathbf{x})$ 和约束函数 $g_i(\mathbf{x})$ 都是 $\mathbb{R}^n$ 上的<strong>连续可微的凸函数</strong>，约束函数 $h_i(\mathbf{x})$ 是 $\mathbb{R}^n$ 上的<strong>仿射函数</strong>，即满足 $f(\mathbf{x}) = \mathbf{a}\cdot \mathbf{x} + b$，其中，$\mathbf{a}\in \mathbb{R}^n,b\in \mathbb{R},\mathbf{x}\in \mathbb{R}^{n}$</p>
 <p>当目标函数 $f(\mathbf{x})$ 是二次函数且约束函数 $g_i(\mathbf{x})$ 是仿射函数时，上述的凸优化问题即<strong>凸二次规划问题（Convex Quadratic Programming）</strong></p>
-<h1 id="【SMO-算法的基本思想】"><a href="#【SMO-算法的基本思想】" class="headerlink" title="【SMO 算法的基本思想】"></a>【SMO 算法的基本思想】</h1><p>对于容量为 $n$ 的样本集 $D={(\mathbf{x}_1,y_1),(\mathbf{x}_2,y_2),…,(\mathbf{x}_n,y_n)}$，第 $i$ 组样本中的输入 $\mathbf{x}_i$ 具有 $m$ 个特征值，即：$\mathbf{x}_i=(x_i^{(1)},x_i^{(2)},…,x_i^{(m)})\in \mathbb{R}^m$，输出 $y_i\in\mathcal{Y}={-1,+1}$</p>
+<h1 id="【SMO-算法的基本思想】"><a href="#【SMO-算法的基本思想】" class="headerlink" title="【SMO 算法的基本思想】"></a>【SMO 算法的基本思想】</h1><p>对于容量为 $n$ 的样本集 $D=\{(\mathbf{x}_1,y_1),(\mathbf{x}_2,y_2),…,(\mathbf{x}_n,y_n)\}$，第 $i$ 组样本中的输入 $\mathbf{x}_i$ 具有 $m$ 个特征值，即：$\mathbf{x}_i=(x_i^{(1)},x_i^{(2)},…,x_i^{(m)})\in \mathbb{R}^m$，输出 $y_i\in\mathcal{Y}=\{-1,+1\}$</p>
 <p>SMO 算法要对如下的凸二次规划的对偶问题进行求解：</p>
 <script type="math/tex; mode=display">
 \begin{matrix}
@@ -292,7 +292,7 @@ s.t. && \sum\limits_{i=1}^n\alpha_i y_i= 0 \\
 <p>若所有变量的解均满足最优化问题的 KKT 条件，由于 KKT 条件是最优化问题的充分必要条件，那么这个最优化问题的解就得到了</p>
 <p>否则，选择两个变量，固定其他变量，针对这两个变量构建一个二次规划子问题，并进行解析求解，直到所有变量满足 KKT 条件为止</p>
 <p>由于构建的二次规划子问题会使得原始二次规划问题的目标函数值更小，因此关于这两个变量的解会更接近原始二次规划问题的解</p>
-<p>对于选择的两个变量，一个是违反 KKT 条件最严重的那个，另一个是由约束条件自动确定的，假设 $\alpha<em>1$ 和 $\alpha_2$ 是选择的两个变量，$\alpha_3,\alpha_4,\cdots,\alpha_n$ 固定，那么通过上述的凸二次规划的对偶问题的等式约束 $\sum\limits</em>{i=1}^n\alpha_i y_i=0$，可得：</p>
+<p>对于选择的两个变量，一个是违反 KKT 条件最严重的那个，另一个是由约束条件自动确定的，假设 $\alpha_1$ 和 $\alpha_2$ 是选择的两个变量，$\alpha_3,\alpha_4,\cdots,\alpha_n$ 固定，那么通过上述的凸二次规划的对偶问题的等式约束 $\sum\limits_{i=1}^n\alpha_i y_i=0$，可得：</p>
 <script type="math/tex; mode=display">
 \alpha_1 = -y_1\sum_{i=2}^n \alpha_i y_i</script><p>如此一来，如果 $\alpha_2$ 确定，那么 $\alpha_1$ 也随之确定，因此，可以将原问题不断分解为子问题，并对子问题进行求解时同时更新两个变量，直到得到子问题的解，进而达到求解原问题的目的</p>
 <p>综上所述，整个 SMO 算法包括两个部分：求解两个变量二次规划的解析方法、选择变量的启发式方法</p>
@@ -314,7 +314,7 @@ s.t. && \alpha_1y_1 + \alpha_2y_2 = -\sum\limits_{i=3}^n y_i\alpha_i = \varsigma
 \end{matrix}</script><p>其中，$K_{ij} = K(\mathbf{x}_i,\mathbf{x}_j)$，$\varsigma$ 为常数，同时，最优化目标函数式中省略了不含 $\alpha_1,\alpha_2$ 的常数项</p>
 <h2 id="约束条件的分析"><a href="#约束条件的分析" class="headerlink" title="约束条件的分析"></a>约束条件的分析</h2><p>为求解上述的两个变量的二次规划子问题，首先分析约束条件，然后在该约束条件下求极小</p>
 <p>由于只有两个变量 $\alpha_1,\alpha_2$，约束条件可以用二维空间中的图形来表示</p>
-<p>对于不等式约束 $0\leq \alpha<em>i \leq C$，其使得 $\alpha_1,\alpha_2$ 在 $[0,C]\times[0,C]$ 内，对于等式约束 $\alpha_1y_1 + \alpha_2y_2 = -\sum\limits</em>{i=3}^n y_i\alpha_i = \varsigma$，其使得 $\alpha_1,\alpha_2$ 在平行于 $[0,C]\times[0,C]$ 的对角线的直线上</p>
+<p>对于不等式约束 $0\leq \alpha_i \leq C$，其使得 $\alpha_1,\alpha_2$ 在 $[0,C]\times[0,C]$ 内，对于等式约束 $\alpha_1y_1 + \alpha_2y_2 = -\sum\limits_{i=3}^n y_i\alpha_i = \varsigma$，其使得 $\alpha_1,\alpha_2$ 在平行于 $[0,C]\times[0,C]$ 的对角线的直线上</p>
 <p><img src="/images/artificial-intelligence/optimization-algorithms/04-1.png"/></p>
 <p>因此，要求的实际上是目标函数在一条平行于对角线的线段上的最优值，这使得对这两个变量的最优化问题成为了单变量的优化问题</p>
 <h2 id="单变量的最优化问题"><a href="#单变量的最优化问题" class="headerlink" title="单变量的最优化问题"></a>单变量的最优化问题</h2><p>不妨将上述的单变量优化问题假设为对变量 $\alpha_2$ 的最优化问题，同时，假设二次规划子问题的初始可行解为 $\alpha_1^{\text{old}}$ 和 $\alpha_2^{\text{old}}$，最优解为 $\alpha_1^{\text{new}}$ 和 $\alpha_2^{\text{new}}$，并且假设在沿着约束方向未经剪辑时 $\alpha_2$ 的最优解为 $\alpha_2^{\text{new,unc}}$</p>
@@ -373,7 +373,7 @@ E_i = g(\mathbf{x}_i)-y_i = \big(\sum_{j=1}^n \alpha_j y_j K_{ji}+\theta\big)-y_
 &(K_{11}+K_{22}-2K_{12})\alpha_2^{\text{new,unc}} \\
 &= y_2 \big( (K_{11}+K_{22}-2K_{12})\alpha_2^{\text{old}}y_2 + y_2-y_1 + g(\mathbf{x}_1) - g(\mathbf{x}_2) \big) \\
 &= (K_{11}+K_{22}-2K_{12})\alpha_2^{\text{old}} + y_2(E_1-E_2)
-\end{align*}</script><p>令 $\eta = K<em>{11}+K</em>{22}-2K_{12}$，则有：</p>
+\end{align*}</script><p>令 $\eta = K_{11}+K_{22}-2K_{12}$，则有：</p>
 <script type="math/tex; mode=display">
 \alpha_2^{\text{new,unc}}
 = \alpha_2^{\text{old}} + \frac{y_2(E_1-E_2)}{\eta}</script><p>即沿着约束方向未经剪辑的 $\alpha_2$ 的解，也就是不考虑不等式约束 $0\leq \alpha_i \leq C$ 的最优解 $\alpha_2^{\text{new,unc}}$</p>
@@ -395,7 +395,7 @@ L, && \alpha_2^{\text{new,unc}}<L
 \alpha_i = 0 \Leftrightarrow y_ig_i(\mathbf{x}_i) \geq 1 \\
 0 < \alpha_i < C \Leftrightarrow y_ig_i(\mathbf{x}_i) = 1 \\
 \alpha_i = C \Leftrightarrow y_ig_i(\mathbf{x}_i) \leq 1 \\
-\end{gather*}</script><p>其中，$g(\mathbf{x}<em>i) = \sum\limits</em>{j=1}^n \alpha<em>j y_j K</em>{ij} +\theta$</p>
+\end{gather*}</script><p>其中，$g(\mathbf{x}_i) = \sum\limits_{j=1}^n \alpha_j y_j K_{ij} +\theta$</p>
 <p>该检验是在 $\varepsilon$ 范围内进行的，在检验过程中，外层循环首先遍历所有满足条件 $0\leq \alpha_i &lt;C$ 的样本点，即间隔边界上的支持向量点，经检查它们是否满足 KKT 条件</p>
 <p>若间隔边界上的样本点均满足 KKT 条件，那么继而会遍历整个训练集，检验它们是否满足 KKT 条件</p>
 <h2 id="内层循环"><a href="#内层循环" class="headerlink" title="内层循环"></a>内层循环</h2><p>SMO 称选择第二个变量的过程为<strong>内层循环</strong>，假设在外层循环已经找到第一个变量 $\alpha_1$，要在内存循环中寻找到第二个变量 $\alpha_2$，其选择的标准是希望能够使 $\alpha_2$ 有足够大的变化</p>
@@ -421,7 +421,7 @@ L, && \alpha_2^{\text{new,unc}}<L
 <script type="math/tex; mode=display">
 \sum_{i=1}^n \alpha_i y_i K_{i1} +\theta = y_1</script><p>于是，有：</p>
 <script type="math/tex; mode=display">
-\theta_1^{\text{new}} = y_1 - \sum_{i=3}^n \alpha_i y_i K_{i1} - \alpha_1^{\text{new}} y_1 K_{11} - \alpha_2^{\text{new}}y_2 K_{21}</script><p>根据 $E<em>1$ 的定义式 $E_1 = \big(\sum\limits</em>{j=1}^n \alpha<em>j y_j K</em>{j1}+\theta\big)-y_1$，有：</p>
+\theta_1^{\text{new}} = y_1 - \sum_{i=3}^n \alpha_i y_i K_{i1} - \alpha_1^{\text{new}} y_1 K_{11} - \alpha_2^{\text{new}}y_2 K_{21}</script><p>根据 $E_1$ 的定义式 $E_1 = \big(\sum\limits_{j=1}^n \alpha_j y_j K_{j1}+\theta\big)-y_1$，有：</p>
 <script type="math/tex; mode=display">
 E_1 = \sum_{i=3}^n \alpha_i y_i K_{i1} + \alpha_1^{\text{old}} y_1 K_{11} + \alpha_2^{\text{old}}y_2K_{21}+\theta^{\text{old}}-y_1</script><p>于是，对于 $\theta_1^{\text{new}}$ 的前两项，有：</p>
 <script type="math/tex; mode=display">
@@ -438,7 +438,7 @@ E_1 = \sum_{i=3}^n \alpha_i y_i K_{i1} + \alpha_1^{\text{old}} y_1 K_{11} + \alp
 <script type="math/tex; mode=display">
 E_i^{\text{new}} = \sum_{\mathbf{x}_j\in S} y_j \alpha_j K_{ij} + \theta^{\text{new}} -y_i</script><p>其中，$S$ 是所有支持向量 $\mathbf{x}_j$ 的集合</p>
 <h1 id="【SMO-算法流程】"><a href="#【SMO-算法流程】" class="headerlink" title="【SMO 算法流程】"></a>【SMO 算法流程】</h1><p>下面给出 SMO 算法的算法流程</p>
-<p>输入：对于容量为 $n$ 的样本集 $D={(\mathbf{x}_1,y_1),(\mathbf{x}_2,y_2),…,(\mathbf{x}_n,y_n)}$，第 $i$ 组样本中的输入 $\mathbf{x}_i$ 具有 $m$ 个特征值，即：$\mathbf{x}_i=(x_i^{(1)},x_i^{(2)},…,x_i^{(m)})\in \mathbb{R}^m$，输出 $y_i\in\mathcal{Y}={-1,+1}$，精度 $\varepsilon$</p>
+<p>输入：对于容量为 $n$ 的样本集 $D=\{(\mathbf{x}_1,y_1),(\mathbf{x}_2,y_2),…,(\mathbf{x}_n,y_n)\}$，第 $i$ 组样本中的输入 $\mathbf{x}_i$ 具有 $m$ 个特征值，即：$\mathbf{x}_i=(x_i^{(1)},x_i^{(2)},…,x_i^{(m)})\in \mathbb{R}^m$，输出 $y_i\in\mathcal{Y}=\{-1,+1\}$，精度 $\varepsilon$</p>
 <p>输出：凸二次规划的对偶问题的近似解 $\hat{\boldsymbol{\alpha}}$</p>
 <p>算法步骤：</p>
 <p>Step1：取初值 $\boldsymbol{\alpha}^{(0)}$，并令 $k=0$</p>
@@ -466,7 +466,7 @@ y_i\cdot g(\mathbf{x}_i) = \left\{\begin{array}{rl}
 =1, & \{\mathbf{x}_i | 0<\alpha_i<C \} \\
 \leq 1, & \{\mathbf{x}_i|\alpha_i =C\}
 \end{array}\right.
-\end{gather*}</script><p>其中，$g(\mathbf{x}<em>i) = \sum\limits</em>{j=1}^n \alpha<em>j y_j K</em>{ji} +\theta$</p>
+\end{gather*}</script><p>其中，$g(\mathbf{x}_i) = \sum\limits_{j=1}^n \alpha_j y_j K_{ji} +\theta$</p>
 <p>则转 Step4，否则，令 $k=k+1$，转 Step2</p>
 <p>Step4：令 $\hat{\boldsymbol{\alpha}}=\boldsymbol{\alpha}^{(k+1)}$</p>
 
@@ -607,7 +607,7 @@ y_i\cdot g(\mathbf{x}_i) = \left\{\begin{array}{rl}
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">752</span>
+          <span class="site-state-item-count">757</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>

@@ -25,12 +25,12 @@
     var CONFIG = {"hostname":"alex-mcavoy.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":16,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":true,"color":"#ff0000","save":"manual"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":true},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.json"};
   </script>
 
-  <meta name="description" content="【未标记样本】假设训练集 $D_l&#x3D;{ (\mathbf{x}_1,y_1),(\mathbf{x}_2,y_2), \cdots, (\mathbf{x}_l,y_l)}$ 的 $l$ 个样本的标签已知，称为有标记样本（Labeled sample） 还有 $Du&#x3D;{ \mathbf{x}{l+1},\mathbf{x}{l+2},\cdots,\mathbf{x}{l+u} },l\leq u">
+  <meta name="description" content="【未标记样本】假设训练集 $D_l&#x3D;\{ (\mathbf{x}_1,y_1),(\mathbf{x}_2,y_2), \cdots, (\mathbf{x}_l,y_l)\}$ 的 $l$ 个样本的标签已知，称为有标记样本（Labeled sample） 还有 $D_u&#x3D;\{ \mathbf{x}_{l+1},\mathbf{x}_{l+2},\cdots,\mathbf{x}_{l+u} \}">
 <meta property="og:type" content="article">
 <meta property="og:title" content="半监督学习">
 <meta property="og:url" content="https://alex-mcavoy.github.io/artificial-intelligence/machine-learning/semi-supervised-learning/d9967647.html">
 <meta property="og:site_name" content="Alex_McAvoy">
-<meta property="og:description" content="【未标记样本】假设训练集 $D_l&#x3D;{ (\mathbf{x}_1,y_1),(\mathbf{x}_2,y_2), \cdots, (\mathbf{x}_l,y_l)}$ 的 $l$ 个样本的标签已知，称为有标记样本（Labeled sample） 还有 $Du&#x3D;{ \mathbf{x}{l+1},\mathbf{x}{l+2},\cdots,\mathbf{x}{l+u} },l\leq u">
+<meta property="og:description" content="【未标记样本】假设训练集 $D_l&#x3D;\{ (\mathbf{x}_1,y_1),(\mathbf{x}_2,y_2), \cdots, (\mathbf{x}_l,y_l)\}$ 的 $l$ 个样本的标签已知，称为有标记样本（Labeled sample） 还有 $D_u&#x3D;\{ \mathbf{x}_{l+1},\mathbf{x}_{l+2},\cdots,\mathbf{x}_{l+u} \}">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/machine-learning/semi-supervised-learning/01-1.png">
 <meta property="og:image" content="https://alex-mcavoy.github.io/images/artificial-intelligence/machine-learning/semi-supervised-learning/01-2.png">
@@ -275,8 +275,8 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <h1 id="【未标记样本】"><a href="#【未标记样本】" class="headerlink" title="【未标记样本】"></a>【未标记样本】</h1><p>假设训练集 $D_l={ (\mathbf{x}_1,y_1),(\mathbf{x}_2,y_2), \cdots, (\mathbf{x}_l,y_l)}$ 的 $l$ 个样本的标签已知，称为<strong>有标记样本（Labeled sample）</strong></p>
-<p>还有 $D<em>u={ \mathbf{x}</em>{l+1},\mathbf{x}<em>{l+2},\cdots,\mathbf{x}</em>{l+u} },l\leq u$ 个样本的标签未知，称为<strong>无标记样本（Unlabeled Sample）</strong></p>
+        <h1 id="【未标记样本】"><a href="#【未标记样本】" class="headerlink" title="【未标记样本】"></a>【未标记样本】</h1><p>假设训练集 $D_l=\{ (\mathbf{x}_1,y_1),(\mathbf{x}_2,y_2), \cdots, (\mathbf{x}_l,y_l)\}$ 的 $l$ 个样本的标签已知，称为<strong>有标记样本（Labeled sample）</strong></p>
+<p>还有 $D_u=\{ \mathbf{x}_{l+1},\mathbf{x}_{l+2},\cdots,\mathbf{x}_{l+u} \},l\leq u$ 个样本的标签未知，称为<strong>无标记样本（Unlabeled Sample）</strong></p>
 <p>若直接使用监督学习技术，则仅有 $D_l$ 能用于构建模型，$D_u$ 所包含的信息则被浪费了，同时，若 $D_l$ 较小，则会由于训练样本的不足，习得模型的泛化性能往往不佳，这就需要一种方式，在构建模型过程中将 $D_u$ 也利用起来</p>
 <h1 id="【主动学习】"><a href="#【主动学习】" class="headerlink" title="【主动学习】"></a>【主动学习】</h1><p>针对未标记样本，一个最简单的做法是将 $D_u$ 中的样本全部标记后再用于模型训练，但显然这样需要耗费大量的时间和精力进行标注</p>
 <p>另一种方式是，可以使用 $D_l$ 先训练一个模型，然后从 $D_u$ 中选取一个未标记样本并给出标签，再将这个具有标记的新样本加入到 $D_l$​ 中重新训练，以此往复</p>
@@ -435,7 +435,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">752</span>
+          <span class="site-state-item-count">757</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>

@@ -313,13 +313,13 @@
 <script type="math/tex; mode=display">
 v_n: \text{ne}[n] \rightarrow \{1,2,\cdots,|N|\}</script><p>假设存在一个图-结点对的集合 $\mathcal{D}=\mathcal{G}\times \mathcal{N}$，$\mathcal{G}$ 为图的集合，$\mathcal{N}$ 为结点集合，那么图领域问题可以表示为有如下数据集的监督学习框架：</p>
 <script type="math/tex; mode=display">
-\mathcal{L} = \{ (G_i,n_{ij},\mathbf{t}_{ij}) | G_i=(N_i,E_i)\in\mathcal{G};n_{ij}\in N_{i};\mathbf{t}_{ij}\in\mathbb{R}^m;1\leq i\leq p,1\leq j \leq q_i \}</script><p>其中，$n<em>{ij}\in N_i$ 表示集合 $N_i \in \mathcal{N}$ 中的第 $j$ 个结点，$\mathbf{t}</em>{ij}$ 表示结点 $n<em>{ij}$ 的期望目标（标签），$p\leq |\mathcal{G}|,q</em>{i}\leq |\mathcal{N_i}|$</p>
+\mathcal{L} = \{ (G_i,n_{ij},\mathbf{t}_{ij}) | G_i=(N_i,E_i)\in\mathcal{G};n_{ij}\in N_{i};\mathbf{t}_{ij}\in\mathbb{R}^m;1\leq i\leq p,1\leq j \leq q_i \}</script><p>其中，$n_{ij}\in N_i$ 表示集合 $N_i \in \mathcal{N}$ 中的第 $j$ 个结点，$\mathbf{t}_{ij}$ 表示结点 $n_{ij}$ 的期望目标（标签），$p\leq |\mathcal{G}|,q_{i}\leq |\mathcal{N_i}|$</p>
 <h2 id="模型表示"><a href="#模型表示" class="headerlink" title="模型表示"></a>模型表示</h2><p>对于图中的结点 $n$，其状态用 $\mathbf{x}_n\in \mathbb{R}^s$ 表示，输出用 $\mathbf{o}_n$ 表示，那么状态和输出可以表示为：</p>
 <script type="math/tex; mode=display">
 \begin{gather*}
 \mathbf{x}_n = f_w(\mathbf{l}_n,\mathbf{l}_{\text{co}[n]},\mathbf{x}_{\text{ne}[n]},\mathbf{l}_{\text{ne}[n]}) \\
 \mathbf{o}_n = g_w(\mathbf{x}_n,\mathbf{l}_n)
-\end{gather*}</script><p>其中，$f<em>w$ 被称为<strong>局部转移函数（Local Transition Function）</strong>，其表达了结点对其领域的依赖关系，$g_w$ 被称为<strong>局部输出函数（Local Output Function）</strong>，其描述了输出如何产生的，$\mathbf{l}_n$ 是结点 $n$ 的特征向量，$\mathbf{l}</em>{\text{co}[n]}$ 是以结点 $n$ 为顶点的边的特征向量，$\mathbf{x}<em>{\text{ne}[n]}$ 是结点 $n$ 的邻居结点的状态，$\mathbf{l}</em>{\text{ne}}[n]$ 是结点 $n$ 的邻居结点的特征向量</p>
+\end{gather*}</script><p>其中，$f_w$ 被称为<strong>局部转移函数（Local Transition Function）</strong>，其表达了结点对其领域的依赖关系，$g_w$ 被称为<strong>局部输出函数（Local Output Function）</strong>，其描述了输出如何产生的，$\mathbf{l}_n$ 是结点 $n$ 的特征向量，$\mathbf{l}_{\text{co}[n]}$ 是以结点 $n$ 为顶点的边的特征向量，$\mathbf{x}_{\text{ne}[n]}$ 是结点 $n$ 的邻居结点的状态，$\mathbf{l}_{\text{ne}}[n]$ 是结点 $n$ 的邻居结点的特征向量</p>
 <p>令 $\mathbf{x},\mathbf{o},\mathbf{l},\mathbf{l}_N$ 表示所有结点的状态、输出、特征向量、所有结点特征向量叠加构造的向量，那么上式可写为：</p>
 <script type="math/tex; mode=display">
 \mathbf{x} = F_w(\mathbf{x},\mathbf{l}) \\
@@ -356,12 +356,12 @@ e_{w} = \sum_{i=1}^p\sum_{j=1}^{q_i} (\mathbf{t}_{ij}-\varphi(G_i,n_{ij}))^2</sc
 <p>算法流程图如下，其中 FORWARD 用于迭代计算出收敛点，BACKWARD 用于计算梯度</p>
 <p><img width=300 src="/images/artificial-intelligence/deep-learning/gnn/01-3.png"/></p>
 <h2 id="转换和输出功能"><a href="#转换和输出功能" class="headerlink" title="转换和输出功能"></a>转换和输出功能</h2><p>在 GNN 中，局部输出函数 $g_w$ 不需要满足特定约束，直接使用多层前馈网络即可，而局部转移函数 $f_w$ 由于需要满足压缩映射的条件，且与不动点计算相关，因此需要着重考虑</p>
-<h3 id="Linear-GNN"><a href="#Linear-GNN" class="headerlink" title="Linear GNN"></a>Linear GNN</h3><p>对于结点状态的计算，将 $\mathbf{x}<em>n = f_w(\mathbf{l}_n,\mathbf{l}</em>{\text{co}[n]},\mathbf{x}<em>{\text{ne}[n]},\mathbf{l}</em>{\text{ne}[n]})$ 中的 $f_w$ 改为如下形式：</p>
+<h3 id="Linear-GNN"><a href="#Linear-GNN" class="headerlink" title="Linear GNN"></a>Linear GNN</h3><p>对于结点状态的计算，将 $\mathbf{x}_n = f_w(\mathbf{l}_n,\mathbf{l}_{\text{co}[n]},\mathbf{x}_{\text{ne}[n]},\mathbf{l}_{\text{ne}[n]})$ 中的 $f_w$ 改为如下形式：</p>
 <script type="math/tex; mode=display">
 \mathbf{x}_n = \sum_{u\in \text{ne}[n]} h_w (\mathbf{l}_n,\mathbf{l}_{(n,u)},\mathbf{x}_u,\mathbf{l}_u),
 \quad n\in N</script><p>相当于是对结点 $n$ 的邻居结点使用函数 $h_w$，并将得到的值求和作为结点 $n$ 的状态，由此，可按如下方式实现：</p>
 <script type="math/tex; mode=display">
-h_w(\mathbf{l}_n,\mathbf{l}_{(n,u)},\mathbf{x}_u,\mathbf{l}_u) = A_{nu}\mathbf{x}_u + \mathbf{b}_n</script><p>其中，向量 $\mathbf{b}<em>n\in \mathbb{R}^s$，矩阵 $A</em>{nu}\in \mathbb{R}^{s\times s}$，定义为两个前馈神经网络的输出</p>
+h_w(\mathbf{l}_n,\mathbf{l}_{(n,u)},\mathbf{x}_u,\mathbf{l}_u) = A_{nu}\mathbf{x}_u + \mathbf{b}_n</script><p>其中，向量 $\mathbf{b}_n\in \mathbb{R}^s$，矩阵 $A_{nu}\in \mathbb{R}^{s\times s}$，定义为两个前馈神经网络的输出</p>
 <p>更准确来说，产生矩阵 $A_{nu}$ 的前馈网络是<strong>过渡网络（Transition Network）</strong>，产生向量 $\mathbf{b}_n$ 的前馈网络是<strong>强迫网络（Forcing Network）</strong></p>
 <p>由于过渡网络 $\phi_w$ 和强迫网络 $\rho_w$ 分别可以表示为：</p>
 <script type="math/tex; mode=display">
@@ -373,7 +373,7 @@ h_w(\mathbf{l}_n,\mathbf{l}_{(n,u)},\mathbf{x}_u,\mathbf{l}_u) = A_{nu}\mathbf{x
 \begin{gather*}
 A_{nu} = \frac{\mu}{s| \text{ne}[u] |} \cdot \Xi \\
 \mathbf{b}_n = \rho_w(\mathbf{l}_n)
-\end{gather*}</script><p>其中，$\mu\in (0,1),\Xi=\text{resize}(\phi<em>w(\mathbf{l}_n,\mathbf{l}</em>{(n,u)},\mathbf{l}_u))$，$\text{resize}(\cdot)$ 表示将 $s^2$ 维向量 reshape 成 $s\times s$ 的矩阵</p>
+\end{gather*}</script><p>其中，$\mu\in (0,1),\Xi=\text{resize}(\phi_w(\mathbf{l}_n,\mathbf{l}_{(n,u)},\mathbf{l}_u))$，$\text{resize}(\cdot)$ 表示将 $s^2$ 维向量 reshape 成 $s\times s$ 的矩阵</p>
 <p>简单来说，就是将过渡网络的输出 reshape 成方形矩阵，然后乘以一个系数 $\frac{\mu}{s| \text{ne}[u] |}$ 即得到矩阵 $A_{nu}$，向量 $\mathbf{b}_n$ 直接就是强迫矩阵的输出</p>
 <h3 id="Non-linear-GNN"><a href="#Non-linear-GNN" class="headerlink" title="Non-linear GNN"></a>Non-linear GNN</h3><p>对于非线性 GNN 来说，$h_w$ 通过多层前馈网络实现，但不是所有的参数 $w$ 都会被使用，因为需要保证 $F_w$ 是一个压缩映射函数，这可以通过惩罚项来实现：</p>
 <script type="math/tex; mode=display">
@@ -517,7 +517,7 @@ e_w = \sum_{i=1}^p \sum_{j=1}^{q_i} (\mathbf{t}_{ij}-\varphi_w(G_i,n_{ij}))^2 +\
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">752</span>
+          <span class="site-state-item-count">757</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>

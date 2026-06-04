@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 8.1.2">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/img/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/assets/img/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/pace-js@1/themes/blue/pace-theme-minimal.css">
+  <script src="//cdn.jsdelivr.net/npm/pace-js@1/pace.min.js"></script>
+
+
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"alex-mcavoy.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":16,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":true,"color":"#ff0000","save":"manual"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":true},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.json"};
+  </script>
+
+  <meta name="description" content="【无爪函数族】基本思想单向函数族的形式化框架，也可以用来定义一类新的函数族，即无爪函数族（Claw-Free Functions Collection）。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="无爪函数族">
+<meta property="og:url" content="https://alex-mcavoy.github.io/notes/cryptology/78346139.html">
+<meta property="og:site_name" content="Alex_McAvoy">
+<meta property="og:description" content="【无爪函数族】基本思想单向函数族的形式化框架，也可以用来定义一类新的函数族，即无爪函数族（Claw-Free Functions Collection）。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-06-04T20:16:00.000Z">
+<meta property="article:modified_time" content="2026-06-04T21:00:30.467Z">
+<meta property="article:author" content="Alex_McAvoy">
+<meta property="article:tag" content="学习笔记">
+<meta property="article:tag" content="密码学">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://alex-mcavoy.github.io/notes/cryptology/78346139.html">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>无爪函数族 | Alex_McAvoy</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Alex_McAvoy</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">想要成为渔夫的猎手</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+
+	
+	
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/notes/cryptology/78346139.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/assets/img/head.jpg">
+      <meta itemprop="name" content="Alex_McAvoy">
+      <meta itemprop="description" content="想要成为渔夫的猎手">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Alex_McAvoy">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          无爪函数族
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2026-06-05 04:16:00" itemprop="dateCreated datePublished" datetime="2026-06-05T04:16:00+08:00">2026-06-05</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/notes/" itemprop="url" rel="index"><span itemprop="name">学习笔记</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/notes/cryptology/" itemprop="url" rel="index"><span itemprop="name">密码学</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>5.6k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>5 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="【无爪函数族】"><a href="#【无爪函数族】" class="headerlink" title="【无爪函数族】"></a>【无爪函数族】</h1><h2 id="基本思想"><a href="#基本思想" class="headerlink" title="基本思想"></a>基本思想</h2><p>单向函数族的形式化框架，也可以用来定义一类新的函数族，即<strong>无爪函数族（Claw-Free Functions Collection）</strong>。</p>
+<p>直观来说，一个无爪函数族由若干对函数组成。对于每个索引 $i$，都有两个函数 $f_i^0$ 和 $f_i^1$，这两个函数都容易计算，并且它们的输出分布相同。但是，给定索引 $i$ 后，想要找到一对输入 $(x,y)$，使得两个函数输出相同，即：</p>
+<script type="math/tex; mode=display">
+f_i^0(x)=f_i^1(y)</script><p>在计算上是困难的。这样的输入对 $(x,y)$ 称为索引 $i$ 对应的一个<strong>爪（Claw）</strong>。</p>
+<p>无爪并不是说这样的 $(x,y)$ 不存在，而是说即使它存在，也不能被高效找到。</p>
+<h2 id="形式化定义"><a href="#形式化定义" class="headerlink" title="形式化定义"></a>形式化定义</h2><p>设一个函数对族由以下对象组成：</p>
+<ul>
+<li><p>一个无限索引集合 $\bar I$</p>
+</li>
+<li><p>对每个 $i\in \bar I$，有两个有限定义域 $D_i^0$ 和 $D_i^1$</p>
+</li>
+<li><p>对每个 $i\in \bar I$，有两个函数：</p>
+<script type="math/tex; mode=display">
+f_i^0:D_i^0\to R_i,\qquad f_i^1:D_i^1\to R_i</script></li>
+</ul>
+<p>若存在三个概率多项式时间算法 $I,D,F$，并满足以下三个条件，则称该函数对族为无爪函数族。</p>
+<h2 id="三个条件"><a href="#三个条件" class="headerlink" title="三个条件"></a>三个条件</h2><h3 id="容易采样与计算"><a href="#容易采样与计算" class="headerlink" title="容易采样与计算"></a>容易采样与计算</h3><p>随机变量 $I(1^n)$ 的取值属于 $\bar I\cap \{0,1\}^n$，对于每个 $i\in \bar I$ 和 $\sigma\in\{0,1\}$，随机变量 $D(\sigma,i)$ 分布在 $D_i^\sigma$ 上，并且对任意 $x\in D_i^\sigma$，都有：</p>
+<script type="math/tex; mode=display">
+F(\sigma,i,x)=f_i^\sigma(x)</script><p>这说明，索引可以高效生成，定义域中的元素可以高效采样，并且两个函数 $f_i^0$ 和 $f_i^1$ 都可以高效计算。</p>
+<h3 id="输出分布相同"><a href="#输出分布相同" class="headerlink" title="输出分布相同"></a>输出分布相同</h3><p>对于每个索引 $i\in \bar I$，随机变量 $f_i^0(D(0,i))$ 和 $f_i^1(D(1,i))$ 具有相同的分布。</p>
+<p>这表示，虽然两个函数的定义域可以不同，但通过各自的定义域采样算法得到输入后，两个函数诱导出的输出分布是一样的。</p>
+<p>换句话说，从输出分布上看，二者落在同一个范围中，并且无法通过分布差异区分输出来自哪一个函数。</p>
+<h3 id="难以形成爪"><a href="#难以形成爪" class="headerlink" title="难以形成爪"></a>难以形成爪</h3><p>对于索引 $i$，如果一对输入 $(x,y)$ 满足：</p>
+<script type="math/tex; mode=display">
+f_i^0(x)=f_i^1(y)</script><p>则称 $(x,y)$ 是索引 $i$ 对应的一个<strong>爪（Claw）</strong>。</p>
+<p>记 $C_i$ 为索引 $i$ 对应的所有爪的集合，无爪性要求，对任意概率多项式时间算法 $A’$、任意正多项式 $\mathrm{poly}(\cdot)$，以及所有充分大的 $n$，都有：</p>
+<script type="math/tex; mode=display">
+P[A'(I_n)\in C_{I_n}] < \frac{1}{\mathrm{poly}(n)}</script><p>其中，$I_n$ 表示算法 $I$ 在输入 $1^n$ 时的输出分布。</p>
+<p>这表示，任意高效算法在只给定随机索引 $I_n$ 的情况下，都无法以非可忽略概率找到该索引对应的爪。</p>
+<h2 id="定义中的矛盾性要求"><a href="#定义中的矛盾性要求" class="headerlink" title="定义中的矛盾性要求"></a>定义中的矛盾性要求</h2><p>无爪函数族的后两个条件具有一种内在张力：一方面，两个函数的输出分布必须相同，因此从分布意义上看，二者具有共同输出，这至少意味着跨函数的共同原像对应该存在；另一方面，无爪性又要求高效算法无法找到这样的原像对。</p>
+<p>因此，无爪函数族的核心不是没有碰撞，而是存在跨函数碰撞，但难以找到跨函数碰撞。</p>
+<p>如果可以高效反演相关函数，就可以利用反演能力找到两个函数之间的共同输出所对应的两个原像，从而形成爪。所以，无爪函数族可以推出一族强单向函数。</p>
+<p>此外，一个特别重要的情形是：两个定义域相同，即：</p>
+<script type="math/tex; mode=display">
+D_i \stackrel{\mathrm{def}}{=} D_i^0=D_i^1</script><p>并且 $D(\sigma,i)$ 在 $D_i$ 上均匀分布，同时 $f_i^0$ 和 $f_i^1$ 都是 $D_i$ 上的置换。这样的函数族称为<strong>无爪置换对族（Collection of Claw-Free Pairs of Permutations）</strong>。</p>
+<p>与陷门置换类似，定义中的条件也可以放宽：允许算法 $I,D,F$ 以可忽略概率失败。</p>
+<p>一个无爪函数族还可能具有额外性质，即索引集合 $\bar I$ 是可以高效识别的，也就是说存在概率多项式时间算法判断一个字符串是否属于 $\bar I$。</p>
+<h1 id="【实例】"><a href="#【实例】" class="headerlink" title="【实例】"></a>【实例】</h1><p>为了说明无爪函数族并非只是抽象定义，基于离散对数问题的困难性构造一族无爪置换对，并因子分解问题分别构造无爪函数族与无爪置换对族。</p>
+<h2 id="基于离散对数问题的无爪置换对族"><a href="#基于离散对数问题的无爪置换对族" class="headerlink" title="基于离散对数问题的无爪置换对族"></a>基于离散对数问题的无爪置换对族</h2><h3 id="构造思想"><a href="#构造思想" class="headerlink" title="构造思想"></a>构造思想</h3><p>让两个函数的形式只相差一个乘法因子 $Z$，如果能够找到它们之间的爪，那么这个爪就会泄露 $Z$ 关于生成元 $G$ 的离散对数。</p>
+<p>因此，找爪的困难性可以归约到离散对数问题的困难性。</p>
+<h3 id="索引与定义域"><a href="#索引与定义域" class="headerlink" title="索引与定义域"></a>索引与定义域</h3><p>索引集合由三元组组成：</p>
+<script type="math/tex; mode=display">
+(P,G,Z)</script><p>其中，$P$ 是一个质数，$G$ 是模 $P$ 的本原元，$Z$ 是模 $P$ 的非零剩余元。</p>
+<p>索引采样算法按照<a href="https://alex-mcavoy.github.io/notes/cryptology/66bb3dc1.html">常见的单向函数族</a>中离散对数函数族中的方式选择 $P$ 和 $G$，并从模 $P$ 的非零剩余元中均匀选择 $Z$，对于索引 $(P,G,Z)$，两个函数的定义域相同，均为：</p>
+<script type="math/tex; mode=display">
+\{1,\cdots,P-1\}</script><p>定义域采样算法从该集合中均匀采样。</p>
+<h3 id="函数映射"><a href="#函数映射" class="headerlink" title="函数映射"></a>函数映射</h3><p>对 $\sigma\in\{0,1\}$，定义：</p>
+<script type="math/tex; mode=display">
+f_{P,G,Z}^{\sigma}(x)\stackrel{\mathrm{def}}{=}Z^\sigma\cdot G^x \bmod P</script><p>即当 $\sigma=0$ 时：</p>
+<script type="math/tex; mode=display">
+f_{P,G,Z}^{0}(x)=G^x \bmod P</script><p>当 $\sigma=1$ 时：</p>
+<script type="math/tex; mode=display">
+f_{P,G,Z}^{1}(x)=Z\cdot G^x \bmod P</script><p>由于 $G$ 是模 $P$ 的本原元，$G^x$ 在非零剩余元中形成置换，再乘以非零元素 $Z$ 仍然是置换。因此，$f_{P,G,Z}^{0}$ 和 $f_{P,G,Z}^{1}$ 都是定义域 ${1,\cdots,P-1}$ 上的置换。</p>
+<p>特别地，$f_{P,G,Z}^{0}$ 与前面 DLP 函数族中的函数 $DLP_{P,G}$ 一致。</p>
+<h3 id="无爪性的证明"><a href="#无爪性的证明" class="headerlink" title="无爪性的证明"></a>无爪性的证明</h3><p>如果能够找到索引 $(P,G,Z)$ 对应的一个爪 $(x,y)$，则有：</p>
+<script type="math/tex; mode=display">
+f_{P,G,Z}^{0}(x)=f_{P,G,Z}^{1}(y)</script><p>代入函数定义，得到：</p>
+<script type="math/tex; mode=display">
+G^x \equiv Z\cdot G^y \pmod P</script><p>于是：</p>
+<script type="math/tex; mode=display">
+G^{x-y}\equiv Z \pmod P</script><p>这说明，$x-y$ 就给出了 $Z$ 关于底数 $G$ 的离散对数。</p>
+<p>因此，如果存在高效算法能够在非可忽略比例的索引上形成爪，那么就可以利用它反演前面定义的离散对数函数族。换句话说，如果离散对数函数族是单向的，那么由</p>
+<script type="math/tex; mode=display">
+f_{P,G,Z}^{\sigma}(x)=Z^\sigma\cdot G^x \bmod P</script><p>定义的置换对族就是无爪的。</p>
+<h3 id="索引集合的识别问题"><a href="#索引集合的识别问题" class="headerlink" title="索引集合的识别问题"></a>索引集合的识别问题</h3><p>上述构造的一个不足是：它不一定具有可高效识别的索引集合。原因在于，目前并不知道如何高效判断一个元素是否是模质数 $P$ 的本原元。</p>
+<p>为了解决这一点，可以作出稍强的离散对数困难性假设：即使给定乘法群大小 $P-1$ 的因子分解，离散对数问题仍然是困难的。在这个假设下，可以把 $P-1$ 的因子分解也加入索引描述中。这样就可以通过检查：</p>
+<script type="math/tex; mode=display">
+G^{(P-1)/Q}\not\equiv 1 \pmod P</script><p>来判断 $G$ 是否为本原元。其中，$Q$ 遍历 $P-1$ 的素因子。</p>
+<p>如果进一步假设离散对数在形如：</p>
+<script type="math/tex; mode=display">
+P=2Q+1</script><p>且 $Q$ 也是质数的情况下仍然困难，那么识别会更简单。此时只需要计算：</p>
+<script type="math/tex; mode=display">
+G^2\bmod P,\quad G^{(P-1)/2}\bmod P</script><p>并检查二者是否都不等于 $1$，即可判断 $G$ 是否为本原元。</p>
+<h2 id="基于因子分解问题的无爪函数族"><a href="#基于因子分解问题的无爪函数族" class="headerlink" title="基于因子分解问题的无爪函数族"></a>基于因子分解问题的无爪函数族</h2><h3 id="Jacobi-符号"><a href="#Jacobi-符号" class="headerlink" title="Jacobi 符号"></a>Jacobi 符号</h3><p><strong>Jacobi 符号（Jacobi Symbol）</strong>可以看作 Legendre 符号在合数模数上的推广。若 $N=P\cdot Q$ 是两个奇质数的乘积，且 $a$ 与 $N$ 互素，则 $a$ 关于 $N$ 的 Jacobi 符号定义为：</p>
+<script type="math/tex; mode=display">
+\left(\frac{a}{N}\right)=\left(\frac{a}{P}\right)\left(\frac{a}{Q}\right)</script><p>其中 $\left(\frac{a}{P}\right)$ 和 $\left(\frac{a}{Q}\right)$ 是 Legendre 符号，用于表示 $a$ 分别在模 $P$ 和模 $Q$ 下是否为二次剩余。</p>
+<p>当 $N$ 是合数时，$\left(\frac{a}{N}\right)=1$ 并不一定说明 $a$ 是模 $N$ 下的二次剩余，但如果 $a$ 是模 $N$ 下的二次剩余，那么它的 Jacobi 符号一定为 $1$。</p>
+<p>因此，Jacobi 符号可以把模 $N$ 乘法群中的元素划分为符号为 $+1$ 和 $-1$ 的两类。</p>
+<h3 id="构造思想-1"><a href="#构造思想-1" class="headerlink" title="构造思想"></a>构造思想</h3><p>该构造基于整数因子分解的困难性。核心思想是：利用 Blum 整数的结构性质构造两个平方函数，使得它们的输出分布相同；如果能够找到这两个函数之间的爪，就能够进一步得到 $N$ 的非平凡因子分解。</p>
+<p>对于 Blum 整数 $N$，使用 Jacobi 符号的两个性质：</p>
+<ol>
+<li>$-1$ 在模 $N$ 下的 Jacobi 符号等于 $1$</li>
+<li>每个二次剩余的平方根中，有一半的 Jacobi 符号为 $1$</li>
+</ol>
+<p>记 $J_N^{+1}$ 为模 $N$ 乘法群中 Jacobi 符号为 $+1$ 的剩余类集合，记 $J_N^{-1}$ 为模 $N$ 乘法群中 Jacobi 符号为 $-1$ 的剩余类集合。</p>
+<h3 id="索引、定义域与函数映射"><a href="#索引、定义域与函数映射" class="headerlink" title="索引、定义域与函数映射"></a>索引、定义域与函数映射</h3><p>该函数族的索引集合由所有 Blum 整数组成，并且这些 Blum 整数由两个长度相同的质数相乘得到。</p>
+<p>索引选择算法在输入 $1^n$ 后，均匀选择两个 $n$ 比特质数，要求它们都满足：</p>
+<script type="math/tex; mode=display">
+P\equiv Q\equiv 3 \pmod 4</script><p>然后输出它们的乘积：</p>
+<script type="math/tex; mode=display">
+N=P\cdot Q</script><p>对于索引 $N$，两个函数 $f_N^0$ 和 $f_N^1$ 都是模 $N$ 平方函数，但它们的定义域是互不相交的。具体来说，函数 $f_N^\sigma$ 的定义域为：</p>
+<script type="math/tex; mode=display">
+J_N^{(-1)^\sigma}</script><p>即 $f_N^0$  的定义域是 $J_N^{+1}$，而 $f_N^1$ 的定义域是 $J_N^{-1}$。</p>
+<p>两个函数都定义为：</p>
+<script type="math/tex; mode=display">
+f_N^\sigma(x)=x^2\bmod N</script><p>定义域采样算法 $D$ 在输入 $(\sigma,N)$ 后，均匀选择若干个模 $N$ 的剩余类，并输出第一个 Jacobi 符号为 $(-1)^\sigma$ 的元素，这样可以从对应定义域中自然地均匀采样。</p>
+<h3 id="输出分布"><a href="#输出分布" class="headerlink" title="输出分布"></a>输出分布</h3><p>由于 Blum 整数的结构性质，$f_N^0(D(0,N))$ 和 $f_N^1(D(1,N))$ 都在模 $N$ 的二次剩余集合上均匀分布。</p>
+<p>因此，虽然两个函数的定义域不同，一个来自 $J_N^{+1}$，另一个来自 $J_N^{-1}$，但它们平方后的输出分布是相同的。</p>
+<h3 id="无爪性的证明-1"><a href="#无爪性的证明-1" class="headerlink" title="无爪性的证明"></a>无爪性的证明</h3><p>如果能够找到一个爪 $(x,y)$，则 $x\in J_N^{+1}$，$y\in J_N^{-1}$，并且：</p>
+<script type="math/tex; mode=display">
+x^2\equiv y^2 \pmod N</script><p>那么，有：</p>
+<script type="math/tex; mode=display">
+(x-y)(x+y)\equiv 0 \pmod N</script><p>由于 $-1\in J_N^{+1}$，且 $J_N^{+1}$ 是乘法子群，如果 $y\equiv x \pmod N$ 或 $y\equiv -x \pmod N$，那么 $y$ 的 Jacobi 符号也应为 $+1$，这与 $y\in J_N^{-1}$ 矛盾。因此，$y$ 不可能等于 $\pm x \pmod N$。</p>
+<p>这意味着 $x-y$ 和 $x+y$ 都不是模 $N$ 下的平凡因子，但它们的乘积却被 $N$ 整除。因此，可以通过计算 $\gcd(y-x,N)$ 或 $\gcd(y+x,N)$，得到 $N$ 的非平凡因子分解。</p>
+<p>所以，如果能够高效形成爪，就能够高效分解 $N$。在因子分解困难的假设下，这个函数族就是无爪的。</p>
+<h2 id="基于因子分解的无爪置换对族"><a href="#基于因子分解的无爪置换对族" class="headerlink" title="基于因子分解的无爪置换对族"></a>基于因子分解的无爪置换对族</h2><h3 id="从函数对到置换对"><a href="#从函数对到置换对" class="headerlink" title="从函数对到置换对"></a>从函数对到置换对</h3><p>上面的构造得到的是一族函数对，但其中每个函数是 $2$ 对 $1$ 的，并且两个函数定义在互不相交的定义域上。为了得到一族无爪置换对，需要对构造稍作修改。</p>
+<p>新的索引集合由特殊的 Blum 整数组成。设：</p>
+<script type="math/tex; mode=display">
+N=P\cdot Q</script><p>其中，$P$ 和 $Q$ 是长度相同的质数，并满足：</p>
+<script type="math/tex; mode=display">
+P\equiv 3 \pmod 8,\qquad Q\equiv 7 \pmod 8</script><p>对于这样的合数 $N$，$2$ 和 $-2$ 都不是模 $N$ 的二次剩余，并且：</p>
+<script type="math/tex; mode=display">
+\pm 2\in J_N^{-1}</script><p>记 $Q_N$ 为模 $N$ 下的二次剩余集合。两个函数都定义在 $Q_N$ 上：</p>
+<script type="math/tex; mode=display">
+f_N^\sigma(x)\stackrel{\mathrm{def}}{=}4^\sigma\cdot x^2\bmod N</script><p>其中，$\sigma\in\{0,1\}$。</p>
+<p>也就是说：</p>
+<script type="math/tex; mode=display">
+f_N^0(x)=x^2\bmod N,\quad f_N^1(x)=4x^2\bmod N</script><p>在该定义下，$f_N^0$ 和 $f_N^1$ 都是 $Q_N$ 上的置换。</p>
+<h3 id="无爪性的证明思路"><a href="#无爪性的证明思路" class="headerlink" title="无爪性的证明思路"></a>无爪性的证明思路</h3><p>如果能够找到一个爪 $(x,y)$，其中 $x,y\in Q_N$，则有：</p>
+<script type="math/tex; mode=display">
+f_N^0(x)=f_N^1(y)</script><p>即：</p>
+<script type="math/tex; mode=display">
+x^2\equiv 4y^2 \pmod N</script><p>由于 $y\in Q_N$，因此 $y$ 在模 $N$ 的乘法群中可逆，于是：</p>
+<script type="math/tex; mode=display">
+(x/y)^2\equiv 4 \pmod N</script><p>即：</p>
+<script type="math/tex; mode=display">
+\left(2-\frac{x}{y}\right)\left(2+\frac{x}{y}\right)\equiv 0 \pmod N</script><p>因为 $x,y\in Q_N$，且 $Q_N$ 是乘法子群，所以：</p>
+<script type="math/tex; mode=display">
+x/y\in Q_N</script><p>但由于 $\pm 2\notin Q_N$，因此：</p>
+<script type="math/tex; mode=display">
+x/y\not\equiv \pm 2 \pmod N</script><p>于是，可以通过计算 $\gcd(2+x\cdot y^{-1}\bmod N,N)$ 或 $\gcd(2-x\cdot y^{-1}\bmod N,N)$ 得到 $N$ 的非平凡因子分解。</p>
+<p>因此，如果存在高效算法可以形成该置换对族的爪，那么就可以高效分解 $N$。</p>
+<p>在因子分解困难的假设下，该置换对族是无爪的。</p>
+<h3 id="索引集合的识别问题-1"><a href="#索引集合的识别问题-1" class="headerlink" title="索引集合的识别问题"></a>索引集合的识别问题</h3><p>上述基于因子分解的构造也不一定具有可高效识别的索引集合。</p>
+<p>但目前不知道如何高效区分两个质数的乘积和多于两个质数的乘积。因此，这类构造虽然能够在因子分解困难假设下给出无爪函数族或无爪置换对族，但其索引集合未必是高效可识别的。</p>
+
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>感谢您对我的支持，让我继续努力分享有用的技术与知识点！</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/wechatpay.jpg" alt="Alex_McAvoy 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/alipay.jpg" alt="Alex_McAvoy 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Alex_McAvoy
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://alex-mcavoy.github.io/notes/cryptology/78346139.html" title="无爪函数族">https://alex-mcavoy.github.io/notes/cryptology/78346139.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/notes/" rel="tag"># 学习笔记</a>
+              <a href="/tags/cryptology/" rel="tag"># 密码学</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/notes/cryptology/f1785ac4.html" rel="prev" title="陷门单向置换">
+      <i class="fa fa-chevron-left"></i> 陷门单向置换
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/notes/cryptology/af94aa82.html" rel="next" title="候选单向函数的提出">
+      候选单向函数的提出 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E3%80%90%E6%97%A0%E7%88%AA%E5%87%BD%E6%95%B0%E6%97%8F%E3%80%91"><span class="nav-number">1.</span> <span class="nav-text">【无爪函数族】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9F%BA%E6%9C%AC%E6%80%9D%E6%83%B3"><span class="nav-number">1.1.</span> <span class="nav-text">基本思想</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BD%A2%E5%BC%8F%E5%8C%96%E5%AE%9A%E4%B9%89"><span class="nav-number">1.2.</span> <span class="nav-text">形式化定义</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%89%E4%B8%AA%E6%9D%A1%E4%BB%B6"><span class="nav-number">1.3.</span> <span class="nav-text">三个条件</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%B9%E6%98%93%E9%87%87%E6%A0%B7%E4%B8%8E%E8%AE%A1%E7%AE%97"><span class="nav-number">1.3.1.</span> <span class="nav-text">容易采样与计算</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%BE%93%E5%87%BA%E5%88%86%E5%B8%83%E7%9B%B8%E5%90%8C"><span class="nav-number">1.3.2.</span> <span class="nav-text">输出分布相同</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%9A%BE%E4%BB%A5%E5%BD%A2%E6%88%90%E7%88%AA"><span class="nav-number">1.3.3.</span> <span class="nav-text">难以形成爪</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%9A%E4%B9%89%E4%B8%AD%E7%9A%84%E7%9F%9B%E7%9B%BE%E6%80%A7%E8%A6%81%E6%B1%82"><span class="nav-number">1.4.</span> <span class="nav-text">定义中的矛盾性要求</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E3%80%90%E5%AE%9E%E4%BE%8B%E3%80%91"><span class="nav-number">2.</span> <span class="nav-text">【实例】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9F%BA%E4%BA%8E%E7%A6%BB%E6%95%A3%E5%AF%B9%E6%95%B0%E9%97%AE%E9%A2%98%E7%9A%84%E6%97%A0%E7%88%AA%E7%BD%AE%E6%8D%A2%E5%AF%B9%E6%97%8F"><span class="nav-number">2.1.</span> <span class="nav-text">基于离散对数问题的无爪置换对族</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9E%84%E9%80%A0%E6%80%9D%E6%83%B3"><span class="nav-number">2.1.1.</span> <span class="nav-text">构造思想</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%B4%A2%E5%BC%95%E4%B8%8E%E5%AE%9A%E4%B9%89%E5%9F%9F"><span class="nav-number">2.1.2.</span> <span class="nav-text">索引与定义域</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%87%BD%E6%95%B0%E6%98%A0%E5%B0%84"><span class="nav-number">2.1.3.</span> <span class="nav-text">函数映射</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%97%A0%E7%88%AA%E6%80%A7%E7%9A%84%E8%AF%81%E6%98%8E"><span class="nav-number">2.1.4.</span> <span class="nav-text">无爪性的证明</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%B4%A2%E5%BC%95%E9%9B%86%E5%90%88%E7%9A%84%E8%AF%86%E5%88%AB%E9%97%AE%E9%A2%98"><span class="nav-number">2.1.5.</span> <span class="nav-text">索引集合的识别问题</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9F%BA%E4%BA%8E%E5%9B%A0%E5%AD%90%E5%88%86%E8%A7%A3%E9%97%AE%E9%A2%98%E7%9A%84%E6%97%A0%E7%88%AA%E5%87%BD%E6%95%B0%E6%97%8F"><span class="nav-number">2.2.</span> <span class="nav-text">基于因子分解问题的无爪函数族</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Jacobi-%E7%AC%A6%E5%8F%B7"><span class="nav-number">2.2.1.</span> <span class="nav-text">Jacobi 符号</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9E%84%E9%80%A0%E6%80%9D%E6%83%B3-1"><span class="nav-number">2.2.2.</span> <span class="nav-text">构造思想</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%B4%A2%E5%BC%95%E3%80%81%E5%AE%9A%E4%B9%89%E5%9F%9F%E4%B8%8E%E5%87%BD%E6%95%B0%E6%98%A0%E5%B0%84"><span class="nav-number">2.2.3.</span> <span class="nav-text">索引、定义域与函数映射</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%BE%93%E5%87%BA%E5%88%86%E5%B8%83"><span class="nav-number">2.2.4.</span> <span class="nav-text">输出分布</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%97%A0%E7%88%AA%E6%80%A7%E7%9A%84%E8%AF%81%E6%98%8E-1"><span class="nav-number">2.2.5.</span> <span class="nav-text">无爪性的证明</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9F%BA%E4%BA%8E%E5%9B%A0%E5%AD%90%E5%88%86%E8%A7%A3%E7%9A%84%E6%97%A0%E7%88%AA%E7%BD%AE%E6%8D%A2%E5%AF%B9%E6%97%8F"><span class="nav-number">2.3.</span> <span class="nav-text">基于因子分解的无爪置换对族</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%8E%E5%87%BD%E6%95%B0%E5%AF%B9%E5%88%B0%E7%BD%AE%E6%8D%A2%E5%AF%B9"><span class="nav-number">2.3.1.</span> <span class="nav-text">从函数对到置换对</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%97%A0%E7%88%AA%E6%80%A7%E7%9A%84%E8%AF%81%E6%98%8E%E6%80%9D%E8%B7%AF"><span class="nav-number">2.3.2.</span> <span class="nav-text">无爪性的证明思路</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%B4%A2%E5%BC%95%E9%9B%86%E5%90%88%E7%9A%84%E8%AF%86%E5%88%AB%E9%97%AE%E9%A2%98-1"><span class="nav-number">2.3.3.</span> <span class="nav-text">索引集合的识别问题</span></a></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">  
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Alex_McAvoy"
+      src="/assets/img/head.jpg">
+  <p class="site-author-name" itemprop="name">Alex_McAvoy</p>
+  <div class="site-description" itemprop="description">想要成为渔夫的猎手</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">757</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">75</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">86</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Alex-McAvoy" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;Alex-McAvoy" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/u011815404" title="CSDN → https:&#x2F;&#x2F;blog.csdn.net&#x2F;u011815404" rel="noopener" target="_blank"><i class="fas fa-copyright fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+<!-- 静态项目链接 -->
+<div class="links-of-blogroll motion-element">
+  <div class="links-of-blogroll-title">
+    <i class="fas fa-external-link-alt fa-fw"></i> 站点静态项目
+  </div>
+  <ul class="links-of-blogroll-list">
+  <li class="links-of-blogroll-item">
+      <a href="https://alex-mcavoy.github.io/bookshelf/index.html" target="_blank" title="终末之诗">
+        我的书架（施工中...）
+      </a>
+    </li>
+    <li class="links-of-blogroll-item">
+      <a href="https://alex-mcavoy.github.io/end_poem/index.html" target="_blank" title="终末之诗">
+        终末之诗
+      </a>
+    </li>
+	<li class="links-of-blogroll-item">
+      <a href="https://alex-mcavoy.github.io/2nd_anniversary_of_pyc-zwx/index.html" target="_blank" title="逄总与张总的两周年纪念页（朋友已分手，该项目无限延期）">
+        <del>逄总与张总的两周年纪念页<br/>（朋友已分手，该项目无限延期）</del>
+      </a>
+    </li>
+  </ul>
+</div>
+
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdz20172133" title="https:&#x2F;&#x2F;blog.csdn.net&#x2F;sdz20172133" rel="noopener" target="_blank">神仙队友</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://pxlsdz.gitee.io/" title="https:&#x2F;&#x2F;pxlsdz.gitee.io&#x2F;" rel="noopener" target="_blank">神仙队友blog2</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdau_fangshifeng" title="https:&#x2F;&#x2F;blog.csdn.net&#x2F;sdau_fangshifeng" rel="noopener" target="_blank">酷头</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://bycore.net/" title="https:&#x2F;&#x2F;bycore.net" rel="noopener" target="_blank">凉了的某饼同学</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://kris-cn.github.io/" title="http:&#x2F;&#x2F;kris-cn.github.io&#x2F;" rel="noopener" target="_blank">翟孙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://deng.fun/" title="http:&#x2F;&#x2F;deng.fun&#x2F;" rel="noopener" target="_blank">芙蓉姐姐</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/wentong_Xu" title="https:&#x2F;&#x2F;blog.csdn.net&#x2F;wentong_Xu" rel="noopener" target="_blank">小黑贱胖子</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.yuheng.tech/" title="https:&#x2F;&#x2F;www.yuheng.tech&#x2F;" rel="noopener" target="_blank">咸于</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/lanshan1111" title="https:&#x2F;&#x2F;blog.csdn.net&#x2F;lanshan1111" rel="noopener" target="_blank">肥硕硕</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdauguanweihong" title="https:&#x2F;&#x2F;blog.csdn.net&#x2F;sdauguanweihong" rel="noopener" target="_blank">管少</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_41661919" title="https:&#x2F;&#x2F;blog.csdn.net&#x2F;qq_41661919" rel="noopener" target="_blank">俊杰</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_40859951" title="https:&#x2F;&#x2F;blog.csdn.net&#x2F;qq_40859951" rel="noopener" target="_blank">峰哥</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/LSD20164388" title="https:&#x2F;&#x2F;blog.csdn.net&#x2F;LSD20164388" rel="noopener" target="_blank">狗冬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37868325" title="https:&#x2F;&#x2F;blog.csdn.net&#x2F;qq_37868325" rel="noopener" target="_blank">妍大佬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://sanshuiii.github.io/" title="https:&#x2F;&#x2F;sanshuiii.github.io&#x2F;" rel="noopener" target="_blank">sanshuiii</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://zjpzhao.github.io/" title="https:&#x2F;&#x2F;zjpzhao.github.io&#x2F;" rel="noopener" target="_blank">brain</a>
+        </li>
+    </ul>
+  </div>
+
+		
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+  
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2026</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Alex_McAvoy</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+</br>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+<script src="/js/bookmark.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '48fd73a538d3fa927f65',
+      clientSecret: '56618aefeee90bac3c20de8d51bb0b985d67252d',
+      repo        : 'Gitalk-Comment',
+      owner       : 'Alex-McAvoy',
+      admin       : ['Alex-McAvoy'],
+      id          : 'aa9b44d1080ac9e26a76669e92886868',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+  
+  <!-- 鼠标单击粒子特效 -->
+  <script type="text/javascript" src="/js/cursor-effects.js"></script>
+  <!-- 多级目录 -->
+  <script type="text/javascript" src="/js/category.js"></script>
+  
+</body>
+</html>

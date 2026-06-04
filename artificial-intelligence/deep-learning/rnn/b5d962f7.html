@@ -259,7 +259,7 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>2.6k</span>
+              <span>2.7k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
@@ -308,21 +308,21 @@
 <li>$c_t$：$t$ 时刻的 LSTM 单元存储单元的值，即<strong>单元状态（Cell State）</strong></li>
 <li>$x_t$：$t$ 时刻的输入数据</li>
 </ul>
-<h1 id="【前向传播】"><a href="#【前向传播】" class="headerlink" title="【前向传播】"></a>【前向传播】</h1><h2 id="单元输入与门控状态"><a href="#单元输入与门控状态" class="headerlink" title="单元输入与门控状态"></a>单元输入与门控状态</h2><p>LSTM 单元内部使用当前输入 $x<em>t$ 和上一时间步传递下来的 $h</em>{t-1}$ 拼接训练来得到四种状态：$Z$、$Z_i$、$Z_f$、$Z_o$</p>
+<h1 id="【前向传播】"><a href="#【前向传播】" class="headerlink" title="【前向传播】"></a>【前向传播】</h1><h2 id="单元输入与门控状态"><a href="#单元输入与门控状态" class="headerlink" title="单元输入与门控状态"></a>单元输入与门控状态</h2><p>LSTM 单元内部使用当前输入 $x_t$ 和上一时间步传递下来的 $h_{t-1}$ 拼接训练来得到四种状态：$Z$、$Z_i$、$Z_f$、$Z_o$</p>
 <p><img width=300 src="/images/artificial-intelligence/deep-learning/rnn/05-3.png"/></p>
 <p>$Z$ 为 LSTM 单元的输入数据，从上一时刻到下一时刻隐藏层的连接权重矩阵为 $W$，偏置项为 $\mathbf{b}$，有：</p>
 <script type="math/tex; mode=display">
-Z=\tanh (W\cdot [x_t,h_{t-1}]+\mathbf{b})</script><p>即 $Z$ 是 $t$ 时刻的输入数据 $x<em>t$ 与上一时刻 $t-1$ 的隐藏状态 $h</em>{t-1}$ 经过向量拼接后，与权重矩阵 $W$ 点积后加上偏置项的值，经过 tanh 激活函数后，得到一个 $-1$ 到 $1$ 的值，作为 LSTM 单元的单元输入</p>
+Z=\tanh (W\cdot [x_t,h_{t-1}]+\mathbf{b})</script><p>即 $Z$ 是 $t$ 时刻的输入数据 $x_t$ 与上一时刻 $t-1$ 的隐藏状态 $h_{t-1}$ 经过向量拼接后，与权重矩阵 $W$ 点积后加上偏置项的值，经过 tanh 激活函数后，得到一个 $-1$ 到 $1$ 的值，作为 LSTM 单元的单元输入</p>
 <p>输入门、遗忘门、输出门的输出分别为 $Z_i,Z_f,Z_o$，连接权重矩阵分别为 $W_i,W_f,W_o$，偏置项分别为 $\mathbf{b}_i,\mathbf{b}_f,\mathbf{b}_o$，有：</p>
 <script type="math/tex; mode=display">
 \begin{align*}
 Z_i = \sigma(W\cdot [x_t,h_{t-1}] + \mathbf{b}_i) \\
 Z_f = \sigma(W_f\cdot [x_t,h_{t-1}] + \mathbf{b}_f) \\
 Z_o = \sigma(W_o\cdot [x_t,h_{t-1}] + \mathbf{b}_o) 
-\end{align*}</script><p>即 $t$ 时刻的输入数据 $x<em>t$ 与上一时刻 $t-1$ 的隐藏状态 $h</em>{t-1}$ 经过向量拼接后，与权重矩阵点积后加上偏置项的值，经过 sigmoid 激活函数后，得到一个 $0$ 到 $1$ 间的值，作为一种门控信号</p>
+\end{align*}</script><p>即 $t$ 时刻的输入数据 $x_t$ 与上一时刻 $t-1$ 的隐藏状态 $h_{t-1}$ 经过向量拼接后，与权重矩阵点积后加上偏置项的值，经过 sigmoid 激活函数后，得到一个 $0$ 到 $1$ 间的值，作为一种门控信号</p>
 <h2 id="三个阶段"><a href="#三个阶段" class="headerlink" title="三个阶段"></a>三个阶段</h2><p>在每个时间步，得到四个状态 $Z$、$Z_i$、$Z_f$、$Z_o$ 后，即进行 LSTM 单元内部的三个阶段</p>
 <p><img width=500 src="/images/artificial-intelligence/deep-learning/rnn/05-4.png"/></p>
-<p>1）<strong>遗忘阶段</strong>：该阶段会针对上一时间步传进来的输入进行<strong>选择性忘记</strong>，即通过遗忘门 $Z<em>f$ 来控制上一时间步的单元状态 $c</em>{t-1}$</p>
+<p>1）<strong>遗忘阶段</strong>：该阶段会针对上一时间步传进来的输入进行<strong>选择性忘记</strong>，即通过遗忘门 $Z_f$ 来控制上一时间步的单元状态 $c_{t-1}$</p>
 <script type="math/tex; mode=display">
 Z_f \odot c_{t-1}</script><p>其中，$\odot$ 为<strong>哈达玛积（Hadamard Product）</strong>，即对相同形状的矩阵中的对应元素相乘</p>
 <p>2）<strong>选择记忆阶段</strong>：该阶段会将当前时间步的 LSTM 单元的输入进行<strong>选择性记忆</strong>，即通过输入门 $Z_i$ 来当前时间步控制 LSTM 单元的输入 $Z$</p>
@@ -332,8 +332,8 @@ Z_i \odot Z</script><p>将遗忘阶段和选择记忆阶段的结果相加，即
 c_t =Z_f \odot c_{t-1} + Z_i \odot Z</script><p>3）<strong>输出阶段</strong>：该阶段将决定哪些会被当成当前时间步的输出，即通过遗忘门 $Z_f$ 来控制由 1）、2）阶段得到的当前时间步的单元状态 $c_t$，同时，在经过遗忘门 $Z_f$ 处理前，还使用了 tanh 激活函数对 $c_t$ 进行放缩</p>
 <script type="math/tex; mode=display">
 h_t = Z_o \odot \tanh (c_t)</script><p>最后，与普通的 RNN 类似，输出 $y_t$ 往往是通过 $h_t$ 变化得到</p>
-<h1 id="【梯度消失的解决】"><a href="#【梯度消失的解决】" class="headerlink" title="【梯度消失的解决】"></a>【梯度消失的解决】</h1><p>在 RNN 中，求偏导过程中包含 $\prod\limits<em>{j=k+1}^t \frac{\partial s_j}{\partial s</em>{j-1}} = \prod\limits_{j=k+1}^t f’ \cdot W$ 项，根据隐藏层激活函数的导数 $f’$ 的取值，造成梯度消失或梯度爆炸问题</p>
-<p>而在 LSTM 中，求偏导过程中同样包含类似于 $\prod\limits<em>{j=k+1}^t \frac{\partial s_j}{\partial s</em>{j-1}}$ 的项，即：</p>
+<h1 id="【梯度消失的解决】"><a href="#【梯度消失的解决】" class="headerlink" title="【梯度消失的解决】"></a>【梯度消失的解决】</h1><p>在 RNN 中，求偏导过程中包含 $\prod\limits_{j=k+1}^t \frac{\partial s_j}{\partial s_{j-1}} = \prod\limits_{j=k+1}^t f’ \cdot W$ 项，根据隐藏层激活函数的导数 $f’$ 的取值，造成梯度消失或梯度爆炸问题</p>
+<p>而在 LSTM 中，求偏导过程中同样包含类似于 $\prod\limits_{j=k+1}^t \frac{\partial s_j}{\partial s_{j-1}}$ 的项，即：</p>
 <script type="math/tex; mode=display">
 \prod_{j=k+1}^t \frac{\partial c_j}{\partial c_{j-1}}</script><p>对于当前时间步的单元状态 $c_t$，有</p>
 <script type="math/tex; mode=display">
@@ -485,7 +485,7 @@ c_t = \sigma(W_f\cdot [x_t,h_{t-1}] + \mathbf{b}_f) \odot c_{t-1} + \sigma(W\cdo
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">752</span>
+          <span class="site-state-item-count">757</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>

@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 8.1.2">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/img/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/assets/img/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/pace-js@1/themes/blue/pace-theme-minimal.css">
+  <script src="//cdn.jsdelivr.net/npm/pace-js@1/pace.min.js"></script>
+
+
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"alex-mcavoy.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":16,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":true,"color":"#ff0000","save":"manual"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":true},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.json"};
+  </script>
+
+  <meta name="description" content="【概述】在单向函数族中已经将单向函数表述为函数族的形式，从而更方便地描述一些自然的单向函数候选对象。 下面节介绍几个基于计算数论的常见候选函数族，包括：">
+<meta property="og:type" content="article">
+<meta property="og:title" content="常见的单向函数族">
+<meta property="og:url" content="https://alex-mcavoy.github.io/notes/cryptology/66bb3dc1.html">
+<meta property="og:site_name" content="Alex_McAvoy">
+<meta property="og:description" content="【概述】在单向函数族中已经将单向函数表述为函数族的形式，从而更方便地描述一些自然的单向函数候选对象。 下面节介绍几个基于计算数论的常见候选函数族，包括：">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-06-03T03:35:00.000Z">
+<meta property="article:modified_time" content="2026-06-04T21:05:52.128Z">
+<meta property="article:author" content="Alex_McAvoy">
+<meta property="article:tag" content="学习笔记">
+<meta property="article:tag" content="密码学">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://alex-mcavoy.github.io/notes/cryptology/66bb3dc1.html">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>常见的单向函数族 | Alex_McAvoy</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Alex_McAvoy</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">想要成为渔夫的猎手</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+
+	
+	
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/notes/cryptology/66bb3dc1.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/assets/img/head.jpg">
+      <meta itemprop="name" content="Alex_McAvoy">
+      <meta itemprop="description" content="想要成为渔夫的猎手">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Alex_McAvoy">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          常见的单向函数族
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2026-06-03 11:35:00" itemprop="dateCreated datePublished" datetime="2026-06-03T11:35:00+08:00">2026-06-03</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/notes/" itemprop="url" rel="index"><span itemprop="name">学习笔记</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/notes/cryptology/" itemprop="url" rel="index"><span itemprop="name">密码学</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>721</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>1 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="【概述】"><a href="#【概述】" class="headerlink" title="【概述】"></a>【概述】</h1><p>在<a href="https://alex-mcavoy.github.io/notes/cryptology/6e080141.html">单向函数族</a>中已经将单向函数表述为函数族的形式，从而更方便地描述一些自然的单向函数候选对象。</p>
+<p>下面节介绍几个基于计算数论的常见候选函数族，包括：</p>
+<ol>
+<li><strong>RSA 函数（RSA Function）</strong></li>
+<li><strong>Rabin 函数（Rabin Function）</strong></li>
+<li><strong>因子分解置换（Factoring Permutations）</strong></li>
+<li><strong>离散对数函数（Discrete Logarithms）</strong></li>
+</ol>
+<p>这些例子并不是无条件证明为单向函数族，而是基于一些被广泛相信计算困难的数论问题。</p>
+<h1 id="【RSA-函数族】"><a href="#【RSA-函数族】" class="headerlink" title="【RSA 函数族】"></a>【RSA 函数族】</h1><h2 id="基本思想"><a href="#基本思想" class="headerlink" title="基本思想"></a>基本思想</h2><p>RSA 函数来自<strong>整数分解问题（Integer Factorization Problem）</strong>。</p>
+<p>给定两个大质数 $P,Q$，计算它们的乘积</p>
+<script type="math/tex; mode=display">
+N=P\cdot Q</script><p>是容易的，可以在多项式时间内完成；但是反过来，给定合数 $N$，想要恢复出它的两个质因子 $P,Q$，通常被认为是困难的，尤其是在 $P,Q$ 足够大时。</p>
+<p>这种困难性进一步影响模 $N$ 意义下的幂运算反演问题。给定一个整数 $e$，从 $x$ 计算：</p>
+<script type="math/tex; mode=display">
+x^e\bmod N</script><p>是容易的，可以通过快速幂算法在多项式时间内完成；但反过来，在不知道 $N$ 的质因子分解时，给定 $x^e\bmod N$ 想要恢复 $x$ 是困难的。</p>
+<p>因此，可以把模合数上的幂映射：</p>
+<script type="math/tex; mode=display">
+x\mapsto x^e\bmod N</script><p>看作一个候选单向函数。</p>
+<h2 id="索引、定义域与函数映射"><a href="#索引、定义域与函数映射" class="headerlink" title="索引、定义域与函数映射"></a>索引、定义域与函数映射</h2><p>为说明 RSA 函数满足单向函数族定义中的容易采样和计算条件，考虑对应三元组 $(I_{\operatorname{RSA}},D_{\operatorname{RSA}},F_{\operatorname{RSA}})$</p>
+<h3 id="索引采样算法"><a href="#索引采样算法" class="headerlink" title="索引采样算法"></a>索引采样算法</h3><p>$I_{\operatorname{RSA}}$ 在输入 $1^n$ 时，首先随机选择两个质数 $P,Q$，满足：</p>
+<script type="math/tex; mode=display">
+2^{n-1}\leq P<Q<2^n</script><p>然后随机选择一个整数 $e$，使得：</p>
+<script type="math/tex; mode=display">
+\gcd(e,(P-1)(Q-1))=1</script><p>最后输出 $(N,e)$，其中 $N=P\cdot Q$</p>
+<p>为了高效实现这个过程，需要有概率多项式时间算法能够均匀或近似均匀地生成质数。</p>
+<h3 id="定义域采样算法"><a href="#定义域采样算法" class="headerlink" title="定义域采样算法"></a>定义域采样算法</h3><p>$D_{\operatorname{RSA}}$ 在输入 $(N,e)$ 时，从集合</p>
+<script type="math/tex; mode=display">
+D_{N,e}=\{1,\cdots,N\}</script><p>中近似均匀地选择一个元素。</p>
+<p>在实际实现中，需要通过一系列无偏随机比特来完成从 $N$ 个元素中随机选择一个元素的过程，而这种实现可能带来指数级小的偏差，因此这里是近似均匀。</p>
+<h3 id="函数求值算法"><a href="#函数求值算法" class="headerlink" title="函数求值算法"></a>函数求值算法</h3><p>$F_{\operatorname{RSA}}$ 在输入 $((N,e),x)$ 时，输出：</p>
+<script type="math/tex; mode=display">
+\operatorname{RSA}_{N,e}(x)=x^e\bmod N</script><p>由于 $e$ 与 $(P-1)(Q-1)$ 互质，该函数在其定义域上是一个<strong>置换（Permutation）</strong>，即每个输出都有唯一原像。因此，RSA 函数族是一个<strong>置换集合（Collection of Permutations）</strong>。</p>
+<h2 id="单向性假设"><a href="#单向性假设" class="headerlink" title="单向性假设"></a>单向性假设</h2><p>RSA 函数是否难以反演，与大整数分解问题密切相关。但是，目前并不知道能否将分解 $N$ 的问题归约到反演 $\operatorname{RSA}_{N,e}$ 的问题。</p>
+<p>不过，目前已知的反演 $\operatorname{RSA}_{N,e}$ 的最佳算法，通常都显式或隐式地需要分解 $N$。因此，人们广泛相信 RSA 函数族是难以反演的。</p>
+<p>换句话说，RSA 函数族是一个重要的候选单向函数族，但其单向性依赖于数论困难性假设，而不是无条件结论。</p>
+<h2 id="定义域的另一种选择"><a href="#定义域的另一种选择" class="headerlink" title="定义域的另一种选择"></a>定义域的另一种选择</h2><p>前面的定义中，$D_{N,e}$ 对应模 $N$ 的加法群，因此包含 $N$ 个元素。</p>
+<p>另一种常见选择是把定义域限制为模 $N$ 的乘法群，即与 $N$ 互质的元素集合。在这种情况下，定义域大小为：</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+(P-1)(Q-1)
+&= PQ-P-Q+1\\ 
+&= N-P-Q\\
+&\approx N-2\sqrt{N} \\
+&\approx N
+\end{align*}</script><p>对应的定义域采样算法可以先从 $\{1,\cdots,N\}$ 中选取一个元素，然后丢弃那些与 $N$ 不互质的少数情况。</p>
+<p>在模 $N$ 的乘法群上，前面定义的函数映射：</p>
+<script type="math/tex; mode=display">
+\operatorname{RSA}_{N,e}(x)=x^e\bmod N</script><p>仍然诱导出一个置换。</p>
+<p>通过这种形式得到的函数族与原来的 RSA 函数族具有相同的反演困难性，具体采用哪一种定义域形式，更多是一种表述偏好。</p>
+<h2 id="RSA-映射的置换性证明"><a href="#RSA-映射的置换性证明" class="headerlink" title="RSA 映射的置换性证明"></a>RSA 映射的置换性证明</h2><h3 id="置换性"><a href="#置换性" class="headerlink" title="置换性"></a>置换性</h3><p>证明：当 $N=P\cdot Q, \gcd(e,(P-1)(Q-1))=1$ 时，映射</p>
+<script type="math/tex; mode=display">
+x\mapsto x^e\bmod N</script><p>在模 $N$ 的剩余类集合上是一个置换，即每个输出都有唯一原像。</p>
+<h3 id="证明思路"><a href="#证明思路" class="headerlink" title="证明思路"></a>证明思路</h3><p>置换本质上是从一个集合到自身的双射，也就是每个元素都会被映射到唯一的元素，并且每个输出元素都有唯一的输入来源。</p>
+<p>对于有限集合上的函数来说，如果能够构造出一个反向映射，使得先应用原映射、再应用反向映射能够回到原来的元素，那么原映射就不会把两个不同输入映射到同一个输出，也不会遗漏任何输出元素。</p>
+<p>因此，下面的证明策略是：不直接逐个证明 RSA 映射是单射和满射，而是构造它的逆映射。</p>
+<h3 id="证明"><a href="#证明" class="headerlink" title="证明"></a>证明</h3><p>考虑映射 $x\mapsto x^d\bmod N$，证明它是 $x\mapsto x^e\bmod N$ 的逆映射，即证明：</p>
+<script type="math/tex; mode=display">
+(x^e)^d\equiv x\pmod N</script><p>由于 $N=P\cdot Q$，那么只需要分别证明：</p>
+<script type="math/tex; mode=display">
+x^{ed}\equiv x\pmod P,\quad x^{ed}\equiv x\pmod Q</script><p>首先考虑模 $P$ 的情况。如果 $x\equiv 0\pmod P$，那么显然有：</p>
+<script type="math/tex; mode=display">
+x^{ed}\equiv 0\equiv x\pmod P</script><p>如果 $x\not\equiv 0\pmod P$，考虑到 $\gcd(e,(P-1)(Q-1))=1$，那么存在整数 $d$，使得：</p>
+<script type="math/tex; mode=display">
+ed\equiv 1\pmod{(P-1)(Q-1)}</script><p>即存在整数 $k$，满足：</p>
+<script type="math/tex; mode=display">
+ed=1+k(P-1)(Q-1)</script><p>即有：</p>
+<script type="math/tex; mode=display">
+ed-1=(P-1)(k(Q-1))</script><p>所以 $ed-1$ 是 $P-1$ 的倍数，考虑到费马小定理 $x^{P-1}\equiv 1\pmod P$，因此有：</p>
+<script type="math/tex; mode=display">
+x^{ed}=x\cdot x^{ed-1}\equiv x\cdot 1=x\pmod P</script><p>综合考虑两种情况，无论 $x$ 是否能被 $P$ 整除，都有：</p>
+<script type="math/tex; mode=display">
+x^{ed}\equiv x\pmod P</script><p>同理，对于模 $Q$ 的情况，可以证明：</p>
+<script type="math/tex; mode=display">
+x^{ed}\equiv x\pmod Q</script><p>那么，通过中国剩余定理进行合并，即有：</p>
+<script type="math/tex; mode=display">
+x^{ed}\equiv x\pmod {P\cdot Q}</script><p>也就是：</p>
+<script type="math/tex; mode=display">
+(x^e)^d\equiv x\pmod N</script><p>因此，映射 $x\mapsto x^e\bmod N$ 存在逆映射 $y\mapsto y^d\bmod N$，所以它是模 $N$ 剩余类集合上的一个置换。</p>
+<h1 id="【Rabin-函数族】"><a href="#【Rabin-函数族】" class="headerlink" title="【Rabin 函数族】"></a>【Rabin 函数族】</h1><h2 id="函数定义"><a href="#函数定义" class="headerlink" title="函数定义"></a>函数定义</h2><p>Rabin 函数族与 RSA 函数族类似，也基于模合数 $N$ 的运算。不同之处在于，RSA 函数是取 $e$ 次幂，而 Rabin 函数是平方运算。</p>
+<p>Rabin 函数定义为：</p>
+<script type="math/tex; mode=display">
+\operatorname{Rabin}_N(x)=x^2\bmod N</script><p>这里 $N$ 仍然通常是 $P$、$Q$ 两个质数的乘积。</p>
+<h2 id="与-RSA-的区别"><a href="#与-RSA-的区别" class="headerlink" title="与 RSA 的区别"></a>与 RSA 的区别</h2><p>Rabin 函数与 RSA 函数的重要区别在于，RSA 函数具有置换性，而 Rabin 函数在模 $N$ 的乘法群通常不是置换。</p>
+<p>对于一个平方值：</p>
+<script type="math/tex; mode=display">
+y=x^2 \bmod N</script><p>如果 $x$ 与 $N$ 互质，那么在模 $P$ 下有两个平方根：</p>
+<script type="math/tex; mode=display">
+x,-x \pmod P</script><p>在模 $Q$ 下也有两个平方根：</p>
+<script type="math/tex; mode=display">
+x,-x \pmod Q</script><p>通过中国剩余定理，将模 $P$ 和模 $Q$ 下的选择组合起来，可以得到四种不同的平方根：</p>
+<script type="math/tex; mode=display">
+\pm x \bmod P,\quad \pm x\bmod Q</script><p>因此，在模 $N$ 的乘法群总，一个二次剩余通常会对应 4 个不同的平方根。即 Rabin 函数不是单射，而是在其像集合上形成一个 <strong>4 对 1 映射（4-to-1 Mapping）</strong>。</p>
+<p>需要注意的是，Rabin 函数并不是把模 $N$ 乘法群满射到自身，而是把元素映射到模 $N$ 的二次剩余集合中。所谓 4 对 1，是指对于像集合中的每个二次剩余，通常有四个原像。</p>
+<h2 id="计算等价"><a href="#计算等价" class="headerlink" title="计算等价"></a>计算等价</h2><p>Rabin 函数的一个重要特点是：模 $N$ 开平方与分解 $N$ 在计算上等价，即二者可以通过概率多项式时间归约相互转化。</p>
+<p>一方面，如果已经知道 $N=P\cdot Q$ 的分解，那么可以分别在模 $P$ 和模 $Q$ 下求平方根，再通过中国剩余定理合并，从而得到模 $N$ 下的平方根。因此，分解 $N$ 可以帮助反演 Rabin 函数。</p>
+<p>另一方面，如果存在一个有效算法能够在模 $N$ 下开平方，那么也可以利用它来分解 $N$，即随机选择一个 $z$，计算：</p>
+<script type="math/tex; mode=display">
+y=z^2\bmod N</script><p>然后调用开平方算法，得到 $y$ 的另一个平方根 $r$。</p>
+<p>如果 $r\not\equiv \pm z\pmod N$，那么 $z-r$ 会同时揭示 $P$ 或 $Q$ 的因子，从而可以通过 $\gcd(z-r,N)$ 得到 $N$ 的一个非平凡因子。</p>
+<p>因此，模 $N$ 开平方和分解 $N$ 在计算上是等价的。</p>
+<h2 id="单向性结论"><a href="#单向性结论" class="headerlink" title="单向性结论"></a>单向性结论</h2><p>由于 Rabin 函数的反演问题就是模合数开平方，而模合数开平方与分解 $N$ 等价。</p>
+<p>所以，如果大整数分解是困难的，那么 Rabin 函数族就是单向函数族；反过来，如果 Rabin 函数容易反演，那么大整数分解也可以被有效完成。</p>
+<p>因此，Rabin 函数的单向性与整数分解困难性直接对应。这一点比 RSA 函数更明确：对于 RSA，目前不知道分解 $N$ 是否可以归约到反演 RSA；而对于 Rabin，反演 Rabin 与分解 $N$ 是等价的。</p>
+<h1 id="【因子分解置换与-SQR-函数族】"><a href="#【因子分解置换与-SQR-函数族】" class="headerlink" title="【因子分解置换与 SQR 函数族】"></a>【因子分解置换与 SQR 函数族】</h1><h2 id="构造动机"><a href="#构造动机" class="headerlink" title="构造动机"></a>构造动机</h2><p>Rabin 函数定义为：</p>
+<script type="math/tex; mode=display">
+\operatorname{Rabin}_N(x)=x^2\bmod N</script><p>当 $N=P\cdot Q$ 是两个质数的乘积时，平方映射在模 $N$ 的乘法群上通常不是置换，而是一个 4 对 1 映射。</p>
+<p>因此，如果希望从 Rabin 函数得到一个置换，就不能直接在整个模 $N$ 的乘法群上考虑平方映射，而需要把定义域限制到一个更合适的子集合上。</p>
+<h2 id="Blum-整数与二次剩余"><a href="#Blum-整数与二次剩余" class="headerlink" title="Blum 整数与二次剩余"></a>Blum 整数与二次剩余</h2><p>为了使平方映射在二次剩余集合上成为置换，需要对 $N$ 作进一步限制。</p>
+<p>考虑一类特殊整数，若整数 $N=P\cdot Q$，并且两个质数 $P$ 和 $Q$ 满足：</p>
+<script type="math/tex; mode=display">
+P\equiv Q\equiv 3\pmod 4</script><p>则 $N$ 称为 <strong>Blum 整数（Blum Integer）</strong>。</p>
+<p>在 Blum 整数的基础上，若存在整数 $x$，使得：</p>
+<script type="math/tex; mode=display">
+r\equiv x^2\pmod N</script><p>则称 $r$ 是模 Blum 整数 $N$ 的<strong>二次剩余（Quadratic Residue）</strong>。</p>
+<h2 id="二次剩余集合上的置换性"><a href="#二次剩余集合上的置换性" class="headerlink" title="二次剩余集合上的置换性"></a>二次剩余集合上的置换性</h2><p>在整个模 $N$ 的乘法群上，平方映射不是置换，因为每个二次剩余通常有 4 个平方根。</p>
+<p>但是，当 $N$ 是 Blum 整数时，若只在由模 Blum 整数 $N$ 乘法群中的二次剩余集合 $Q_N$ 内考虑平方映射，情况会发生变化。此时，$Q_N$ 中的每一个元素都有唯一一个平方根仍然落在 $Q_N$ 中。</p>
+<p>也就是说，对于任意 $r\in Q_N$，虽然它在整个模 $N$ 的乘法群中可能有 4 个平方根，但这 4 个平方根中只有一个属于 $Q_N$。</p>
+<p>因此，平方映射：</p>
+<script type="math/tex; mode=display">
+\operatorname{Rabin}_N(x)=x^2\bmod N</script><p>从 $Q_N$ 到 $Q_N$ 是一一对应的，即它在 $Q_N$ 上诱导出了一个置换。</p>
+<p>这就是因子分解置换的核心思想：在 Blum 整数条件下，把 Rabin 平方函数限制到二次剩余集合 $Q_N$ 上，它就成为了置换。</p>
+<h2 id="SQR-函数族"><a href="#SQR-函数族" class="headerlink" title="SQR 函数族"></a>SQR 函数族</h2><p>基于上述思想，可以定义平方置换函数三元组：</p>
+<script type="math/tex; mode=display">
+\operatorname{SQR}=(I_{\operatorname{BI}},D_{\operatorname{QR}},F_{\operatorname{SQR}})</script><p><strong>（1）索引采样算法</strong></p>
+<p>$I_{\operatorname{BI}}$ 在输入 $1^n$ 时，随机选择两个质数 $P,Q$，满足 $2^{n-1}\leq P&lt;Q&lt;2^n$，并且：</p>
+<script type="math/tex; mode=display">
+P\equiv Q\equiv 3\pmod 4</script><p>然后输出：</p>
+<script type="math/tex; mode=display">
+N=P\cdot Q</script><p>因此，索引 $N$ 指定了一个 Blum 整数。</p>
+<p><strong>（2）定义域采样算法</strong></p>
+<p>$D_{\operatorname{QR}}$ 在输入 $N$ 时，需要从二次剩余集合 $Q_N$ 中均匀选择一个元素。</p>
+<p>为了做到这一点，可以先在模 $N$ 的乘法群中均匀选择一个元素 $a$，然后输出：</p>
+<script type="math/tex; mode=display">
+a^2\bmod N</script><p>这样得到的元素一定属于 $Q_N$，因为它本身就是某个元素的平方。</p>
+<p><strong>（3）函数求值算法</strong></p>
+<p>$F_{\operatorname{SQR}}$ 与 Rabin 函数中的平方运算相同，即：</p>
+<script type="math/tex; mode=display">
+F_{\operatorname{SQR}}(N,x)=x^2\bmod N</script><p>由于这里的定义域被限制为 $Q_N$，并且当 $N$ 是 Blum 整数时，平方映射在 $Q_N$ 上是置换，所以 $F_{\operatorname{SQR}}$ 定义的是一个置换集合。</p>
+<h2 id="单向性"><a href="#单向性" class="headerlink" title="单向性"></a>单向性</h2><p>置换集合的反演问题仍然是模 $N$ 开平方问题，即给定：</p>
+<script type="math/tex; mode=display">
+y=x^2\bmod N</script><p>要反推出满足条件的 $x\in Q_N$。</p>
+<p>而模合数开平方与分解 $N$ 在计算上等价，因此，如果整数分解是困难的，那么这个 SQR 置换集合就是单向的。</p>
+<h1 id="【离散对数函数族】"><a href="#【离散对数函数族】" class="headerlink" title="【离散对数函数族】"></a>【离散对数函数族】</h1><h2 id="基本思想-1"><a href="#基本思想-1" class="headerlink" title="基本思想"></a>基本思想</h2><p>除了大整数分解问题之外，另一个被广泛认为困难的数论问题是<strong>离散对数问题（Discrete Logarithm Problem）</strong>。</p>
+<p>在模质数 $P$ 的有限域 $\mathbb{F}_P$​ 中，非零元素构成一个乘法群，记为：</p>
+<script type="math/tex; mode=display">
+\mathbb{F}_P^*=\{1,\cdots,P-1\}</script><p>该乘法群是循环群，因此存在生成元。</p>
+<p>设 $G$ 是 $\mathbb{F}_P^<em>$ 的一个生成元，即<strong>本原元（Primitive Element）</strong>。离散对数问题可以表述为：给定 $P$、生成元 $G$，以及某个群元素 $y\in \mathbb{F}_P^</em>$，找到一个指数 $x$，使得：</p>
+<script type="math/tex; mode=display">
+y = G^x \bmod P</script><p>从指数 $x$ 计算 $G^x\bmod P$ 是容易的，可以用快速幂算法在多项式时间内完成；但反过来，在给定 $G$ 和 $y$ 的情况下求出 $x$，通常被认为是困难的，尤其是在 $P$ 足够大时。</p>
+<p>因此，可以把指数映射：</p>
+<script type="math/tex; mode=display">
+x\mapsto G^x\bmod P</script><p>看作一个候选单向函数。</p>
+<h2 id="索引、定义域与函数映射-1"><a href="#索引、定义域与函数映射-1" class="headerlink" title="索引、定义域与函数映射"></a>索引、定义域与函数映射</h2><p>离散对数函数族的单向性正是基于离散对数问题，该函数族的三元组为：</p>
+<script type="math/tex; mode=display">
+(I_{\operatorname{DLP}},D_{\operatorname{DLP}},F_{\operatorname{DLP}})</script><h3 id="索引采样算法-1"><a href="#索引采样算法-1" class="headerlink" title="索引采样算法"></a>索引采样算法</h3><p>$I_{\operatorname{DLP}}$ 的目标，是随机生成一个质数 $P$ 以及模 $P$ 乘法群 $\mathbb{F}_P^*$ 的一个生成元 $G$。这样，二元组 $(P,G)$ 就指定了一个具体的离散对数函数。</p>
+<p>具体来说，在输入 $1^n$ 时，随机选择一个质数 $P$，满足 $2^{n-1}\leq P&lt;2^n$，然后选择模 $P$ 乘法群 $\mathbb{F}_P^*$ 中的一个本原元 $G$，最后输出</p>
+<script type="math/tex; mode=display">
+(P,G)</script><p>由于判断一个候选元素 $G\in \mathbb{F}_P^*$ 是否为生成元，本质上就是判断它的阶是否为 $P-1$，即本原元就是阶等于 $P-1$ 的元素。</p>
+<p>因此，为了高效找到本原元 $G$，通常需要利用 $P-1$ 的质因子分解。在给定 $P-1$ 的素因子分解后，只需要检查对每个素因子 $q\mid P-1$，是否都有：</p>
+<script type="math/tex; mode=display">
+G^{(P-1)/q}\not\equiv 1\pmod P</script><p>如果上述条件成立，则 $G$ 是本原元。</p>
+<p>另一种方式是生成形如：</p>
+<script type="math/tex; mode=display">
+P=2Q+1</script><p>的质数，其中 $Q$ 也是质数。此时 $P-1=2Q$，因子结构更简单，便于寻找本原元。不过，这种做法需要额外假设这类质数上的离散对数问题仍然困难。</p>
+<h3 id="定义域采样算法-1"><a href="#定义域采样算法-1" class="headerlink" title="定义域采样算法"></a>定义域采样算法</h3><p>$D_{\operatorname{DLP}}$ 在输入 $(P,G)$ 时，均匀选择一个模 $P-1$ 的剩余类，即选择：</p>
+<script type="math/tex; mode=display">
+x\in \mathbb{Z}_{P-1}</script><h3 id="函数求值算法-1"><a href="#函数求值算法-1" class="headerlink" title="函数求值算法"></a>函数求值算法</h3><p>$F_{\operatorname{DLP}}$ 在输入 $((P,G),x)$ 时，输出：</p>
+<script type="math/tex; mode=display">
+\operatorname{DLP}_{P,G}(x)=G^x\bmod P</script><p>因此，反演该函数就等价于：给定 $G^x\bmod P$，求出指数 $x$，这正是以 $G$ 为底、模 $P$ 的离散对数问题。</p>
+<h2 id="置换性质"><a href="#置换性质" class="headerlink" title="置换性质"></a>置换性质</h2><p>对于每个索引 $(P,G)$，由于 $G$ 是模 $P$ 乘法群 $\mathbb{F}_P^<em>$ 的生成元，所以每个非零元素 $y\in \mathbb{F}_P^</em>$ 都可以唯一地写成：</p>
+<script type="math/tex; mode=display">
+y=G^x\bmod P</script><p>其中，$x\in \mathbb{Z}_{P-1}$</p>
+<p>因此，映射：</p>
+<script type="math/tex; mode=display">
+x\mapsto G^x\bmod P</script><p>给出了从模 $P-1$ 的加法群 $\mathbb{Z}_{P-1}$ 到模 $P$ 的乘法群 $\mathbb{F}_P^<em>$ 的双射，即 $\operatorname{DLP}_{P,G}$ 在指数集合 $\mathbb{Z}_{P-1}$ 和非零剩余类集合 $\mathbb{F}_P^</em>$ 之间诱导出一个置换。</p>
+<h2 id="其他群上的指数映射"><a href="#其他群上的指数映射" class="headerlink" title="其他群上的指数映射"></a>其他群上的指数映射</h2><p>其他群上的指数映射也可以作为合理的候选单向函数，只要该群上的离散对数问题被认为是困难的。</p>
+<p>例如，在椭圆曲线点群中，通常也认为离散对数问题是困难的。因此，椭圆曲线上的标量乘法也可以看作离散对数型候选单向函数的一个重要实例。</p>
+
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>感谢您对我的支持，让我继续努力分享有用的技术与知识点！</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/wechatpay.jpg" alt="Alex_McAvoy 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/alipay.jpg" alt="Alex_McAvoy 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Alex_McAvoy
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://alex-mcavoy.github.io/notes/cryptology/66bb3dc1.html" title="常见的单向函数族">https://alex-mcavoy.github.io/notes/cryptology/66bb3dc1.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/notes/" rel="tag"># 学习笔记</a>
+              <a href="/tags/cryptology/" rel="tag"># 密码学</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/notes/cryptology/6e080141.html" rel="prev" title="单向函数族">
+      <i class="fa fa-chevron-left"></i> 单向函数族
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/notes/cryptology/f1785ac4.html" rel="next" title="陷门单向置换">
+      陷门单向置换 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E3%80%90%E6%A6%82%E8%BF%B0%E3%80%91"><span class="nav-number">1.</span> <span class="nav-text">【概述】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E3%80%90RSA-%E5%87%BD%E6%95%B0%E6%97%8F%E3%80%91"><span class="nav-number">2.</span> <span class="nav-text">【RSA 函数族】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9F%BA%E6%9C%AC%E6%80%9D%E6%83%B3"><span class="nav-number">2.1.</span> <span class="nav-text">基本思想</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%B4%A2%E5%BC%95%E3%80%81%E5%AE%9A%E4%B9%89%E5%9F%9F%E4%B8%8E%E5%87%BD%E6%95%B0%E6%98%A0%E5%B0%84"><span class="nav-number">2.2.</span> <span class="nav-text">索引、定义域与函数映射</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%B4%A2%E5%BC%95%E9%87%87%E6%A0%B7%E7%AE%97%E6%B3%95"><span class="nav-number">2.2.1.</span> <span class="nav-text">索引采样算法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%9A%E4%B9%89%E5%9F%9F%E9%87%87%E6%A0%B7%E7%AE%97%E6%B3%95"><span class="nav-number">2.2.2.</span> <span class="nav-text">定义域采样算法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%87%BD%E6%95%B0%E6%B1%82%E5%80%BC%E7%AE%97%E6%B3%95"><span class="nav-number">2.2.3.</span> <span class="nav-text">函数求值算法</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8D%95%E5%90%91%E6%80%A7%E5%81%87%E8%AE%BE"><span class="nav-number">2.3.</span> <span class="nav-text">单向性假设</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%9A%E4%B9%89%E5%9F%9F%E7%9A%84%E5%8F%A6%E4%B8%80%E7%A7%8D%E9%80%89%E6%8B%A9"><span class="nav-number">2.4.</span> <span class="nav-text">定义域的另一种选择</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#RSA-%E6%98%A0%E5%B0%84%E7%9A%84%E7%BD%AE%E6%8D%A2%E6%80%A7%E8%AF%81%E6%98%8E"><span class="nav-number">2.5.</span> <span class="nav-text">RSA 映射的置换性证明</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BD%AE%E6%8D%A2%E6%80%A7"><span class="nav-number">2.5.1.</span> <span class="nav-text">置换性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AF%81%E6%98%8E%E6%80%9D%E8%B7%AF"><span class="nav-number">2.5.2.</span> <span class="nav-text">证明思路</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AF%81%E6%98%8E"><span class="nav-number">2.5.3.</span> <span class="nav-text">证明</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E3%80%90Rabin-%E5%87%BD%E6%95%B0%E6%97%8F%E3%80%91"><span class="nav-number">3.</span> <span class="nav-text">【Rabin 函数族】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%87%BD%E6%95%B0%E5%AE%9A%E4%B9%89"><span class="nav-number">3.1.</span> <span class="nav-text">函数定义</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%8E-RSA-%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="nav-number">3.2.</span> <span class="nav-text">与 RSA 的区别</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AE%A1%E7%AE%97%E7%AD%89%E4%BB%B7"><span class="nav-number">3.3.</span> <span class="nav-text">计算等价</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8D%95%E5%90%91%E6%80%A7%E7%BB%93%E8%AE%BA"><span class="nav-number">3.4.</span> <span class="nav-text">单向性结论</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E3%80%90%E5%9B%A0%E5%AD%90%E5%88%86%E8%A7%A3%E7%BD%AE%E6%8D%A2%E4%B8%8E-SQR-%E5%87%BD%E6%95%B0%E6%97%8F%E3%80%91"><span class="nav-number">4.</span> <span class="nav-text">【因子分解置换与 SQR 函数族】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9E%84%E9%80%A0%E5%8A%A8%E6%9C%BA"><span class="nav-number">4.1.</span> <span class="nav-text">构造动机</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Blum-%E6%95%B4%E6%95%B0%E4%B8%8E%E4%BA%8C%E6%AC%A1%E5%89%A9%E4%BD%99"><span class="nav-number">4.2.</span> <span class="nav-text">Blum 整数与二次剩余</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8C%E6%AC%A1%E5%89%A9%E4%BD%99%E9%9B%86%E5%90%88%E4%B8%8A%E7%9A%84%E7%BD%AE%E6%8D%A2%E6%80%A7"><span class="nav-number">4.3.</span> <span class="nav-text">二次剩余集合上的置换性</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#SQR-%E5%87%BD%E6%95%B0%E6%97%8F"><span class="nav-number">4.4.</span> <span class="nav-text">SQR 函数族</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8D%95%E5%90%91%E6%80%A7"><span class="nav-number">4.5.</span> <span class="nav-text">单向性</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E3%80%90%E7%A6%BB%E6%95%A3%E5%AF%B9%E6%95%B0%E5%87%BD%E6%95%B0%E6%97%8F%E3%80%91"><span class="nav-number">5.</span> <span class="nav-text">【离散对数函数族】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9F%BA%E6%9C%AC%E6%80%9D%E6%83%B3-1"><span class="nav-number">5.1.</span> <span class="nav-text">基本思想</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%B4%A2%E5%BC%95%E3%80%81%E5%AE%9A%E4%B9%89%E5%9F%9F%E4%B8%8E%E5%87%BD%E6%95%B0%E6%98%A0%E5%B0%84-1"><span class="nav-number">5.2.</span> <span class="nav-text">索引、定义域与函数映射</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%B4%A2%E5%BC%95%E9%87%87%E6%A0%B7%E7%AE%97%E6%B3%95-1"><span class="nav-number">5.2.1.</span> <span class="nav-text">索引采样算法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%9A%E4%B9%89%E5%9F%9F%E9%87%87%E6%A0%B7%E7%AE%97%E6%B3%95-1"><span class="nav-number">5.2.2.</span> <span class="nav-text">定义域采样算法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%87%BD%E6%95%B0%E6%B1%82%E5%80%BC%E7%AE%97%E6%B3%95-1"><span class="nav-number">5.2.3.</span> <span class="nav-text">函数求值算法</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BD%AE%E6%8D%A2%E6%80%A7%E8%B4%A8"><span class="nav-number">5.3.</span> <span class="nav-text">置换性质</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%B6%E4%BB%96%E7%BE%A4%E4%B8%8A%E7%9A%84%E6%8C%87%E6%95%B0%E6%98%A0%E5%B0%84"><span class="nav-number">5.4.</span> <span class="nav-text">其他群上的指数映射</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">  
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Alex_McAvoy"
+      src="/assets/img/head.jpg">
+  <p class="site-author-name" itemprop="name">Alex_McAvoy</p>
+  <div class="site-description" itemprop="description">想要成为渔夫的猎手</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">757</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">75</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">86</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Alex-McAvoy" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;Alex-McAvoy" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/u011815404" title="CSDN → https:&#x2F;&#x2F;blog.csdn.net&#x2F;u011815404" rel="noopener" target="_blank"><i class="fas fa-copyright fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+<!-- 静态项目链接 -->
+<div class="links-of-blogroll motion-element">
+  <div class="links-of-blogroll-title">
+    <i class="fas fa-external-link-alt fa-fw"></i> 站点静态项目
+  </div>
+  <ul class="links-of-blogroll-list">
+  <li class="links-of-blogroll-item">
+      <a href="https://alex-mcavoy.github.io/bookshelf/index.html" target="_blank" title="终末之诗">
+        我的书架（施工中...）
+      </a>
+    </li>
+    <li class="links-of-blogroll-item">
+      <a href="https://alex-mcavoy.github.io/end_poem/index.html" target="_blank" title="终末之诗">
+        终末之诗
+      </a>
+    </li>
+	<li class="links-of-blogroll-item">
+      <a href="https://alex-mcavoy.github.io/2nd_anniversary_of_pyc-zwx/index.html" target="_blank" title="逄总与张总的两周年纪念页（朋友已分手，该项目无限延期）">
+        <del>逄总与张总的两周年纪念页<br/>（朋友已分手，该项目无限延期）</del>
+      </a>
+    </li>
+  </ul>
+</div>
+
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdz20172133" title="https:&#x2F;&#x2F;blog.csdn.net&#x2F;sdz20172133" rel="noopener" target="_blank">神仙队友</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://pxlsdz.gitee.io/" title="https:&#x2F;&#x2F;pxlsdz.gitee.io&#x2F;" rel="noopener" target="_blank">神仙队友blog2</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdau_fangshifeng" title="https:&#x2F;&#x2F;blog.csdn.net&#x2F;sdau_fangshifeng" rel="noopener" target="_blank">酷头</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://bycore.net/" title="https:&#x2F;&#x2F;bycore.net" rel="noopener" target="_blank">凉了的某饼同学</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://kris-cn.github.io/" title="http:&#x2F;&#x2F;kris-cn.github.io&#x2F;" rel="noopener" target="_blank">翟孙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://deng.fun/" title="http:&#x2F;&#x2F;deng.fun&#x2F;" rel="noopener" target="_blank">芙蓉姐姐</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/wentong_Xu" title="https:&#x2F;&#x2F;blog.csdn.net&#x2F;wentong_Xu" rel="noopener" target="_blank">小黑贱胖子</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.yuheng.tech/" title="https:&#x2F;&#x2F;www.yuheng.tech&#x2F;" rel="noopener" target="_blank">咸于</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/lanshan1111" title="https:&#x2F;&#x2F;blog.csdn.net&#x2F;lanshan1111" rel="noopener" target="_blank">肥硕硕</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdauguanweihong" title="https:&#x2F;&#x2F;blog.csdn.net&#x2F;sdauguanweihong" rel="noopener" target="_blank">管少</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_41661919" title="https:&#x2F;&#x2F;blog.csdn.net&#x2F;qq_41661919" rel="noopener" target="_blank">俊杰</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_40859951" title="https:&#x2F;&#x2F;blog.csdn.net&#x2F;qq_40859951" rel="noopener" target="_blank">峰哥</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/LSD20164388" title="https:&#x2F;&#x2F;blog.csdn.net&#x2F;LSD20164388" rel="noopener" target="_blank">狗冬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37868325" title="https:&#x2F;&#x2F;blog.csdn.net&#x2F;qq_37868325" rel="noopener" target="_blank">妍大佬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://sanshuiii.github.io/" title="https:&#x2F;&#x2F;sanshuiii.github.io&#x2F;" rel="noopener" target="_blank">sanshuiii</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://zjpzhao.github.io/" title="https:&#x2F;&#x2F;zjpzhao.github.io&#x2F;" rel="noopener" target="_blank">brain</a>
+        </li>
+    </ul>
+  </div>
+
+		
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+  
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2026</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Alex_McAvoy</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+</br>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+<script src="/js/bookmark.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '48fd73a538d3fa927f65',
+      clientSecret: '56618aefeee90bac3c20de8d51bb0b985d67252d',
+      repo        : 'Gitalk-Comment',
+      owner       : 'Alex-McAvoy',
+      admin       : ['Alex-McAvoy'],
+      id          : '5bbff60a30c703d266e8afcb05e6ab95',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+  
+  <!-- 鼠标单击粒子特效 -->
+  <script type="text/javascript" src="/js/cursor-effects.js"></script>
+  <!-- 多级目录 -->
+  <script type="text/javascript" src="/js/category.js"></script>
+  
+</body>
+</html>

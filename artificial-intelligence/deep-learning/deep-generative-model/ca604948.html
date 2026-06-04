@@ -253,7 +253,7 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>8.5k</span>
+              <span>8.6k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
@@ -275,12 +275,12 @@
         <h1 id="【概述】"><a href="#【概述】" class="headerlink" title="【概述】"></a>【概述】</h1><p><strong>扩散概率模型（Diffusion Probabilistic Models，DPM）</strong>于 2015 年 <a target="_blank" rel="noopener" href="https://arxiv.org/abs/1503.03585v8">《Deep Unsupervised Learning using Nonequilibrium Thermodynamics》</a>提出，其目的是消除对训练图像连续应用的高斯噪声，可以将其视为一系列去噪自编码器，是扩散模型的起源，但是没有真正应用于 CV，NLP 任务</p>
 <p>其基本思想是<strong>使用马尔可夫链利用扩散过程将一个简单的已知分布（例如高斯分布）逐渐转换为目标分布（例如数据分布）</strong></p>
 <p>为达到这一目标，利用一个前向过程，不断的对图片加噪声，最终得到噪声的图片，这一过程也是训练模型对分布进行估计的过程，然后，利用一个反向过程，不断对噪声进行估计，从而从初始结果中减去噪声，得到干净的图片</p>
-<h1 id="【基本过程】"><a href="#【基本过程】" class="headerlink" title="【基本过程】"></a>【基本过程】</h1><h2 id="前向过程"><a href="#前向过程" class="headerlink" title="前向过程"></a>前向过程</h2><p>记数据分布为 $q(\mathbf{x}<em>{0})$，这个数据分布可以通过多次应用马尔可夫扩散核函数 $T</em>{\pi}(\mathbf{y}|\mathbf{y}’;\beta)$ 变成另一个简单、可解析处理的分布 $\pi(\mathbf{y})$（为便于讨论，该分布选用<strong>高斯分布</strong>），其中 $\beta$​ 为扩散系数​</p>
+<h1 id="【基本过程】"><a href="#【基本过程】" class="headerlink" title="【基本过程】"></a>【基本过程】</h1><h2 id="前向过程"><a href="#前向过程" class="headerlink" title="前向过程"></a>前向过程</h2><p>记数据分布为 $q(\mathbf{x}_{0})$，这个数据分布可以通过多次应用马尔可夫扩散核函数 $T_{\pi}(\mathbf{y}|\mathbf{y}’;\beta)$ 变成另一个简单、可解析处理的分布 $\pi(\mathbf{y})$（为便于讨论，该分布选用<strong>高斯分布</strong>），其中 $\beta$​ 为扩散系数​</p>
 <p>根据核函数 $T_{\pi}(\mathbf{y}|\mathbf{y}’;\beta)$，利用贝叶斯公式 $p(\mathbf{x}) = \int p(\mathbf{x},\mathbf{y})d\mathbf{y}=\int p(\mathbf{x}|\mathbf{y})p(\mathbf{y})d\mathbf{y}$，有：</p>
 <script type="math/tex; mode=display">
 \pi(\mathbf{y})=\int   T_{\pi}(\mathbf{y}|\mathbf{y}';\beta)\pi(\mathbf{y}') d\mathbf{y}'</script><p>记条件概率：</p>
 <script type="math/tex; mode=display">
-q(\mathbf{x}_{t} | \mathbf{x}_{t-1}) = T_{\pi}(\mathbf{x}_{t}|\mathbf{x}_{t-1};\beta_t)</script><p>其中，${\beta<em>t}</em>{t=1}^T,\beta_t\in (0,1)$ 是每一步扩散采用的方差，通常随着 $t$ 的增加 $\beta_t$ 而增大，即满足 $\beta_1&lt;\beta_2&lt;\cdots&lt;\beta_T$</p>
+q(\mathbf{x}_{t} | \mathbf{x}_{t-1}) = T_{\pi}(\mathbf{x}_{t}|\mathbf{x}_{t-1};\beta_t)</script><p>其中，$\{\beta_t\}_{t=1}^T,\beta_t\in (0,1)$ 是每一步扩散采用的方差，通常随着 $t$ 的增加 $\beta_t$ 而增大，即满足 $\beta_1&lt;\beta_2&lt;\cdots&lt;\beta_T$</p>
 <p>从原始数据分布 $q(\mathbf{x}_{0})$ 开始，在 $\beta_t$ 的作用下，经过马尔可夫链的 $T$ 步扩散，基于贝叶斯公式、马尔可夫过程的无后效性可得新的分布：</p>
 <script type="math/tex; mode=display">
 \begin{align*}
@@ -291,13 +291,13 @@ q(\mathbf{x}_{0:T})
 &= \cdots \\
 &= q(\mathbf{x}_{0}) q(\mathbf{x}_{1}|\mathbf{x}_{0}) q(\mathbf{x}_{2}|\mathbf{x}_{1}) \cdots  q(\mathbf{x}_{t}|\mathbf{x}_{t-1}) \\
 &= q(\mathbf{x}_{0}) \prod_{t=1}^T q(\mathbf{x}_{t}|\mathbf{x}_{t-1})
-\end{align*}</script><p>由于 $q(\mathbf{x}<em>{t} | \mathbf{x}</em>{t-1})$ 是通过马尔可夫扩散核函数 $T<em>{\pi}(\mathbf{x}</em>{t}|\mathbf{x}_{t-1};\beta_t)$ 多次扩散得来的，故有：</p>
+\end{align*}</script><p>由于 $q(\mathbf{x}_{t} | \mathbf{x}_{t-1})$ 是通过马尔可夫扩散核函数 $T_{\pi}(\mathbf{x}_{t}|\mathbf{x}_{t-1};\beta_t)$ 多次扩散得来的，故有：</p>
 <script type="math/tex; mode=display">
 q_\pi(\mathbf{x}_t|\mathbf{x}_{t-1}) = \mathcal{N}(\mathbf{x}_t;\sqrt{1-\beta_t} \mathbf{x}_{t-1},\beta_t\mathbf{I})</script><h2 id="反向过程"><a href="#反向过程" class="headerlink" title="反向过程"></a>反向过程</h2><p>反向过程与前向过程具有相同的形式，只是扩散过程相反，如果知道反向过程中每一步的真实分布 $q(\mathbf{x}_{t-1}|\mathbf{x}_t)$，那么从一个随机噪声 $\mathbf{x}_T\sim \mathcal{N}(\mathbf{0},\mathbf{I})$ 开始，逐渐去除噪声</p>
-<p>由于真实分布难以计算，因此反向过程是通过神经网络，利用 $p(\mathbf{x}<em>{t-1}|\mathbf{x}</em>{t})$ 去拟合逆向过程 $q(\mathbf{x}<em>{t-1}|\mathbf{x}_t)$，即从高斯分布 $p(\mathbf{x}</em>{T}) =\pi(\mathbf{x}_{T}) $ 出发，通过一个反向过程，可得联合概率分布：</p>
+<p>由于真实分布难以计算，因此反向过程是通过神经网络，利用 $p(\mathbf{x}_{t-1}|\mathbf{x}_{t})$ 去拟合逆向过程 $q(\mathbf{x}_{t-1}|\mathbf{x}_t)$，即从高斯分布 $p(\mathbf{x}_{T}) =\pi(\mathbf{x}_{T}) $ 出发，通过一个反向过程，可得联合概率分布：</p>
 <script type="math/tex; mode=display">
-p(\mathbf{x}_{0:T}) = p(\mathbf{x}_{T})\prod_{t=1}^T p(\mathbf{x}_{t-1}|\mathbf{x}_{t})</script><p>由于 $p(\mathbf{x}<em>{t} | \mathbf{x}</em>{t-1})$ 是一个高斯分布，当扩散系数 $\beta<em>t$ 足够小时，那么 $p(\mathbf{x}</em>{t-1} | \mathbf{x}_{t})$​ 也是高斯分布</p>
-<p>而对高斯分布的估计，只需要利用训练网络对均值 $f<em>u(\mathbf{x}</em>{t},t)$ 和方差 $f<em>{\Sigma}(\mathbf{x}</em>{t},t)$​ 进行估计即可</p>
+p(\mathbf{x}_{0:T}) = p(\mathbf{x}_{T})\prod_{t=1}^T p(\mathbf{x}_{t-1}|\mathbf{x}_{t})</script><p>由于 $p(\mathbf{x}_{t} | \mathbf{x}_{t-1})$ 是一个高斯分布，当扩散系数 $\beta_t$ 足够小时，那么 $p(\mathbf{x}_{t-1} | \mathbf{x}_{t})$​ 也是高斯分布</p>
+<p>而对高斯分布的估计，只需要利用训练网络对均值 $f_u(\mathbf{x}_{t},t)$ 和方差 $f_{\Sigma}(\mathbf{x}_{t},t)$​ 进行估计即可</p>
 <script type="math/tex; mode=display">
 p(\mathbf{x}_{t-1}|\mathbf{x}_{t}) = \mathcal{N}(\mathbf{x}_{t-1};f_{\mu}(\mathbf{x}_{t},t),f_{\Sigma}(\mathbf{x}_{t},t))</script><h1 id="【模型设计】"><a href="#【模型设计】" class="headerlink" title="【模型设计】"></a>【模型设计】</h1><h2 id="模型"><a href="#模型" class="headerlink" title="模型"></a>模型</h2><p>对于真实分布 $q(\mathbf{x}_{0})$，模型估计的数据概率分布为：</p>
 <script type="math/tex; mode=display">
@@ -308,8 +308,8 @@ p(\mathbf{x}_{0})
 &= \int d\mathbf{x}_{1:T} p(\mathbf{x}_{0:T}) \frac{q(\mathbf{x}_{1:T}|\mathbf{x}_{0})}{q(\mathbf{x}_{1:T}|\mathbf{x}_{0})} \\
 &= \int d\mathbf{x}_{1:T} q(\mathbf{x}_{1:T}|\mathbf{x}_{0}) \frac{p(\mathbf{x}_{1:T})}{q(\mathbf{x}_{1:T}|\mathbf{x}_{0})} \\
 &= \int d\mathbf{x}_{1:T} q(\mathbf{x}_{1:T}|\mathbf{x}_{0}) p(\mathbf{x}_{T}) \prod_{t=1}^T \frac{p(\mathbf{x}_{t-1}|\mathbf{x}_{t})}{q(\mathbf{x}_{t}|\mathbf{x}_{t-1})} \\
-\end{align*}</script><p>这个公式可以看做是对前向过程以及反向过程的相对概率求均值，因此，可以基于前向过程 $q(\mathbf{x}<em>{1:T}|\mathbf{x}</em>{0})$ 中的样本进行快速评估</p>
-<h2 id="优化目标"><a href="#优化目标" class="headerlink" title="优化目标"></a>优化目标</h2><p>训练过程相当于最大化模型的对数似然（前向取 $q(\mathbf{x}<em>{0})$，反向取 $p(\mathbf{x}</em>{0})$，两者概率都要最大），即：</p>
+\end{align*}</script><p>这个公式可以看做是对前向过程以及反向过程的相对概率求均值，因此，可以基于前向过程 $q(\mathbf{x}_{1:T}|\mathbf{x}_{0})$ 中的样本进行快速评估</p>
+<h2 id="优化目标"><a href="#优化目标" class="headerlink" title="优化目标"></a>优化目标</h2><p>训练过程相当于最大化模型的对数似然（前向取 $q(\mathbf{x}_{0})$，反向取 $p(\mathbf{x}_{0})$，两者概率都要最大），即：</p>
 <script type="math/tex; mode=display">
 \begin{align*}
 L 
@@ -327,22 +327,22 @@ K
 =& \sum_{t=2}^T \int d\mathbf{x_{t}} q(\mathbf{x_{0}},\mathbf{x_{t}}) 
 D_{KL}\Big( q(\mathbf{x_{t-1}}|\mathbf{x_{t}},\mathbf{x_{0}}) \parallel p(\mathbf{x_{t-1}}|\mathbf{x_{t}})\Big)  d\mathbf{x_{0}}\\
 &+ H_q(X_{T}|X_{0})-H_q(X_{1}|X_{0})-H_p(X_{T})
-\end{align*}</script><p>其中，熵可以被解析运算，KL 散度可以在已知 $\mathbf{x}<em>{0}$ 和 $\mathbf{x}</em>{t}$ 的情况下被解析运算</p>
+\end{align*}</script><p>其中，熵可以被解析运算，KL 散度可以在已知 $\mathbf{x}_{0}$ 和 $\mathbf{x}_{t}$ 的情况下被解析运算</p>
 <p>因此，训练的目标在于找到最大化对数似然下界的马尔可夫转移概率，即：</p>
 <script type="math/tex; mode=display">
-\hat{p}(\mathbf{x}_{t-1}|\mathbf{x}_{t}) = \arg\max_{p(\mathbf{x}_{t-1}|\mathbf{x}_{t})} K</script><p>而估计这样一个高斯分布形式的转移概率，等价于学习对应的均值 $f<em>{\mu}(\mathbf{x}</em>{t},t)$ 和方差 $f<em>{\Sigma}(\mathbf{x}</em>{t},t)$，即：</p>
+\hat{p}(\mathbf{x}_{t-1}|\mathbf{x}_{t}) = \arg\max_{p(\mathbf{x}_{t-1}|\mathbf{x}_{t})} K</script><p>而估计这样一个高斯分布形式的转移概率，等价于学习对应的均值 $f_{\mu}(\mathbf{x}_{t},t)$ 和方差 $f_{\Sigma}(\mathbf{x}_{t},t)$，即：</p>
 <script type="math/tex; mode=display">
-p(\mathbf{x}_{t-1}|\mathbf{x}_{t}) = \mathcal{N}(\mathbf{x}_{t-1};f_{\mu}(\mathbf{x}_{t},t),f_{\Sigma}(\mathbf{x}_{t},t))</script><h1 id="【扰动的处理】"><a href="#【扰动的处理】" class="headerlink" title="【扰动的处理】"></a>【扰动的处理】</h1><h2 id="扰动"><a href="#扰动" class="headerlink" title="扰动"></a>扰动</h2><p>在计算后验分布以进行信号去噪或推断缺失值等任务时，需要将模型分布 $p(\mathbf{x}<em>{0})$ 与第二个分布或有界的正函数 $r(\mathbf{x}</em>{0})$ 相乘，产生一个新的分布：</p>
+p(\mathbf{x}_{t-1}|\mathbf{x}_{t}) = \mathcal{N}(\mathbf{x}_{t-1};f_{\mu}(\mathbf{x}_{t},t),f_{\Sigma}(\mathbf{x}_{t},t))</script><h1 id="【扰动的处理】"><a href="#【扰动的处理】" class="headerlink" title="【扰动的处理】"></a>【扰动的处理】</h1><h2 id="扰动"><a href="#扰动" class="headerlink" title="扰动"></a>扰动</h2><p>在计算后验分布以进行信号去噪或推断缺失值等任务时，需要将模型分布 $p(\mathbf{x}_{0})$ 与第二个分布或有界的正函数 $r(\mathbf{x}_{0})$ 相乘，产生一个新的分布：</p>
 <script type="math/tex; mode=display">
 \tilde{p}(\mathbf{x}_{0}) \propto p(\mathbf{x}_{0}) r(\mathbf{x}_{0})</script><p>这一步骤的目的是将第二个分布视为扩散过程中每一步的一个扰动，以去除噪声中复杂的干扰</p>
-<h2 id="扰动表达式"><a href="#扰动表达式" class="headerlink" title="扰动表达式"></a>扰动表达式</h2><p>为计算 $\tilde{p}(\mathbf{x}<em>{0})$，将每个中间分布 $p(\mathbf{x}</em>{t})$ 乘以相应的函数 $r(\mathbf{x}<em>{0})$，那么，修改后的逆向过程的扩散轨迹为 $\tilde{p}(\mathbf{x}</em>{0:T})$，起点是：</p>
+<h2 id="扰动表达式"><a href="#扰动表达式" class="headerlink" title="扰动表达式"></a>扰动表达式</h2><p>为计算 $\tilde{p}(\mathbf{x}_{0})$，将每个中间分布 $p(\mathbf{x}_{t})$ 乘以相应的函数 $r(\mathbf{x}_{0})$，那么，修改后的逆向过程的扩散轨迹为 $\tilde{p}(\mathbf{x}_{0:T})$，起点是：</p>
 <script type="math/tex; mode=display">
 \tilde{p}(\mathbf{x}_{T}) = \frac{1}{\tilde{Z}_T}p(\mathbf{x}_{T})r(\mathbf{x}_{T})</script><p>中间分布也就对应为：</p>
 <script type="math/tex; mode=display">
 \tilde{p}(\mathbf{x}_{t}) = \frac{1}{\tilde{Z}_t}p(\mathbf{x}_{t})r(\mathbf{x}_{t})</script><p>其中，$\tilde{Z}_t$ 是第 $t$​ 个中间分布的标准化常数</p>
-<h2 id="修正的扩散步骤"><a href="#修正的扩散步骤" class="headerlink" title="修正的扩散步骤"></a>修正的扩散步骤</h2><p>反向过程的马尔可夫核 $p(\mathbf{x}<em>{t}|\mathbf{x}</em>{t+1})$ 遵循平衡条件：</p>
+<h2 id="修正的扩散步骤"><a href="#修正的扩散步骤" class="headerlink" title="修正的扩散步骤"></a>修正的扩散步骤</h2><p>反向过程的马尔可夫核 $p(\mathbf{x}_{t}|\mathbf{x}_{t+1})$ 遵循平衡条件：</p>
 <script type="math/tex; mode=display">
-p(\mathbf{x}_{t}) = \int d\mathbf{x}_{t+1} p(\mathbf{x}_{t}|\mathbf{x}_{t+1})p(\mathbf{x}_{t+1})</script><p>我们希望扰动的马尔可夫核 $\tilde{p}(\mathbf{x}<em>{t}|\mathbf{x}</em>{t+1})$ 仍然遵循该平衡条件，因此先做出满足的假设，再逆推要满足需要符合什么条件，即：</p>
+p(\mathbf{x}_{t}) = \int d\mathbf{x}_{t+1} p(\mathbf{x}_{t}|\mathbf{x}_{t+1})p(\mathbf{x}_{t+1})</script><p>我们希望扰动的马尔可夫核 $\tilde{p}(\mathbf{x}_{t}|\mathbf{x}_{t+1})$ 仍然遵循该平衡条件，因此先做出满足的假设，再逆推要满足需要符合什么条件，即：</p>
 <script type="math/tex; mode=display">
 \tilde{p}(\mathbf{x}_{t}) = \int d\mathbf{x}_{t+1} \tilde{p}(\mathbf{x}_{t}|\mathbf{x}_{t+1})\tilde{p}(\mathbf{x}_{t+1})</script><p>带入扰动表达式，有：</p>
 <script type="math/tex; mode=display">
@@ -353,9 +353,9 @@ p(\mathbf{x}_{t}) = \int d\mathbf{x}_{t+1} \tilde{p}(\mathbf{x}_{t}|\mathbf{x}_{
 <script type="math/tex; mode=display">
 \tilde{p}(\mathbf{x}_{t}|\mathbf{x}_{t+1}) = \tilde{p}(\mathbf{x}_{t}|\mathbf{x}_{t+1}) \frac{\tilde{Z}_{t+1} r(\mathbf{x}_{t})} {\tilde{Z}_t  r(\mathbf{x}_{t+1})}</script><p>由于该式不对应于一个标准化的概率分布，$\tilde{Z}_{t}$ 是标准化常数，因此选择：</p>
 <script type="math/tex; mode=display">
-\tilde{p}(\mathbf{x}_{t}|\mathbf{x}_{t+1}) = \frac{1 } {\tilde{Z}_t  (\mathbf{x}_{t+1})} \tilde{p}(\mathbf{x}_{t}|\mathbf{x}_{t+1})  r(\mathbf{x}_{t})</script><p>其中，$\tilde{Z}<em>t  (\mathbf{x}</em>{t+1})$ 是标准化常数，包括了被略去的 $\tilde{Z}<em>{t+1}$、$\tilde{Z}_t$、$r(\mathbf{x}</em>{t+1})$ 三项</p>
-<p>对于一个高斯过程来说，由于它的方差很小，所以每个扩散步相对于 $r(\mathbf{x}<em>{t})$ 通常是一个较为尖锐的峰值，这就意味着 $\frac{r(\mathbf{x}</em>{t})}{r(\mathbf{x}<em>{t+1})}$ 可以作为 $p(\mathbf{x}</em>{t}|\mathbf{x}_{t+1})$ 的一个小扰动</p>
-<h2 id="扰动后的过渡概率"><a href="#扰动后的过渡概率" class="headerlink" title="扰动后的过渡概率"></a>扰动后的过渡概率</h2><p>现在，要计算 $\tilde{p}(\mathbf{x}<em>{t}|\mathbf{x}</em>{t+1})$，为便于表示，记 $\mu = f<em>{\mu}(\mathbf{x}</em>{t},t),\Sigma=f<em>{\Sigma}(\mathbf{x}</em>{t},t),y=\mathbf{x}_{t-1}$</p>
+\tilde{p}(\mathbf{x}_{t}|\mathbf{x}_{t+1}) = \frac{1 } {\tilde{Z}_t  (\mathbf{x}_{t+1})} \tilde{p}(\mathbf{x}_{t}|\mathbf{x}_{t+1})  r(\mathbf{x}_{t})</script><p>其中，$\tilde{Z}_t  (\mathbf{x}_{t+1})$ 是标准化常数，包括了被略去的 $\tilde{Z}_{t+1}$、$\tilde{Z}_t$、$r(\mathbf{x}_{t+1})$ 三项</p>
+<p>对于一个高斯过程来说，由于它的方差很小，所以每个扩散步相对于 $r(\mathbf{x}_{t})$ 通常是一个较为尖锐的峰值，这就意味着 $\frac{r(\mathbf{x}_{t})}{r(\mathbf{x}_{t+1})}$ 可以作为 $p(\mathbf{x}_{t}|\mathbf{x}_{t+1})$ 的一个小扰动</p>
+<h2 id="扰动后的过渡概率"><a href="#扰动后的过渡概率" class="headerlink" title="扰动后的过渡概率"></a>扰动后的过渡概率</h2><p>现在，要计算 $\tilde{p}(\mathbf{x}_{t}|\mathbf{x}_{t+1})$，为便于表示，记 $\mu = f_{\mu}(\mathbf{x}_{t},t),\Sigma=f_{\Sigma}(\mathbf{x}_{t},t),y=\mathbf{x}_{t-1}$</p>
 <p>基于该标注，有：</p>
 <script type="math/tex; mode=display">
 \begin{align*}
@@ -371,7 +371,7 @@ p(\mathbf{x}_{t}) = \int d\mathbf{x}_{t+1} \tilde{p}(\mathbf{x}_{t}|\mathbf{x}_{
 &= \exp\Big[\frac{1}{2}(\mathbf{y}-\mu)^T \Sigma^{-1}(\mathbf{y}-\mu) - \log r(\mathbf{y}) \Big]
 \end{align*}</script><p>记 $E_r(\mathbf{y})=-\log r(\mathbf{y})$，若 $E_r(\mathbf{y})$ 与 $\frac{1}{2}(\mathbf{y}-\mu)^T \Sigma^{-1}(\mathbf{y}-\mu)$ 平滑相关，那么可以使用 $\mu$ 周围的 $E_r(\mathbf{y})$ 进行泰勒展开（要满足的充分条件是：$E_r(\mathbf{y})$ 的黑塞矩阵特征值比 $\Sigma^{-1}$ 的特征值小几个量级）</p>
 <script type="math/tex; mode=display">
-E_r(\mathbf{y}) \approx E_r(\mu) + (\mathbf{y}-\mu) \mathbf{g}</script><p>其中，$\mathbf{g}=\frac{\partial E<em>r(y’}{\partial y’}|</em>{y’=\mu}$</p>
+E_r(\mathbf{y}) \approx E_r(\mu) + (\mathbf{y}-\mu) \mathbf{g}</script><p>其中，$\mathbf{g}=\frac{\partial E_r(y’}{\partial y’}|_{y’=\mu}$</p>
 <p>可以看出，是一阶的线性近似，将其带入能量函数，有：</p>
 <script type="math/tex; mode=display">
 \begin{align*}
@@ -522,7 +522,7 @@ E(\mathbf{y})
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">752</span>
+          <span class="site-state-item-count">757</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>

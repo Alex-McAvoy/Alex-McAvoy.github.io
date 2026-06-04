@@ -280,13 +280,13 @@
         <h1 id="【概述】"><a href="#【概述】" class="headerlink" title="【概述】"></a>【概述】</h1><p><strong>K-均值（K-Means）</strong>是最基础最常用的聚类算法，其是基于样本集合划分的聚类算法，属于原型聚类，同时，由于每个数据点都被精确地分配到一个簇中，因此其也是硬聚类算法的一种</p>
 <p>K-Means 的基本思想是：将样本集合划分为 $K$ 个子集，构成 $K$ 个簇，通过迭代来寻找一种划分，使得每个样本到其所属簇的中心距离最小</p>
 <p>K-Means 容易理解，聚类效果较好，在处理大数据集时，可保证较好的伸缩性，算法复杂度较低，但 K 值需要人为确定，不同的 K 值得到的结果不同，同时，其对初始的簇心敏感，不同选取方式会得到不同结果，不适合太离散、样本类别不平衡、非凸形状的分类</p>
-<h1 id="【模型】"><a href="#【模型】" class="headerlink" title="【模型】"></a>【模型】</h1><p>对于给定容量为 $n$ 的样本集 $D={\mathbf{x}_1,\mathbf{x}_2,\cdots,\mathbf{x}_n}$，第 $i$ 个样本的输入 $\mathbf{x}_i$ 具有 $m$ 个特征值，即：$\mathbf{x}_i = (x_i^{(1)},x_i^{(2)},\cdots,x_i^{(m)})\in \mathbb{R}^{m}$</p>
-<p>K-Means 的目标是将 $n$ 个样本划分到 $K$ 个不同的簇 $\mathcal{C}={C_1,C_2,\cdots,C_K}$ 中，以形成对样本集 $D$ 的划分，其中，对于簇 $C_i$ 和 $C_j$，有：</p>
+<h1 id="【模型】"><a href="#【模型】" class="headerlink" title="【模型】"></a>【模型】</h1><p>对于给定容量为 $n$ 的样本集 $D=\{\mathbf{x}_1,\mathbf{x}_2,\cdots,\mathbf{x}_n\}$，第 $i$ 个样本的输入 $\mathbf{x}_i$ 具有 $m$ 个特征值，即：$\mathbf{x}_i = (x_i^{(1)},x_i^{(2)},\cdots,x_i^{(m)})\in \mathbb{R}^{m}$</p>
+<p>K-Means 的目标是将 $n$ 个样本划分到 $K$ 个不同的簇 $\mathcal{C}=\{C_1,C_2,\cdots,C_K\}$ 中，以形成对样本集 $D$ 的划分，其中，对于簇 $C_i$ 和 $C_j$，有：</p>
 <script type="math/tex; mode=display">
 \begin{gather*}
 C_i \cap C_j = \varnothing \\
 \bigcup_{k=1}^K C_k = D
-\end{gather*}</script><p>聚类是一个多对一函数，若将每个样本用一个整数 $i\in{1,2,\cdots,n}$，每个簇也用一个整数 $\mathcal{C}\in{1,2,\cdots,K}$ 来表示，那么聚类可以用函数 $\mathcal{C}=C(i)$ 来表示</p>
+\end{gather*}</script><p>聚类是一个多对一函数，若将每个样本用一个整数 $i\in\{1,2,\cdots,n\}$，每个簇也用一个整数 $\mathcal{C}\in\{1,2,\cdots,K\}$ 来表示，那么聚类可以用函数 $\mathcal{C}=C(i)$ 来表示</p>
 <p>综上所述，K-Means 聚类的模型实质上是一个从样本到类的函数</p>
 <h1 id="【策略】"><a href="#【策略】" class="headerlink" title="【策略】"></a>【策略】</h1><p>K-Means 可归结为样本集合 $D$ 的划分，或者从样本到簇的函数的选择问题，其策略是通过损失函数的最小化来选取最优的划分或函数 $C^{*}(\cdot)$</p>
 <p>通常来说，在 K-Means 中会采用欧式距离来作为样本间的距离 $d(\mathbf{x}_i,\mathbf{x}_j) $，即：</p>
@@ -301,7 +301,7 @@ d(\mathbf{x}_i,\mathbf{x}_j)
 E(C) 
 &= \sum_{k=1}^K \sum_{\mathcal{C}(i)=k} d(\mathbf{x}_i,\overline{\mathbf{x}}_k) \\
 &= \sum_{k=1}^K \sum_{\mathcal{C}(i)=k} ||\mathbf{x}_i-\overline{\mathbf{x}}_k|| ^2
-\end{align*}</script><p>其中，$\overline{\mathbf{x}}<em>k=(x</em>{k}^{(1)},x<em>{k}^{(2)},\cdots,x</em>{k}^{(m)})$ 是第 $k$ 个簇的簇心</p>
+\end{align*}</script><p>其中，$\overline{\mathbf{x}}_k=(x_{k}^{(1)},x_{k}^{(2)},\cdots,x_{k}^{(m)})$ 是第 $k$ 个簇的簇心</p>
 <p>$E(C)$ 也被称为能量，实质上表示了相同簇中的样本的相似程度，K-Means 就是求解 $E(C) $ 的最优化问题</p>
 <script type="math/tex; mode=display">
 \begin{align*}
@@ -321,7 +321,7 @@ S(n,K) = \frac{1}{K!} \sum_{k=1}^{K} (-1)^{K-k} \left(\begin{array}{c}K\\k\end{a
 <p>Step1：对于给定的簇心 $(\mathbf{m}_1,\mathbf{m}_2,\cdots,\mathbf{m}_K)$，求一个划分 $C$，使得目标函数极小化：</p>
 <script type="math/tex; mode=display">
 \min_{C} \sum_{k=1}^K \sum_{C(i)=k} ||\mathbf{x}_i-\mathbf{m}_k||^2</script><p>即在簇心确定的情况下，将每一样本 $\mathbf{x}_i$ 分到每一个簇中，使样本和其所属簇心间的距离总和最小</p>
-<p>求解结果后，将每一样本 $\mathbf{x}<em>i$ 指派到与其最近的簇心 $\mathbf{m}_k$ 的簇 $C</em>{k}$</p>
+<p>求解结果后，将每一样本 $\mathbf{x}_i$ 指派到与其最近的簇心 $\mathbf{m}_k$ 的簇 $C_{k}$</p>
 <p>Step2：对于给定的划分 $C$，再求各簇的簇心 $(\mathbf{m}_1,\mathbf{m}_2,\cdots,\mathbf{m}_K)$，使得目标函数极小化：</p>
 <script type="math/tex; mode=display">
 \min_{\mathbf{m}_1,\mathbf{m}_2,\cdots,\mathbf{m}_K} \sum_{k=1}^K \sum_{C(i)=k} ||\mathbf{x}_i-\mathbf{m}_k||^2</script><p>即在划分确定的情况下，使样本和其所属的簇的簇心间的距离总和最小</p>
@@ -487,7 +487,7 @@ n_k = \sum_{i=1}^n \mathbb{I}(C(i)=k)
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">752</span>
+          <span class="site-state-item-count">757</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>

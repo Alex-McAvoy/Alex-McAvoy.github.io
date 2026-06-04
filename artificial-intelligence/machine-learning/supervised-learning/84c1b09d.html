@@ -303,12 +303,12 @@ P(O|I,\lambda)
 \end{align*}</script><p>但是，直接利用上述公式进行计算的计算量很大，是 $O(TN^T)$ 阶的，随着 $T$ 的增长时间复杂度会呈爆炸式增长，故而该方法在计算上不可行</p>
 <h1 id="【前向计算法】"><a href="#【前向计算法】" class="headerlink" title="【前向计算法】"></a>【前向计算法】</h1><h2 id="前向概率"><a href="#前向概率" class="headerlink" title="前向概率"></a>前向概率</h2><p>对于给定的隐马尔可夫模型 $\lambda=(A,B,\lambda)$，定义到时刻 $t$ 的部分观测序列为 $o_1,o_2,\cdots,o_t$ 且状态为 $q_i$ 的概率为<strong>前向概率</strong>，记作：</p>
 <script type="math/tex; mode=display">
-\alpha_t(i) = P(o_1,o_2,\cdots,o_t,i_t = q_i|\lambda)</script><h2 id="前向概率的递推公式"><a href="#前向概率的递推公式" class="headerlink" title="前向概率的递推公式"></a>前向概率的递推公式</h2><p>对于到时刻 $t$ 观测到 $o<em>1,o_2,\cdots,o_t$ 并在时刻 $t$ 处于状态 $q_j$ 的前向概率 $\alpha_t(j)$，那么结合转移概率 $a</em>{ji}$，可求得到时刻 $t$ 观测到 $o_1,o_2,\cdots,o_t$ 并在时刻 $t$ 处于状态 $q_j$ 而在 $t+1$ 时刻到达状态 $q_i$ 的联合概率，即：</p>
+\alpha_t(i) = P(o_1,o_2,\cdots,o_t,i_t = q_i|\lambda)</script><h2 id="前向概率的递推公式"><a href="#前向概率的递推公式" class="headerlink" title="前向概率的递推公式"></a>前向概率的递推公式</h2><p>对于到时刻 $t$ 观测到 $o_1,o_2,\cdots,o_t$ 并在时刻 $t$ 处于状态 $q_j$ 的前向概率 $\alpha_t(j)$，那么结合转移概率 $a_{ji}$，可求得到时刻 $t$ 观测到 $o_1,o_2,\cdots,o_t$ 并在时刻 $t$ 处于状态 $q_j$ 而在 $t+1$ 时刻到达状态 $q_i$ 的联合概率，即：</p>
 <script type="math/tex; mode=display">
 \alpha_t(j) a_{ji},\quad i=1,2,\cdots,N</script><p>对在 $t$ 时刻所有可能的 $N$ 个状态 $q_j$ 求和，可得到到时刻 $t$ 观测到 $o_1,o_2,\cdots,o_t$ 并在 $t+1$ 时刻处于状态 $q_i$ 的联合概率，即：</p>
 <script type="math/tex; mode=display">
 \sum_{j=1}^N \alpha_t(j) a_{ji},\quad i=1,2,\cdots,N</script><p><img width=300 src="/images/artificial-intelligence/machine-learning/supervised-learning/49-1.png"/></p>
-<p>那么，将这个联合概率与观测概率 $b<em>i(o</em>{t+1})$ 相乘，即可得到到时刻 $t+1$ 观测到 $o<em>1,o_2,\cdots,o_t,o</em>{t+1}$ 并在时刻 $t+1$ 处于状态 $q<em>i$ 的前向概率 $\alpha</em>{t+1}(i)$，即：</p>
+<p>那么，将这个联合概率与观测概率 $b_i(o_{t+1})$ 相乘，即可得到到时刻 $t+1$ 观测到 $o_1,o_2,\cdots,o_t,o_{t+1}$ 并在时刻 $t+1$ 处于状态 $q_i$ 的前向概率 $\alpha_{t+1}(i)$，即：</p>
 <script type="math/tex; mode=display">
 \alpha_{t+1}(i) = \bigg[ \sum_{j=1}^N \alpha_t(j) a_{ji} \bigg] b_i(o_{t+1}),\quad i=1,2,\cdots,N</script><p>上式即<strong>前向概率的递推公式</strong></p>
 <h2 id="观测序列概率的计算"><a href="#观测序列概率的计算" class="headerlink" title="观测序列概率的计算"></a>观测序列概率的计算</h2><p>由于到时刻 $T$ 的观测序列为 $o_1,o_2,\cdots,o_T$ 且状态为 $q_i$ 的前向概率为：</p>
@@ -330,15 +330,15 @@ P(O|\lambda) = \sum_{i=1}^N \alpha_T(i)</script><hr>
 <p>如下图所示，前向计算法实际是基于状态序列的路径结构，递推计算 $P(O|\lambda)$</p>
 <p><img width=300 src="/images/artificial-intelligence/machine-learning/supervised-learning/49-2.png"/></p>
 <p>其高效之处在于局部计算前向概率，然后利用路径结构将前向概率递推到全局，进而得到 $P(O|\lambda)$</p>
-<p>具体来说，在初始时刻 $t=1$，计算 $\alpha<em>1(i)$ 的 $N$ 个值（$i=1,2,\cdots,N$），在各时刻 $t=1,2,\cdots,T-1$，计算 $\alpha</em>{t+1}(i)$ 的 $N$ 个值（$i=1,2,\cdots,N$），并且每个 $\alpha_{t+1}(i)$ 的计算利用前一时刻 $N$ 个 $\alpha_t(j)$，减小计算量的原因就在于每一次计算都引用了之前的结果，避免了重复计算</p>
+<p>具体来说，在初始时刻 $t=1$，计算 $\alpha_1(i)$ 的 $N$ 个值（$i=1,2,\cdots,N$），在各时刻 $t=1,2,\cdots,T-1$，计算 $\alpha_{t+1}(i)$ 的 $N$ 个值（$i=1,2,\cdots,N$），并且每个 $\alpha_{t+1}(i)$ 的计算利用前一时刻 $N$ 个 $\alpha_t(j)$，减小计算量的原因就在于每一次计算都引用了之前的结果，避免了重复计算</p>
 <p>这样，利用前向概率计算 $P(O|\lambda)$ 的计算量是 $O(N^2T)$ 阶的</p>
-<h1 id="【后向计算法】"><a href="#【后向计算法】" class="headerlink" title="【后向计算法】"></a>【后向计算法】</h1><h2 id="后向概率"><a href="#后向概率" class="headerlink" title="后向概率"></a>后向概率</h2><p>对于给定的隐马尔可夫模型 $\lambda=(A,B,\lambda)$，定义在 $t$ 时刻状态为 $q<em>i$ 的条件下，从 $t+1$ 到 $T$ 的部分观测序列为 $o</em>{t+1},o_{t+2},\cdots,o_T$ 的概率为<strong>后向概率</strong>，记作：</p>
+<h1 id="【后向计算法】"><a href="#【后向计算法】" class="headerlink" title="【后向计算法】"></a>【后向计算法】</h1><h2 id="后向概率"><a href="#后向概率" class="headerlink" title="后向概率"></a>后向概率</h2><p>对于给定的隐马尔可夫模型 $\lambda=(A,B,\lambda)$，定义在 $t$ 时刻状态为 $q_i$ 的条件下，从 $t+1$ 到 $T$ 的部分观测序列为 $o_{t+1},o_{t+2},\cdots,o_T$ 的概率为<strong>后向概率</strong>，记作：</p>
 <script type="math/tex; mode=display">
-\beta_t(i) = P(o_{t+1},o_{t+2},\cdots,o_T|i_t = q_i,\lambda)</script><h2 id="后向概率的递推公式"><a href="#后向概率的递推公式" class="headerlink" title="后向概率的递推公式"></a>后向概率的递推公式</h2><p>为计算在 $t$ 时刻状态为 $q<em>i$ 条件下 $t+1$ 时刻后的观测序列为 $o</em>{t+1},o<em>{t+2},\cdots,o_T$ 的后向概率 $\beta_t(i)$，只需考虑在 $t+1$ 时刻所有可能的 $N$ 个状态 $q_j$ 的转移概率 $a</em>{ij}$，在该状态下的观测 $o<em>{t+1}$ 的观测概率 $b_j(o</em>{t+1})$，以及在状态 $q<em>j$ 后的观测序列的后向概率 $\beta</em>{t+1}(j)$，即有：</p>
+\beta_t(i) = P(o_{t+1},o_{t+2},\cdots,o_T|i_t = q_i,\lambda)</script><h2 id="后向概率的递推公式"><a href="#后向概率的递推公式" class="headerlink" title="后向概率的递推公式"></a>后向概率的递推公式</h2><p>为计算在 $t$ 时刻状态为 $q_i$ 条件下 $t+1$ 时刻后的观测序列为 $o_{t+1},o_{t+2},\cdots,o_T$ 的后向概率 $\beta_t(i)$，只需考虑在 $t+1$ 时刻所有可能的 $N$ 个状态 $q_j$ 的转移概率 $a_{ij}$，在该状态下的观测 $o_{t+1}$ 的观测概率 $b_j(o_{t+1})$，以及在状态 $q_j$ 后的观测序列的后向概率 $\beta_{t+1}(j)$，即有：</p>
 <script type="math/tex; mode=display">
 \beta_{t}(i) =  \sum_{j=1}^N a_{ji} b_j(o_{t+1}) \beta_{t+1}(j),\quad i=1,2,\cdots,N</script><p><img width=300 src="/images/artificial-intelligence/machine-learning/supervised-learning/49-3.png"/></p>
 <p>上式即<strong>后向概率的递推公式</strong></p>
-<h2 id="观测序列概率的计算-1"><a href="#观测序列概率的计算-1" class="headerlink" title="观测序列概率的计算"></a>观测序列概率的计算</h2><p>由于在 $t=1$ 时刻状态为 $q<em>i$ 的条件下，从 $2$ 到 $T$ 的部分观测序列为 $o</em>{2},o_{3},\cdots,o_T$ 的后向概率为：</p>
+<h2 id="观测序列概率的计算-1"><a href="#观测序列概率的计算-1" class="headerlink" title="观测序列概率的计算"></a>观测序列概率的计算</h2><p>由于在 $t=1$ 时刻状态为 $q_i$ 的条件下，从 $2$ 到 $T$ 的部分观测序列为 $o_{2},o_{3},\cdots,o_T$ 的后向概率为：</p>
 <script type="math/tex; mode=display">
 \beta_1(i) = P(o_{2},o_{3},\cdots,o_T|i_1 = q_i,\lambda)</script><p>那么结合初始概率 $\pi_i$ 与观测概率 $b_i(o_1)$，可得到在模型 $\lambda$ 下观测序列 $O$ 出现的概率 $P(O|\lambda)$ 为：</p>
 <script type="math/tex; mode=display">
@@ -371,7 +371,7 @@ P(i_t=q_i,O|\lambda) = \alpha_t(i) \beta_t(i)</script><p>故有：</p>
 &= P(i_t=q_i|O,\lambda) \\
 &= \frac{P(i_t=q_i,O|\lambda)}{P(O|\lambda)} \\
 &= \frac{\alpha_t(i) \beta_t(i)}{\sum\limits_{j=1}^N \alpha_t(j) \beta_t(j)}
-\end{align*}</script><h2 id="双状态计算公式"><a href="#双状态计算公式" class="headerlink" title="双状态计算公式"></a>双状态计算公式</h2><p>记 $\xi<em>t(i,j)=P(i_t=q_t,i</em>{t+1}=q_j|O,\lambda)$ 为在给定模型 $\lambda$ 和观测序列 $O$ 的条件下，在 $t$ 时刻处于状态 $q_i$ 且在 $t+1$ 时刻处于状态 $q_j$ 的概率</p>
+\end{align*}</script><h2 id="双状态计算公式"><a href="#双状态计算公式" class="headerlink" title="双状态计算公式"></a>双状态计算公式</h2><p>记 $\xi_t(i,j)=P(i_t=q_t,i_{t+1}=q_j|O,\lambda)$ 为在给定模型 $\lambda$ 和观测序列 $O$ 的条件下，在 $t$ 时刻处于状态 $q_i$ 且在 $t+1$ 时刻处于状态 $q_j$ 的概率</p>
 <p>根据前向概率 $\alpha_t(i)$ 与后向概率 $\beta_t(i)$ 的定义，有：</p>
 <script type="math/tex; mode=display">
 P(i_t=q_i,i_{t+1}=q_j,O|\lambda) = \alpha_t(i) a_{ij} b_j(o_{t+1}) \beta_{t+1}(j)</script><p>故有：</p>
@@ -529,7 +529,7 @@ P(i_t=q_i,i_{t+1}=q_j,O|\lambda) = \alpha_t(i) a_{ij} b_j(o_{t+1}) \beta_{t+1}(j
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">752</span>
+          <span class="site-state-item-count">757</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>

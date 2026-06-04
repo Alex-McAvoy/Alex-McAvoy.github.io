@@ -270,7 +270,7 @@
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>21 分钟</span>
+              <span>22 分钟</span>
             </span>
 
         </div>
@@ -285,7 +285,7 @@
         <h1 id="【概述】"><a href="#【概述】" class="headerlink" title="【概述】"></a>【概述】</h1><p>2020 年 6 月，Jonathan Ho 等学者在<a target="_blank" rel="noopener" href="https://arxiv.org/abs/2006.11239">《Denoising Diffusion Probabilistic Models》</a>中对之前的扩散概率模型进行了简化，并通过变分推断，将后验问题转为优化问题进行建模，提出了经典的<strong>去噪扩散概率模型（Denoising Diffusion Probabilistic Model，DDPM）</strong>，将扩散概率模型的思想用于图像生成，目前所说的扩散模型，大多是基于该模型进行改进</p>
 <p>简单来说，DDPM 包含两个过程：</p>
 <ul>
-<li><strong>前向扩散过程</strong> $\mathbf{x}<em>{0}\rightarrow \mathbf{x}</em>{T}$​：逐步加噪的前向过程，该过程从原始图片逐步添加高斯噪声，直到变为随机噪声</li>
+<li><strong>前向扩散过程</strong> $\mathbf{x}_{0}\rightarrow \mathbf{x}_{T}$​：逐步加噪的前向过程，该过程从原始图片逐步添加高斯噪声，直到变为随机噪声</li>
 <li><strong>反向生成过程</strong> $\mathbf{x}_T\rightarrow \mathbf{x}_0$：逐步去噪的反向过程，该过程将随机噪声逐步去除噪声，直到还原为一张图片</li>
 </ul>
 <p><img src="/images/artificial-intelligence/deep-learning/deep-generative-model/09-1.png"/></p>
@@ -312,10 +312,10 @@ p(\mathbf{x}_{t-1}|\mathbf{x}_{t}) = \mathcal{N}(\mathbf{x}_{t-1};f_{\mu}(\mathb
 q(\mathbf{x}_{0:T})  = q(\mathbf{x}_{0}) \prod_{t=1}^T q(\mathbf{x}_{t}|\mathbf{x}_{t-1}) \\
 q(\mathbf{x}_t|\mathbf{x}_{t-1}) = \mathcal{N}(\mathbf{x}_t;\sqrt{1-\beta_t} \mathbf{x}_{t-1},\beta_t\mathbf{I}) \\
 \mathbf{x}_0\sim q(\mathbf{x}_0)
-\end{gather*}</script><p>${\beta<em>t}</em>{t=1}^T,\beta_t\in (0,1)$ 是每一步扩散采用的方差，通常随着 $t$ 的增加 $\beta_t$ 而增大，即满足 $\beta_1&lt;\beta_2&lt;\cdots&lt;\beta_T$，当扩散步数 $T$ 足够大，那么最终得到的 $\mathbf{x}_T$ 就完全丢失了原始数据，变成一个随机噪声</p>
+\end{gather*}</script><p>$\{\beta_t\}_{t=1}^T,\beta_t\in (0,1)$ 是每一步扩散采用的方差，通常随着 $t$ 的增加 $\beta_t$ 而增大，即满足 $\beta_1&lt;\beta_2&lt;\cdots&lt;\beta_T$，当扩散步数 $T$ 足够大，那么最终得到的 $\mathbf{x}_T$ 就完全丢失了原始数据，变成一个随机噪声</p>
 <p><img src="/images/artificial-intelligence/deep-learning/deep-generative-model/09-2.png"/></p>
 <p>对于原始数据 $\mathbf{x}_0$，其满足初始分布 $ q(\mathbf{x}_0)$，即 $\mathbf{x}_0\sim q(\mathbf{x}_0)$</p>
-<p>从该数据出发，总共进行 $T$ 步的扩散过程，即对于 $t\in [1,T]$ 时刻，$\mathbf{x}<em>{t}$ 和 $\mathbf{x}</em>{t-1}$ 满足：</p>
+<p>从该数据出发，总共进行 $T$ 步的扩散过程，即对于 $t\in [1,T]$ 时刻，$\mathbf{x}_{t}$ 和 $\mathbf{x}_{t-1}$ 满足：</p>
 <script type="math/tex; mode=display">
 \mathbf{x}_{t} = \sqrt{1-\beta_t} \mathbf{x}_{t-1} +\sqrt{\beta_t} \epsilon</script><p>其中，$\beta_t$ 为扩散系数，随 $t$ 的增加而增大，$\epsilon\sim \mathcal{N}(\mathbf{0},\mathbf{1)}$ 为高斯噪声</p>
 <p>令 $\alpha_t=1-\beta_t$，则有：</p>
@@ -335,14 +335,14 @@ X_1+X_2 = N(0,1-\alpha_{t}\alpha_{t-1})
 <script type="math/tex; mode=display">
 \mathbf{x}_t = \sqrt{\alpha_{t} \alpha_{t-1}} \mathbf{x}_{t-2} + \sqrt{1-\alpha_{t}\alpha_{t-1}}\epsilon</script><p>以此类推，可得：</p>
 <script type="math/tex; mode=display">
-\mathbf{x}_t = \sqrt{\alpha_{t} \alpha_{t-1}\cdots\alpha_{1}\alpha_{0}} \mathbf{x}_{0} + \sqrt{1-\alpha_{t}\alpha_{t-1}\cdots\alpha_{1}\alpha_{0}}\epsilon</script><p>令 $\overline{\alpha}<em>t=\alpha</em>{t}\alpha<em>{t-1}\cdots\alpha</em>{1}\alpha_{0}$，则有：</p>
+\mathbf{x}_t = \sqrt{\alpha_{t} \alpha_{t-1}\cdots\alpha_{1}\alpha_{0}} \mathbf{x}_{0} + \sqrt{1-\alpha_{t}\alpha_{t-1}\cdots\alpha_{1}\alpha_{0}}\epsilon</script><p>令 $\overline{\alpha}_t=\alpha_{t}\alpha_{t-1}\cdots\alpha_{1}\alpha_{0}$，则有：</p>
 <script type="math/tex; mode=display">
 \mathbf{x}_t = \sqrt{\overline{\alpha}_t} \mathbf{x}_{0} + \sqrt{1-\overline{\alpha}_t}\epsilon</script><p>其是一个由原始数据 $\mathbf{x}_0$ 和噪声变量 $\epsilon$ 的线性组合</p>
 <p>写为概率分布的形式，有：</p>
 <script type="math/tex; mode=display">
 q(\mathbf{x}_t|\mathbf{x}_0) = \mathcal{N}(\mathbf{x}_t;\sqrt{\overline{\alpha}_t}\mathbf{x}_0,(1-\overline{\alpha}_t)\mathbf{I})</script><p>$\mathbf{x}_t$ 可以看作是原始数据 $\mathbf{x}_0$ 和随机噪声 $\epsilon$ 的线性组合，$\sqrt{\overline{\alpha}_t}$ 和 $\sqrt{1-\overline{\alpha}_t}$ 为组合系数，它们的平方和为 $1$，这样通过设定 $\overline{\alpha}_t$ 即可直接基于原始数据 $\mathbf{x}_0$ 对任意 $t$ 步的 $\mathbf{x}_t$ 进行采样，相比于设定 $\beta_t$ 一步步进行采样更加直接</p>
 <p><img src="/images/artificial-intelligence/deep-learning/deep-generative-model/09-3.png"/></p>
-<p>由于 $\beta<em>t$ 随着时间步 $t$ 的增加而增大，那么 $\alpha_t=1-\beta_t$ 则随着时间步 $t$ 的增加而减小，当 $t\rightarrow T$ 时，$\overline{\alpha}_t=\alpha</em>{t}\alpha<em>{t-1}\cdots\alpha</em>{1}\alpha_{0}\rightarrow 0$，进而有 $\mathbf{x}_T\rightarrow \epsilon$</p>
+<p>由于 $\beta_t$ 随着时间步 $t$ 的增加而增大，那么 $\alpha_t=1-\beta_t$ 则随着时间步 $t$ 的增加而减小，当 $t\rightarrow T$ 时，$\overline{\alpha}_t=\alpha_{t}\alpha_{t-1}\cdots\alpha_{1}\alpha_{0}\rightarrow 0$，进而有 $\mathbf{x}_T\rightarrow \epsilon$</p>
 <p>所以可以认为，在前向扩散过程中，当时间步 $t$ 足够大时，最终产生的图片 $\mathbf{x}_T$​ 近似于高斯分布</p>
 <p>综上所述，DDPM 的前向扩散过程为：</p>
 <script type="math/tex; mode=display">
@@ -350,11 +350,11 @@ q(\mathbf{x}_t|\mathbf{x}_0) = \mathcal{N}(\mathbf{x}_t;\sqrt{\overline{\alpha}_
 q(\mathbf{x}_{0:T}) = q(\mathbf{x}_0) \prod_{t=1}^T q(\mathbf{x}_t|\mathbf{x}_{t-1}) \\
 q(\mathbf{x}_{t}|\mathbf{x}_{0}) = \mathcal{N}(\mathbf{x}_{t};\sqrt{\overline{\alpha}_t}\mathbf{x}_{0},(1-\overline{\alpha}_t)\mathbf{I}) \\
 \mathbf{x}_0 \sim q(\mathbf{x}_0)
-\end{gather*}</script><p>其中，$\mathbf{x}<em>0$ 为原始数据，$q(\mathbf{x}_0)$ 为初始分布， $\overline{\alpha}_t=\alpha</em>{t}\alpha<em>{t-1}\cdots\alpha</em>{1}\alpha_{0},\alpha_t=1-\beta_t$，$\beta_t$ 为扩散系数，随 $t$ 的增加而增大，$\epsilon\sim \mathcal{N}(\mathbf{0},\mathbf{1)}$ 为高斯噪声</p>
+\end{gather*}</script><p>其中，$\mathbf{x}_0$ 为原始数据，$q(\mathbf{x}_0)$ 为初始分布， $\overline{\alpha}_t=\alpha_{t}\alpha_{t-1}\cdots\alpha_{1}\alpha_{0},\alpha_t=1-\beta_t$，$\beta_t$ 为扩散系数，随 $t$ 的增加而增大，$\epsilon\sim \mathcal{N}(\mathbf{0},\mathbf{1)}$ 为高斯噪声</p>
 <h2 id="反向生成过程"><a href="#反向生成过程" class="headerlink" title="反向生成过程"></a>反向生成过程</h2><p>对于反向生成过程，其是一个去噪过程，需要根据当前时刻的图片去预测前一时刻的图片，即去除一部分噪声，还原到上一时刻的图片</p>
 <p>也就是说，如果知道反向过程中每一步的真实分布 $p(\mathbf{x}_{t-1}|\mathbf{x}_t)$，那么从一个随机噪声 $\mathbf{x}_T\sim \mathcal{N}(\mathbf{0},\mathbf{I})$​ 开始，逐渐去除噪声，就能生成一个真实的样本</p>
 <p><img src="/images/artificial-intelligence/deep-learning/deep-generative-model/09-4.png"/></p>
-<p>在整个反向过程中，由于并不知道上一时刻 $\mathbf{x}<em>{t-1}$ 的值，只能通过当前时刻的值 $\mathbf{x}_t$ 进行预测，因此以概率的形式，采用<strong>变分推断（Variational Inference）</strong>的方式，利用 $q(\mathbf{x}</em>{t-1}|\mathbf{x}<em>t)$ 去近似 $p(\mathbf{x}</em>{t-1}|\mathbf{x}<em>t)$，并通过神经网络去拟合 $q(\mathbf{x}</em>{t-1}|\mathbf{x}<em>t)$ 的参数，一步步优化使其与后验分布  $p(\mathbf{x}</em>{t-1}|\mathbf{x}_t)$ 相似</p>
+<p>在整个反向过程中，由于并不知道上一时刻 $\mathbf{x}_{t-1}$ 的值，只能通过当前时刻的值 $\mathbf{x}_t$ 进行预测，因此以概率的形式，采用<strong>变分推断（Variational Inference）</strong>的方式，利用 $q(\mathbf{x}_{t-1}|\mathbf{x}_t)$ 去近似 $p(\mathbf{x}_{t-1}|\mathbf{x}_t)$，并通过神经网络去拟合 $q(\mathbf{x}_{t-1}|\mathbf{x}_t)$ 的参数，一步步优化使其与后验分布  $p(\mathbf{x}_{t-1}|\mathbf{x}_t)$ 相似</p>
 <p>对于后验分布 $q(\mathbf{x}_{t-1}|\mathbf{x}_t)$，利用贝叶斯公式，有：</p>
 <script type="math/tex; mode=display">
 q(\mathbf{x}_{t-1}|\mathbf{x}_t) = \frac{q(\mathbf{x}_{t-1}\mathbf{x}_t)}{q(\mathbf{x}_t)} = \frac{q(\mathbf{x}_t|\mathbf{x}_{t-1})q(\mathbf{x}_{t-1})}{q(\mathbf{x}_t)}</script><p>在已知原图 $\mathbf{x}_{0}$ 的情况下，上式可写为：</p>
@@ -362,9 +362,9 @@ q(\mathbf{x}_{t-1}|\mathbf{x}_t) = \frac{q(\mathbf{x}_{t-1}\mathbf{x}_t)}{q(\mat
 q(\mathbf{x}_{t-1}|\mathbf{x}_{t},\mathbf{x}_{0}) = \frac{q(\mathbf{x}_{t}|\mathbf{x}_{t-1},\mathbf{x}_{0})q(\mathbf{x}_{t-1}|\mathbf{x}_{0})}{q(\mathbf{x}_{t}|\mathbf{x}_{0})}</script><p>此时，等式右边的概率均为先验分布</p>
 <p>根据马尔可夫链的无后效性，与扩散概率模型中的前向过程，有：</p>
 <script type="math/tex; mode=display">
-q(\mathbf{x}_{t-1}|\mathbf{x}_{t},\mathbf{x}_{0}) = q(\mathbf{x}_{t}|\mathbf{x}_{t-1}) = \mathcal{N}(\mathbf{x}_t;\sqrt{1-\beta_t} \mathbf{x}_{t-1},\beta_t\mathbf{I})</script><p>根据 DDPM 得到的前向扩散过程 $q(\mathbf{x}<em>{t}|\mathbf{x}</em>{0}) =\mathcal{N}(\mathbf{x}_t;\sqrt{\overline{\alpha}_t}\mathbf{x}_0,(1-\overline{\alpha}_t)\mathbf{I})$ 可知：</p>
+q(\mathbf{x}_{t-1}|\mathbf{x}_{t},\mathbf{x}_{0}) = q(\mathbf{x}_{t}|\mathbf{x}_{t-1}) = \mathcal{N}(\mathbf{x}_t;\sqrt{1-\beta_t} \mathbf{x}_{t-1},\beta_t\mathbf{I})</script><p>根据 DDPM 得到的前向扩散过程 $q(\mathbf{x}_{t}|\mathbf{x}_{0}) =\mathcal{N}(\mathbf{x}_t;\sqrt{\overline{\alpha}_t}\mathbf{x}_0,(1-\overline{\alpha}_t)\mathbf{I})$ 可知：</p>
 <script type="math/tex; mode=display">
-q(\mathbf{x}_{t-1}|\mathbf{x}_{0}) =\mathcal{N}(\mathbf{x}_{t-1};\sqrt{\overline{\alpha}_{t-1}}\mathbf{x}_0,(1-\overline{\alpha}_{t-1})\mathbf{I})</script><p>因此，$q(\mathbf{x}<em>{t-1}|\mathbf{x}</em>{t},\mathbf{x}_{0})$ 可写为：</p>
+q(\mathbf{x}_{t-1}|\mathbf{x}_{0}) =\mathcal{N}(\mathbf{x}_{t-1};\sqrt{\overline{\alpha}_{t-1}}\mathbf{x}_0,(1-\overline{\alpha}_{t-1})\mathbf{I})</script><p>因此，$q(\mathbf{x}_{t-1}|\mathbf{x}_{t},\mathbf{x}_{0})$ 可写为：</p>
 <script type="math/tex; mode=display">
 q(\mathbf{x}_{t-1}|\mathbf{x}_{t},\mathbf{x}_{0}) = \frac{ \mathcal{N}(\mathbf{x}_t;\sqrt{1-\beta_t} \mathbf{x}_{t-1},\beta_t\mathbf{I})\mathcal{N}(\mathbf{x}_{t-1};\sqrt{\overline{\alpha}_{t-1}}\mathbf{x}_0,(1-\overline{\alpha}_{t-1})\mathbf{I})}{\mathcal{N}(\mathbf{x}_t;\sqrt{\overline{\alpha}_t}\mathbf{x}_0,(1-\overline{\alpha}_t)\mathbf{I})}</script><p>由于 $\alpha_t=1-\beta_t$，故有：</p>
 <script type="math/tex; mode=display">
@@ -375,10 +375,10 @@ q(\mathbf{x}_{t-1}|\mathbf{x}_{t},\mathbf{x}_{0})
 &\propto \exp \Bigg[-\frac{1}{2} \Big( \frac{(\mathbf{x}_t-\sqrt{\overline{\alpha}_t}\mathbf{x}_{t-1})^2}{1-\alpha_t} + \frac{(\mathbf{x}_{t-1}-\sqrt{\overline{\alpha}_{t-1}}\mathbf{x}_0)^2}{1-\overline{\alpha}_{t-1}} - \frac{(\mathbf{x}_t-\sqrt{\overline{\alpha}_t}\mathbf{x}_0)^2}{1-\overline{\alpha}_{t-1}} \Big) \Bigg] \\
 &= \exp\Bigg[-\frac{1}{2}\Big( \frac{\mathbf{x}_{t}^2-2\sqrt{\alpha_t}\mathbf{x}_{t}\mathbf{x}_{t-1}+\alpha_t\mathbf{x}_{t-1}^2}{1-\alpha_t} 
  +\frac{\mathbf{x}_{t-1}^2-2\sqrt{\overline{\alpha}_{t-1}}\mathbf{x}_{t-1}\mathbf{x}_{0}+\overline{\alpha}_{t-1}\mathbf{x}_{0}^2}{1-\overline{\alpha}_{t-1}}  -\frac{\mathbf{x}_{t}^2-2\sqrt{\overline{\alpha}_t}\mathbf{x}_{t}\mathbf{x}_{0}+\overline{\alpha}_t\mathbf{x}_{0}^2}{1-\overline{\alpha}_{t-1}} \Big)  \Bigg]
-\end{align*}</script><p>由于 $\mathbf{x}<em>{t-1}$ 才是要关注的变量，因此将上式整理为关于 $\mathbf{x}</em>{t-1}$ 的形式，即：</p>
+\end{align*}</script><p>由于 $\mathbf{x}_{t-1}$ 才是要关注的变量，因此将上式整理为关于 $\mathbf{x}_{t-1}$ 的形式，即：</p>
 <script type="math/tex; mode=display">
 q(\mathbf{x}_{t-1}|\mathbf{x}_{t},\mathbf{x}_{0}) 
-\propto \exp \Bigg[ -\frac{1}{2} \Big( (\frac{\alpha_t}{1-\alpha_t} + \frac{1}{1-\overline{\alpha}_{t-1}})\mathbf{x}_{t-1}^2 - (\frac{2\sqrt{\alpha_t}}{1-\alpha_{t}}\mathbf{x}_t+\frac{2\sqrt{\overline{\alpha}_{t-1}}}{1-\overline{\alpha}_{t-1}}\mathbf{x}_0)\mathbf{x}_{t-1} + C(\mathbf{x}_t,\mathbf{x}_0)\Big) \Bigg] \\</script><p>其中，$C(\mathbf{x}<em>t,\mathbf{x}_0)$ 与 $\mathbf{x}</em>{t-1}$ 无关，只影响成正比的系数</p>
+\propto \exp \Bigg[ -\frac{1}{2} \Big( (\frac{\alpha_t}{1-\alpha_t} + \frac{1}{1-\overline{\alpha}_{t-1}})\mathbf{x}_{t-1}^2 - (\frac{2\sqrt{\alpha_t}}{1-\alpha_{t}}\mathbf{x}_t+\frac{2\sqrt{\overline{\alpha}_{t-1}}}{1-\overline{\alpha}_{t-1}}\mathbf{x}_0)\mathbf{x}_{t-1} + C(\mathbf{x}_t,\mathbf{x}_0)\Big) \Bigg] \\</script><p>其中，$C(\mathbf{x}_t,\mathbf{x}_0)$ 与 $\mathbf{x}_{t-1}$ 无关，只影响成正比的系数</p>
 <p>由于标准高斯分布 $\mathcal{N}(\mathbf{0},\mathbf{1})\propto \exp [-\frac{1}{2}\frac{\mathbf{x}^2-2\mathbf{x}\mu+\mu^2}{\sigma^2}]$，那么对于上式，易得：</p>
 <script type="math/tex; mode=display">
 \begin{gather*}
@@ -389,7 +389,7 @@ q(\mathbf{x}_{t-1}|\mathbf{x}_{t},\mathbf{x}_{0})
 \begin{gather*}
 \sigma^2 = \frac{(1-\alpha_{t})(1-\overline{\alpha}_{t-1})}{(1-\overline{\alpha}_{t})} \\
 \mu = \frac{(1-\overline{\alpha}_{t-1})\sqrt{\alpha_t}}{1-\overline{\alpha}_{t}}\mathbf{x}_t + \frac{\sqrt{\overline{\alpha}_{t-1}}(1-\alpha_t)}{1-\overline{\alpha}_{t}}\mathbf{x}_0 
-\end{gather*}</script><p>根据 DDPM 的前向过程 $\mathbf{x}<em>t = \sqrt{\overline{\alpha}_t} \mathbf{x}</em>{0} + \sqrt{1-\overline{\alpha}_t}\epsilon$，将上式中的 $\mathbf{x}_0$ 进行替换，有：</p>
+\end{gather*}</script><p>根据 DDPM 的前向过程 $\mathbf{x}_t = \sqrt{\overline{\alpha}_t} \mathbf{x}_{0} + \sqrt{1-\overline{\alpha}_t}\epsilon$，将上式中的 $\mathbf{x}_0$ 进行替换，有：</p>
 <script type="math/tex; mode=display">
 \begin{align*}
 \mu 
@@ -409,18 +409,18 @@ q(\mathbf{x}_{t-1}|\mathbf{x}_{t},\mathbf{x}_{0})
 \mu =\frac{1}{\sqrt{\alpha}_t} \Big[ \mathbf{x}_t - \frac{1-\alpha_t}{\sqrt{1-\overline{\alpha}_t}} \epsilon_{\theta}(\mathbf{x}_t,t) \Big]
 \end{gather*}</script><p>即：</p>
 <script type="math/tex; mode=display">
-q(\mathbf{x}_{t-1}|\mathbf{x}_t) \sim \mathcal{N}(\frac{1}{\sqrt{\alpha}_t} \Big[ \mathbf{x}_t - \frac{1-\alpha_t}{\sqrt{1-\overline{\alpha}_t}} \epsilon_{\theta}(\mathbf{x}_t,t) \Big],\frac{(1-\alpha_{t})(1-\overline{\alpha}_{t-1})}{(1-\overline{\alpha}_{t})})</script><p>其中，均值 $\mu$ 依赖于当前时刻的值 $\mathbf{x}<em>t$ 和高斯噪声 $\epsilon</em>{\theta}(\mathbf{x}<em>t,t)$，方差 $\sigma^2$ 是一个由前向扩散过程 $\alpha_t$ 固定的定量，也就是说，只需要使用神经网络去拟合高斯分布 $\epsilon</em>{\theta}(\mathbf{x}_t,t)$​</p>
+q(\mathbf{x}_{t-1}|\mathbf{x}_t) \sim \mathcal{N}(\frac{1}{\sqrt{\alpha}_t} \Big[ \mathbf{x}_t - \frac{1-\alpha_t}{\sqrt{1-\overline{\alpha}_t}} \epsilon_{\theta}(\mathbf{x}_t,t) \Big],\frac{(1-\alpha_{t})(1-\overline{\alpha}_{t-1})}{(1-\overline{\alpha}_{t})})</script><p>其中，均值 $\mu$ 依赖于当前时刻的值 $\mathbf{x}_t$ 和高斯噪声 $\epsilon_{\theta}(\mathbf{x}_t,t)$，方差 $\sigma^2$ 是一个由前向扩散过程 $\alpha_t$ 固定的定量，也就是说，只需要使用神经网络去拟合高斯分布 $\epsilon_{\theta}(\mathbf{x}_t,t)$​</p>
 <p>综上所述，DDPM 的反向生成过程为：</p>
 <script type="math/tex; mode=display">
 \begin{gather*}
 p(\mathbf{x}_{0:T}) = p(\mathbf{x}_{T})\prod_{t=1}^T p(\mathbf{x}_{t-1}|\mathbf{x}_{t}) \\
 q(\mathbf{x}_{t-1}|\mathbf{x}_t) \sim \mathcal{N}(\frac{1}{\sqrt{\alpha}_t} \Big[ \mathbf{x}_t - \frac{1-\alpha_t}{\sqrt{1-\overline{\alpha}_t}} \epsilon_{\theta}(\mathbf{x}_t,t) \Big],\frac{(1-\alpha_{t})(1-\overline{\alpha}_{t-1})}{(1-\overline{\alpha}_{t})}) \\
 \mathbf{x}_T \sim\mathcal{N}(\mathbf{x}_T;\mathbf{0},\mathbf{I})
-\end{gather*}</script><p>其中，$\mathbf{x}<em>T$ 为生成数据，$q(\mathbf{x}</em>{t-1}|\mathbf{x}<em>{t})$ 为 $p(\mathbf{x}</em>{t-1}|\mathbf{x}<em>{t})$ 的变分推断后的近似分布，$\overline{\alpha}_t=\alpha</em>{t}\alpha<em>{t-1}\cdots\alpha</em>{1}\alpha_{0},\alpha_t=1-\beta_t$，$\beta_t$ 为扩散系数，随 $t$ 的增加而增大，$\epsilon\sim \mathcal{N}(\mathbf{0},\mathbf{1)}$​ 为高斯噪声</p>
+\end{gather*}</script><p>其中，$\mathbf{x}_T$ 为生成数据，$q(\mathbf{x}_{t-1}|\mathbf{x}_{t})$ 为 $p(\mathbf{x}_{t-1}|\mathbf{x}_{t})$ 的变分推断后的近似分布，$\overline{\alpha}_t=\alpha_{t}\alpha_{t-1}\cdots\alpha_{1}\alpha_{0},\alpha_t=1-\beta_t$，$\beta_t$ 为扩散系数，随 $t$ 的增加而增大，$\epsilon\sim \mathcal{N}(\mathbf{0},\mathbf{1)}$​ 为高斯噪声</p>
 <h1 id="【优化目标】"><a href="#【优化目标】" class="headerlink" title="【优化目标】"></a>【优化目标】</h1><h2 id="变分下界"><a href="#变分下界" class="headerlink" title="变分下界"></a>变分下界</h2><p>上面介绍了 DDPM 的前向扩散过程和反向生成过程，现在从另一个角度来看扩散模型：如果将中间产生的变量看成隐变量，那么扩散模型其实是包含 $T$ 个隐变量的<strong>隐变量模型（Latent Variable Model）</strong>，可以看作是一个特殊的<strong>多层变分自编码器（Hierarchical VAE）</strong></p>
 <p>前向扩散过程可以视为编码器 Encoder，反向生成过程可以视为解码器 Decoder，隐变量是与原始数据 $\mathbf{x}_0\sim q(\mathbf{x}_0)$ 同维度的中间变量 $\mathbf{x}_t$</p>
 <p><img src="/images/artificial-intelligence/deep-learning/deep-generative-model/09-5.png"/></p>
-<p>从这一角度出发，对于扩散模型 $p(\mathbf{x}<em>{0}) = \int p(\mathbf{x}</em>{0:T}) d\mathbf{x}_{1:T}$ 就可以基于变分推断来得到变分上界 VLB，即：</p>
+<p>从这一角度出发，对于扩散模型 $p(\mathbf{x}_{0}) = \int p(\mathbf{x}_{0:T}) d\mathbf{x}_{1:T}$ 就可以基于变分推断来得到变分上界 VLB，即：</p>
 <script type="math/tex; mode=display">
 \begin{align*}
 \log p(\mathbf{x}_0) 
@@ -443,7 +443,7 @@ q(\mathbf{x}_{t-1}|\mathbf{x}_t) \sim \mathcal{N}(\frac{1}{\sqrt{\alpha}_t} \Big
 &=\mathbb{E}_{q(\mathbf{x}_{1:T}|\mathbf{x}_0)}\bigg[-\log p(\mathbf{x}_T)+\sum_{t=1}^T\log\frac{q(\mathbf{x}_t|\mathbf{x}_{t-1})}{p(\mathbf{x}_{t-1}|\mathbf{x}_t)}\bigg] \\
 &=\mathbb{E}_{q(\mathbf{x}_{1:T}|\mathbf{x}_0)}\Big[-\log p(\mathbf{x}_T)+\sum_{t=2}^T\log\frac{q(\mathbf{x}_t|\mathbf{x}_{t-1})}{p(\mathbf{x}_{t-1}|\mathbf{x}_t)}+\log\frac{q(\mathbf{x}_1|\mathbf{x}_0)}{p(\mathbf{x}_0|\mathbf{x}_1)}\Big] \\
 
-\end{align*}</script><p>由于马尔可夫的无后效性，且 $\mathbf{x}<em>0$ 已知，故 $=q(\mathbf{x}_t|\mathbf{x}</em>{t-1})=q(\mathbf{x}<em>t|\mathbf{x}</em>{t-1},\mathbf{x}_0)$，进而有：</p>
+\end{align*}</script><p>由于马尔可夫的无后效性，且 $\mathbf{x}_0$ 已知，故 $=q(\mathbf{x}_t|\mathbf{x}_{t-1})=q(\mathbf{x}_t|\mathbf{x}_{t-1},\mathbf{x}_0)$，进而有：</p>
 <script type="math/tex; mode=display">
 \mathcal{L} =\mathbb{E}_{q(\mathbf{x}_{1:T}|\mathbf{x}_0)}\Big[-\log p(\mathbf{x}_T)+\sum_{t=2}^T\log\frac{q(\mathbf{x}_t|\mathbf{x}_{t-1},\mathbf{x}_0)}{p(\mathbf{x}_{t-1}|\mathbf{x}_t)}+\log\frac{q(\mathbf{x}_1|\mathbf{x}_0)}{p(\mathbf{x}_0|\mathbf{x}_1)}\Big]</script><p>利用贝叶斯公式，有：</p>
 <script type="math/tex; mode=display">
@@ -481,7 +481,7 @@ q(\mathbf{x}_{t-1}|\mathbf{x}_t) \sim \mathcal{N}(\frac{1}{\sqrt{\alpha}_t} \Big
 <script type="math/tex; mode=display">
 \mathcal{L} = \underbrace{D_{\mathrm{KL}}(q(\mathbf{x}_T|\mathbf{x}_0)\parallel p(\mathbf{x}_T))}_{L_T} 
 + \sum_{t=2}^T\underbrace{\mathbb{E}_{q(\mathbf{x}_t|\mathbf{x}_0)}\Big[D_{\mathrm{KL}}(q(\mathbf{x}_{t-1}|\mathbf{x}_t,\mathbf{x}_0)\parallel p(\mathbf{x}_{t-1}|\mathbf{x}_t))\Big]}_{L_{t-1}}
--\underbrace{\mathbb{E}_{q(\mathbf{x}_1|\mathbf{x}_0)}\log p(\mathbf{x}_0|\mathbf{x}_1)}_{L_0}</script><p>其中，$L<em>0$ 可以看作是<strong>原始数据重建</strong>，优化的是负对数似然，其可以用估计的 $\mathcal{N}(\mathbf{x}_0;f</em>{\mu}(\mathbf{x}<em>1,1),f</em>{\Sigma}(\mathbf{x}_1,1))$ 来构建一个离散化的 Decoder 来计算，即：</p>
+-\underbrace{\mathbb{E}_{q(\mathbf{x}_1|\mathbf{x}_0)}\log p(\mathbf{x}_0|\mathbf{x}_1)}_{L_0}</script><p>其中，$L_0$ 可以看作是<strong>原始数据重建</strong>，优化的是负对数似然，其可以用估计的 $\mathcal{N}(\mathbf{x}_0;f_{\mu}(\mathbf{x}_1,1),f_{\Sigma}(\mathbf{x}_1,1))$ 来构建一个离散化的 Decoder 来计算，即：</p>
 <script type="math/tex; mode=display">
 \begin{align*}
 &p(\mathbf{x}_{0}|\mathbf{x}_{1})=\prod_{i=1}^{D}\int_{\delta_{-}(\mathbf{x}_{0}^{i})}^{\delta_{+}(\mathbf{x}_{0}^{i})}\mathcal{N}(\mathbf{x}_{0};f_{\mu_i}(\mathbf{x}_{1},1),f_{\Sigma_i}(\mathbf{x}_{1},1))dx \\
@@ -497,16 +497,16 @@ q(\mathbf{x}_{t-1}|\mathbf{x}_t) \sim \mathcal{N}(\frac{1}{\sqrt{\alpha}_t} \Big
 <script type="math/tex; mode=display">
 \mathcal{L} = \underbrace{D_{\mathrm{KL}}(q(\mathbf{x}_T|\mathbf{x}_0)\parallel p(\mathbf{x}_T))}_{L_T} 
 + \sum_{t=2}^T\underbrace{\mathbb{E}_{q(\mathbf{x}_t|\mathbf{x}_0)}\Big[D_{\mathrm{KL}}(q(\mathbf{x}_{t-1}|\mathbf{x}_t,\mathbf{x}_0)\parallel p(\mathbf{x}_{t-1}|\mathbf{x}_t))\Big]}_{L_{t-1}}
--\underbrace{\mathbb{E}_{q(\mathbf{x}_1|\mathbf{x}_0)}\log p(\mathbf{x}_0|\mathbf{x}_1)}_{L_0}</script><p>其中，$L<em>{t-1}$ 计算的是估计分布 $p(\mathbf{x}</em>{t-1}|\mathbf{x}<em>t)$ 和真实的后验分布 $q(\mathbf{x}</em>{t-1}|\mathbf{x}_t,\mathbf{x})_0$ 的 KL 散度，这里希望估计的去噪过程和依赖真实数据的去噪过程近似一致： </p>
+-\underbrace{\mathbb{E}_{q(\mathbf{x}_1|\mathbf{x}_0)}\log p(\mathbf{x}_0|\mathbf{x}_1)}_{L_0}</script><p>其中，$L_{t-1}$ 计算的是估计分布 $p(\mathbf{x}_{t-1}|\mathbf{x}_t)$ 和真实的后验分布 $q(\mathbf{x}_{t-1}|\mathbf{x}_t,\mathbf{x})_0$ 的 KL 散度，这里希望估计的去噪过程和依赖真实数据的去噪过程近似一致： </p>
 <p><img src="/images/artificial-intelligence/deep-learning/deep-generative-model/09-6.png"/></p>
-<p>之所以将 $p(\mathbf{x}<em>{t-1}|\mathbf{x}_t)$ 定义为一个用网络参数化的高斯分布 $\mathcal{N}(\mathbf{x}</em>{t-1};f<em>{\mu}(\mathbf{x}_t,t);f</em>{\Sigma}(\mathbf{x}<em>t,t))$，是因为要匹配的后验分布 $q(\mathbf{x}</em>{t-1}|\mathbf{x}<em>t,\mathbf{x}_0)$ 也是一个高斯分布，对于训练目标 $L_0$ 和 $L</em>{t-1}$ 来说，都是希望得到训练好的网络的均值 $f<em>{\mu}(\mathbf{x}_t,t)$ 和方差 $f</em>{\Sigma}(\mathbf{x}_t,t)$</p>
-<p>上文提到过，DDPM 对 $p(\mathbf{x}<em>{t-1}|\mathbf{x}_t)$ 做了进一步简化，采用固定的方差 $f</em>{\Sigma}(\mathbf{x}_t,t)=\sigma^2_t\mathbf{I}$， $\sigma^2_t$ 是一个由前向扩散过程 $\alpha_t$ 固定的定量，故有：</p>
+<p>之所以将 $p(\mathbf{x}_{t-1}|\mathbf{x}_t)$ 定义为一个用网络参数化的高斯分布 $\mathcal{N}(\mathbf{x}_{t-1};f_{\mu}(\mathbf{x}_t,t);f_{\Sigma}(\mathbf{x}_t,t))$，是因为要匹配的后验分布 $q(\mathbf{x}_{t-1}|\mathbf{x}_t,\mathbf{x}_0)$ 也是一个高斯分布，对于训练目标 $L_0$ 和 $L_{t-1}$ 来说，都是希望得到训练好的网络的均值 $f_{\mu}(\mathbf{x}_t,t)$ 和方差 $f_{\Sigma}(\mathbf{x}_t,t)$</p>
+<p>上文提到过，DDPM 对 $p(\mathbf{x}_{t-1}|\mathbf{x}_t)$ 做了进一步简化，采用固定的方差 $f_{\Sigma}(\mathbf{x}_t,t)=\sigma^2_t\mathbf{I}$， $\sigma^2_t$ 是一个由前向扩散过程 $\alpha_t$ 固定的定量，故有：</p>
 <script type="math/tex; mode=display">
 \begin{align*}
 q(\mathbf{x}_{t-1}|\mathbf{x}_t,\mathbf{x}_0) 
 &= \mathcal{N}(\mathbf{x}_{t-1};f_{\tilde{\mu}}(\mathbf{x}_t,\mathbf{x}_0),\sigma^2_t\mathbf{I})p(\mathbf{x}_{t-1}|\mathbf{x}_t) \\
 &=\mathcal{N}(\mathbf{x}_{t-1};f_{\mu}(\mathbf{x}_t,t),\sigma_t^2\mathbf{I})
-\end{align*}</script><p>那么对于两个高斯分布 $q(\mathbf{x}<em>{t-1}|\mathbf{x}_t,\mathbf{x}_0)$ 和 $p(\mathbf{x}</em>{t-1}|\mathbf{x}_t) $ 的 KL 散度就有：</p>
+\end{align*}</script><p>那么对于两个高斯分布 $q(\mathbf{x}_{t-1}|\mathbf{x}_t,\mathbf{x}_0)$ 和 $p(\mathbf{x}_{t-1}|\mathbf{x}_t) $ 的 KL 散度就有：</p>
 <script type="math/tex; mode=display">
 \begin{align*}
 &D_{\mathrm{KL}}(q(\mathbf{x}_{t-1}|\mathbf{x}_t,\mathbf{x}_0)\parallel p(\mathbf{x}_{t-1}|\mathbf{x}_t)) \\
@@ -515,8 +515,8 @@ q(\mathbf{x}_{t-1}|\mathbf{x}_t,\mathbf{x}_0)
 &=\frac{1}{2\sigma_t^2} \parallel f_{\tilde{\mu}}(\mathbf{x}_t,\mathbf{x}_0)-f_{\mu}(\mathbf{x}_t,t) \parallel^2
 \end{align*}</script><p>那么优化目标 $L_{t-1}$ 即为：</p>
 <script type="math/tex; mode=display">
-L_{t-1} = \mathbb{E}_{q(\mathbf{x}_t|\mathbf{x}_0)} \Big[ \frac{1}{2\sigma_t^2} \parallel f_{\tilde{\mu}}(\mathbf{x}_t,\mathbf{x}_0)-f_{\mu}(\mathbf{x}_t,t) \parallel^2 \Big]</script><p>也就是说，希望网络学习到的均值 $f<em>{\tilde{\mu}}(\mathbf{x}_t,\mathbf{x}_0)$ 和后验分布的均值 $f</em>{\mu}(\mathbf{x}_t,t)$ 一致</p>
-<p>根据 DDPM 的前向扩散过程 $\mathbf{x}<em>t(\mathbf{x}_0,\epsilon) = \sqrt{\overline{\alpha}_t} \mathbf{x}</em>{0} + \sqrt{1-\overline{\alpha}<em>t}\epsilon$，将其带入到 $L</em>{t-1}$ 中的 $f_{\tilde{\mu}}(\mathbf{x}_t,\mathbf{x}_0)$，有：</p>
+L_{t-1} = \mathbb{E}_{q(\mathbf{x}_t|\mathbf{x}_0)} \Big[ \frac{1}{2\sigma_t^2} \parallel f_{\tilde{\mu}}(\mathbf{x}_t,\mathbf{x}_0)-f_{\mu}(\mathbf{x}_t,t) \parallel^2 \Big]</script><p>也就是说，希望网络学习到的均值 $f_{\tilde{\mu}}(\mathbf{x}_t,\mathbf{x}_0)$ 和后验分布的均值 $f_{\mu}(\mathbf{x}_t,t)$ 一致</p>
+<p>根据 DDPM 的前向扩散过程 $\mathbf{x}_t(\mathbf{x}_0,\epsilon) = \sqrt{\overline{\alpha}_t} \mathbf{x}_{0} + \sqrt{1-\overline{\alpha}_t}\epsilon$，将其带入到 $L_{t-1}$ 中的 $f_{\tilde{\mu}}(\mathbf{x}_t,\mathbf{x}_0)$，有：</p>
 <script type="math/tex; mode=display">
 L_{t-1} 
 = \mathbb{E}_{\mathbf{x}_0,\epsilon\sim\mathcal{N}(\mathbf{0},\mathbf{I})} \Big[
@@ -564,9 +564,9 @@ L_{t-1}^{\text{simple}} =  \mathbb{E}_{\mathbf{x}_0,\epsilon\sim\mathcal{N}(\mat
 \begin{gather*}
 q(\mathbf{x}_t|\mathbf{x}_0) = \mathcal{N}(\mathbf{x}_t;\sqrt{\overline{\alpha}_t}\mathbf{x}_0,(1-\overline{\alpha}_t)\mathbf{I}) \\
 q(\mathbf{x}_{t-1}|\mathbf{x}_t) \sim \mathcal{N}(\frac{1}{\sqrt{\alpha}_t} \Big[ \mathbf{x}_t - \frac{1-\alpha_t}{\sqrt{1-\overline{\alpha}_t}} \epsilon_{\theta}(\mathbf{x}_t,t) \Big],\frac{(1-\alpha_{t})(1-\overline{\alpha}_{t-1})}{(1-\overline{\alpha}_{t})})
-\end{gather*}</script><p>从这两个核心公式中可以看出，无论是前向过程还是反向过程，与 $\alpha<em>t$ 相关的都是常数，唯一不确定的就是 $\epsilon</em>{\theta}(\mathbf{x}_t,t)$</p>
-<p>重新考虑前向扩散过程，能否从当前样本 $\mathbf{x}<em>t$ 中提取出 $\epsilon</em>{\theta}(\mathbf{x}_t,t)$？显然，这个想法具备可行性，因为 $\mathbf{x}_t$ 本身就是一张图片，可以使用卷积神经网络进行提取</p>
-<p>在 DDPM 中，这一过程采用的是 Unet+Self-attention，其中 Unet 利用当前样本 $\mathbf{x}<em>t$ 和时间步 $t$ 预测噪声，即使用 Unet 来实现对 $\epsilon</em>{\theta}(\mathbf{x}_t,t)$​ 的预测，整个训练过程其实就是在训练 Unet 网络的参数</p>
+\end{gather*}</script><p>从这两个核心公式中可以看出，无论是前向过程还是反向过程，与 $\alpha_t$ 相关的都是常数，唯一不确定的就是 $\epsilon_{\theta}(\mathbf{x}_t,t)$</p>
+<p>重新考虑前向扩散过程，能否从当前样本 $\mathbf{x}_t$ 中提取出 $\epsilon_{\theta}(\mathbf{x}_t,t)$？显然，这个想法具备可行性，因为 $\mathbf{x}_t$ 本身就是一张图片，可以使用卷积神经网络进行提取</p>
+<p>在 DDPM 中，这一过程采用的是 Unet+Self-attention，其中 Unet 利用当前样本 $\mathbf{x}_t$ 和时间步 $t$ 预测噪声，即使用 Unet 来实现对 $\epsilon_{\theta}(\mathbf{x}_t,t)$​ 的预测，整个训练过程其实就是在训练 Unet 网络的参数</p>
 <p>如下图所示，整个 DDPM 模型可分为训练和采样两大算法</p>
 <p><img src="/images/artificial-intelligence/deep-learning/deep-generative-model/09-7.png"/></p>
 <p>具体来说，对于 Unet 的训练过程如下：</p>
@@ -585,7 +585,7 @@ q(\mathbf{x}_{t-1}|\mathbf{x}_t) \sim \mathcal{N}(\frac{1}{\sqrt{\alpha}_t} \Big
 <li>从标准正态分布采样出 $x_T$​</li>
 <li>从 $T,T-1,…,2,1$ 依次重复以下步骤：<ol>
 <li>从标准正态分布 $Z\sim\mathcal{N}(\mathbf{0},\mathbf{I})$ 中采样 $z$，为重参数化做准备</li>
-<li>根据模型求出重参数化后的 $\epsilon<em>{\theta}$，并计算 $x</em>{t-1}$</li>
+<li>根据模型求出重参数化后的 $\epsilon_{\theta}$，并计算 $x_{t-1}$</li>
 </ol>
 </li>
 <li>循环结束后返回 $\mathbf{x}_0$</li>
@@ -731,7 +731,7 @@ q(\mathbf{x}_{t-1}|\mathbf{x}_t) \sim \mathcal{N}(\frac{1}{\sqrt{\alpha}_t} \Big
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">752</span>
+          <span class="site-state-item-count">757</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>

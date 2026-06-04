@@ -348,11 +348,11 @@ E(T)=\frac{7}{20}</script><p>根据悲观错误剪枝的判断式：</p>
 E(T_t)\cdot N_T+\sqrt{N_T\cdot E(T_t)\cdot (1-E(T_t))}\geq E(T)\cdot N_T</script><p>有：</p>
 <script type="math/tex; mode=display">
 0.3\cdot20+2.05\geq \frac{7}{20}\cdot20</script><p>因此根据结点 T4 需要剪枝</p>
-<h1 id="【代价复杂度剪枝】"><a href="#【代价复杂度剪枝】" class="headerlink" title="【代价复杂度剪枝】"></a>【代价复杂度剪枝】</h1><h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>在 CART 中，所使用的剪枝策略，就是<strong>代价复杂度剪枝（Cost-Complexity  Pruning，CCP）</strong>策略，其按照<strong>树的后序遍历</strong>顺序从生成算法产生的决策树底端开始剪枝，根据剪枝的顺序，得到一系列的剪枝树 ${T<em>0, T_1, T_2,…,  T_m}$，其中 $T_0$ 为原始决策树，$T_m$ 为根结点，$T</em>{i+1}$ 为 $T_i$ 剪枝后的结果，然后通过交叉验证法在独立的验证集上对剪枝树序列进行测试，从中选择最优子树</p>
+<h1 id="【代价复杂度剪枝】"><a href="#【代价复杂度剪枝】" class="headerlink" title="【代价复杂度剪枝】"></a>【代价复杂度剪枝】</h1><h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>在 CART 中，所使用的剪枝策略，就是<strong>代价复杂度剪枝（Cost-Complexity  Pruning，CCP）</strong>策略，其按照<strong>树的后序遍历</strong>顺序从生成算法产生的决策树底端开始剪枝，根据剪枝的顺序，得到一系列的剪枝树 $\{T_0, T_1, T_2,…,  T_m\}$，其中 $T_0$ 为原始决策树，$T_m$ 为根结点，$T_{i+1}$ 为 $T_i$ 剪枝后的结果，然后通过交叉验证法在独立的验证集上对剪枝树序列进行测试，从中选择最优子树</p>
 <h2 id="代价函数"><a href="#代价函数" class="headerlink" title="代价函数"></a>代价函数</h2><p>对于任意子树 $T$，其叶结点个数为 $|T|$，取代价复杂度参数 $\alpha\geq 0$ ，树 $T$ 的代价函数定义为：</p>
 <script type="math/tex; mode=display">
 C_{\alpha}(T) = C(T)+\alpha|T|</script><p>在上述公式中，$C(T)$ 表示对训练数据的预测误差，用于表示模型与训练数据的拟合程度；$|T|$ 表示模型复杂度，即子树的叶结点个数；$\alpha$ 为代价复杂度参数，用于权衡训练数据的拟合程度和模型复杂度</p>
-<p>对于固定的 $\alpha$，一点存在使代价函数 $C<em>a(T)$ 最小的子树 $T</em>{\alpha}$，$T<em>{\alpha}$ 在代价函数 $C</em>{\alpha}$ 最小的意义下是最优的，因此，剪枝就是在代价复杂度参数 $\alpha$ 确定时，选择代价函数最小的模型</p>
+<p>对于固定的 $\alpha$，一点存在使代价函数 $C_a(T)$ 最小的子树 $T_{\alpha}$，$T_{\alpha}$ 在代价函数 $C_{\alpha}$ 最小的意义下是最优的，因此，剪枝就是在代价复杂度参数 $\alpha$ 确定时，选择代价函数最小的模型</p>
 <p>对于代价复杂度参数 $\alpha$ 来说，$\alpha$ 越大，最优子树 $T_{\alpha}$ 就越小；$\alpha$ 越小，最优子树 $\alpha$ 就越大；在极端情况下，当 $\alpha=0$ 时，仅考虑模型与训练数据的拟合程度 $C_T$，不考虑模型的复杂度 $|T|$，此时整体树是最优的；当 $\alpha\rightarrow\infty$ 时，不考虑模型与训练数据的拟合程度 $C_T$，仅考虑模型的复杂度 $|T|$，此时由根结点组成的单结点树是最优的</p>
 <h2 id="代价复杂度参数"><a href="#代价复杂度参数" class="headerlink" title="代价复杂度参数"></a>代价复杂度参数</h2><p>下面给出代价复杂度参数 $\alpha$ 的定义：</p>
 <p>设 $T$ 为考虑是否剪枝的分支结点，$t$ 为该结点下的叶结点，$e_T$ 表示结点 $T$ 的分类错误率，$p_T$ 表示 $T$ 结点所覆盖的样本数占总样本数的比例，$|T_t|$ 表示 $T$ 结点下叶结点的个数</p>
@@ -372,15 +372,15 @@ R(T_t)=\frac{0}{6}\cdot\frac{6}{60}+\frac{2}{6}\cdot\frac{6}{60}+\frac{1}{3}\cdo
 <script type="math/tex; mode=display">
 \alpha=\frac{\frac{7}{60}-\frac{4}{60}}{4-1}=\frac{1}{60}</script><h2 id="子树序列的生成"><a href="#子树序列的生成" class="headerlink" title="子树序列的生成"></a>子树序列的生成</h2><p>在有了代价函数和代价复杂度参数后，开始循环地对子树进行剪枝，算法流程如下：</p>
 <p>输入：CART 生成的决策树 $T_0$</p>
-<p>输出：决策树子树序列 ${T_1,T_2,…,T_m}$</p>
+<p>输出：决策树子树序列 $\{T_1,T_2,…,T_m\}$</p>
 <ol>
 <li>令 $k=0$，$T=T_0$，$\alpha=+\infty$</li>
 <li>按照树的后序遍历的顺序，计算子树 $T$ 的所有分支结点 $T_t$ 的代价复杂度参数 $\alpha$</li>
-<li>选择最小的代价复杂度参数 $\alpha<em>{min}$ 所对应的分支结点 $T</em>{min}$ 进行剪枝，得到子树 $T$（若多个分支结点具有相同最小的代价复杂度参数，则选择结点数最多的分支结点进行剪枝）</li>
-<li>令 $k=k+1$，$\alpha<em>k=\alpha</em>{min}$，$T_k=T$</li>
+<li>选择最小的代价复杂度参数 $\alpha_{min}$ 所对应的分支结点 $T_{min}$ 进行剪枝，得到子树 $T$（若多个分支结点具有相同最小的代价复杂度参数，则选择结点数最多的分支结点进行剪枝）</li>
+<li>令 $k=k+1$，$\alpha_k=\alpha_{min}$，$T_k=T$</li>
 <li>若 $T_k$ 不是由根结点及两个叶结点构成的树，则返回步骤 2，继续进行剪枝，否则令 $T_k=T_m$</li>
 </ol>
-<h2 id="选取最优决策树"><a href="#选取最优决策树" class="headerlink" title="选取最优决策树"></a>选取最优决策树</h2><p>对于剪枝得到的决策树子树序列 ${T_1,T_2,…,T_m}$，利用独立的验证集，测试子树序列中各子树的基尼指数</p>
+<h2 id="选取最优决策树"><a href="#选取最优决策树" class="headerlink" title="选取最优决策树"></a>选取最优决策树</h2><p>对于剪枝得到的决策树子树序列 $\{T_1,T_2,…,T_m\}$，利用独立的验证集，测试子树序列中各子树的基尼指数</p>
 <p>具有最小基尼指数的决策树，即最优决策树</p>
 
     </div>
@@ -523,7 +523,7 @@ R(T_t)=\frac{0}{6}\cdot\frac{6}{60}+\frac{2}{6}\cdot\frac{6}{60}+\frac{1}{3}\cdo
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">752</span>
+          <span class="site-state-item-count">757</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>

@@ -285,7 +285,7 @@
 <p>其属于<strong>编码-解码（Encoder-Decoder）结构</strong>的一种，编码器 Encoder 和解码器 Encoder 中的每一个 Cell 都是一个 RNN，Encoder 通过学习，将输入序列 $x_1,x_2,\cdots,x_n$ 编码成一个固定大小的状态向量 $C$ 作为解码器的输入，Decoder 则是对这个固定大小的状态向量 $C$ 进行学习，将其解码为可变长度的目标序列进行输出</p>
 <p><img width=500 src="/images/artificial-intelligence/deep-learning/rnn/08-1.png"/></p>
 <h1 id="【训练原理】"><a href="#【训练原理】" class="headerlink" title="【训练原理】"></a>【训练原理】</h1><p>对于普通 RNN 的训练，简单来说就是学习概率分布，然后进行预测，比如输入前 $t$ 个时刻的数据，然后预测 $t+1$ 时刻的数据，最后在输出层使用 Softmax 函数进行处理，就得到每个分类的概率，然后选择概率最大的作为预测结果</p>
-<p>简单来说，对于训练样本 $x<em>1,x_2,\cdots,x_t$，其计算的概率是当 $x_1,x_2,\cdots,x</em>{t-1}$ 成立时，$x_t$ 成立的概率，即整个序列的概率为：</p>
+<p>简单来说，对于训练样本 $x_1,x_2,\cdots,x_t$，其计算的概率是当 $x_1,x_2,\cdots,x_{t-1}$ 成立时，$x_t$ 成立的概率，即整个序列的概率为：</p>
 <script type="math/tex; mode=display">
 p(\mathbf{x}) = \prod_{t=1}^T p(x_t|x_1,x_2,\cdots,x_{t-1})</script><p>而对于具有两个 RNN 的 Encoder-Decoder 结构，其输入是一个序列，输出也是一个序列，其计算的概率是在输入序列成立的前提下，输出序列成立的概率，即整个序列的概率为：</p>
 <script type="math/tex; mode=display">
@@ -310,12 +310,12 @@ c=q(h_0,h_1,\cdots,h_t)</script><p><img src="/images/artificial-intelligence/dee
 </ol>
 <p>对于 Free Running 方式来说，其会造成<strong>错误累计</strong>，即如果其中一个 RNN 单元解码出现误差，那么这个误差就会传递到下一个 RNN 单元，使训练结果误差越来越大</p>
 <p>对于 Teacher Forcing 方式来说，其一定程度上能够缓解错误累计，但由于需要使用要解码的序列作为输入进行训练，因此<strong>只能在训练过程中使用</strong>该方式来加速模型收敛，无法在推理阶段使用</p>
-<h3 id="Free-Running-方式"><a href="#Free-Running-方式" class="headerlink" title="Free Running 方式"></a>Free Running 方式</h3><p>Free Running 方式中，<strong>使用</strong>前一个 RNN 单元预测的单词的词向量的 $E<em>{i-1}$，即将语义向量 $c$ 、Decoder 上一时刻 $i-1$ 的隐状态 $s</em>{i-1}$、前一时刻预测的单词的词向量 $E_{i-1}$ 作为每一时刻的输入，直到解码出 <code>_EOS</code> 时，标志解码结束</p>
+<h3 id="Free-Running-方式"><a href="#Free-Running-方式" class="headerlink" title="Free Running 方式"></a>Free Running 方式</h3><p>Free Running 方式中，<strong>使用</strong>前一个 RNN 单元预测的单词的词向量的 $E_{i-1}$，即将语义向量 $c$ 、Decoder 上一时刻 $i-1$ 的隐状态 $s_{i-1}$、前一时刻预测的单词的词向量 $E_{i-1}$ 作为每一时刻的输入，直到解码出 <code>_EOS</code> 时，标志解码结束</p>
 <p>若用函数 $g$ 来表达 RNN 隐藏层的变换，则有</p>
 <script type="math/tex; mode=display">
 s_i = g(c,s_{i-1},E_{i-1})</script><p>需要注意的是，如果是预测第一个词的话，$E_{i-1}$ 为 <code>_GO</code> 的词向量，标志解码的开始</p>
 <p><img src="/images/artificial-intelligence/deep-learning/rnn/08-4.png"/></p>
-<h3 id="Teacher-Forcing-方式"><a href="#Teacher-Forcing-方式" class="headerlink" title="Teacher Forcing 方式"></a>Teacher Forcing 方式</h3><p>Teacher Forcing 方式中，<strong>不使用</strong>前一个 RNN 单元预测的单词的词向量的 $E<em>{i-1}$，即将语义向量 $c$ 、Decoder 上一时刻 $i-1$ 的隐状态 $s</em>{i-1}$ 作为每一时刻的输入，直到解码出 <code>_EOS</code> 时，标志解码结束</p>
+<h3 id="Teacher-Forcing-方式"><a href="#Teacher-Forcing-方式" class="headerlink" title="Teacher Forcing 方式"></a>Teacher Forcing 方式</h3><p>Teacher Forcing 方式中，<strong>不使用</strong>前一个 RNN 单元预测的单词的词向量的 $E_{i-1}$，即将语义向量 $c$ 、Decoder 上一时刻 $i-1$ 的隐状态 $s_{i-1}$ 作为每一时刻的输入，直到解码出 <code>_EOS</code> 时，标志解码结束</p>
 <p>若用函数 $g’$ 来表达 RNN 隐藏层的变换，则有</p>
 <script type="math/tex; mode=display">
 s_i = g'(c,s_{i-1})</script><p><img src="/images/artificial-intelligence/deep-learning/rnn/08-5.png"/></p>
@@ -470,7 +470,7 @@ a_{ij}=\text{softmax}(\text{similarity}(s_{i-1},h_{j}))</script><p>其中，$s_{
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">752</span>
+          <span class="site-state-item-count">757</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
