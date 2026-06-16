@@ -1,0 +1,1099 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 8.1.2">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/img/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/assets/img/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/pace-js@1/themes/blue/pace-theme-minimal.css">
+  <script src="//cdn.jsdelivr.net/npm/pace-js@1/pace.min.js"></script>
+
+
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"alex-mcavoy.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":16,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":true,"color":"#ff0000","save":"manual"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":true},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.json"};
+  </script>
+
+  <meta name="description" content="【硬核函数的定义】基本思想在强单向函数的内积硬核谓词定理中，证明了每一个单向函数都可以经过简单修改，从而具有一个硬核谓词。硬核谓词本质上是关于原像 $x$ 的一比特信息，即使已经知道函数值 $f(x)$，也无法高效预测这一比特。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="硬核函数">
+<meta property="og:url" content="https://alex-mcavoy.github.io/notes/cryptology/f4dbacc0.html">
+<meta property="og:site_name" content="Alex_McAvoy">
+<meta property="og:description" content="【硬核函数的定义】基本思想在强单向函数的内积硬核谓词定理中，证明了每一个单向函数都可以经过简单修改，从而具有一个硬核谓词。硬核谓词本质上是关于原像 $x$ 的一比特信息，即使已经知道函数值 $f(x)$，也无法高效预测这一比特。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-06-15T02:22:00.000Z">
+<meta property="article:modified_time" content="2026-06-15T08:13:58.820Z">
+<meta property="article:author" content="Alex_McAvoy">
+<meta property="article:tag" content="学习笔记">
+<meta property="article:tag" content="密码学">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://alex-mcavoy.github.io/notes/cryptology/f4dbacc0.html">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>硬核函数 | Alex_McAvoy</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Alex_McAvoy</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">想要成为渔夫的猎手</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+
+	
+	
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/notes/cryptology/f4dbacc0.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/assets/img/head.jpg">
+      <meta itemprop="name" content="Alex_McAvoy">
+      <meta itemprop="description" content="想要成为渔夫的猎手">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Alex_McAvoy">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          硬核函数
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2026-06-15 10:22:00" itemprop="dateCreated datePublished" datetime="2026-06-15T10:22:00+08:00">2026-06-15</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/notes/" itemprop="url" rel="index"><span itemprop="name">学习笔记</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/notes/cryptology/" itemprop="url" rel="index"><span itemprop="name">密码学</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>10k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>10 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="【硬核函数的定义】"><a href="#【硬核函数的定义】" class="headerlink" title="【硬核函数的定义】"></a>【硬核函数的定义】</h1><h2 id="基本思想"><a href="#基本思想" class="headerlink" title="基本思想"></a>基本思想</h2><p>在<a href="https://alex-mcavoy.github.io/notes/cryptology/fd658215.html">强单向函数的内积硬核谓词定理</a>中，证明了每一个单向函数都可以经过简单修改，从而具有一个硬核谓词。硬核谓词本质上是关于原像 $x$ 的一比特信息，即使已经知道函数值 $f(x)$，也无法高效预测这一比特。</p>
+<p>但是，很多情况下，不仅希望隐藏原像中的某一个比特信息，而是希望从原像中提取出的多个比特整体上也保持计算隐藏性。</p>
+<p>对于多比特情形，通常不直接定义为难以猜中真实值，而是采用另一种更自然的定义：多个比特的真实值应当与同长度的随机串在计算上不可区分。也就是说，给定 $f(x)$ 之后，$h(x)$ 看起来应当像一个真正随机的字符串。</p>
+<p>因此，如果 $h$ 是一个多项式时间可计算函数，并且任何高效算法都无法区分</p>
+<script type="math/tex; mode=display">
+(f(x),h(x)),\quad (f(x),r)</script><p>其中，$r$ 是与 $h(x)$ 等长的均匀随机串，那么就称 $h$ 是 $f$ 的硬核函数。</p>
+<h2 id="定义"><a href="#定义" class="headerlink" title="定义"></a>定义</h2><p>设 $h:\{0,1\}^{*}\rightarrow \{0,1\}^{*}$ 是一个多项式时间可计算函数，并且是长度规则的，即对于任意满足 $|x|=|y|$ 的字符串 $x,y$，都有 $|h(x)|=|h(y)|$。令 $\ell(n)\overset{\mathrm{def}}{=}|h(1^n)|$，若对于任意概率多项式时间算法 $D’$、任意正多项式 $\mathrm{poly}(\cdot)$，以及所有充分大的 $n$，都有：</p>
+<script type="math/tex; mode=display">
+\left|
+P[D'(f(X_n),h(X_n))=1]
+-
+P[D'(f(X_n),R_{\ell(n)})=1]
+\right|
+<
+\frac{1}{\mathrm{poly}(n)}</script><p>则称 $h$ 是函数 $f$ 的<strong>硬核函数（Hard-Core Function）</strong>。其中，$X_n$ 是在 $\{0,1\}^n$ 上均匀分布的随机变量，$R_{\ell(n)}$ 是在 $\{0,1\}^{\ell(n)}$ 上均匀分布的随机变量，并且二者相互独立。</p>
+<p>直观地说，这一定义表达的是：即使给定 $f(x)$，$h(x)$ 仍然在计算意义下像随机串一样。敌手不仅无法准确恢复 $h(x)$，甚至无法把真实的 $h(x)$ 和一个同长度随机串区分开来。</p>
+<p>当 $\ell(n)\equiv 1$ 时，硬核函数退化为只输出一比特的函数，因此该定义与<a href="https://alex-mcavoy.github.io/notes/cryptology/fd658215.html">强单向函数的内积硬核谓词定理</a>中的硬核谓词定义等价。</p>
+<h2 id="实例"><a href="#实例" class="headerlink" title="实例"></a>实例</h2><p>对于 RSA、Rabin 和 DLP 对应的单向函数族，如果这些函数族确实是单向的，那么可以构造输出长度为 $O(\log n)$ 的简单硬核函数。</p>
+<p>例如，在 RSA 函数族中，设</p>
+<script type="math/tex; mode=display">
+\mathrm{RSA}_{N,e}(x)=x^e \bmod N</script><p>如果 RSA 函数族是单向的，那么给定</p>
+<script type="math/tex; mode=display">
+x^e \bmod N</script><p>想要区分 $x$ 的 $O(\log |N|)$ 个最低有效位和一个均匀随机的 $O(\log |N|)$-bit 字符串，在计算上是不可行的。也就是说，RSA 原像 $x$ 的若干个最低有效位可以作为 RSA 函数的硬核函数输出。</p>
+<p>类似结论也适用于 Rabin 函数族和 DLP 函数族。</p>
+<h1 id="【强单向函数硬核函数定理】"><a href="#【强单向函数硬核函数定理】" class="headerlink" title="【强单向函数硬核函数定理】"></a>【强单向函数硬核函数定理】</h1><h2 id="定理"><a href="#定理" class="headerlink" title="定理"></a>定理</h2><blockquote>
+<p><strong>Theorem</strong>：设 $f$ 是任意一个强单向函数，定义：</p>
+<script type="math/tex; mode=display">
+g_2(x,s)\overset{\mathrm{def}}{=}(f(x),s)</script><p>其中，$|s|=2|x|$。设 $|x|=n$，并令 $s=(s_1,s_2,\dots,s_{2n})$</p>
+<p>对于每个 $i$，定义 $b_i(x,s)$ 为二进制向量 $x$ 与 $s$ 中长度为 $n$ 的滑动窗口 $(s_{i+1},s_{i+2},\dots,s_{i+n})$ 之间的模二内积，即：</p>
+<script type="math/tex; mode=display">
+b_i(x,s)
+=
+\langle x,(s_{i+1},\dots,s_{i+n})\rangle \bmod 2</script><p>进一步，定义函数：</p>
+<script type="math/tex; mode=display">
+h(x,s)
+\overset{\mathrm{def}}{=}
+b_1(x,s)b_2(x,s)\cdots b_{\ell(|x|)}(x,s)</script><p>其中，对于任意常数 $c&gt;0$，有：</p>
+<script type="math/tex; mode=display">
+\ell(n)\overset{\mathrm{def}}{=}
+\min\{n,\lceil c\log_2 n\rceil\}</script><p>则函数 $h$ 是函数 $g_2$ 的硬核函数。</p>
+</blockquote>
+<p>虽然 $g_2(x,s)$ 已经公开了 $f(x)$ 和随机串 $s$，但是由 $x$ 和 $s$ 的多个滑动窗口内积得到的这些比特：</p>
+<script type="math/tex; mode=display">
+b_1(x,s),\dots,b_{\ell(n)}(x,s)</script><p>在计算上仍然像随机串一样，无法被高效区分。</p>
+<h2 id="直观理解"><a href="#直观理解" class="headerlink" title="直观理解"></a>直观理解</h2><p>这个构造可以看成强单向函数的内积硬核谓词定理的多比特版本。</p>
+<p>在单比特情形中，通常考虑：</p>
+<script type="math/tex; mode=display">
+b(x,r)=\langle x,r\rangle \bmod 2</script><p>也就是说，随机选择一个向量 $r$，然后输出 $x$ 与 $r$ 的模二内积，即使知道 $f(x)$ 和 $r$，也无法高效预测这个比特。</p>
+<p>不过，这里不只选一个 $r$，而是用一个较长的随机串 $s$ 构造出多个相关的窗口：</p>
+<script type="math/tex; mode=display">
+(s_2,\dots,s_{n+1}),\quad
+(s_3,\dots,s_{n+2}),\quad
+\dots</script><p>然后分别计算它们与 $x$ 的模二内积，从而得到多个比特。</p>
+<p>只要输出比特的数量是对数级别的，这些比特整体上仍然可以作为硬核函数。</p>
+<h2 id="证明"><a href="#证明" class="headerlink" title="证明"></a>证明</h2><h3 id="证明思路"><a href="#证明思路" class="headerlink" title="证明思路"></a>证明思路</h3><p>该定理的证明并不是直接证明 $h(x,s)$ 与随机串不可区分，而是先把问题转化为对 $h(x,s)$ 中若干比特异或值的预测问题。</p>
+<p>具体来说，$h(x,s)$ 由多个比特组成：</p>
+<script type="math/tex; mode=display">
+h(x,s)=b_1(x,s)b_2(x,s)\cdots b_{\ell(n)}(x,s)</script><p>如果某个高效算法能够从 $g_2(x,s)=(f(x),s)$ 中提取出关于 $h(x,s)$ 的有效信息，那么直观上，它应当能够对这些比特的某些组合产生预测优势。</p>
+<p>这里重点考察的是任意非空比特子集的异或，即：</p>
+<script type="math/tex; mode=display">
+\bigoplus_{i\in I} b_i(x,s),
+\quad I\subseteq \{1,2,\dots,\ell(n)\},\ I\neq \varnothing</script><p>证明的核心是说明：这些异或本质上仍然可以写成某种内积硬核谓词的形式。由于强单向函数的内积硬核谓词无法从公开信息中被高效预测，因此 $h(x,s)$ 中任意非空比特子集的异或也无法被高效预测。</p>
+<p>另一方面，对于输出长度为对数级别的函数来说，若其任意非空比特子集的异或都无法被高效预测，那么整个输出字符串就无法与同长度随机串高效区分。</p>
+<p>而在本定理中，由于 $\ell(n)=O(\log n)$，因此这个条件正好满足。于是，由任意非空异或的不可预测性，可以推出 $h(x,s)$ 与同长度均匀随机串在计算上不可区分，最终得到 $h$ 是 $g_2$ 的硬核函数。</p>
+<h3 id="非空异或不可预测性"><a href="#非空异或不可预测性" class="headerlink" title="非空异或不可预测性"></a>非空异或不可预测性</h3><h4 id="命题"><a href="#命题" class="headerlink" title="命题"></a>命题</h4><blockquote>
+<p><strong>Proposition</strong>：设 $I_n\subseteq \{1,2,\dots,\ell(n)\}$ 是任意一个非空集合序列，定义：</p>
+<script type="math/tex; mode=display">
+b_{I_{|x|}}(x,s)
+\overset{\mathrm{def}}{=}
+\bigoplus_{i\in I_{|x|}} b_i(x,s).</script><p>也就是说，$b_{I_{|x|}}(x,s)$ 表示从</p>
+<script type="math/tex; mode=display">
+h(x,s)=b_1(x,s)b_2(x,s)\cdots b_{\ell(n)}(x,s)</script><p>中取出由集合 $I_{|x|}$ 指定的那些比特，并对它们做异或。</p>
+<p>对于任意概率多项式时间算法 $A’$、任意正多项式 $\mathrm{poly}(\cdot)$，以及所有充分大的 $n$，都有</p>
+<script type="math/tex; mode=display">
+P[A'(I_n,g_2(U_{3n}))=b_{I_n}(U_{3n})]
+<
+\frac{1}{2}+\frac{1}{\mathrm{poly}(n)}</script><p>其中，$U_{3n}$ 是在 $\{0,1\}^{3n}$ 上均匀分布的随机变量。因为 $g_2$ 的输入是 $(x,s)$，其中 $|x|=n$，$|s|=2n$，所以总长度是 $3n$</p>
+</blockquote>
+<p>这一命题的含义是：即使给定 $g_2(x,s)=(f(x),s)$，并且知道要预测的是哪些位置上的异或，任何高效算法也不能以显著大于 $\frac{1}{2}$ 的概率预测：</p>
+<script type="math/tex; mode=display">
+\bigoplus_{i\in I} b_i(x,s)</script><p>也就是说，$h(x,s)$ 中任意非空比特子集的异或都是难以预测的。</p>
+<h4 id="证明-1"><a href="#证明-1" class="headerlink" title="证明"></a>证明</h4><h5 id="证明思路-1"><a href="#证明思路-1" class="headerlink" title="证明思路"></a>证明思路</h5><p>在强单向函数的内积硬核谓词定理中，对于函数 $g(x,r)=(f(x),r)$ 以及 $b(x,r)=\langle x,r\rangle \bmod 2$，$b(x,r)$ 是 $g(x,r)$ 的硬核谓词。也就是说，给定 $(f(x),r)$，任何高效算法都不能以显著大于 $\frac{1}{2}$ 的概率预测 $b(x,r)$</p>
+<p>因此，如果能够证明预测 $b(x,r)$ 可以归约到预测 $h(x,s)$ 中某个非空异或，那么后者也必然是困难的。</p>
+<p>证明目标是说明：如果存在高效算法能够从 $g_2(x,s)=(f(x),s)$ 中预测</p>
+<script type="math/tex; mode=display">
+b_I(x,s)=\bigoplus_{i\in I}b_i(x,s)</script><p>那么就可以构造另一个高效算法，从 $g(x,r)=(f(x),r)$ 中预测内积硬核谓词</p>
+<script type="math/tex; mode=display">
+b(x,r)=\langle x,r\rangle \bmod 2</script><p>但是根据前面的强单向函数内积硬核谓词定理，$b(x,r)$ 无法从 $(f(x),r)$ 中被高效预测。因此，预测 $b_I(x,s)$ 也应当是不可能的。</p>
+<p>具体来说，令 $X_n\in\{0,1\}^{n}$ 为表示原像 $x$ 的随机变量，$R_n\in\{0,1\}^{n}$ 为表示内积硬核谓词中的随机向量 $r$，$S_n\{0,1\}^{2n}$ 为多比特构造中的随机串。</p>
+<p>要证明是的：在给定 $(f(X_n),R_n)$ 时预测 $b(X_n,R_n)$，可以归约到给定 $(f(X_n),S_{2n})$ 时预测 $(X_n,S_{2n})$</p>
+<h5 id="关键等式"><a href="#关键等式" class="headerlink" title="关键等式"></a>关键等式</h5><p>定义：</p>
+<script type="math/tex; mode=display">
+\operatorname{sub}_i(s_1,\dots,s_{2n})
+\overset{\mathrm{def}}{=}
+(s_{i+1},s_{i+2},\dots,s_{i+n})</script><p>其中，$\operatorname{sub}_i(s)$ 是随机串 $s$ 中从第 $i+1$ 位开始、长度为 $n$ 的滑动窗口。</p>
+<p>对于任意满足 $|s|=2|x|$ 的 $x,s$，以及任意集合 $I\subseteq \{1,\dots,\ell(n)\}$，有：</p>
+<script type="math/tex; mode=display">
+\begin{aligned}
+b_I(x,s)
+&=
+\bigoplus_{i\in I}b_i(x,s) \\
+&=
+\bigoplus_{i\in I}
+\langle x,\operatorname{sub}_i(s)\rangle \bmod 2 \\
+&=
+\left\langle
+x,
+\bigoplus_{i\in I}\operatorname{sub}_i(s)
+\right\rangle
+\bmod 2
+\end{aligned}</script><p>该式说明：$h(x,s)$ 中任意非空比特子集的异或，本质上仍然是 $x$ 与某个 $n$ 比特向量之间的模二内积，只不过这里的随机向量 $r$ 被写成了 $r=\bigoplus_{i\in I}\operatorname{sub}_i(s)$</p>
+<h5 id="随机性事实"><a href="#随机性事实" class="headerlink" title="随机性事实"></a>随机性事实</h5><p>接下来，需要两个随机性事实。</p>
+<p>（1）对于任意非空集合 $I$，如果 $S_{2n}$ 在 $\{0,1\}^{2n}$ 上均匀分布，那么 $\bigoplus_{i\in I}\mathrm{sub}_i(S_{2n})$ 在 $\{0,1\}^n$ 上也是均匀分布的。</p>
+<p>直观上，虽然这些滑动窗口之间可能有重叠，但只要 $I$ 非空，它们的异或结果仍然保留了足够的随机性，因此得到的是一个均匀随机的 $n$ 比特向量。</p>
+<p>（2）给定任意 $r\in\{0,1\}^{n}$ 和非空集合 $I$​，可以可以高效地从如下集合中均匀选取一个字符串 $s$</p>
+<script type="math/tex; mode=display">
+\left\{
+s:
+\bigoplus_{i\in I}\operatorname{sub}_i(s)=r
+\right\}</script><p>这说明，在构造归约算法时，可以人为地选择一个满足条件的 $s$，使得</p>
+<script type="math/tex; mode=display">
+\bigoplus_{i\in I}\operatorname{sub}_i(s)=r</script><p>由于这种构造保证了</p>
+<script type="math/tex; mode=display">
+b(x,r)=b_I(x,s)</script><p>所以如果 $A’$ 能够预测 $b_I(x,s)$，那么新算法就能预测硬核谓词 $b(x,r)$。这与已知的硬核谓词不可预测性矛盾，因此 $A’$ 不存在。</p>
+<h5 id="反证假设"><a href="#反证假设" class="headerlink" title="反证假设"></a>反证假设</h5><p>现在反设命题不成立。</p>
+<p>存在一个高效算法 $A’$、一个正多项式 $\mathrm{poly}(\cdot)$，以及无穷多个 $n$ 和对应的非空集合 $I_n$，使得：</p>
+<script type="math/tex; mode=display">
+P[A'(I_n,g_2(U_{3n}))=b_{I_n}(U_{3n})]
+\geq
+\frac{1}{2}+\frac{1}{p(\mathrm{poly})}</script><p>即 $A’$ 能够以非忽略优势预测某个非空异或。</p>
+<p>由于 $\ell(n)=O(\log n)$，所以所有非空集合 $I\subseteq \{1,\dots,\ell(n)\}$ 的数量为：</p>
+<script type="math/tex; mode=display">
+2^{\ell(n)}-1=\operatorname{poly}(n)</script><p>因此，可以枚举所有可能的 $I$，并通过随机实验估计每个 $I$ 对应的成功概率：</p>
+<script type="math/tex; mode=display">
+p_I
+\overset{\mathrm{def}}{=}
+P[A'(I,g_2(U_{3n}))=b_I(U_{3n})]</script><p>从中选出一个成功概率足够高的集合 $I$，使得：</p>
+<script type="math/tex; mode=display">
+p_I \geq \frac{1}{2}+\frac{1}{2\mathrm{poly}(n)}</script><p>这里把优势从 $\frac{1}{\mathrm{poly}(n)}$ 放宽到 $\frac{1}{2p(n)}$ 是为了允许估计过程中存在小的误差。</p>
+<h5 id="矛盾推出"><a href="#矛盾推出" class="headerlink" title="矛盾推出"></a>矛盾推出</h5><p>接下来构造一个新算法，用来预测内积硬核谓词 $b(x,r)$。</p>
+<p>新算法的输入是 $y=f(x), r$，其步骤为：</p>
+<ol>
+<li>根据输入长度 $n=|r|$，找到前面选出的集合 $I$</li>
+<li>均匀随机选取一个字符串 $s$，使其满足 $\bigoplus_{i\in I}\operatorname{sub}_i(s)=r$</li>
+<li>输出 $A’(I,(y,s))$</li>
+</ol>
+<p>由于 $s$ 满足 $\bigoplus_{i\in I}\operatorname{sub}_i(s)=r$，所以根据关键等式，有：</p>
+<script type="math/tex; mode=display">
+b_I(x,s)
+=
+b\left(x,\bigoplus_{i\in I}\operatorname{sub}_i(s)\right)
+=
+b(x,r)</script><p>因此，算法 $A’$ 对 $b_I(x,s)$ 的预测结果，正好就是对 $b(x,r)$ 的预测结果。</p>
+<p>当 $r$ 在 $\{0,1\}^n$ 上均匀随机选取时，上述构造得到的 $s$ 在 $\{0,1\}^{2n}$ 上也是均匀分布的。所以新算法预测 $b(x,r)$ 的成功概率与 $A’$ 预测 $b_I(x,s)$ 的成功概率一致，至少为 $\frac{1}{2}+\frac{1}{2\mathrm{poly}(n)}$。这说明构造出了一个高效算法，能够从 $(f(x),r)$ 中以非忽略优势预测</p>
+<script type="math/tex; mode=display">
+b(x,r)=\langle x,r\rangle \bmod 2</script><p>但这与前面已经证明的结论矛盾：$b(x,r)$ 是 $g(x,r)=(f(x),r)$ 的硬核谓词，不能被任何高效算法以非忽略优势预测。因此，反设不成立。</p>
+<p>所以，对于任意非空集合序列 $I_n\subseteq \{1,\dots,\ell(n)\}$，不存在高效算法能够从 $g_2(x,s)=(f(x),s)$ 中以非忽略优势预测：</p>
+<script type="math/tex; mode=display">
+b_{I_n}(x,s)
+=
+\bigoplus_{i\in I_n}b_i(x,s)</script><p>也就是说，$h(x,s)$ 中任意非空比特子集的异或都是不可高效预测的。</p>
+<p>命题得证。</p>
+<h3 id="计算异或引理"><a href="#计算异或引理" class="headerlink" title="计算异或引理"></a>计算异或引理</h3><h4 id="引理"><a href="#引理" class="headerlink" title="引理"></a>引理</h4><blockquote>
+<p><strong>Lemma</strong>：设设 $f$ 和 $h$ 是任意长度规则函数，令 $\ell(n)\overset{\mathrm{def}}{=}|h(1^n)|$，对于任意算法 $D$，定义：</p>
+<script type="math/tex; mode=display">
+p \overset{\mathrm{def}}{=} P[D(f(X_n),h(X_n))=1],\quad q \overset{\mathrm{def}}{=} P[D(f(X_n),R_{\ell(n)})=1]</script><p>其中，$X_n$ 在 $\{0,1\}^n$ 上均匀分布，$R_{\ell(n)}$ 在 $\{0,1\}^{\ell(n)}$ 上均匀分布，并且二者相互独立。</p>
+<p>利用 $D$ 构造一个新算法 $G=G_D$。算法 $G$ 的输入是 $y, S\subseteq \{1,\dots,\ell(n)\}, \ell(n)$，算法随机选择：</p>
+<script type="math/tex; mode=display">
+r=r_1r_2\cdots r_{\ell(n)}\in \{0,1\}^{\ell(n)}</script><p>然后输出：</p>
+<script type="math/tex; mode=display">
+G(y,S,\ell(n))
+=
+D(y,r)\oplus 1\oplus \left(\bigoplus_{i\in S}r_i\right)</script><p>若 $I_\ell$ 是从 $\{1,\dots,\ell(n)\}$ 的所有非空子集中均匀随机选出的集合，则有</p>
+<script type="math/tex; mode=display">
+P
+\left[
+G(f(X_n),I_\ell,\ell(n))
+=
+\bigoplus_{i\in I_\ell}h_i(X_n)
+\right]
+=
+\frac{1}{2}
++
+\frac{p-q}{2^{\ell(n)}-1}</script><p>其中，$h_i(x)$ 表示 $h(x)$ 的第 $i$ 个比特，$p-q$ 用于衡量算法 $D$ 区分真实输出 $h(X_n)$ 和随机串 $R_{\ell(n)}$ 的能力，如果 $p-q$ 是非忽略量，那么 $D$ 就是一个有效区分器。</p>
+</blockquote>
+<p>该引理说明：如果存在一个算法 $D$，能够区分 $(f(X_n),h(X_n))$ 和 $(f(X_n),R_{\ell(n)})$，那么就可以利用 $D$ 构造另一个算法 $G$，使其能够预测 $h(X_n)$ 中某个随机非空比特子集的异或。预测优势为：</p>
+<script type="math/tex; mode=display">
+\frac{p-q}{2^{\ell(n)}-1}</script><p>其中，分母 $2^{\ell(n)}-1$ 是所有非空子集的数量。</p>
+<p>因此，如果 $\ell(n)=O(\log n)$，那么有：</p>
+<script type="math/tex; mode=display">
+2^{\ell(n)}-1=\operatorname{poly}(n)</script><p>这意味着：只要 $D$ 的区分优势 $p-q$ 是非忽略的，那么算法 $G$ 的预测优势仍然是非忽略的。</p>
+<p>这就是为什么定理中只能保证输出长度为对数级别。因为只有在 $\ell(n)=O(\log n)$ 时，所有非空异或的数量仍然是多项式规模，区分优势不会被指数级地稀释掉。</p>
+<h4 id="证明-2"><a href="#证明-2" class="headerlink" title="证明"></a>证明</h4><p>计算异或引理的证明本质上是在计算算法 $G$ 的成功概率。</p>
+<p>固定某个 $x\in \{0,1\}^n$，并令 $z=h(x),\ell=\ell(n)$，记 $\mathcal{C}$​ 为集合 $\{1,\dots,\ell\}$ 的所有非空子集，因此有：</p>
+<script type="math/tex; mode=display">
+|\mathcal C|=2^\ell-1</script><p>对于任意 $S\in\mathcal C$​，定义关系 $r\equiv_S h(x)$，其代表：</p>
+<script type="math/tex; mode=display">
+\bigoplus_{i\in S}r_i = \bigoplus_{i\in S}h_i(x)</script><p>也就是说，$r$ 与 $z$ 在位置集合 $S$ 上的异或相同。</p>
+<p>令 $\Delta(r)$ 表示随机变量 $D(f(x),r)$，算法 $G$ 的输出为：</p>
+<script type="math/tex; mode=display">
+G(f(x),S,\ell)
+=
+D(f(x),r)\oplus 1\oplus \left(\bigoplus_{i\in S}r_i\right)</script><p>它希望预测的是 $\bigoplus_{i\in S}h_i(x)$，因此 $G$ 成功当且仅当以下两种情况之一发生：</p>
+<ol>
+<li>$\Delta(r)=1$，并且 $r\equiv_S h(x)$</li>
+<li>$\Delta(r)=0$，并且 $r\not\equiv_S h(x)$</li>
+</ol>
+<p>于是，定义：</p>
+<script type="math/tex; mode=display">
+s(x)
+\overset{\mathrm{def}}{=}
+P\left[
+G(f(x),I_\ell,\ell)
+=
+\bigoplus_{i\in I_\ell}h_i(x)
+\right]</script><p>其中，$I_\ell$ 是从 $\mathcal C$ 中均匀随机选取的非空集合。</p>
+<p>则有：</p>
+<script type="math/tex; mode=display">
+\begin{aligned}
+s(x)
+&=
+\frac{1}{|\mathcal C|}
+\sum_{S\in\mathcal C}
+\Pr\left[
+G(f(x),S,\ell)
+=
+\bigoplus_{i\in S}h_i(x)
+\right] \\
+&=
+\frac{1}{|\mathcal C|}
+\sum_{S\in\mathcal C}
+\left(
+P[\text{event 1}]
++
+P[\text{event 2}]
+\right) \\
+&=
+\frac{1}{2|\mathcal C|}
+\sum_{S\in\mathcal C}
+\left(
+P[\Delta(R_\ell)=1\mid R_\ell\equiv_S h(x)]
++
+P[\Delta(R_\ell)=0\mid R_\ell\not\equiv_S h(x)]
+\right)
+\end{aligned}</script><p>这里第二个条件 $R_\ell\not\equiv_S h(x)$ 不是等价关系。因为当 $\Delta(R_\ell)=0$ 时，算法 $G$ 会额外翻转一次结果，所以只有当 $R_\ell$ 与 $h(x)$ 在 $S$ 上的异或不同时，$G$ 才会预测正确。</p>
+<p>由于</p>
+<script type="math/tex; mode=display">
+P[\Delta(R_\ell)=0\mid R_\ell\not\equiv_S h(x)]
+=
+1-
+P[\Delta(R_\ell)=1\mid R_\ell\not\equiv_S h(x)]</script><p>所以：</p>
+<script type="math/tex; mode=display">
+\begin{aligned}
+s(x)
+&=
+\frac12
++
+\frac{1}{2|\mathcal C|}
+\sum_{S\in\mathcal C}
+\Big(
+\Pr[\Delta(R_\ell)=1\mid R_\ell\equiv_S h(x)] 
+-
+P[\Delta(R_\ell)=1\mid R_\ell\not\equiv_S h(x)]
+\Big)
+\end{aligned}</script><p>对于固定的 $S$，满足 $R_\ell\equiv_S h(x)$ 的字符串 $R_\ell$ 有 $2^{\ell-1}$ 个，满足 $R_\ell\not\equiv_S h(x)$ 的字符串也有 $2^{\ell-1}$ 个。因此，有：</p>
+<script type="math/tex; mode=display">
+\begin{aligned}
+s(x)
+&=
+\frac12
++
+\frac{1}{2|\mathcal C|}\cdot \frac{1}{2^{\ell-1}}
+\left(
+\sum_{S\in\mathcal C}
+\sum_{r\equiv_S h(x)}
+P[\Delta(r)=1]\right.
+\left.
+-
+\sum_{S\in\mathcal C}
+\sum_{r\not\equiv_S h(x)}
+P[\Delta(r)=1]
+\right)\\
+&=
+\frac12
++
+\frac{1}{2^\ell|\mathcal C|}
+\left(
+\sum_r
+\sum_{S\in EQ(r,h(x))}
+P[\Delta(r)=1]
+-
+\sum_r
+\sum_{S\in NE(r,h(x))}
+P[\Delta(r)=1]
+\right)
+\end{aligned}</script><p>其中：</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+EQ(r,z)\overset{\mathrm{def}}{=} \{S\in\mathcal C:r\equiv_S z\} \\
+NE(r,z)\overset{\mathrm{def}}{=} \{S\in\mathcal C:r\not\equiv_S z\}
+\end{align*}</script><p>接下来利用计数事实：</p>
+<p>当 $r\neq z$ 时：</p>
+<script type="math/tex; mode=display">
+|EQ(r,z)|=2^{\ell-1}-1,
+\qquad
+|NE(r,z)|=2^{\ell-1}</script><p>当 $r=z$ 时：</p>
+<script type="math/tex; mode=display">
+EQ(z,z)=\mathcal C,
+\qquad
+NE(z,z)=\varnothing</script><p>因此：</p>
+<script type="math/tex; mode=display">
+\begin{aligned}
+s(x)
+&=
+\frac12
++
+\frac{1}{2^\ell|\mathcal C|}
+\sum_{r\neq h(x)}
+\left(
+(2^{\ell-1}-1)P[\Delta(r)=1]
+-
+2^{\ell-1}P[\Delta(r)=1]
+\right) \\
+&\quad
++
+\frac{1}{2^\ell|\mathcal C|}
+|\mathcal C|P[\Delta(h(x))=1] \\
+&=
+\frac12
+-
+\frac{1}{2^\ell|\mathcal C|}
+\sum_{r\neq h(x)}
+P[\Delta(r)=1]
++
+\left(
+\frac{1}{|\mathcal C|}
+-
+\frac{1}{2^\ell|\mathcal C|}
+\right)
+P[\Delta(h(x))=1]
+\end{aligned}</script><p>将 $\Delta(r)=D(f(x),r)$ 代回，有：</p>
+<script type="math/tex; mode=display">
+\begin{aligned}
+s(x)
+&=
+\frac12
++
+\frac{1}{|\mathcal C|}
+\left(
+P[D(f(x),h(x))=1]
+-
+P[D(f(x),R_\ell)=1]
+\right)
+\end{aligned}</script><p>最后，对 $x$ 取期望：</p>
+<script type="math/tex; mode=display">
+\begin{aligned}
+\mathbb E[s(X_n)]
+&=
+\frac12
++
+\frac{1}{|\mathcal C|}
+\left(
+P[D(f(X_n),h(X_n))=1]
+-
+P[D(f(X_n),R_\ell)=1]
+\right)\\
+&=
+\frac12
++
+\frac{1}{2^\ell-1}(p-q)
+\end{aligned}</script><p>即：</p>
+<script type="math/tex; mode=display">
+P
+\left[
+G(f(X_n),I_\ell,\ell(n))
+=
+\bigoplus_{i\in I_\ell}h_i(X_n)
+\right]
+=
+\frac12
++
+\frac{p-q}{2^{\ell(n)}-1}</script><p>引理得证。</p>
+<h3 id="定理推出"><a href="#定理推出" class="headerlink" title="定理推出"></a>定理推出</h3><p>在非空异或不可预测性命题中，已经证明 $h(x,s)$ 的任意非空比特子集的异或都无法从 $g_2(x,s)=(f(x),s)$ 中被高效预测。</p>
+<p>而计算异或引理说明：当输出长度满足 $\ell(n)=O(\log n)$ 时，任意非空异或不可预测，就可以推出整个字符串与随机串不可区分。</p>
+<p>因此，可以得到：$h(x,s)$ 与 $R_{\ell(n)}$ 在给定 $g_2(x,s)$ 后不可高效区分，即：函数 $h$ 是函数 $g_2$ 的硬核函数。</p>
+
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>感谢您对我的支持，让我继续努力分享有用的技术与知识点！</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/wechatpay.jpg" alt="Alex_McAvoy 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/alipay.jpg" alt="Alex_McAvoy 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Alex_McAvoy
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://alex-mcavoy.github.io/notes/cryptology/f4dbacc0.html" title="硬核函数">https://alex-mcavoy.github.io/notes/cryptology/f4dbacc0.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/notes/" rel="tag"># 学习笔记</a>
+              <a href="/tags/cryptology/" rel="tag"># 密码学</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/notes/cryptology/fd658215.html" rel="prev" title="强单向函数的内积硬核谓词定理">
+      <i class="fa fa-chevron-left"></i> 强单向函数的内积硬核谓词定理
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/notes/cryptology/bba999e9.html" rel="next" title="单向函数的高效放大">
+      单向函数的高效放大 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E3%80%90%E7%A1%AC%E6%A0%B8%E5%87%BD%E6%95%B0%E7%9A%84%E5%AE%9A%E4%B9%89%E3%80%91"><span class="nav-number">1.</span> <span class="nav-text">【硬核函数的定义】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9F%BA%E6%9C%AC%E6%80%9D%E6%83%B3"><span class="nav-number">1.1.</span> <span class="nav-text">基本思想</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%9A%E4%B9%89"><span class="nav-number">1.2.</span> <span class="nav-text">定义</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%9E%E4%BE%8B"><span class="nav-number">1.3.</span> <span class="nav-text">实例</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E3%80%90%E5%BC%BA%E5%8D%95%E5%90%91%E5%87%BD%E6%95%B0%E7%A1%AC%E6%A0%B8%E5%87%BD%E6%95%B0%E5%AE%9A%E7%90%86%E3%80%91"><span class="nav-number">2.</span> <span class="nav-text">【强单向函数硬核函数定理】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%9A%E7%90%86"><span class="nav-number">2.1.</span> <span class="nav-text">定理</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%9B%B4%E8%A7%82%E7%90%86%E8%A7%A3"><span class="nav-number">2.2.</span> <span class="nav-text">直观理解</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AF%81%E6%98%8E"><span class="nav-number">2.3.</span> <span class="nav-text">证明</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AF%81%E6%98%8E%E6%80%9D%E8%B7%AF"><span class="nav-number">2.3.1.</span> <span class="nav-text">证明思路</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%9D%9E%E7%A9%BA%E5%BC%82%E6%88%96%E4%B8%8D%E5%8F%AF%E9%A2%84%E6%B5%8B%E6%80%A7"><span class="nav-number">2.3.2.</span> <span class="nav-text">非空异或不可预测性</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%91%BD%E9%A2%98"><span class="nav-number">2.3.2.1.</span> <span class="nav-text">命题</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%AF%81%E6%98%8E-1"><span class="nav-number">2.3.2.2.</span> <span class="nav-text">证明</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E8%AF%81%E6%98%8E%E6%80%9D%E8%B7%AF-1"><span class="nav-number">2.3.2.2.1.</span> <span class="nav-text">证明思路</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E5%85%B3%E9%94%AE%E7%AD%89%E5%BC%8F"><span class="nav-number">2.3.2.2.2.</span> <span class="nav-text">关键等式</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E9%9A%8F%E6%9C%BA%E6%80%A7%E4%BA%8B%E5%AE%9E"><span class="nav-number">2.3.2.2.3.</span> <span class="nav-text">随机性事实</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E5%8F%8D%E8%AF%81%E5%81%87%E8%AE%BE"><span class="nav-number">2.3.2.2.4.</span> <span class="nav-text">反证假设</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E7%9F%9B%E7%9B%BE%E6%8E%A8%E5%87%BA"><span class="nav-number">2.3.2.2.5.</span> <span class="nav-text">矛盾推出</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AE%A1%E7%AE%97%E5%BC%82%E6%88%96%E5%BC%95%E7%90%86"><span class="nav-number">2.3.3.</span> <span class="nav-text">计算异或引理</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%BC%95%E7%90%86"><span class="nav-number">2.3.3.1.</span> <span class="nav-text">引理</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%AF%81%E6%98%8E-2"><span class="nav-number">2.3.3.2.</span> <span class="nav-text">证明</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%9A%E7%90%86%E6%8E%A8%E5%87%BA"><span class="nav-number">2.3.4.</span> <span class="nav-text">定理推出</span></a></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">  
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Alex_McAvoy"
+      src="/assets/img/head.jpg">
+  <p class="site-author-name" itemprop="name">Alex_McAvoy</p>
+  <div class="site-description" itemprop="description">想要成为渔夫的猎手</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">761</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">75</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">86</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Alex-McAvoy" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;Alex-McAvoy" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/u011815404" title="CSDN → https:&#x2F;&#x2F;blog.csdn.net&#x2F;u011815404" rel="noopener" target="_blank"><i class="fas fa-copyright fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+<!-- 静态项目链接 -->
+<div class="links-of-blogroll motion-element">
+  <div class="links-of-blogroll-title">
+    <i class="fas fa-external-link-alt fa-fw"></i> 站点静态项目
+  </div>
+  <ul class="links-of-blogroll-list">
+  <li class="links-of-blogroll-item">
+      <a href="https://alex-mcavoy.github.io/bookshelf/index.html" target="_blank" title="终末之诗">
+        我的书架（施工中...）
+      </a>
+    </li>
+    <li class="links-of-blogroll-item">
+      <a href="https://alex-mcavoy.github.io/end_poem/index.html" target="_blank" title="终末之诗">
+        终末之诗
+      </a>
+    </li>
+	<li class="links-of-blogroll-item">
+      <a href="https://alex-mcavoy.github.io/2nd_anniversary_of_pyc-zwx/index.html" target="_blank" title="逄总与张总的两周年纪念页（朋友已分手，该项目无限延期）">
+        <del>逄总与张总的两周年纪念页<br/>（朋友已分手，该项目无限延期）</del>
+      </a>
+    </li>
+  </ul>
+</div>
+
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdz20172133" title="https:&#x2F;&#x2F;blog.csdn.net&#x2F;sdz20172133" rel="noopener" target="_blank">神仙队友</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://pxlsdz.gitee.io/" title="https:&#x2F;&#x2F;pxlsdz.gitee.io&#x2F;" rel="noopener" target="_blank">神仙队友blog2</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdau_fangshifeng" title="https:&#x2F;&#x2F;blog.csdn.net&#x2F;sdau_fangshifeng" rel="noopener" target="_blank">酷头</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://bycore.net/" title="https:&#x2F;&#x2F;bycore.net" rel="noopener" target="_blank">凉了的某饼同学</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://kris-cn.github.io/" title="http:&#x2F;&#x2F;kris-cn.github.io&#x2F;" rel="noopener" target="_blank">翟孙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://deng.fun/" title="http:&#x2F;&#x2F;deng.fun&#x2F;" rel="noopener" target="_blank">芙蓉姐姐</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/wentong_Xu" title="https:&#x2F;&#x2F;blog.csdn.net&#x2F;wentong_Xu" rel="noopener" target="_blank">小黑贱胖子</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.yuheng.tech/" title="https:&#x2F;&#x2F;www.yuheng.tech&#x2F;" rel="noopener" target="_blank">咸于</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/lanshan1111" title="https:&#x2F;&#x2F;blog.csdn.net&#x2F;lanshan1111" rel="noopener" target="_blank">肥硕硕</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdauguanweihong" title="https:&#x2F;&#x2F;blog.csdn.net&#x2F;sdauguanweihong" rel="noopener" target="_blank">管少</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_41661919" title="https:&#x2F;&#x2F;blog.csdn.net&#x2F;qq_41661919" rel="noopener" target="_blank">俊杰</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_40859951" title="https:&#x2F;&#x2F;blog.csdn.net&#x2F;qq_40859951" rel="noopener" target="_blank">峰哥</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/LSD20164388" title="https:&#x2F;&#x2F;blog.csdn.net&#x2F;LSD20164388" rel="noopener" target="_blank">狗冬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37868325" title="https:&#x2F;&#x2F;blog.csdn.net&#x2F;qq_37868325" rel="noopener" target="_blank">妍大佬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://sanshuiii.github.io/" title="https:&#x2F;&#x2F;sanshuiii.github.io&#x2F;" rel="noopener" target="_blank">sanshuiii</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://zjpzhao.github.io/" title="https:&#x2F;&#x2F;zjpzhao.github.io&#x2F;" rel="noopener" target="_blank">brain</a>
+        </li>
+    </ul>
+  </div>
+
+		
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+  
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2026</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Alex_McAvoy</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+</br>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+<script src="/js/bookmark.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '48fd73a538d3fa927f65',
+      clientSecret: '56618aefeee90bac3c20de8d51bb0b985d67252d',
+      repo        : 'Gitalk-Comment',
+      owner       : 'Alex-McAvoy',
+      admin       : ['Alex-McAvoy'],
+      id          : '2e4e2af08bccfc3cb94d3e8167b1c3c1',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+  
+  <!-- 鼠标单击粒子特效 -->
+  <script type="text/javascript" src="/js/cursor-effects.js"></script>
+  <!-- 多级目录 -->
+  <script type="text/javascript" src="/js/category.js"></script>
+  
+</body>
+</html>

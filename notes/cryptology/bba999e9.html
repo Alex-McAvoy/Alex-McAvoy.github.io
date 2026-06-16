@@ -1,0 +1,1353 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 8.1.2">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/img/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/assets/img/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/pace-js@1/themes/blue/pace-theme-minimal.css">
+  <script src="//cdn.jsdelivr.net/npm/pace-js@1/pace.min.js"></script>
+
+
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"alex-mcavoy.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":16,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":true,"color":"#ff0000","save":"manual"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":true},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.json"};
+  </script>
+
+  <meta name="description" content="【基本思想】弱单向函数的存在定理中，已经讨论过如何把弱单向函数放大强单向函数，但是，这种构造方法实际效率很差，只有理论意义。 原来的放大方式是：如果一个函数 $f$ 在长度为 $n$ 的输入上，有至少 $\frac{1}{\mathrm{poly}(n)}$ 比例的输入难以反演，那么可以构造一个新函数 $g$，使得 $g$ 在几乎所有输入上都难以反演。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="单向函数的高效放大">
+<meta property="og:url" content="https://alex-mcavoy.github.io/notes/cryptology/bba999e9.html">
+<meta property="og:site_name" content="Alex_McAvoy">
+<meta property="og:description" content="【基本思想】弱单向函数的存在定理中，已经讨论过如何把弱单向函数放大强单向函数，但是，这种构造方法实际效率很差，只有理论意义。 原来的放大方式是：如果一个函数 $f$ 在长度为 $n$ 的输入上，有至少 $\frac{1}{\mathrm{poly}(n)}$ 比例的输入难以反演，那么可以构造一个新函数 $g$，使得 $g$ 在几乎所有输入上都难以反演。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/cryptology/26-1.png">
+<meta property="article:published_time" content="2026-06-15T08:18:00.000Z">
+<meta property="article:modified_time" content="2026-06-16T16:53:30.508Z">
+<meta property="article:author" content="Alex_McAvoy">
+<meta property="article:tag" content="学习笔记">
+<meta property="article:tag" content="密码学">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://alex-mcavoy.github.io/images/notes/cryptology/26-1.png">
+
+<link rel="canonical" href="https://alex-mcavoy.github.io/notes/cryptology/bba999e9.html">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>单向函数的高效放大 | Alex_McAvoy</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Alex_McAvoy</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">想要成为渔夫的猎手</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+
+	
+	
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/notes/cryptology/bba999e9.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/assets/img/head.jpg">
+      <meta itemprop="name" content="Alex_McAvoy">
+      <meta itemprop="description" content="想要成为渔夫的猎手">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Alex_McAvoy">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          单向函数的高效放大
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2026-06-15 16:18:00" itemprop="dateCreated datePublished" datetime="2026-06-15T16:18:00+08:00">2026-06-15</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/notes/" itemprop="url" rel="index"><span itemprop="name">学习笔记</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/notes/cryptology/" itemprop="url" rel="index"><span itemprop="name">密码学</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>16k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>14 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="【基本思想】"><a href="#【基本思想】" class="headerlink" title="【基本思想】"></a>【基本思想】</h1><p><a href="https://alex-mcavoy.github.io/notes/cryptology/c32c95c1.html">弱单向函数的存在定理</a>中，已经讨论过如何把弱单向函数放大强单向函数，但是，这种构造方法实际效率很差，只有理论意义。</p>
+<p>原来的放大方式是：如果一个函数 $f$ 在长度为 $n$ 的输入上，有至少 $\frac{1}{\mathrm{poly}(n)}$ 比例的输入难以反演，那么可以构造一个新函数 $g$，使得 $g$ 在几乎所有输入上都难以反演。</p>
+<p>但是问题在于，构造出来的 $g$ 的输入长度会从 $n$ 增长到大约 $n^2\mathrm{poly}(n)$。也就是说，它把长度为 $n$ 上的弱困难性，转化成了长度为 $\operatorname{poly}(n)$ 上的强困难性，但这个长度膨胀太大，因此实际意义有限。</p>
+<p>例如，如果 $f$ 在长度为 $1000$ 的输入中有 $1\%$ 的输入难以反演，那么原来的放大方法只能说明构造出的 $g$ 在长度约为 $100000000$ 的输入上几乎处处难以反演。这种结论对实际安全参数选择帮助不大。</p>
+<p>因此，更理想的放大方式应当是：如果 $f$ 在长度为 $n$ 的输入上具有弱单向性，那么构造出的强单向函数 $g$ 应当只需要长度为 $O(n)$ 的输入，而不是 $\operatorname{poly}(n)$ 长度的输入。</p>
+<p>这就是<strong>单向函数的高效放大（Efficient Amplification of One-Way Functions）</strong>想要解决的问题。</p>
+<h1 id="【定量单向性】"><a href="#【定量单向性】" class="headerlink" title="【定量单向性】"></a>【定量单向性】</h1><h2 id="定义"><a href="#定义" class="headerlink" title="定义"></a>定义</h2><p>为了更精确地讨论单向函数的放大，引入<strong>定量单向性（Quantitative One-Wayness）</strong>。</p>
+<p>设 $T:\mathbb N\rightarrow \mathbb N$ 和 $\varepsilon:\mathbb N\rightarrow \mathbb R$ 是多项式时间可计算函数，对于一个多项式时间可计算函数 $f:\{0,1\}^{*}\rightarrow \{0,1\}^{*}$，若对于任意运行时间不超过 $T(\cdot)$ 的算法 $A’$，以及所有充分大的 $n$，算法 $A’$ 对 $f(U_n)$ 反演的失败概率都至少为 $\varepsilon(n)$，那么称 $f$ 在时间 $T(\cdot)$ 下具有 $\varepsilon(n)$ 单向性，即：</p>
+<script type="math/tex; mode=display">
+P[A'(f(U_n))\notin f^{-1}(f(U_n))]
+<
+\varepsilon(n)</script><p>其中，$U_n$ 是在 $\{0,1\}^n$ 上均匀分布的随机变量。</p>
+<p>直观地说，$\varepsilon(n)$ 表示算法反演失败的比例下界。如果 $f$ 是 $\varepsilon(n)$ 单向的，那么任意时间 $T(n)$ 内的算法，在长度为 $n$ 的随机输入上，至少有约 $\varepsilon(n)$ 的概率反演失败。</p>
+<h2 id="定量单向性下的重新表述"><a href="#定量单向性下的重新表述" class="headerlink" title="定量单向性下的重新表述"></a>定量单向性下的重新表述</h2><h3 id="弱单向性与强单向性"><a href="#弱单向性与强单向性" class="headerlink" title="弱单向性与强单向性"></a>弱单向性与强单向性</h3><p>借助定量单向性，可以重新描述弱单向函数和强单向函数。</p>
+<p>若函数 $f$ 是弱单向函数，如果存在某个多项式 $\mathrm{poly}(\cdot)$，使得 $f$ 在多项式时间下具有 $\frac{1}{\mathrm{poly}(\cdot)}$ 单向性，即任意多项式时间算法在反演 $f(U_n)$ 时，其失败概率至少为：</p>
+<script type="math/tex; mode=display">
+\frac{1}{\mathrm{poly}(\cdot)}</script><p>若函数 $f$ 是强单向函数，如果对于任意多项式 $\mathrm{poly}’(\cdot)$，$f$ 在多项式时间下都具有 $1-\frac{1}{\mathrm{poly}’(\cdot)}$ 单向性，即任意多项式时间算法对 $f(U_n)$ 的反演成功概率至多为：</p>
+<script type="math/tex; mode=display">
+\frac{1}{\mathrm{poly}'(\cdot)}</script><p>换句话说，弱单向函数只要求在一个可察觉比例的输入上难以反演，强单向函数要求在几乎所有输入上都难以反演，只有一个可忽略比例的输入可能被成功反演。</p>
+<h3 id="存在性定理"><a href="#存在性定理" class="headerlink" title="存在性定理"></a>存在性定理</h3><p>弱单向函数的存在性定理也可以用定量单向性的语言重新表述。</p>
+<p>如果存在一个多项式 $\mathrm{poly}(\cdot)$，以及一个多项式时间可计算函数 $f$，使得 $f$ 在时间 $T(\cdot)$ 下具有 $\frac{1}{\mathrm{poly}(\cdot)}$ 单向性，那么可以构造一个强单向函数 $g$。</p>
+<p>但是这个构造有一个明显缺点：它会导致输入长度显著膨胀。</p>
+<p>具体来说，若 $f$ 的输入长度是 $n$，则构造出的 $g$ 的输入长度大约是</p>
+<script type="math/tex; mode=display">
+n^2\mathrm{poly}(n)</script><p>因此，该结论对应的时间关系是：</p>
+<script type="math/tex; mode=display">
+T'(n^2\mathrm{poly}(n))=T(n)</script><p>换句话说，想要说明 $g$ 在长度 $n^2\mathrm{poly}(n)$ 上难以反演，只能回到 $f$ 在长度 $n$ 上的难以反演性。</p>
+<p>这不是一个高效放大结果，因为它把输入长度从 $n$ 放大到了 $\operatorname{poly}(n)$。</p>
+<h1 id="【高效放大的目标】"><a href="#【高效放大的目标】" class="headerlink" title="【高效放大的目标】"></a>【高效放大的目标】</h1><p>理想的高效放大应该满足：</p>
+<script type="math/tex; mode=display">
+T'(O(n))=T(n)</script><p>也就是说，构造出的强单向函数 $g$ 的输入长度只比原函数 $f$ 的输入长度大一个常数倍，而不是多项式倍。</p>
+<p>等价地，可以写成：</p>
+<script type="math/tex; mode=display">
+T'(n)=T(\varepsilon n)</script><p>其中，$\varepsilon&gt;0$ 是某个常数。</p>
+<p>这种结果才说明：长度为 $n$ 上的弱困难性，可以有效转化为长度为 $O(n)$ 上的强困难性。</p>
+<h1 id="【单向置换的高效放大】"><a href="#【单向置换的高效放大】" class="headerlink" title="【单向置换的高效放大】"></a>【单向置换的高效放大】</h1><h2 id="正则单向函数"><a href="#正则单向函数" class="headerlink" title="正则单向函数"></a>正则单向函数</h2><p>上述的高效放大并不一定对所有单向函数都能直接得到，一种可处理的重要情形是正则单向函数。</p>
+<p>如果存在一个多项式时间可计算函数 $m:\mathbb N\rightarrow \mathbb N$，以及一个多项式 $\mathrm{poly}(\cdot)$，使得对于 $f$ 值域中的任意 $y$，长度为 $n$ 的原像数量都介于 $\frac{m(n)}{\mathrm{poly}(n)}$ 和 $m(n)\cdot \mathrm{poly}(n)$ 之间，那么函数 $f$ 称为<strong>正则单向函数（Regular One-Way Functions）</strong>。</p>
+<p>也就是说，正则函数要求每个输出点 $y$ 的原像数量大致处于同一个规模，最多只允许相差一个多项式因子。</p>
+<p>我们只考虑一种更特殊的情形：单向置换，其是长度保持且单射的函数，因此每个输出恰好只有一个原像，是最典型的正则函数。</p>
+<h2 id="单向置换高效放大定理"><a href="#单向置换高效放大定理" class="headerlink" title="单向置换高效放大定理"></a>单向置换高效放大定理</h2><blockquote>
+<p><strong>Theorem</strong>：设 $\mathrm{poly}(\cdot)$ 是一个多项式，$T:\mathbb N\rightarrow\mathbb N$ 是一个时间函数。假设 $f$ 是一个多项式时间可计算的置换，并且 $f$ 在时间 $T(\cdot)$ 下具有 $\frac{1}{\mathrm{poly}}$ 单向性，即 $f$ 是一个弱单向置换。</p>
+<p>那么，存在一个常数 $\gamma&gt;1$，一个多项式 $\mathrm{poly}’$，一个多项式时间可计算的置换 $F$，使得对于任意多项式时间可计算函数 $\delta:\mathbb N\rightarrow [0,1]$，函数 $F$ 在时间 $T’(\cdot)$ 下具有 $1-\varepsilon(\cdot)$ 单向性，其中时间函数满足：</p>
+<script type="math/tex; mode=display">
+T'(\gamma n)
+=
+\frac{\varepsilon(n)^2}{\mathrm{poly}'(n)}\cdot T(n)</script></blockquote>
+<p>该定理说明：如果 $f$ 是弱单向置换，那么可以构造一个新的置换 $F$，使得 $F$ 成为强单向置换，并且输入长度只从 $n$ 增加到 $\gamma n$，也就是只增加一个常数倍。</p>
+<p>具体来说，若原函数 $f$ 的输入长度为 $n$，则新函数 $F$ 的输入长度为 $\gamma n$，这与前面低效放大中的长度 $n^2\mathrm{poly}(n)$ 形成对比。低效放大会把输入长度放大到多项式规模，而这里的高效放大只产生线性长度膨胀。</p>
+<p>因此，该定理实现了真正意义上的高效放大，即将弱单向置换转换为强单向置换，并且长度损耗只是 $O(n)$</p>
+<h2 id="基本思想"><a href="#基本思想" class="headerlink" title="基本思想"></a>基本思想</h2><p>单向置换 $f$ 的高效放大，其核心思想是：将 $f$ 作用在许多不同的输入上，使得想要反演构造出的新函数，就必须在某些困难实例上成功反演 $f$。</p>
+<p>在单向函数的存在性定理证明中，$f$ 被作用在彼此无关的输入上，即这些输入是原始输入中互不相交的不同部分。这样做的好处是证明比较简单，但缺点是构造效率很低，因为输入长度会显著膨胀。</p>
+<p>考虑一种更高效的方式：不再让 $f$ 作用在完全无关的输入上，而是让 $f$ 作用在一系列相关的输入上。最自然的想法是反复迭代 $f$，即从某个初始点 $x$ 出发，依次计算</p>
+<script type="math/tex; mode=display">
+x,\quad f(x),\quad f(f(x)),\quad \cdots</script><p>但是，单纯迭代 $f$ 并不能保证困难性得到放大。原因是：如果某些容易被反演算法处理的实例，在经过 $f$ 映射之后仍然落在这个容易被反演算法处理的实例集合中，那么反复迭代 $f$ 仍然可能一直停留在容易区域中。因此，不能仅仅希望这种坏情况不会发生。</p>
+<p>为避免这一问题，需要在连续两次应用 $f$ 之间加入一定的随机化步骤，但随机化不能太多，因为这些随机信息最终也要被编码进构造函数的输入中，如果每一步都使用大量随机性，那么构造出的函数仍然会变得低效。</p>
+<p>为此，采用在<strong>扩展图（Expander Graph）</strong>上随机游走的方式进行随机化方式。具体来说，在每次应用 $f$ 之后，在一个扩展图上随机走一步，这样每一步只需要少量随机比特，却能获得接近独立随机采样的效果。</p>
+<h2 id="扩展图"><a href="#扩展图" class="headerlink" title="扩展图"></a>扩展图</h2><h3 id="定义-1"><a href="#定义-1" class="headerlink" title="定义"></a>定义</h3><p>设 $G=(V,E)$ 是一个图。如果它满足以下三个条件，则称它为一个 $(n,d,c)$-扩展图：</p>
+<ol>
+<li>$G$ 有 $n$ 个顶点，即 $|V|=n$</li>
+<li>每个顶点的度数都是 $d$，即 $G$ 是 $d$-正则图</li>
+<li>$G$ 满足扩展性质：对于任意子集 $S\subset V$，如果 $|S|\leq \frac{n}{2}$，则有</li>
+</ol>
+<script type="math/tex; mode=display">
+|N(S)|\geq (1+c)|S|</script><p>其中，$c&gt;0$ 称为<strong>扩展因子（Expansion Factor）</strong>，$N(S)$ 表示集合 $S$ 中所有顶点的邻居集合，即：</p>
+<script type="math/tex; mode=display">
+N(S)=\{u\in V:\exists v\in S\text{ such that }(u,v)\in E\}</script><p>直观来说，扩展图的特点是：任何不太大的顶点集合 $S$，其邻居集合都会明显大于 $S$ 本身。也就是说，从一个集合出发，只要沿边走一步，就会迅速扩散到更多顶点。</p>
+<h3 id="显式构造的扩展图族"><a href="#显式构造的扩展图族" class="headerlink" title="显式构造的扩展图族"></a>显式构造的扩展图族</h3><p>在单向置换的高效放大中，使用<strong>显式构造的扩展图族（Explicitly Constructed Expander Family）</strong>。它指的是一族图 $\{G_n\}_{n\in\mathbb{N}}$，其中 $G_n$ 的顶点可以用长度为 $n$ 的二进制串表示，即顶点集合为 $\{0,1\}^n$。因此，$G_n$ 实际上有 $2^n$ 个顶点。</p>
+<p>所谓显式构造，是指存在一个多项式时间算法，使得给定图中某个顶点的表示，可以高效输出该顶点的所有邻居。</p>
+<p>同时，图的度数 $d$、扩展因子 $c$ 以及寻找邻居的算法，对于整个图族都是固定的常数或固定算法。</p>
+<h3 id="扩展图上的随机游走"><a href="#扩展图上的随机游走" class="headerlink" title="扩展图上的随机游走"></a>扩展图上的随机游走</h3><p>图上的<strong>随机游走（Random Walk）</strong>，是指从一个均匀随机选择的初始顶点出发，每一步都从当前顶点的邻居中均匀随机选择一个顶点并移动过去，由此得到一个顶点序列。</p>
+<p>扩展图的扩展性质能够推出一个非常重要的随机性结论：虽然随机游走中相邻顶点之间并不是独立的，但在扩展图上，随机游走仍然表现出很强的类随机性。</p>
+<p>具体来说，对于顶点集合中的任意一个常数密度子集，以及任意参数 $l$，长度为 $O(l)$ 的随机游走完全没有碰到该子集的概率至多为 $2^{-l}$</p>
+<p>这个概率与独立随机选择 $O(l)$ 个顶点时的情况相当，也就是说，在扩展图上走 $O(l)$ 步，虽然只用了很少的随机性，但效果接近于独立随机采样了 $O(l)$ 个顶点。</p>
+<p>这正是扩展图在单向性放大中有用的原因：它用很少的随机比特，就能让构造过程有较好的扩散性，从而更可能碰到困难实例。</p>
+<h2 id="构造方式"><a href="#构造方式" class="headerlink" title="构造方式"></a>构造方式</h2><p>我们希望反复应用 $f$，但又不希望过程一直停留在容易被反演算法处理的实例集合中。因此，在每次应用 $f$ 之后，先在扩展图上走一步，再继续应用 $f$。</p>
+<p>具体来说，将 $f$ 的定义域 $\{0,1\}^n$ 看作扩展图 $G_n$ 的顶点集合，构造过程从某个顶点 $x$ 出发，交替执行两类操作：</p>
+<ol>
+<li>对当前顶点应用单向置换 $f$</li>
+<li>在扩展图上按照某个指定方向走一步</li>
+</ol>
+<p>整个过程可以理解为：</p>
+<script type="math/tex; mode=display">
+x
+\longrightarrow f(x)
+\longrightarrow g_{\sigma_1}(f(x))
+\longrightarrow f(g_{\sigma_1}(f(x)))
+\longrightarrow g_{\sigma_2}(f(g_{\sigma_1}(f(x))))
+\longrightarrow \cdots</script><p>其中，$g_{\sigma_i}$ 表示在扩展图上按照标签 $\sigma_i$ 指定的边走一步。</p>
+<p>形式化地，设 $\{G_n\}_{n\in\mathbb{N}}$ 是一族 $d$-正则图，其中 $G_n$ 的顶点集合为 $\{0,1\}^n$，并且假设每个顶点都有自环。对每个顶点关联的边进行标号，标号集合为 $\{1,2,\ldots,d\}$，对于每个标签 $l\in\{1,2,\ldots,d\}$，用 $g_l(x)$ 表示从顶点 $x$ 出发，沿着标签为 $l$ 的边走一步所到达的顶点。</p>
+<p>设 $f:\{0,1\}^{*}\to \{0,1\}^{*}$ 是一个单射且长度保持的函数，$\lambda$ 为空序列。对于任意 $k\geq 0$、$x\in\{0,1\}^n$ 以及 $\sigma_1,\sigma_2,\ldots,\sigma_k\in\{1,2,\ldots,d\}$，定义函数 $F$ 如下：</p>
+<ul>
+<li>当随机步序列为空时：</li>
+</ul>
+<script type="math/tex; mode=display">
+F(x,\lambda)=x</script><ul>
+<li>当随机步序列为 $\sigma_1\sigma_2\cdots\sigma_k$ 时，递归定义为：</li>
+</ul>
+<script type="math/tex; mode=display">
+F(x,\sigma_1\sigma_2\cdots\sigma_k)
+=
+\left(
+\sigma_1,
+F(g_{\sigma_1}(f(x)),\sigma_2\cdots\sigma_k)
+\right)</script><p>即先对 $x$ 应用 $f$，然后根据 $\sigma_1$ 在扩展图上走一步，得到新的顶点 $g_{\sigma_1}(f(x))$，接着以这个新顶点为起点，继续处理剩余的标签序列 $\sigma_2,\ldots,\sigma_k$。</p>
+<p>更直观地，可以令 $y_0=x$，并对 $i=1,2,\ldots,k$ 定义：</p>
+<script type="math/tex; mode=display">
+y_i=g_{\sigma_i}(f(y_{i-1}))</script><p>于是最终有：</p>
+<script type="math/tex; mode=display">
+F(x,\sigma_1\sigma_2\cdots\sigma_k)
+=
+(\sigma_1,\sigma_2,\ldots,\sigma_k,y_k)</script><p>因此，$F$ 的输出由两部分组成：</p>
+<ol>
+<li>随机游走所使用的标签序列 $\sigma_1,\sigma_2,\ldots,\sigma_k$</li>
+<li>经过交替应用 $f$ 和扩展图步之后得到的最终顶点 $y_k$</li>
+</ol>
+<p>展开来看，最终顶点为：</p>
+<script type="math/tex; mode=display">
+y_k
+=
+g_{\sigma_k}
+\left(
+f\left(
+g_{\sigma_{k-1}}
+\left(
+f\left(
+\cdots
+g_{\sigma_1}(f(x))
+\cdots
+\right)
+\right)
+\right)
+\right)</script><p>进一步，如果给定一个函数 $k:\mathbb{N}\to\mathbb{N}$，则将输入 $\alpha$ 解析为 $\alpha=(x,\sigma_1,\ldots,\sigma_t)$，其中 $t=k(|x|)$，且每个 $\sigma_i\in\{1,2,\ldots,d\}$，有：</p>
+<script type="math/tex; mode=display">
+F_k(\alpha)=F(x,\sigma_1,\ldots,\sigma_t)</script><p>由此可见，$F_k$ 的输入是初始顶点和一段扩展图行走方向，输出则是同一段行走方向和最终到达的顶点。这个构造的本质是：用扩展图随机游走代替完全独立的随机采样，从而在只引入少量随机性的情况下，使迭代过程具有足够的扩散性，并最终实现单向置换的高效放大。</p>
+<p>以 $k=4$ 为例，从 $x$ 得到 $y$ 的过程如下图所示。图中标记为 $f$ 的圆圈表示对当前顶点应用单向置换 $f$，标记为 $g$ 的方框表示在扩展图上走一步，其方向由辅助输入 $\sigma_i$ 指定。</p>
+<p><img src='/images/notes/cryptology/26-1.png'/></p>
+<h2 id="直观理解"><a href="#直观理解" class="headerlink" title="直观理解"></a>直观理解</h2><p>上述构造可以理解为：从初始点 $x$ 出发，每一轮先应用一次单向置换 $f$，再根据少量随机比特在扩展图上走一步。重复多轮之后，把所有方向 $\sigma_1,\ldots,\sigma_k$ 和最终到达的顶点 $y_k$ 一起作为输出。</p>
+<p>之所以要保留 $\sigma_i$，是因为这些标签代表了构造过程中使用的随机性，它们必须作为输出的一部分保留下来，才能使整个函数保持单射性和长度保持性。</p>
+<p>这个构造的关键优势在于：</p>
+<ol>
+<li>如果每次都重新选择一个完全随机的新输入，则随机性开销很大</li>
+<li>如果只反复迭代 $f$，又可能一直停留在容易被反演算法处理的实例中</li>
+<li>使用扩展图随机游走，可以用很少的随机性获得接近独立采样的扩散效果</li>
+</ol>
+<p>换句话说，扩展图在这里的作用是：用少量随机比特，把迭代过程从可能的容易区域中搅动出去，使其更可能经过困难实例，从而使反演整个构造函数变得更难。</p>
+<h1 id="【困难性放大】"><a href="#【困难性放大】" class="headerlink" title="【困难性放大】"></a>【困难性放大】</h1><p>上文中给出了单向置换的高效放大的构造方式，其基本形式是：从初始点 $x$ 出发，交替执行应用 $f$ 和在扩展图上走一步，最后输出所有辅助标签以及最终顶点。</p>
+<p>下面给出一个命题，说明这个构造 $F_k$ 确实具有<strong>困难性放大（Hardness Amplification）</strong>的作用，即如果原来的置换 $f$ 在某一比例的输入上难以反演，那么构造出的 $F_k$ 会在更大比例的输入上难以反演。</p>
+<h2 id="命题"><a href="#命题" class="headerlink" title="命题"></a>命题</h2><blockquote>
+<p><strong>Proposition</strong>：设 $d\in\mathbb N$、$c&gt;0$ 和 $\ell$ 为常数，$\alpha:\mathbb N\to\mathbb R$ 与 $T:\mathbb N\to\mathbb N$ 为函数，并满足以下条件：</p>
+<p>（1）图族 $\{G_n\}_{n\in\mathbb N}$ 是一个显式构造的 $(d,c)$-扩展图族</p>
+<p>（2）置换 $f$ 是多项式时间可计算的，并且在时间 $T(\cdot)$ 下具有 $\alpha’(\cdot)$ 单向性，其中</p>
+<script type="math/tex; mode=display">
+\alpha'(n)=\alpha(n)+2^{-n}</script><p>（3）函数 $\alpha:\mathbb N\to\mathbb R$ 是多项式时间可计算的</p>
+<p>（4）参数 $\ell$ 足够大，满足：</p>
+<script type="math/tex; mode=display">
+\ell \geq \frac{4+c^2}{c^2}\cdot d</script><p>那么，$F_k$ 是多项式时间可计算的，并且对于任意多项式时间可计算函数 $\varepsilon:\mathbb N\to\mathbb R$，置换 $F_k$ 在时间 $T’(\cdot)$ 下具有 $((1-\varepsilon(\cdot))\beta(\cdot))$ 单向性，其中：</p>
+<script type="math/tex; mode=display">
+\beta(n+k(n)\log_2 d)
+=
+1-\left(1-\frac{\alpha(n)}{2}\right)^{k(n)/\ell}</script><p>并且：</p>
+<script type="math/tex; mode=display">
+T'(n+k(n)\log_2 d)
+=
+\frac{(\varepsilon(n)\alpha(n))^2}{O(n+k(n))^3}\cdot T(n)</script></blockquote>
+<p>需要注意的是，输入由两部分组成：一个长度为 $n$ 的初始点 $x$，以及 $k(n)$ 个边标签，每个标签需要 $\log_2 d$ 比特表示。因此，$F_k$ 的输入长度为：</p>
+<script type="math/tex; mode=display">
+m=n+k(n)\log_2 d</script><h2 id="命题的含义"><a href="#命题的含义" class="headerlink" title="命题的含义"></a>命题的含义</h2><p>这个命题可以理解为：如果原函数 $f$ 在至少 $\alpha(n)$ 比例的输入上难以反演，那么通过构造 $F_k$，可以把困难实例的比例放大到：</p>
+<script type="math/tex; mode=display">
+\beta(m)
+=
+1-\left(1-\frac{\alpha(n)}{2}\right)^{k(n)/\ell}</script><p>其中，$\beta(m)$ 可以理解为：一条长度为 $k(n)$ 的随机路径命中困难集合的概率。</p>
+<p>如果 $\alpha(n)$ 较小，则可以近似使用：</p>
+<script type="math/tex; mode=display">
+1-(1-a)^r\approx ar</script><p>因此，当 $\alpha(n)$ 很小时，有：</p>
+<script type="math/tex; mode=display">
+\beta(m)
+\approx
+\frac{k(n)}{2\ell}\alpha(n)</script><p>这说明，随着随机游走步数 $k(n)$ 增加，困难比例会被逐步放大。</p>
+<p>特别地，当取 $k(n)=3n, \alpha(n)=\frac{1}{\mathrm{poly}(n)}$ 时，可以得到：</p>
+<script type="math/tex; mode=display">
+\beta(O(n))
+=
+1-\left(1-\frac{\alpha(n)}{2}\right)^{3n/\ell},\quad T'(O(n))
+=
+\mathrm{poly}\left(\frac{\varepsilon(n)}{n}\right)\cdot T(n)</script><p>也就是说，输入长度只增加到 $O(n)$，但困难性可以得到显著放大。</p>
+<p>此时可以得到以下几种典型情形：</p>
+<ul>
+<li>如果 $\alpha(n)=o\left(\frac{1}{n}\right)$，那么：</li>
+</ul>
+<script type="math/tex; mode=display">
+\beta(O(n))\approx 1.5n\cdot \alpha(n)</script><p>也就是说，当原本困难实例比例非常小时，经过 $O(n)$ 次扩展图随机步之后，困难比例大约被放大了 $n$ 倍。</p>
+<ul>
+<li>如果 $\alpha(n)\leq \frac{1}{2n}$，那么：</li>
+</ul>
+<script type="math/tex; mode=display">
+\beta(O(n))>1.02n\cdot \alpha(n)</script><p>这说明，即使原始困难比例只有 $\frac{1}{n}$ 量级，构造仍能带来线性倍数的放大。</p>
+<ul>
+<li>如果 $\alpha(n)$ 是常数，则有：</li>
+</ul>
+<script type="math/tex; mode=display">
+\beta(O(n))>1-2^{-\Omega(n)}</script><p>这意味着，如果原函数 $f$ 已经在常数比例的输入上难以反演，那么构造后的 $F_k$ 会在几乎所有输入上难以反演，从而接近强单向性。</p>
+<p>因此，困难性放大命题说明：单向置换的高效放大构造可以在只增加常数倍输入长度的情况下，把弱单向性逐步放大为强单向性。</p>
+<h2 id="证明思路"><a href="#证明思路" class="headerlink" title="证明思路"></a>证明思路</h2><p>具体来说，命题的证明由两类论证组成：</p>
+<ol>
+<li><strong>组合论证（Combinatorics）</strong>：说明扩展图上的随机游走会以足够高的概率命中任意给定密度的集合</li>
+<li><strong>归约论证（Reducibility Argument）</strong>：说明如果能高概率反演 $F_k$，那么就可以构造一个算法高概率反演原函数 $f$，从而与 $f$ 的单向性假设矛盾</li>
+</ol>
+<p>这两部分分别对应随机游走引理和归约引理。随机游走引理是组合性质，负责证明随机路径会碰到困难集合；归约引理是密码学论证，负责证明如果能反演整条路径，就能反演路径中的困难点。</p>
+<h2 id="随机游走引理"><a href="#随机游走引理" class="headerlink" title="随机游走引理"></a>随机游走引理</h2><h3 id="前置假设"><a href="#前置假设" class="headerlink" title="前置假设"></a>前置假设</h3><h4 id="扩展图-1"><a href="#扩展图-1" class="headerlink" title="扩展图"></a>扩展图</h4><p>在分析单向置换的高效放大构造时，真正关心的不是原扩展图 $G_n$ 上的普通随机游走，而是图 $G_{f,n}$ 上的随机游走。</p>
+<p>定义：</p>
+<script type="math/tex; mode=display">
+G_{f,n}=(\{0,1\}^n,E_{f,n})</script><p>其中，</p>
+<script type="math/tex; mode=display">
+E_{f,n}=\{(u,v):(f(u),v)\in E_n\}</script><p>这个定义的含义是：在 $G_{f,n}$ 中，从 $u$ 到 $v$ 有一条边，当且仅当在原图 $G_n$ 中，从 $f(u)$ 到 $v$ 有一条边。这正好对应构造中的一轮操作：</p>
+<script type="math/tex; mode=display">
+u
+\longrightarrow
+f(u)
+\longrightarrow
+g_\sigma(f(u))</script><p>由于 $f$ 是置换，它只是重新排列顶点，不会改变图的扩展性质。因此，$G_{f,n}$ 仍然保持扩展图的良好性质。</p>
+<h4 id="谱性质"><a href="#谱性质" class="headerlink" title="谱性质"></a>谱性质</h4><p>对于正则图，其扩展性质可以推出邻接矩阵的特征值性质。</p>
+<p>具体来说，如果图是 $(d,c)$​-扩展图，设邻接矩阵的前两个特征值绝对值之比为 $\rho$，则有：</p>
+<script type="math/tex; mode=display">
+\rho
+\leq
+1-\frac{c^2}{(4+c^2)d} < 1</script><p>这表示随机游走每走一步，都会在一定程度上把分布推向均匀分布，$\rho$ 越小，随机游走混合得越快。</p>
+<h4 id="路径图"><a href="#路径图" class="headerlink" title="路径图"></a>路径图</h4><p>为了使随机游走具有更强的混合性质，进一步考虑 $\ell$ 步路径图，即将原图中长度为 $\ell$ 的路径看作新图中的一条边。</p>
+<p>如果原图的特征值比为 $\rho$，那么 $\ell$ 步路径图的特征值比至多为 $\rho^\ell$。由于命题中假设：</p>
+<script type="math/tex; mode=display">
+\ell \geq \frac{4+c^2}{c^2}\cdot d</script><p>可以推出：</p>
+<script type="math/tex; mode=display">
+\rho^\ell<\frac{1}{2}</script><h3 id="引理"><a href="#引理" class="headerlink" title="引理"></a>引理</h3><blockquote>
+<p><strong>Lemma</strong>：设 $G$ 是一个正则图，其邻接矩阵的前两个特征值绝对值之比小于 $\frac{1}{2}$。设 $S$ 是图中顶点集合的一个子集，其测度为 $\mu$，即 $S$ 占所有顶点的比例为 $\mu$。</p>
+<p>那么，在图 $G$ 上进行长度为 $t$ 的随机游走时，随机游走路径命中 $S$ 的概率至少为</p>
+<script type="math/tex; mode=display">
+1-\left(1-\frac{\mu}{2}\right)^t</script><p>即随机游走完全避开 $S$ 的概率至多为：</p>
+<script type="math/tex; mode=display">
+\left(1-\frac{\mu}{2}\right)^t</script></blockquote>
+<p>随机游走引理说明，如果每一步都是从整个顶点集合中独立均匀随机选点，那么每一步命中 $S$ 的概率就是 $\mu$，长度为 $t$ 的独立采样完全避开 $S$ 的概率为：</p>
+<script type="math/tex; mode=display">
+(1-\mu)^t</script><p>扩展图上的随机游走不是独立采样，因为当前顶点和下一个顶点有关。但是，由于扩展图混合性很好，它的行为接近独立采样。</p>
+<p>引理给出的界是 $\left(1-\frac{\mu}{2}\right)^t$，比理想独立采样的 $(1-\mu)^t$ 稍弱一些，但仍然足够强。</p>
+<p>也就是说，在扩展图上走 $t$ 步，命中密度为 $\mu$ 的集合的概率至少接近于独立随机采样 $t$ 次的效果。</p>
+<h3 id="证明思路-1"><a href="#证明思路-1" class="headerlink" title="证明思路"></a>证明思路</h3><p>随机游走引理的证明基于扩展图的谱性质。</p>
+<p>设 $G$ 是一个正则图，将 $G$ 的邻接矩阵除以图的度数，可以得到一个随机矩阵 $M$，该矩阵描述了在图 $G$ 上随机走一步的过程。由于 $G$ 是正则图，均匀分布在随机游走下保持不变。因此，若用 $\boldsymbol{\boldsymbol{\pi}}$ 表示顶点集合上的均匀分布，则有：</p>
+<script type="math/tex; mode=display">
+M\boldsymbol{\pi}=\boldsymbol{\pi}</script><p>也就是说，均匀分布 $\boldsymbol{\pi}$ 是随机矩阵 $M$ 的最大特征值 $1$ 所对应的特征向量。同时，随机矩阵 $M$ 的特征值比例与原邻接矩阵的特征值比例相同。</p>
+<p>由于扩展图具有良好的谱性质，第二大特征值的绝对值被严格控制在 $1$ 以下，这意味着任何偏离均匀分布的部分，都会在随机游走过程中逐步衰减。</p>
+<p>因此，可以将顶点集合上的概率分布分解为两部分：</p>
+<ol>
+<li><strong>均匀分布方向的分量</strong>：该部分对应最大特征值 $1$，在随机游走过程中保持不变</li>
+<li><strong>偏离均匀分布的分量</strong>：该部分对应其他特征值，会被随机游走矩阵逐步压缩</li>
+</ol>
+<p>由于第二大特征值较小，偏离均匀分布的分量在每一步随机游走后都会变小。因此，随机游走会不断把当前分布推向均匀分布。</p>
+<p>随机游走引理关心的是：长度为 $t$ 的随机游走是否会经过某个集合 $S$。设 $S$ 在顶点集合中的密度为：</p>
+<script type="math/tex; mode=display">
+\mu=\frac{|S|}{|V|}</script><p>证明的目标是上界随机游走完全不经过 $S$ 的概率，或者等价地，下界随机游走至少一次命中 $S$ 的概率。</p>
+<p>这个过程可以理解为：从均匀分布出发，每走一步，就检查路径是否进入了 $S$。如果路径进入了 $S$，这条路径就被筛掉；如果没有进入 $S$，它就继续保留下来。因此，集合 $S$ 的作用类似于一个<strong>筛子（Sieve）</strong>，每一步都会过滤掉已经进入 $S$ 的路径。</p>
+<p>如果当前分布接近均匀分布，那么进入 $S$ 的概率大约就是 $S$ 的密度 $\mu$。因此，在这一轮筛选中，大约有 $\mu$ 比例的路径会进入 $S$ 并被删除，剩余的概率质量大约只剩下 $1-\mu$。</p>
+<p>但是，筛选操作本身会破坏分布的均匀性。因为进入 $S$ 的概率质量被删除后，剩下的残余分布不一定仍然接近均匀分布。如果没有扩展性，残余分布可能逐渐集中在某些能够避开 $S$ 的区域中，之后就很难再碰到 $S$，筛选也就会逐渐失效。</p>
+<p>扩展图的作用正是在这里体现出来的：每进行一次随机游走，残余分布中偏离均匀分布的分量都会被压缩。特别地，除了均匀分布方向以外，其余非均匀分量的 $L_2$ 范数会按照第二大特征值的比例下降。当特征值比小于 $\frac12$ 时，可以理解为这些非均匀分量在每一步都会被至少压低一个常数因子。</p>
+<p>因此，随机游走过程中实际上不断重复两类操作：</p>
+<ol>
+<li><strong>筛选</strong>：如果路径进入集合 $S$，就将其删除</li>
+<li><strong>混合</strong>：在扩展图上继续随机走一步，将剩余分布重新拉向均匀分布</li>
+</ol>
+<p>筛选操作负责删除进入 $S$ 的概率质量，混合操作负责恢复残余分布的均匀性。正因为扩展图能够不断压缩非均匀分量，残余分布不会长期集中在避开 $S$ 的区域中，而是会反复被推回接近均匀的状态。</p>
+<p>于是，只要残余分布接近均匀，集合 $S$ 每一步都能筛掉大约 $\mu$ 比例的概率质量；而扩展图的谱性质保证了这种接近均匀的状态能够持续恢复。因此，随机游走完全避开 $S$ 的概率会随着步数增加而指数下降。</p>
+<p>这就是随机游走引理的核心思想：虽然扩展图上的随机游走不是独立采样，但由于谱间隙的存在，它在命中任意固定密度集合时，表现得接近独立随机采样。</p>
+<h3 id="上界证明"><a href="#上界证明" class="headerlink" title="上界证明"></a>上界证明</h3><p>下面给出一个更形式化的证明框架，以说明前面证明思想如何转化为矩阵分析。但这个简单分析只能得到一个<strong>较弱的界</strong>，不能直接推出随机游走引理所声称的结论。</p>
+<p>随机游走引理希望证明：随机游走不经过 $S$ 的概率最多为 $\left(1-\frac{\mu}{2}\right)^t$，但这个弱界证明框架只能证明随机游走不经过 $S$ 的概率最多为 $\left((1-\mu)+\rho^2\right)^{\frac{t}{2}}$</p>
+<p>设 $M$ 表示正则图 $G=(V,E)$ 上随机走一步的随机矩阵，$\rho$ 是 $M$ 的第二大特征值绝对值的上界，其中最大特征值为 $1$。由于 $G$ 是正则图，顶点集合上的均匀分布 $\boldsymbol{\pi}$ 在随机游走下保持不变，即</p>
+<script type="math/tex; mode=display">
+M\boldsymbol{\pi}=\boldsymbol{\pi}</script><p>设 $S\subseteq V$ 是需要命中的顶点集合，其密度为</p>
+<script type="math/tex; mode=display">
+\mu=\frac{|S|}{|V|}</script><p>证明的目标是估计随机游走完全不经过 $S$ 的概率。</p>
+<h4 id="筛选矩阵"><a href="#筛选矩阵" class="headerlink" title="筛选矩阵"></a>筛选矩阵</h4><p>为了描述没有进入 $S$ 这一事件，引入 $0$-$1$ 筛选矩阵 $P$。矩阵 $P$ 的作用是保留 $V\setminus S$ 上的概率质量，并删除 $S$ 上的概率质量，即：</p>
+<script type="math/tex; mode=display">
+(P\mathbf{v})_i=
+\begin{cases}
+v_i, & i\notin S\\
+0, & i\in S
+\end{cases}</script><p>因此，对于一个概率分布向量 $\mathbf{v}$，$P\mathbf{v}$ 表示删去所有已经进入 $S$ 的概率质量之后剩下的残余分布。</p>
+<p>此时，一次随机走一步并删除进入 $S$ 的路径的过程可以表示为：</p>
+<script type="math/tex; mode=display">
+PM</script><p>其中，$M$ 表示先随机走一步，$P$ 表示随后筛掉进入 $S$ 的概率质量。</p>
+<h4 id="未命中概率"><a href="#未命中概率" class="headerlink" title="未命中概率"></a>未命中概率</h4><p>从均匀分布 $\boldsymbol{\pi}$ 出发，连续进行 $t$ 步随机游走，并在每一步后删除进入 $S$ 的路径，则剩下的残余分布为：</p>
+<script type="math/tex; mode=display">
+(PM)^t\boldsymbol{\boldsymbol{\pi}}</script><p>这个向量的所有坐标都是非负的，并且它的坐标和正好等于随机游走在 $t$ 步内始终没有经过 $S$ 的概率，因此 $t$ 步随机游走不经过 $S$ 的概率为 $|(PM)^t\boldsymbol{\pi}|_1$。为使用谱分析，使用 $L_1$ 范数上界进行放缩，即对于任意向量 $\mathbf{v}\in\mathbb R^{|V|}$，有：</p>
+<script type="math/tex; mode=display">
+\|\mathbf{v}\|_1\leq \sqrt{|V|}\cdot \|\mathbf{v}\|_2.</script><p>因此，$t$ 步随机游走不经过 $S$ 的概率为</p>
+<script type="math/tex; mode=display">
+\sqrt{|V|}\cdot \|(PM)^t\boldsymbol{\pi}\|_2</script><p>此时，问题转化为控制残余分布的 $L_2$ 范数。</p>
+<h4 id="压缩估计"><a href="#压缩估计" class="headerlink" title="压缩估计"></a>压缩估计</h4><p>我们的目标是证明，对于任意向量 $\mathbf{z}$，都有：</p>
+<script type="math/tex; mode=display">
+\|PM\mathbf{z}\|
+\leq
+\sqrt{(1-\mu)+\rho^2}\cdot \|\mathbf{z}\|</script><p>即执行一次随机游走与筛选后，向量范数会被压缩一个固定因子。</p>
+<p>将 $\mathbf{z}$ 分解为两部分：</p>
+<script type="math/tex; mode=display">
+\mathbf{z}=\mathbf{z}_1+\mathbf{z}_2</script><p>其中，$\mathbf{z}_1$ 是 $\mathbf{z}$ 在均匀分布方向上的分量，$\mathbf{z}_2$ 是与均匀分布方向正交的分量。</p>
+<p>对于 $\mathbf{z}_1$，由于均匀分布方向对应最大特征值 $1$，随机游走矩阵 $M$ 不改变这一方向，即</p>
+<script type="math/tex; mode=display">
+M\mathbf{z}_1=\mathbf{z}_1</script><p>筛选矩阵 $P$ 会删除集合 $S$ 上的坐标。由于 $S$ 的密度为 $\mu$，均匀分布方向上的分量经过筛选后，其 $L_2$ 范数变为原来的 $\sqrt{1-\mu}$ 倍，即：</p>
+<script type="math/tex; mode=display">
+\|PM\mathbf{z}_1\|
+=
+\|P\mathbf{z}_1\|
+=
+\sqrt{1-\mu}\cdot \|\mathbf{z}_1\|</script><p>对于 $\mathbf{z}_2$，由于它与均匀分布方向正交，随机游走矩阵 $M$ 会按照第二大特征值的上界对其进行压缩，即：</p>
+<script type="math/tex; mode=display">
+\|M\mathbf{z}_2\|
+\leq
+\rho\|\mathbf{z}_2\|</script><p>而 $P$ 只是将部分坐标置零，不会增大 $L_2$ 范数，因此：</p>
+<script type="math/tex; mode=display">
+\|PM\mathbf{z}_2\|
+\leq
+\|M\mathbf{z}_2\|
+\leq
+\rho\|\mathbf{z}_2\|</script><p>将 $\mathbf{z}_1$ 与 $\mathbf{z}_2$ 联立，有：</p>
+<script type="math/tex; mode=display">
+\begin{aligned}
+\|PMz\|
+&=
+\|PM(\mathbf{z}_1+\mathbf{z}_2)\| \\
+&\leq
+\|PM\mathbf{z}_1\|+\|PM\mathbf{z}_2\| \\
+&\leq
+\sqrt{1-\mu}\cdot \|\mathbf{z}_1\|
++
+\rho\cdot \|\mathbf{z}_2\|
+\end{aligned}</script><p>根据 Cauchy-Schwarz 不等式，有：</p>
+<script type="math/tex; mode=display">
+\sqrt{1-\mu}\cdot \|\mathbf{z}_1\|
++
+\rho\cdot \|\mathbf{z}_2\|
+\leq
+\sqrt{(1-\mu)+\rho^2}
+\cdot
+\sqrt{\|\mathbf{z}_1\|^2+\|\mathbf{z}_2\|^2}</script><p>由于 $\mathbf{z}_1$ 与 $\mathbf{z}_2$ 正交，故有：</p>
+<script type="math/tex; mode=display">
+\sqrt{\|\mathbf{z}_1\|^2+\|\mathbf{z}_2\|^2}
+=
+\|\mathbf{z}_1+\mathbf{z}_2\|
+=
+\|\mathbf{z}\|</script><p>综上，可得：</p>
+<script type="math/tex; mode=display">
+\|PM\mathbf{z}\|
+\leq
+\sqrt{(1-\mu)+\rho^2}\cdot \|\mathbf{z}\|</script><h4 id="未命中概率上界"><a href="#未命中概率上界" class="headerlink" title="未命中概率上界"></a>未命中概率上界</h4><p>将上述的压缩估计连续应用 $t$ 次，有：</p>
+<script type="math/tex; mode=display">
+\|(PM)^t\boldsymbol{\pi}\|
+\leq
+\left((1-\mu)+\rho^2\right)^{\frac{t}{2}}\|\boldsymbol{\pi}\|</script><p>由于 $\boldsymbol{\pi}$ 是均匀分布向量，每个坐标都是 $\frac{1}{|V|}$，所以：</p>
+<script type="math/tex; mode=display">
+\|\boldsymbol{\pi}\|
+=
+\sqrt{|V|\cdot \frac{1}{|V|^2}}
+=
+\frac{1}{\sqrt{|V|}}</script><p>而 $t$ 步随机游走不经过 $S$ 的概率至多为 $\sqrt{|V|}\cdot |(PM)^t\boldsymbol{\pi}|$，将上式带入，有：</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+\sqrt{|V|}\cdot \|(PM)^t\boldsymbol{\pi}\| 
+&\leq \sqrt{|V|}\cdot\left((1-\mu)+\rho^2\right)^{\frac{t}{2}}\|\boldsymbol{\pi}\|\\
+&= \sqrt{|V|}\cdot\left((1-\mu)+\rho^2\right)^{\frac{t}{2}}\frac{1}{\sqrt{|V|}}\\
+&=\left((1-\mu)+\rho^2\right)^{\frac{t}{2}}
+\end{align*}</script><p>即： $t$ 步随机游走不经过 $S$ 的概率至多为：</p>
+<script type="math/tex; mode=display">
+\left((1-\mu)+\rho^2\right)^{\frac{t}{2}}</script><p>这说明，随机游走完全避开 $S$ 的概率会随着步数 $t$ 指数下降。</p>
+<h4 id="上界适用范围"><a href="#上界适用范围" class="headerlink" title="上界适用范围"></a>上界适用范围</h4><p>如果进一步满足 $\mu\geq 2\rho^2$，则有：</p>
+<script type="math/tex; mode=display">
+(1-\mu)+\rho^2
+\leq
+1-\frac{\mu}{2}</script><p>于是可以得到，$t$ 步随机游走不经过 $S$ 的概率至多为：</p>
+<script type="math/tex; mode=display">
+\left(1-\frac{\mu}{2}\right)^{\frac{t}{2}}</script><p>这个界已经体现出扩展图随机游走的核心作用：筛选操作会删除进入 $S$ 的概率质量，而随机游走的谱性质会不断压缩非均匀分量，使残余分布重新趋向均匀，从而保证筛选持续有效。</p>
+<p>但是，该上界仍然有一定限制。它只有在 $\mu$ 足够大时才有用，当 $\mu$ 很小时，条件 $\mu\geq 2\rho^2$ 可能不成立。此外，它得到的指数是 $\frac{t}{2}$，而更强的随机游走结论希望得到指数为 $t$ 的界。</p>
+<p>因此，这个上界证明的意义在于说明谱分析如何控制避开 $S$ 的概率：均匀分布方向由筛选矩阵削减，非均匀方向由随机游走矩阵压缩，两者共同导致残余概率质量不断下降。</p>
+<h2 id="归约引理"><a href="#归约引理" class="headerlink" title="归约引理"></a>归约引理</h2><h3 id="归约思想"><a href="#归约思想" class="headerlink" title="归约思想"></a>归约思想</h3><p>随机游走引理说明一件事：如果顶点集合 $S$ 在图中具有一定密度，那么扩展图上的随机路径会以较高概率经过 $S$。</p>
+<p>但是，仅有这个性质还不够，还需要把它转化成密码学意义上的单向性放大结论。也就是说，需要说明：如果原函数 $f$ 在某些点上难以反演，而随机路径经常经过这些点，那么构造出的函数 $F_k$ 就应该更难反演。</p>
+<p>这一部分的证明思想与简单困难性放大类似，但两者有两个关键区别：</p>
+<p>（1）在简单困难性放大中，通常考虑从 $\{0,1\}^n$ 中独立选取 $k$ 个输入，若困难集合 $S$ 的密度为 $2^{-n}|S|$，那么一个均匀随机选取的 $k$ 元序列完全不包含 $S$ 中元素的概率为 $(1-2^{-n}|S|)^k$。因此，至少有一个元素落入 $S$ 的概率为：</p>
+<script type="math/tex; mode=display">
+1-(1-2^{-n}|S|)^k</script><p>这是一种非常直接的组合事实，因为序列中的每个元素都是独立均匀选取的。而在当前构造中，不能使用这种独立采样的分析。</p>
+<p>这里的 $k$ 个中间点不是彼此独立的随机输入，而是由固定正则图上的 $k$ 步随机游走产生的。因此，需要使用更一般的随机路径性质：如果集合 $S$ 的密度为 $\alpha(n)$，那么由 $k$ 步随机游走产生的路径，会有至少</p>
+<script type="math/tex; mode=display">
+\beta(n+k(n)\log_2 d)</script><p>比例经过集合 $S$。</p>
+<p>（2）简单困难性放大关注的是在一组相互独立的输入上分别反演原函数 $f$。也就是说，构造通常类似于：</p>
+<script type="math/tex; mode=display">
+(x_1,\ldots,x_k)
+\longmapsto
+(f(x_1),\ldots,f(x_k))</script><p>如果能反演整个构造，就意味着能够反演其中某些独立实例。</p>
+<p>但在当前构造中，$F_k$ 是从一个初始点出发，连续多次应用 $f$，并在相邻两次应用之间穿插扩展图上的移动 $g_\sigma$。因此，分析对象不是多个独立输入，而是同一个初始输入在迭代过程中产生的一串中间点：</p>
+<script type="math/tex; mode=display">
+x
+\longrightarrow
+g_{\sigma_1}(f(x))
+\longrightarrow
+g_{\sigma_2}(f(g_{\sigma_1}(f(x))))
+\longrightarrow
+\cdots</script><p>换句话说，当前证明要处理的是单个实例上的连续演化过程，而不是多个独立实例的并列组合。</p>
+<p>因此，这里的归约证明比简单放大的证明更复杂，它需要同时处理两个问题：</p>
+<ol>
+<li>随机路径是否会经过原函数 $f$ 的困难输入集合</li>
+<li>如果能够反演整条路径对应的 $F_k$ 输出，是否能够反推出路径中某一步对应的 $f$ 的原像</li>
+</ol>
+<p>前一个问题由随机游走性质提供保证，后一个问题则由归约引理完成。</p>
+<p>具体地，后续将使用如下形式的路径命中概率：</p>
+<script type="math/tex; mode=display">
+\beta(n+k(n)\log_2 d)
+=
+1-\left(1-\frac{\alpha(n)}{2}\right)^{k(n)/\ell}</script><p>其中，$\alpha(n)$ 表示困难集合的密度，$\beta$ 表示长度为 $k(n)$ 的随机路径经过该困难集合的概率下界，$\ell$ 是由扩展图谱分析引入的常数参数。</p>
+<p>这一表达式的含义是：虽然当前构造中的中间点不是独立采样得到的，但扩展图随机游走仍然保证它们能够以接近独立采样的方式命中困难集合。</p>
+<p>归约引理正是基于这个路径命中性质，它的基本逻辑是：如果原函数 $f$ 在 $\alpha’(n)$ 比例的输入上难以反演，并且扩展图随机路径能以至少 $\beta$ 的概率命中任意 $\alpha(n)$ 密度的集合，那么构造出的 $F_k$ 至少在大约 $\beta$ 比例的输入上难以反演。</p>
+<p>反过来说，如果能在超过允许范围的概率下反演 $F_k$，那么就可以利用这个反演算法来反演 $f$，从而与 $f$ 的单向性矛盾。</p>
+<h3 id="引理-1"><a href="#引理-1" class="headerlink" title="引理"></a>引理</h3><blockquote>
+<p><strong>Lemma</strong>：设 $f$ 在时间 $T(\cdot)$ 下是 $\alpha’(\cdot)$ 单向的，并且 $\alpha’(\cdot)$ 满足：</p>
+<script type="math/tex; mode=display">
+\alpha'(n)\geq \alpha(n)+2^{-n}</script><p>如果 $G_{f,n}$ 满足随机路径性质，并且</p>
+<script type="math/tex; mode=display">
+\beta(n+k(n)\log_2 d)>\alpha(n)</script><p>那么对于任意多项式时间可计算函数 $\varepsilon:\mathbb N\to\mathbb R$，函数 $F_k$ 在时间 $T’(\cdot)$ 下具有 $((1-\varepsilon(\cdot))\beta(\cdot))$ 单向性，其中</p>
+<script type="math/tex; mode=display">
+T'(n+k(n)\log_2 d)
+=
+\frac{\varepsilon(n)^2\alpha(n)^2}{O(n+k(n))^3}\cdot T(n)</script></blockquote>
+<p>需要注意的是，如果</p>
+<script type="math/tex; mode=display">
+\beta(n+k(n)\log_2 d)\leq \alpha(n)</script><p>则这个引理没有意义，因为此时构造后的困难比例并没有超过原来的困难比例，谈不上放大。</p>
+<h3 id="证明"><a href="#证明" class="headerlink" title="证明"></a>证明</h3><h4 id="反证假设"><a href="#反证假设" class="headerlink" title="反证假设"></a>反证假设</h4><p>证明采用反证法。</p>
+<p>目标是证明 $F_k$ 不能被过高概率地反演，为此假设存在一个算法可以较高概率地反演 $F_k$，然后利用它构造关于原函数 $f$ 的反演算法。</p>
+<p>由于 $F_k$ 的输入由一个长度为 $n$ 的初始点 $x$ 和 $k(n)$ 个边标签组成，而每个标签需要 $\log_2 d$ 比特表示。因此，$F_k$ 的输入长度可表示为：</p>
+<script type="math/tex; mode=display">
+m=n+k(n)\log_2 d.</script><p>那么，反证假设可写为：存在一个算法可以在时间 $T’(m)$ 内，以至少</p>
+<script type="math/tex; mode=display">
+1-(1-\varepsilon(m))\beta(m)
+=
+1-\beta(m)+\varepsilon(m)\beta(m)</script><p>的概率反演 $F_k$。</p>
+<p>这表示该算法的反演成功概率超过了 $1-\beta(m)$，并且多出来的部分为 $\varepsilon(m)\beta(m)$。</p>
+<p>若令 $\varepsilon’(m)=\frac{\varepsilon(m)\beta(m)}{2}$，则反演成功概率至少为：</p>
+<script type="math/tex; mode=display">
+1-\beta(m)+2\varepsilon'(m)</script><h4 id="反演算法转化"><a href="#反演算法转化" class="headerlink" title="反演算法转化"></a>反演算法转化</h4><p>下面，将这个平均意义上成功的反演算法，转化为一个更方便使用的算法 $A$。</p>
+<p>由于该算法在所有输入上的平均成功概率至少为 $1-\beta(m)+2\varepsilon’(m)$，所以至少有 $1-\beta(m)+\varepsilon’(m)$ 比例的输入，其单点成功概率不低于 $\varepsilon’(m)$。否则，如果成功概率至少为 $\varepsilon’(m)$ 的输入比例小于 $1-\beta(m)+\varepsilon’(m)$，那么整体平均成功概率就无法达到 $1-\beta(m)+2\varepsilon’(m)$</p>
+<p>对于这些单点成功概率至少为 $\varepsilon’(m)$ 的输入，可以通过独立重复运行来放大成功概率。具体来说，对同一个输入重复运行大约 $\frac{m}{\varepsilon’(m)}$ 次，就可以把失败概率降到指数小（例如降低到 $1-2^{-m}$ 量级），从而得到压倒性成功概率。</p>
+<p>于是，可以得到一个新的算法 $A$，它满足：</p>
+<ol>
+<li>在至少 $1-\beta(m)+\varepsilon’(m)$ 比例的输入上，能够以压倒性概率成功反演 $F_k$</li>
+<li>运行时间为 $\frac{m}{\varepsilon’(m)}\cdot T’(m)$</li>
+</ol>
+<p>由于 $\varepsilon’(m)=\frac{\varepsilon(m)\beta(m)}{2}$，所以 $A$ 的运行时间可以写成：</p>
+<script type="math/tex; mode=display">
+\frac{2m\cdot T'(m)}{\varepsilon(m)\beta(m)}</script><h4 id="反演路径"><a href="#反演路径" class="headerlink" title="反演路径"></a>反演路径</h4><p>$F_k$ 的输入可以写成 $(x,\sigma_1,\ldots,\sigma_k)$，其中 $x\in\{0,1\}^n, \sigma_i\in\{1,2,\ldots,d\}$，这组输入不仅是一个字符串，也可看成图上的一条长度为 $k$ 的路径。</p>
+<p>具体地，令 $y_0=x$，并对 $i=1,2,\ldots,k$ 定义：</p>
+<script type="math/tex; mode=display">
+y_i=g_{\sigma_i}(f(y_{i-1}))</script><p>于是，$y_0,y_1,\ldots,y_k$ 就是由初始点 $x$ 和标签序列 $\sigma_1,\ldots,\sigma_k$ 确定的一条路径。</p>
+<p>因此，算法 $A$ 反演 $F_k$ 的输入，也可以理解为算法 $A$ 在反演一条路径对应的输出。</p>
+<p>记 $k=k(n), m=n+k\log_2 d$， $I_n$ 为所有可以被 $A$ 以压倒性概率成功反演的路径集合。由于 $A$ 在至少 $1-\beta+\varepsilon’$ 比例的输入上可以稳定反演 $F_k$，所以：</p>
+<script type="math/tex; mode=display">
+|I|\geq (1-\beta+\varepsilon')\cdot 2^m</script><p>也就是说，可被 $A$ 稳定反演的路径至少占所有路径的 $1-\beta+\varepsilon’$ 比例。</p>
+<h4 id="好顶点与坏顶点"><a href="#好顶点与坏顶点" class="headerlink" title="好顶点与坏顶点"></a>好顶点与坏顶点</h4><p>接下来需要把可反演路径很多转化成多数顶点附近有足够多可反演路径。</p>
+<p>对任意顶点 $v$，记 $\mathcal P_v$ 为所有经过 $v$ 的长度为 $k$ 的路径集合，并令 $I_v$ 表示所有经过 $v$，并且可以被 $A$ 稳定反演的路径，即：</p>
+<script type="math/tex; mode=display">
+I_v=I\cap \mathcal P_v</script><p>如果</p>
+<script type="math/tex; mode=display">
+\frac{|I_v|}{|\mathcal P_v|}
+\geq
+\frac{\varepsilon'}{k}</script><p>则称顶点 $v$ 是<strong>好顶点（Good Vertex）</strong>，否则，称 $v$ 是<strong>坏顶点（Bad Vertex）</strong>。</p>
+<p>这个定义的直观含义是：如果 $v$ 是好顶点，那么随机选择一条经过 $v$ 的路径时，有至少 $\frac{\varepsilon’}{k}$ 的概率选到一条可被 $A$ 成功反演的路径。</p>
+<h4 id="路径保留断言"><a href="#路径保留断言" class="headerlink" title="路径保留断言"></a>路径保留断言</h4><h5 id="断言"><a href="#断言" class="headerlink" title="断言"></a>断言</h5><blockquote>
+<p><strong>Claim</strong>：设 $I’$ 是 $I$ 中不经过坏顶点的路径集合，即：</p>
+<script type="math/tex; mode=display">
+I'
+=
+I\setminus \bigcup_{v\in\text{bad}} I_v</script><p>则：$I’$ 在所有路径中的密度大于 $1-\beta$</p>
+</blockquote>
+<h5 id="证明-1"><a href="#证明-1" class="headerlink" title="证明"></a>证明</h5><p>用 $\mu(\cdot)$ 表示路径集合在所有路径中的密度。由于 $I$ 的密度至少为 $1-\beta+\varepsilon’$，即有：</p>
+<script type="math/tex; mode=display">
+\mu(I)\geq 1-\beta+\varepsilon'</script><p>从 $I$ 中删除所有经过坏顶点的路径后，得到 $I’$。因此，有：</p>
+<script type="math/tex; mode=display">
+\mu(I')
+\geq
+\mu(I)-\sum_{v\in\text{bad}}\mu(I_v)</script><p>对于坏顶点 $v$，根据定义 $\frac{|I_v|}{|\mathcal P_v|}&lt;\frac{\varepsilon’}{k}$，有：</p>
+<script type="math/tex; mode=display">
+\mu(I_v)
+<
+\frac{\varepsilon'}{k}\mu(\mathcal P_v)</script><p>故有：</p>
+<script type="math/tex; mode=display">
+\begin{aligned}
+\mu(I')
+&\geq
+\mu(I)-\sum_{v\in\text{bad}}\mu(I_v) \\
+&>
+1-\beta+\varepsilon'
+-
+\sum_v\frac{\varepsilon'}{k}\mu(\mathcal P_v)
+\end{aligned}</script><p>由于每条长度为 $k$ 的路径最多经过 $k$ 个相关顶点，所以：</p>
+<script type="math/tex; mode=display">
+\sum_v\mu(\mathcal P_v)\leq k</script><p>代入化简可得：</p>
+<script type="math/tex; mode=display">
+\mu(I')
+>
+1-\beta+\varepsilon'
+-
+\frac{\varepsilon'}{k}\cdot k
+=
+1-\beta</script><p>这说明，即使删除所有经过坏顶点的可反演路径，剩下的只经过好顶点的可反演路径仍然超过 $1-\beta$ 比例。</p>
+<h4 id="好顶点密度断言"><a href="#好顶点密度断言" class="headerlink" title="好顶点密度断言"></a>好顶点密度断言</h4><h5 id="断言-1"><a href="#断言-1" class="headerlink" title="断言"></a>断言</h5><blockquote>
+<p>Claim：好顶点的密度大于 $1-\alpha$</p>
+</blockquote>
+<h5 id="证明-2"><a href="#证明-2" class="headerlink" title="证明"></a>证明</h5><p>采用反证法。</p>
+<p>假设坏顶点集合 $S$ 的密度至少为 $\alpha$，即：</p>
+<script type="math/tex; mode=display">
+|S|\geq \alpha\cdot 2^n</script><p>根据随机路径性质，任意密度至少为 $\alpha$ 的顶点集合，都会被至少 $\beta$ 比例的长度为 $k$ 的路径经过。因此，至少有 $\beta$ 比例的路径会经过坏顶点集合 $S$。</p>
+<p>但是，$I’$ 中的路径只经过好顶点，不经过任何坏顶点。故而，$I’$ 只能包含那些不经过 $S$ 的路径，其密度最多为 $1-\beta$</p>
+<p>这与 $\mu(I’)&gt;1-\beta$ 矛盾，所以，坏顶点集合的密度不可能达到 $\alpha$。</p>
+<h4 id="反演算法构造"><a href="#反演算法构造" class="headerlink" title="反演算法构造"></a>反演算法构造</h4><p>现在利用算法 $A$ 构造一个反演原函数 $f$ 的算法，给定 $y=f(x)$ 恢复出 $x$。</p>
+<p>构造的基本思想是：虽然算法不知道 $x$，但它知道 $y=f(x)$。因此，可以把 $y$ 放在一条随机路径的中间位置，然后从 $y$ 继续沿路径后缀向后走，构造出一个完整的 $F_k$ 输出。之后调用 $A$ 反演这个输出。如果 $A$ 成功反演整条路径，就可以恢复路径起点，再沿路径前缀重新计算，从而得到满足 $f(x)=y$ 的原像 $x$。</p>
+<p>算法具体步骤如下：输入 $y$，重复以下步骤 $\frac{2nk}{\varepsilon\beta}$ 次</p>
+<p>（1）随机选择一个位置 $i\in\{1,2,\ldots,k\}$ 并随机选择标签序列 $\sigma_1,\sigma_2,\ldots,\sigma_k\in\{1,2,\ldots,d\}$</p>
+<p>（2）将 $y$ 看作某一步应用 $f$ 后得到的值，根据标签 $\sigma_i$ 在扩展图上走一步，再继续执行后缀标签序列，计算：</p>
+<script type="math/tex; mode=display">
+y'=F(g_{\sigma_i}(y),\sigma_{i+1}\cdots\sigma_k)</script><p>直观地说，如果 $y=f(x)$，那么：</p>
+<script type="math/tex; mode=display">
+g_{\sigma_i}(y)=g_{\sigma_i}(f(x))</script><p>正好是从顶点 $x$ 执行第 $i$ 轮操作后到达的下一个顶点，继续执行后缀 $\sigma_{i+1},\ldots,\sigma_k$，就可以得到这条路径的最终输出点。</p>
+<p>（3）调用 $A$ 反演对应的 $F_k$ 输出：</p>
+<script type="math/tex; mode=display">
+x'\leftarrow A(\sigma_1,\ldots,\sigma_k,y')</script><p>如果 $A$ 成功，则 $x’$ 是这条路径的起点。</p>
+<p>（4）从 $x’$ 出发，按照前缀标签 $\sigma_1,\ldots,\sigma_{i-1}$ 正向运行构造，得到某个顶点 $x$：</p>
+<script type="math/tex; mode=display">
+x=F(x',\sigma_1\cdots\sigma_{i-1})</script><p>这里的 $x$ 应该是路径中第 $i-1$ 步后的顶点，也就是满足下一步应用 $f$ 后得到 $y$ 的那个点。</p>
+<p>（5）检查 $f(x)=y$，如果成立，则输出 $x$，否则继续重复</p>
+<h4 id="好顶点的有效性"><a href="#好顶点的有效性" class="headerlink" title="好顶点的有效性"></a>好顶点的有效性</h4><p>设输入为 $y=f(x)$，弱 $x$ 是好顶点，那么根据好顶点的定义，在所有经过 $x$ 的长度为 $k$ 的路径中，至少有 $\frac{\varepsilon’}{k}$ 比例属于可反演路径集合 $I$。</p>
+<p>又因为 $\varepsilon’=\frac{\varepsilon\beta}{2}$，所以随机选到一条经过 $x$ 且可被 $A$ 成功反演的路径的概率至少为：</p>
+<script type="math/tex; mode=display">
+\frac{\varepsilon'}{k}
+=
+\frac{\varepsilon\beta}{2k}</script><p>因此，算法重复 $\frac{2nk}{\varepsilon\beta}$ 次后，以压倒性概率至少会选中一条可反演路径。</p>
+<p>一旦选中了这样的路径，算法 $A$ 就能以压倒性概率恢复这条路径的起点 $x’$。随后，从 $x’$ 沿着前缀标签 $\sigma_1,\ldots,\sigma_{i-1}$ 重新计算，就可以得到目标点 $x$，并通过检查 $f(x)=y$ 确认反演结果正确。</p>
+<p>因此，对于好顶点 $x$，上述算法能够以至少 $1-2^{-n}$ 的概率成功反演 $f(x)$。</p>
+<h4 id="随机输入成功概率"><a href="#随机输入成功概率" class="headerlink" title="随机输入成功概率"></a>随机输入成功概率</h4><p>由前面的好顶点密度断言可知，好顶点的密度大于 $1-\alpha(n)$。也就是说，当 $x$ 在 $U_n$ 中均匀随机选取时，$x$ 是好顶点的概率至少为 $1-\alpha(n)$。</p>
+<p>对于这些好顶点，反演算法成功的概率至少为 $1-2^{-n}$。因此，该算法在输入 $f(U_n)$ 上的总体成功概率至少为：</p>
+<script type="math/tex; mode=display">
+(1-\alpha(n))(1-2^{-n})</script><p>进一步，有：</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+(1-\alpha(n))(1-2^{-n})
+&=1-2^{-n}-\alpha(n)+2^{-n}\alpha(n) \\
+&> 1-\alpha(n)-2^{-n}
+\end{align*}</script><p>又因为引理假设 $\alpha’(n)\geq \alpha(n)+2^{-n}$，所以：</p>
+<script type="math/tex; mode=display">
+1-\alpha(n)-2^{-n}
+\geq
+1-\alpha'(n).</script><p>因此，构造出的算法可以以至少 $1-\alpha’(n)$ 的概率反演 $f$。</p>
+<h4 id="运行时间分析"><a href="#运行时间分析" class="headerlink" title="运行时间分析"></a>运行时间分析</h4><p>反演 $f$ 的算法一共重复 $\frac{2nk}{\varepsilon\beta}$ 次，每次重复中，需要调用一次算法 $A$，而算法 $A$ 的运行时间为 $\frac{2m\cdot T’(m)}{\varepsilon\beta}$。因此，整个反演算法的运行时间为：</p>
+<script type="math/tex; mode=display">
+\frac{2nk}{\varepsilon\beta}
+\cdot
+\frac{2m\cdot T'(m)}{\varepsilon\beta}
+=
+\frac{4nmk}{\varepsilon^2\beta^2}\cdot T'(m)</script><p>由于 $\beta(m)\geq \alpha(n)$，并且 $T’(m)$ 被定义为：</p>
+<script type="math/tex; mode=display">
+T'(m)
+=
+\frac{\varepsilon(m)^2\alpha(n)^2}{O(n+k(n))^3}\cdot T(n)</script><p>所以可以将总运行时间控制在 $T(n)$ 以内，也就是说，假设中的 $F_k$ 反演算法会导出一个时间不超过 $T(n)$ 的 $f$ 反演算法。</p>
+<h4 id="矛盾推出"><a href="#矛盾推出" class="headerlink" title="矛盾推出"></a>矛盾推出</h4><p>综上所述，如果存在算法能够在时间 $T’(m)$ 内，以至少 $1-(1-\varepsilon(m))\beta(m)$ 的概率反演 $F_k$，那么就可以构造出一个算法，在时间 $T(n)$ 内，以至少 $1-\alpha’(n)$ 的概率反演 $f$。</p>
+<p>但是，这与 $f$ 在时间 $T(\cdot)$ 下具有 $\alpha’(\cdot)$ 单向性的假设矛盾。因此，最初的反证假设不成立。</p>
+<p>也就是说，$F_k$ 不能被如此高概率地反演，即：$F_k$ 在时间 $T’(\cdot)$ 下具有 $(1-\varepsilon(\cdot))\beta(\cdot)$ 单向性。</p>
+<h2 id="命题证明"><a href="#命题证明" class="headerlink" title="命题证明"></a>命题证明</h2><p>根据得到两个引理：</p>
+<ol>
+<li><strong>随机游走引理</strong>：如果图具有足够好的谱扩展性，那么随机游走会以较高概率命中任意给定密度的顶点集合</li>
+<li><strong>归约引理</strong>：如果随机路径会以至少 $\beta$ 的概率命中任意密度为 $\alpha(n)$ 的集合，那么可以把这个路径命中性质转化为 $F_k$ 的单向性放大结论</li>
+</ol>
+<p>只需要将它们应用到图 $G_{f,n}$ 上即可。</p>
+<p>设 $S\subseteq V$ 是 $G_{f,n}$ 中任意一个测度为 $\alpha(n)$ 的顶点集合。由随机游走引理可知，在满足谱条件的图上，长度为 $t$ 的随机游走命中 $S$ 的概率至少为：</p>
+<script type="math/tex; mode=display">
+1-\left(1-\frac{\alpha(n)}{2}\right)^t</script><p>这里的含义是：如果 $S$ 是原函数 $f$ 的困难输入集合，那么扩展图随机游走会以较高概率经过这个困难集合。</p>
+<p>但是，在命题的证明中，为了保证随机游走引理的谱条件成立，前面并不是直接在 $G_{f,n}$ 上应用一步随机游走，而是先构造了一个 $\ell$ 步路径图，这个 $\ell$ 步路径图中的一条边，对应原图 $G_{f,n}$ 中一条长度为 $\ell$ 的路径。</p>
+<p>因此，如果在原图 $G_{f,n}$ 上进行长度为 $k(n)$ 的随机游走，那么它大致对应于在 $\ell$ 步路径图上进行长度为 $\frac{k(n)}{\ell}$ 的随机游走。</p>
+<p>于是，原图 $G_{f,n}$ 上长度为 $k(n)$ 的随机游走命中 $S$ 的概率至少为：</p>
+<script type="math/tex; mode=display">
+1-\left(1-\frac{\alpha(n)}{2}\right)^{k(n)/\ell}</script><p>因此，可以定义：</p>
+<script type="math/tex; mode=display">
+\beta(n+k(n)\log_2 d)
+=
+1-\left(1-\frac{\alpha(n)}{2}\right)^{k(n)/\ell}</script><p>这里的 $\beta$ 正是归约引理中需要的路径命中概率下界。</p>
+<p>归约引理要求图 $G_{f,n}$ 满足路径命中性质：对任意测度为 $\alpha(n)$ 的顶点集合 $S$，至少有 $\beta$ 比例的长度为 $k(n)$ 的路径会经过 $S$。</p>
+<p>由上面的随机游走分析，已经得到这个性质，并且得到了 $\beta(n+k(n)\log_2 d)$。同时，在命题中取：</p>
+<script type="math/tex; mode=display">
+\alpha'(n)=\alpha(n)+2^{-n}</script><p>于是可以直接应用归约引理，即：如果 $f$ 在时间 $T(\cdot)$ 下具有 $\alpha’(n)$ 单向性，那么构造出的 $F_k$ 在时间 $T’(\cdot)$ 下具有 $((1-\varepsilon(\cdot))\beta(\cdot))$ 单向性。</p>
+<p>此时，时间函数满足：</p>
+<script type="math/tex; mode=display">
+T'(n+k(n)\log_2 d)
+=
+\frac{(\varepsilon(n)\alpha(n))^2}{O(n+k(n))^3}\cdot T(n).</script><p>这正是困难性放大命题要证明的结论。</p>
+<h2 id="替代分析"><a href="#替代分析" class="headerlink" title="替代分析"></a>替代分析</h2><h3 id="谱条件替换"><a href="#谱条件替换" class="headerlink" title="谱条件替换"></a>谱条件替换</h3><p>前面对单向置换高效放大的分析，是通过扩展图的<strong>特征值比例（Eigenvalue Ratio）</strong>完成的，而不是直接使用扩展图的组合定义。也就是说，虽然扩展图最初是通过扩展性质定义的，但真正用于随机游走分析的是图的谱性质。</p>
+<p>问题在于，从组合扩展性质转换到特征值比例时，参数转换并不是紧的。因此，如果最终仍然把结果表述为扩展性质，就会损失一些常数因子。为了得到更紧的分析，可以直接从谱性质出发。</p>
+<p>具体来说，可以将困难性放大命题中的条件 1 替换为：存在某个常数 $\rho&lt;1$，使得显式构造图族 ${G_n}$ 中每个图的特征值比例都至多为 $\rho$。</p>
+<p>这里的特征值比例可以理解为：随机游走矩阵中第二大特征值绝对值与最大特征值的比值。由于最大特征值为 $1$，所以它实际上就是第二大特征值绝对值的上界，$\rho$ 越小，说明图上的随机游走混合得越快。</p>
+<p>原来的证明中，为了让随机游走引理适用，需要把原图中的 $\ell$ 步路径看作新图中的一条边，这样做的目的是让新图的特征值比例变成 $\rho^\ell$。只要选择 $\ell$ 使得 $\rho^\ell&lt;\frac{1}{2}$,就可以使用随机游走引理。</p>
+<p>因此，条件 4 可以替换为：</p>
+<script type="math/tex; mode=display">
+\ell\geq \max\left\{1,\left\lceil \log_{\rho}\frac12 \right\rceil\right\}</script><p>由于 $0&lt;\rho&lt;1$，当 $\ell$ 增大时，$\rho^\ell$ 会下降，所以这个条件的含义是：选择足够大的 $\ell$，使 $\ell$ 步路径图的特征值比例小于 $\frac12$。</p>
+<h3 id="紧致性分析"><a href="#紧致性分析" class="headerlink" title="紧致性分析"></a>紧致性分析</h3><p>原来的证明路径是：</p>
+<script type="math/tex; mode=display">
+\text{组合扩展性质}
+\Longrightarrow
+\text{特征值比例界}
+\Longrightarrow
+\text{随机游走命中性质}</script><p>其中，第一步转换会造成参数损失。采用替代分析则直接假设图族具有良好的特征值比例，因此证明路径变成：</p>
+<script type="math/tex; mode=display">
+\text{特征值比例界}
+\Longrightarrow
+\text{随机游走命中性质}</script><p>这样就避免了从组合扩展性质到谱性质的松弛转换，因此可以得到更好的常数。</p>
+<p>同时，对于由 $G_n$ 和 $f$ 复合得到的图 $G_{f,n}$，其特征值比例不大于原图 $G_n$ 的特征值比例。直观地说，$f$ 是顶点集合上的置换，只是重新排列顶点，不会破坏随机游走的谱混合性质。因此，如果 $G_n$ 的特征值比例至多为 $\rho$，那么 $G_{f,n}$ 也满足相同或更好的特征值比例界。</p>
+<h3 id="参数选择"><a href="#参数选择" class="headerlink" title="参数选择"></a>参数选择</h3><p>替代分析允许使用一族显式构造的扩展图 ${G_n}$，其度数为 $18$，并且特征值比例小于 $\frac{1}{2}$。既然特征值比例本身已经小于 $\frac12$，就不需要再取多步路径图，因此可以直接令 $\ell=1$。</p>
+<p>此时若取 $k(n)=3n$，则路径命中概率变为：</p>
+<script type="math/tex; mode=display">
+\beta(15n)
+\approx
+1-\left(1-\frac{\alpha(n)}{2}\right)^{3n}</script><p>相应地，时间函数满足：</p>
+<script type="math/tex; mode=display">
+T'(15n)
+\approx
+\frac{(\varepsilon(n)\alpha(n))^2}{O(n)^3}\cdot T(n)</script><p>需要注意的是，这里的 $15n$ 的不是精确常数，而是强调输入长度仍然只是 $O(n)$。因为 $F_k$ 的输入由初始点 $x$ 和 $k(n)$ 个边标签组成，当图的度数是常数时，每个标签只需要常数比特表示，所以总输入长度仍然是线性的。</p>
+<h3 id="放大效果"><a href="#放大效果" class="headerlink" title="放大效果"></a>放大效果</h3><p>在这种更紧的分析下，当 $\alpha(n)\leq \frac{1}{2n}$ 时，有：</p>
+<script type="math/tex; mode=display">
+\beta(15n)>1.02n\cdot \alpha(n)</script><p>也就是说，如果原函数 $f$ 的困难输入比例只有大约 $\alpha(n)$，那么构造后的函数 $F_k$ 的困难比例可以被放大到至少线性倍数规模。</p>
+<p>而如果 $\alpha$ 是一个正常数，则有：</p>
+<script type="math/tex; mode=display">
+\beta(15n)>1-2^{-\Omega(n)}</script><p>这表示：如果原函数 $f$ 已经在常数比例的输入上难以反演，那么经过构造后，$F_k$ 将在几乎所有输入上难以反演。</p>
+<h3 id="实例"><a href="#实例" class="headerlink" title="实例"></a>实例</h3><p>取 $n=1000$，并令 $k\approx 960$，若原函数 $f$ 在长度为 $1000$ 的字符串中，有 $1%$ 的输入在实际中难以反演，那么构造出的 $F_k$ 可以做到：在长度约为 $5000$ 的输入中，有 $99%$ 的输入在实际中难以反演。</p>
+<p>这个例子说明，高效放大的作用非常直观，使原来的 $1\%$ 难以反演放大到 $99\%$ 难以反演，并且输入长度只是从 $1000$ 增加到约 $5000$，仍然是常数倍增长，而不是平方级或更高阶的多项式增长。</p>
+<h1 id="【单向置换高效放大定理推出】"><a href="#【单向置换高效放大定理推出】" class="headerlink" title="【单向置换高效放大定理推出】"></a>【单向置换高效放大定理推出】</h1><p>单向置换高效放大定理可以通过反复应用单向置换构造的困难性放大命题证明。</p>
+<p>设原函数 $f$ 是 $\frac{1}{\mathrm{poly}(n)}$ 单向的，其中多项式 $\mathrm{poly}$ 的次数为 $\delta$，对困难性放大命题应用 $\delta+1$ 次，并且每次都取：</p>
+<script type="math/tex; mode=display">
+k(n)=3n</script><p>在前 $\delta$ 次应用中，取：</p>
+<script type="math/tex; mode=display">
+\varepsilon(n)=0.01</script><p>经过第 $i$ 次放大后，得到的函数大致具有 $\frac{1}{2n^{\delta-i}}$ 单向性。</p>
+<p>因此，经过 $\delta$ 次放大之后，得到的函数具有大约 $\frac{1}{2}$ 单向性。也就是说，它已经在常数比例的输入上难以反演。</p>
+<p>需要注意的是，$\frac{1}{2}$ 单向性值得单独关注，因为它表示函数在多数输入上已经表现出单向性，可以称为<strong>多数单向（Mostly One-Way）</strong>。</p>
+<p>在最后一次，即第 $\delta+1$ 次应用困难性放大命题时，取 $\varepsilon(n)$ 为目标误差函数。由于此时原函数已经在常数比例的输入上困难，再经过一次放大，困难比例就会变成 $1-\varepsilon(n)$，从而得到强单向置换。</p>
+
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>感谢您对我的支持，让我继续努力分享有用的技术与知识点！</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/wechatpay.jpg" alt="Alex_McAvoy 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/alipay.jpg" alt="Alex_McAvoy 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Alex_McAvoy
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://alex-mcavoy.github.io/notes/cryptology/bba999e9.html" title="单向函数的高效放大">https://alex-mcavoy.github.io/notes/cryptology/bba999e9.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/notes/" rel="tag"># 学习笔记</a>
+              <a href="/tags/cryptology/" rel="tag"># 密码学</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/notes/cryptology/f4dbacc0.html" rel="prev" title="硬核函数">
+      <i class="fa fa-chevron-left"></i> 硬核函数
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E3%80%90%E5%9F%BA%E6%9C%AC%E6%80%9D%E6%83%B3%E3%80%91"><span class="nav-number">1.</span> <span class="nav-text">【基本思想】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E3%80%90%E5%AE%9A%E9%87%8F%E5%8D%95%E5%90%91%E6%80%A7%E3%80%91"><span class="nav-number">2.</span> <span class="nav-text">【定量单向性】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%9A%E4%B9%89"><span class="nav-number">2.1.</span> <span class="nav-text">定义</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%9A%E9%87%8F%E5%8D%95%E5%90%91%E6%80%A7%E4%B8%8B%E7%9A%84%E9%87%8D%E6%96%B0%E8%A1%A8%E8%BF%B0"><span class="nav-number">2.2.</span> <span class="nav-text">定量单向性下的重新表述</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BC%B1%E5%8D%95%E5%90%91%E6%80%A7%E4%B8%8E%E5%BC%BA%E5%8D%95%E5%90%91%E6%80%A7"><span class="nav-number">2.2.1.</span> <span class="nav-text">弱单向性与强单向性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AD%98%E5%9C%A8%E6%80%A7%E5%AE%9A%E7%90%86"><span class="nav-number">2.2.2.</span> <span class="nav-text">存在性定理</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E3%80%90%E9%AB%98%E6%95%88%E6%94%BE%E5%A4%A7%E7%9A%84%E7%9B%AE%E6%A0%87%E3%80%91"><span class="nav-number">3.</span> <span class="nav-text">【高效放大的目标】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E3%80%90%E5%8D%95%E5%90%91%E7%BD%AE%E6%8D%A2%E7%9A%84%E9%AB%98%E6%95%88%E6%94%BE%E5%A4%A7%E3%80%91"><span class="nav-number">4.</span> <span class="nav-text">【单向置换的高效放大】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%AD%A3%E5%88%99%E5%8D%95%E5%90%91%E5%87%BD%E6%95%B0"><span class="nav-number">4.1.</span> <span class="nav-text">正则单向函数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8D%95%E5%90%91%E7%BD%AE%E6%8D%A2%E9%AB%98%E6%95%88%E6%94%BE%E5%A4%A7%E5%AE%9A%E7%90%86"><span class="nav-number">4.2.</span> <span class="nav-text">单向置换高效放大定理</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9F%BA%E6%9C%AC%E6%80%9D%E6%83%B3"><span class="nav-number">4.3.</span> <span class="nav-text">基本思想</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%89%A9%E5%B1%95%E5%9B%BE"><span class="nav-number">4.4.</span> <span class="nav-text">扩展图</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%9A%E4%B9%89-1"><span class="nav-number">4.4.1.</span> <span class="nav-text">定义</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%98%BE%E5%BC%8F%E6%9E%84%E9%80%A0%E7%9A%84%E6%89%A9%E5%B1%95%E5%9B%BE%E6%97%8F"><span class="nav-number">4.4.2.</span> <span class="nav-text">显式构造的扩展图族</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%89%A9%E5%B1%95%E5%9B%BE%E4%B8%8A%E7%9A%84%E9%9A%8F%E6%9C%BA%E6%B8%B8%E8%B5%B0"><span class="nav-number">4.4.3.</span> <span class="nav-text">扩展图上的随机游走</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9E%84%E9%80%A0%E6%96%B9%E5%BC%8F"><span class="nav-number">4.5.</span> <span class="nav-text">构造方式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%9B%B4%E8%A7%82%E7%90%86%E8%A7%A3"><span class="nav-number">4.6.</span> <span class="nav-text">直观理解</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E3%80%90%E5%9B%B0%E9%9A%BE%E6%80%A7%E6%94%BE%E5%A4%A7%E3%80%91"><span class="nav-number">5.</span> <span class="nav-text">【困难性放大】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%91%BD%E9%A2%98"><span class="nav-number">5.1.</span> <span class="nav-text">命题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%91%BD%E9%A2%98%E7%9A%84%E5%90%AB%E4%B9%89"><span class="nav-number">5.2.</span> <span class="nav-text">命题的含义</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AF%81%E6%98%8E%E6%80%9D%E8%B7%AF"><span class="nav-number">5.3.</span> <span class="nav-text">证明思路</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%9A%8F%E6%9C%BA%E6%B8%B8%E8%B5%B0%E5%BC%95%E7%90%86"><span class="nav-number">5.4.</span> <span class="nav-text">随机游走引理</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%89%8D%E7%BD%AE%E5%81%87%E8%AE%BE"><span class="nav-number">5.4.1.</span> <span class="nav-text">前置假设</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%89%A9%E5%B1%95%E5%9B%BE-1"><span class="nav-number">5.4.1.1.</span> <span class="nav-text">扩展图</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%B0%B1%E6%80%A7%E8%B4%A8"><span class="nav-number">5.4.1.2.</span> <span class="nav-text">谱性质</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%B7%AF%E5%BE%84%E5%9B%BE"><span class="nav-number">5.4.1.3.</span> <span class="nav-text">路径图</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BC%95%E7%90%86"><span class="nav-number">5.4.2.</span> <span class="nav-text">引理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AF%81%E6%98%8E%E6%80%9D%E8%B7%AF-1"><span class="nav-number">5.4.3.</span> <span class="nav-text">证明思路</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%8A%E7%95%8C%E8%AF%81%E6%98%8E"><span class="nav-number">5.4.4.</span> <span class="nav-text">上界证明</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%AD%9B%E9%80%89%E7%9F%A9%E9%98%B5"><span class="nav-number">5.4.4.1.</span> <span class="nav-text">筛选矩阵</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%9C%AA%E5%91%BD%E4%B8%AD%E6%A6%82%E7%8E%87"><span class="nav-number">5.4.4.2.</span> <span class="nav-text">未命中概率</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%8E%8B%E7%BC%A9%E4%BC%B0%E8%AE%A1"><span class="nav-number">5.4.4.3.</span> <span class="nav-text">压缩估计</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%9C%AA%E5%91%BD%E4%B8%AD%E6%A6%82%E7%8E%87%E4%B8%8A%E7%95%8C"><span class="nav-number">5.4.4.4.</span> <span class="nav-text">未命中概率上界</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%B8%8A%E7%95%8C%E9%80%82%E7%94%A8%E8%8C%83%E5%9B%B4"><span class="nav-number">5.4.4.5.</span> <span class="nav-text">上界适用范围</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BD%92%E7%BA%A6%E5%BC%95%E7%90%86"><span class="nav-number">5.5.</span> <span class="nav-text">归约引理</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BD%92%E7%BA%A6%E6%80%9D%E6%83%B3"><span class="nav-number">5.5.1.</span> <span class="nav-text">归约思想</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BC%95%E7%90%86-1"><span class="nav-number">5.5.2.</span> <span class="nav-text">引理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AF%81%E6%98%8E"><span class="nav-number">5.5.3.</span> <span class="nav-text">证明</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%8F%8D%E8%AF%81%E5%81%87%E8%AE%BE"><span class="nav-number">5.5.3.1.</span> <span class="nav-text">反证假设</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%8F%8D%E6%BC%94%E7%AE%97%E6%B3%95%E8%BD%AC%E5%8C%96"><span class="nav-number">5.5.3.2.</span> <span class="nav-text">反演算法转化</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%8F%8D%E6%BC%94%E8%B7%AF%E5%BE%84"><span class="nav-number">5.5.3.3.</span> <span class="nav-text">反演路径</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%A5%BD%E9%A1%B6%E7%82%B9%E4%B8%8E%E5%9D%8F%E9%A1%B6%E7%82%B9"><span class="nav-number">5.5.3.4.</span> <span class="nav-text">好顶点与坏顶点</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%B7%AF%E5%BE%84%E4%BF%9D%E7%95%99%E6%96%AD%E8%A8%80"><span class="nav-number">5.5.3.5.</span> <span class="nav-text">路径保留断言</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E6%96%AD%E8%A8%80"><span class="nav-number">5.5.3.5.1.</span> <span class="nav-text">断言</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E8%AF%81%E6%98%8E-1"><span class="nav-number">5.5.3.5.2.</span> <span class="nav-text">证明</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%A5%BD%E9%A1%B6%E7%82%B9%E5%AF%86%E5%BA%A6%E6%96%AD%E8%A8%80"><span class="nav-number">5.5.3.6.</span> <span class="nav-text">好顶点密度断言</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E6%96%AD%E8%A8%80-1"><span class="nav-number">5.5.3.6.1.</span> <span class="nav-text">断言</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E8%AF%81%E6%98%8E-2"><span class="nav-number">5.5.3.6.2.</span> <span class="nav-text">证明</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%8F%8D%E6%BC%94%E7%AE%97%E6%B3%95%E6%9E%84%E9%80%A0"><span class="nav-number">5.5.3.7.</span> <span class="nav-text">反演算法构造</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%A5%BD%E9%A1%B6%E7%82%B9%E7%9A%84%E6%9C%89%E6%95%88%E6%80%A7"><span class="nav-number">5.5.3.8.</span> <span class="nav-text">好顶点的有效性</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%9A%8F%E6%9C%BA%E8%BE%93%E5%85%A5%E6%88%90%E5%8A%9F%E6%A6%82%E7%8E%87"><span class="nav-number">5.5.3.9.</span> <span class="nav-text">随机输入成功概率</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%BF%90%E8%A1%8C%E6%97%B6%E9%97%B4%E5%88%86%E6%9E%90"><span class="nav-number">5.5.3.10.</span> <span class="nav-text">运行时间分析</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%9F%9B%E7%9B%BE%E6%8E%A8%E5%87%BA"><span class="nav-number">5.5.3.11.</span> <span class="nav-text">矛盾推出</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%91%BD%E9%A2%98%E8%AF%81%E6%98%8E"><span class="nav-number">5.6.</span> <span class="nav-text">命题证明</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9B%BF%E4%BB%A3%E5%88%86%E6%9E%90"><span class="nav-number">5.7.</span> <span class="nav-text">替代分析</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%B0%B1%E6%9D%A1%E4%BB%B6%E6%9B%BF%E6%8D%A2"><span class="nav-number">5.7.1.</span> <span class="nav-text">谱条件替换</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%B4%A7%E8%87%B4%E6%80%A7%E5%88%86%E6%9E%90"><span class="nav-number">5.7.2.</span> <span class="nav-text">紧致性分析</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%82%E6%95%B0%E9%80%89%E6%8B%A9"><span class="nav-number">5.7.3.</span> <span class="nav-text">参数选择</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%94%BE%E5%A4%A7%E6%95%88%E6%9E%9C"><span class="nav-number">5.7.4.</span> <span class="nav-text">放大效果</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%9E%E4%BE%8B"><span class="nav-number">5.7.5.</span> <span class="nav-text">实例</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E3%80%90%E5%8D%95%E5%90%91%E7%BD%AE%E6%8D%A2%E9%AB%98%E6%95%88%E6%94%BE%E5%A4%A7%E5%AE%9A%E7%90%86%E6%8E%A8%E5%87%BA%E3%80%91"><span class="nav-number">6.</span> <span class="nav-text">【单向置换高效放大定理推出】</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">  
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Alex_McAvoy"
+      src="/assets/img/head.jpg">
+  <p class="site-author-name" itemprop="name">Alex_McAvoy</p>
+  <div class="site-description" itemprop="description">想要成为渔夫的猎手</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">761</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">75</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">86</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Alex-McAvoy" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;Alex-McAvoy" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/u011815404" title="CSDN → https:&#x2F;&#x2F;blog.csdn.net&#x2F;u011815404" rel="noopener" target="_blank"><i class="fas fa-copyright fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+<!-- 静态项目链接 -->
+<div class="links-of-blogroll motion-element">
+  <div class="links-of-blogroll-title">
+    <i class="fas fa-external-link-alt fa-fw"></i> 站点静态项目
+  </div>
+  <ul class="links-of-blogroll-list">
+  <li class="links-of-blogroll-item">
+      <a href="https://alex-mcavoy.github.io/bookshelf/index.html" target="_blank" title="终末之诗">
+        我的书架（施工中...）
+      </a>
+    </li>
+    <li class="links-of-blogroll-item">
+      <a href="https://alex-mcavoy.github.io/end_poem/index.html" target="_blank" title="终末之诗">
+        终末之诗
+      </a>
+    </li>
+	<li class="links-of-blogroll-item">
+      <a href="https://alex-mcavoy.github.io/2nd_anniversary_of_pyc-zwx/index.html" target="_blank" title="逄总与张总的两周年纪念页（朋友已分手，该项目无限延期）">
+        <del>逄总与张总的两周年纪念页<br/>（朋友已分手，该项目无限延期）</del>
+      </a>
+    </li>
+  </ul>
+</div>
+
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdz20172133" title="https:&#x2F;&#x2F;blog.csdn.net&#x2F;sdz20172133" rel="noopener" target="_blank">神仙队友</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://pxlsdz.gitee.io/" title="https:&#x2F;&#x2F;pxlsdz.gitee.io&#x2F;" rel="noopener" target="_blank">神仙队友blog2</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdau_fangshifeng" title="https:&#x2F;&#x2F;blog.csdn.net&#x2F;sdau_fangshifeng" rel="noopener" target="_blank">酷头</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://bycore.net/" title="https:&#x2F;&#x2F;bycore.net" rel="noopener" target="_blank">凉了的某饼同学</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://kris-cn.github.io/" title="http:&#x2F;&#x2F;kris-cn.github.io&#x2F;" rel="noopener" target="_blank">翟孙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://deng.fun/" title="http:&#x2F;&#x2F;deng.fun&#x2F;" rel="noopener" target="_blank">芙蓉姐姐</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/wentong_Xu" title="https:&#x2F;&#x2F;blog.csdn.net&#x2F;wentong_Xu" rel="noopener" target="_blank">小黑贱胖子</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.yuheng.tech/" title="https:&#x2F;&#x2F;www.yuheng.tech&#x2F;" rel="noopener" target="_blank">咸于</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/lanshan1111" title="https:&#x2F;&#x2F;blog.csdn.net&#x2F;lanshan1111" rel="noopener" target="_blank">肥硕硕</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdauguanweihong" title="https:&#x2F;&#x2F;blog.csdn.net&#x2F;sdauguanweihong" rel="noopener" target="_blank">管少</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_41661919" title="https:&#x2F;&#x2F;blog.csdn.net&#x2F;qq_41661919" rel="noopener" target="_blank">俊杰</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_40859951" title="https:&#x2F;&#x2F;blog.csdn.net&#x2F;qq_40859951" rel="noopener" target="_blank">峰哥</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/LSD20164388" title="https:&#x2F;&#x2F;blog.csdn.net&#x2F;LSD20164388" rel="noopener" target="_blank">狗冬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37868325" title="https:&#x2F;&#x2F;blog.csdn.net&#x2F;qq_37868325" rel="noopener" target="_blank">妍大佬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://sanshuiii.github.io/" title="https:&#x2F;&#x2F;sanshuiii.github.io&#x2F;" rel="noopener" target="_blank">sanshuiii</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://zjpzhao.github.io/" title="https:&#x2F;&#x2F;zjpzhao.github.io&#x2F;" rel="noopener" target="_blank">brain</a>
+        </li>
+    </ul>
+  </div>
+
+		
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+  
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2026</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Alex_McAvoy</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+</br>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+<script src="/js/bookmark.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '48fd73a538d3fa927f65',
+      clientSecret: '56618aefeee90bac3c20de8d51bb0b985d67252d',
+      repo        : 'Gitalk-Comment',
+      owner       : 'Alex-McAvoy',
+      admin       : ['Alex-McAvoy'],
+      id          : 'e6a78125c376a053877b004da2df5093',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+  
+  <!-- 鼠标单击粒子特效 -->
+  <script type="text/javascript" src="/js/cursor-effects.js"></script>
+  <!-- 多级目录 -->
+  <script type="text/javascript" src="/js/category.js"></script>
+  
+</body>
+</html>
