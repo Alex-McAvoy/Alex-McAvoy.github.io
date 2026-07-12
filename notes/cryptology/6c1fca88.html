@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 8.1.2">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/img/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/assets/img/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/pace-js@1/themes/blue/pace-theme-minimal.css">
+  <script src="//cdn.jsdelivr.net/npm/pace-js@1/pace.min.js"></script>
+
+
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"alex-mcavoy.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":16,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":true,"color":"#ff0000","save":"manual"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":true},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.json"};
+  </script>
+
+  <meta name="description" content="【基本概念】伪随机生成器伪随机生成器（Pseudorandom Generator，PRG）是一类高效的确定性程序，它能够将一个较短的、随机选取的种子（Seed）扩展为一个长度更长的伪随机序列（Pseudorandom Sequence）。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="伪随机生成器的基本概念">
+<meta property="og:url" content="https://alex-mcavoy.github.io/notes/cryptology/6c1fca88.html">
+<meta property="og:site_name" content="Alex_McAvoy">
+<meta property="og:description" content="【基本概念】伪随机生成器伪随机生成器（Pseudorandom Generator，PRG）是一类高效的确定性程序，它能够将一个较短的、随机选取的种子（Seed）扩展为一个长度更长的伪随机序列（Pseudorandom Sequence）。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://alex-mcavoy.github.io/images/notes/cryptology/27-1.png">
+<meta property="article:published_time" content="2026-07-11T02:32:00.000Z">
+<meta property="article:modified_time" content="2026-07-12T12:31:22.469Z">
+<meta property="article:author" content="Alex_McAvoy">
+<meta property="article:tag" content="学习笔记">
+<meta property="article:tag" content="密码学">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://alex-mcavoy.github.io/images/notes/cryptology/27-1.png">
+
+<link rel="canonical" href="https://alex-mcavoy.github.io/notes/cryptology/6c1fca88.html">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>伪随机生成器的基本概念 | Alex_McAvoy</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Alex_McAvoy</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">想要成为渔夫的猎手</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+
+	
+	
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/notes/cryptology/6c1fca88.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/assets/img/head.jpg">
+      <meta itemprop="name" content="Alex_McAvoy">
+      <meta itemprop="description" content="想要成为渔夫的猎手">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Alex_McAvoy">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          伪随机生成器的基本概念
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2026-07-11 10:32:00" itemprop="dateCreated datePublished" datetime="2026-07-11T10:32:00+08:00">2026-07-11</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/notes/" itemprop="url" rel="index"><span itemprop="name">学习笔记</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/notes/cryptology/" itemprop="url" rel="index"><span itemprop="name">密码学</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>4k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>4 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="【基本概念】"><a href="#【基本概念】" class="headerlink" title="【基本概念】"></a>【基本概念】</h1><h2 id="伪随机生成器"><a href="#伪随机生成器" class="headerlink" title="伪随机生成器"></a>伪随机生成器</h2><p><strong>伪随机生成器（Pseudorandom Generator，PRG）</strong>是一类高效的确定性程序，它能够将一个较短的、随机选取的<strong>种子（Seed）</strong>扩展为一个长度更长的<strong>伪随机序列（Pseudorandom Sequence）</strong>。</p>
+<p><img src='/images/notes/cryptology/27-1.png'/></p>
+<p>其中，伪随机序列是指任何高效算法都无法将其与真正随机生成的序列区分开。虽然伪随机生成器本身是确定性的，但只要输入的种子是随机选择的，输出序列在计算上就应当表现得像真正的随机序列。</p>
+<h2 id="伪随机函数"><a href="#伪随机函数" class="headerlink" title="伪随机函数"></a>伪随机函数</h2><p>伪随机性的理论不仅可以应用于比特序列，还可以应用于函数，由此得到<strong>伪随机函数（Pseudorandom Function，PRF）</strong>的概念。</p>
+<p>伪随机函数是一类高效、确定性的函数，但对于不知道密钥的高效攻击者而言，它的输入输出行为与一个真正随机选择的函数在计算上不可区分。</p>
+<p>伪随机函数是许多密码学应用中的重要工具，可以用于构造对称加密方案、消息认证码、身份认证协议、密钥派生机制等</p>
+<h1 id="【研究动机】"><a href="#【研究动机】" class="headerlink" title="【研究动机】"></a>【研究动机】</h1><p>现代密码学认为，<strong>高效计算（Efficient Computation）</strong>为理解随机性的本质提供了一个良好的基础。从计算的角度研究随机性，主要存在两种不同的思路：</p>
+<ol>
+<li><strong>本体论方法（Ontological Approach）</strong>：研究一个对象本身是否具有简单的解释</li>
+<li><strong>行为主义方法（Behavioristic Approach）</strong>：研究一个对象对外部观察者表现出的行为是否与随机对象相同</li>
+</ol>
+<h2 id="本体论随机性"><a href="#本体论随机性" class="headerlink" title="本体论随机性"></a>本体论随机性</h2><h3 id="Kolmogorov-随机性"><a href="#Kolmogorov-随机性" class="headerlink" title="Kolmogorov 随机性"></a>Kolmogorov 随机性</h3><p>20 世纪 60 年代初，Solomonoff 和 Kolmogorov 提出了一种基于计算的随机性研究方法，Chaitin 在20世纪70年代初重新发现了这一方法。该方法在本质上属于本体论方法。</p>
+<p>宽泛来说，对于一个字符串 $s$，如果生成该字符串的最短程序长度与字符串本身的长度 $|s|$ 相等，那么就认为字符串 $s$ 是 <strong>Kolmogorov 随机的（Kolmogorov-Random）</strong>。生成字符串 $s$ 的最短程序，可以被看作对该字符串所描述现象的最简单解释。因此，如果不存在一个明显短于 $|s|$ 的程序来生成 $s$，就说明该字符串不存在一个足够简单的解释，从而可以将其视为随机字符串。</p>
+<p>也就是说，Kolmogorov 随机性关注的是：一个字符串能否被一个比它自身短得多的程序描述或生成。例如，一个由大量重复模式组成的字符串：</p>
+<script type="math/tex; mode=display">
+010101010101\cdots</script><p>虽然长度可能很长，但可以通过重复输出 $01$ 这样一个很短的程序生成，因此它不具有较高的 Kolmogorov 随机性。</p>
+<h3 id="Kolmogorov-复杂度"><a href="#Kolmogorov-复杂度" class="headerlink" title="Kolmogorov 复杂度"></a>Kolmogorov 复杂度</h3><p>一个字符串 $s$ 的 <strong>Kolmogorov 复杂度（Kolmogorov Complexity）</strong>，可以理解为生成该字符串的最短程序的长度。</p>
+<p>如果一个字符串不存在明显短于它本身的生成程序，那么该字符串就具有较高的 Kolmogorov 复杂度。也就是说，高 Kolmogorov 复杂度的字符串很难被压缩，也没有明显比它自身更短的描述，因此可以认为它具有较强的随机性。</p>
+<p>Kolmogorov 随机性存在两个重要问题：</p>
+<ol>
+<li>无法判断一个给定字符串是否是 Kolmogorov 随机的：对于任意给定字符串，不存在一个通用算法能够判断是否存在比该字符串更短的程序来生成它</li>
+<li>Kolmogorov 复杂度是不可计算的：不存在一个算法能够对任意字符串准确计算其Kolmogorov复杂度</li>
+</ol>
+<p>此外，这种方法虽然能够从理论上解释一个字符串本身是否随机，但无法自然地应用于伪随机生成器的研究。</p>
+<h2 id="行为主义随机性"><a href="#行为主义随机性" class="headerlink" title="行为主义随机性"></a>行为主义随机性</h2><h3 id="伪随机性"><a href="#伪随机性" class="headerlink" title="伪随机性"></a>伪随机性</h3><p>行为主义随机性起源于 20 世纪 80 年代初，Kolmogorov 随机性关注一个现象是否具有简单的内部解释，而行为主义方法并不研究对象内部是如何产生的，而是研究该对象对外部环境产生的效果。</p>
+<p>宽泛来说，如果不存在任何高效观察者，能够将一个字符串与同长度的均匀随机字符串区分开，那么就认为该字符串具有伪随机性。</p>
+<p>这里的核心判断标准是：对于一个高效观察者而言，该字符串看起来是否与真正随机生成的字符串相同。</p>
+<p>因此，伪随机性并不要求字符串本身是真正随机产生的，而只要求其外部表现与真正随机字符串不可区分。</p>
+<h3 id="计算等价原则"><a href="#计算等价原则" class="headerlink" title="计算等价原则"></a>计算等价原则</h3><p>行为主义随机性建立在一个重要假设之上：如果两个对象无法被任何高效过程区分，那么就可以将它们视为等价的。</p>
+<p>这两个对象在内部结构或产生方式上可能完全不同，甚至可能具有本质上不同的 Kolmogorov 复杂度，但只要高效观察者无法区分它们，它们在计算意义上就可以被视为相同。</p>
+<p>例如，伪随机生成器输出的字符串由一个短种子通过确定性算法生成，因此从 Kolmogorov 复杂度的角度看，它通常具有一个较短的描述：</p>
+<script type="math/tex; mode=display">
+\text{种子}+\text{伪随机生成算法}</script><p>所以它并不是真正的 Kolmogorov 随机字符串。但是，如果任何高效算法都无法将其与真正的均匀随机字符串区分开，那么它仍然可以被认为是伪随机的。</p>
+<p>由此可以看出，两种随机性观点的区别在于：</p>
+<ol>
+<li><strong>Kolmogorov 随机性</strong>：关注对象的内部描述和生成方式</li>
+<li><strong>伪随机性</strong>：关注对象在高效观察者面前表现出的外部行为</li>
+</ol>
+<h2 id="区别"><a href="#区别" class="headerlink" title="区别"></a>区别</h2><div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:center">比较内容</th>
+<th style="text-align:center">Kolmogorov随机性</th>
+<th style="text-align:center">伪随机性</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">研究角度</td>
+<td style="text-align:center">本体论</td>
+<td style="text-align:center">行为主义</td>
+</tr>
+<tr>
+<td style="text-align:center">关注重点</td>
+<td style="text-align:center">是否存在简短描述</td>
+<td style="text-align:center">是否可被高效区分</td>
+</tr>
+<tr>
+<td style="text-align:center">判断对象</td>
+<td style="text-align:center">单个字符串</td>
+<td style="text-align:center">通常是字符串分布或生成器输出</td>
+</tr>
+<tr>
+<td style="text-align:center">核心标准</td>
+<td style="text-align:center">最短生成程序是否足够长</td>
+<td style="text-align:center">高效观察者能否区别于真随机</td>
+</tr>
+<tr>
+<td style="text-align:center">是否可计算</td>
+<td style="text-align:center">不可计算</td>
+<td style="text-align:center">可通过计算安全定义进行研究</td>
+</tr>
+<tr>
+<td style="text-align:center">与伪随机生成器的关系</td>
+<td style="text-align:center">不易直接应用</td>
+<td style="text-align:center">自然导出伪随机生成器</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>行为主义方法能够自然地引出伪随机生成器的概念，而伪随机生成器具有大量实际应用，尤其是在密码学领域。</p>
+<h1 id="【严格研究方法】"><a href="#【严格研究方法】" class="headerlink" title="【严格研究方法】"></a>【严格研究方法】</h1><h2 id="启发式方法"><a href="#启发式方法" class="headerlink" title="启发式方法"></a>启发式方法</h2><h3 id="统计测试的评价方法"><a href="#统计测试的评价方法" class="headerlink" title="统计测试的评价方法"></a>统计测试的评价方法</h3><p>现实计算机中常用的伪随机生成器，往往采用一种<strong>启发式方法（Heuristic Approach）</strong>进行评价。</p>
+<p>这种方法将伪随机生成器视为能够产生一系列比特序列的程序，并通过一些指定的<strong>统计测试（Statistical Tests）</strong>判断这些序列是否具有随机性。如果生成器产生的序列能够通过这些统计测试，就认为该生成器输出的序列看起来是随机的。</p>
+<p>常见测试可能关注：</p>
+<ul>
+<li>0 和 1 的出现频率是否接近</li>
+<li>不同比特组合的分布是否均匀</li>
+<li>是否存在明显的周期</li>
+<li>是否存在重复模式</li>
+<li>不同位置的比特是否具有明显相关性</li>
+</ul>
+<h3 id="统计测试的局限性"><a href="#统计测试的局限性" class="headerlink" title="统计测试的局限性"></a>统计测试的局限性</h3><h4 id="缺乏系统性"><a href="#缺乏系统性" class="headerlink" title="缺乏系统性"></a>缺乏系统性</h4><p>但是，统计测试方法存在明显不足。用于检验伪随机生成器的统计测试通常是人为选择的，其选择具有一定的任意性，缺乏系统的理论基础。</p>
+<p>一个生成器通过了某些统计测试，只能说明这些测试没有发现其输出中的规律，并不能说明不存在其他高效算法能够发现规律。</p>
+<p>实际上，可以针对实际中常用的伪随机生成器，构造出某些高效的统计测试，从而区分伪随机生成器的输出和同长度的均匀随机字符串。因此，能够通过若干指定测试并不等于在计算意义上是伪随机的。</p>
+<h4 id="依赖具体应用"><a href="#依赖具体应用" class="headerlink" title="依赖具体应用"></a>依赖具体应用</h4><p>当一个新的应用程序需要使用随机序列时，如果采用启发式伪随机生成器，就必须进行大量测试，以判断应用使用伪随机序列时的行为是否与应用使用真正随机源时的行为相同。</p>
+<p>但问题在于，即使一个伪随机生成器在某个应用程序中没有造成明显影响，也不能保证它在另一个应用程序中同样安全。甚至只要对原有应用进行修改，就需要重新比较伪随机生成器和真正随机源，因为生成器输出中隐藏的非随机性，可能不会影响原始应用，却会对修改后的应用造成不良影响。</p>
+<p>因此，启发式伪随机生成器的可靠性是依赖于具体应用的，而不是普遍成立的。</p>
+<h4 id="密码学中的风险"><a href="#密码学中的风险" class="headerlink" title="密码学中的风险"></a>密码学中的风险</h4><p>在密码学应用中，这一问题会更加严重。</p>
+<p>一个密码学应用是否安全，不仅取决于算法本身，还取决于攻击者采用的攻击策略，只有在确定了敌手之后，具体的安全攻击场景才被完整确定。但是，密码系统设计者不可能提前知道所有敌手将采用什么攻击方式，也不能合理地假设敌手一定会采用某个已知的固定策略。</p>
+<p>因此，无法仅通过有限的实验测试，判断一个伪随机生成器是否会影响某个尚未确定策略的敌手。</p>
+<p>也就是说，不能通过测试预先判断伪随机生成器是否会被未来某个未知敌手利用。所以，将仅仅通过若干统计测试的伪随机生成器用于密码学目的，具有很高的风险。</p>
+<h2 id="严格定义的伪随机生成器"><a href="#严格定义的伪随机生成器" class="headerlink" title="严格定义的伪随机生成器"></a>严格定义的伪随机生成器</h2><h3 id="计算不可区分性要求"><a href="#计算不可区分性要求" class="headerlink" title="计算不可区分性要求"></a>计算不可区分性要求</h3><p>高效计算的概念自然地引出了一种新的对象等价关系：如果不存在任何高效过程能够区分两个对象，那么就可以认为这两个对象在计算上是等价的。</p>
+<p><strong>计算不可区分性（Computational Indistinguishability）</strong>是一种非常自然的等价概念，其不要求两个分布在数学上完全相同，而是要求任何计算能力受到限制的高效算法，都无法以明显高于随机猜测的概率区分它们。</p>
+<p>一个严格意义上的伪随机生成器所产生的序列，对于任何高效观察者而言，都应当看起来与真正随机序列相同。</p>
+<p>也就是说，不只是要求生成器通过某几个预先选定的统计测试，而是要求它能够通过所有高效的区分过程。其安全要求可以概括为：</p>
+<blockquote>
+<p>不存在任何高效算法，能够以<strong>不可忽略的优势（Non-negligible Advantage）</strong>区分伪随机生成器的输出和真正的均匀随机序列。</p>
+</blockquote>
+<p>其中，不可忽略的优势是指区分成功率相对于随机猜测存在一个在计算上足够明显的提升。</p>
+<h3 id="可替代性"><a href="#可替代性" class="headerlink" title="可替代性"></a>可替代性</h3><p>由于严格定义的伪随机生成器能够对任何高效观察者表现得像真正随机源，因此，它的输出可以替代任何高效应用程序中所需的真正随机序列。</p>
+<p>只要应用程序本身是高效的，这种替换就不会使应用程序的行为发生可被高效检测的变化。</p>
+<p>特别是在密码学中，没有任何高效敌手能够利用这种替换，即敌手无法通过观察系统使用的是伪随机序列还是真正随机序列而获得有效攻击优势。</p>
+<h2 id="区别-1"><a href="#区别-1" class="headerlink" title="区别"></a>区别</h2><ol>
+<li><strong>启发式方法</strong>：要求生成器通过一些指定的统计测试</li>
+<li><strong>严格方法</strong>：要求生成器无法被任何高效算法与真正随机源区分</li>
+</ol>
+<p>启发式方法只能说明没有被已选择的测试发现问题，而严格方法则要求不存在任何高效区分算法能够发现问题。</p>
+<p>因此，严格定义提供的是一个统一的、与具体应用无关的安全保证，而启发式方法只能提供针对有限测试的经验性保证。</p>
+
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>感谢您对我的支持，让我继续努力分享有用的技术与知识点！</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/wechatpay.jpg" alt="Alex_McAvoy 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/alipay.jpg" alt="Alex_McAvoy 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Alex_McAvoy
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://alex-mcavoy.github.io/notes/cryptology/6c1fca88.html" title="伪随机生成器的基本概念">https://alex-mcavoy.github.io/notes/cryptology/6c1fca88.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/notes/" rel="tag"># 学习笔记</a>
+              <a href="/tags/cryptology/" rel="tag"># 密码学</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/essay/ego/32edf8c6.html" rel="prev" title="20260701">
+      <i class="fa fa-chevron-left"></i> 20260701
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/notes/cryptology/3b085882.html" rel="next" title="计算不可区分性的基本概念">
+      计算不可区分性的基本概念 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E3%80%90%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5%E3%80%91"><span class="nav-number">1.</span> <span class="nav-text">【基本概念】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BC%AA%E9%9A%8F%E6%9C%BA%E7%94%9F%E6%88%90%E5%99%A8"><span class="nav-number">1.1.</span> <span class="nav-text">伪随机生成器</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BC%AA%E9%9A%8F%E6%9C%BA%E5%87%BD%E6%95%B0"><span class="nav-number">1.2.</span> <span class="nav-text">伪随机函数</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E3%80%90%E7%A0%94%E7%A9%B6%E5%8A%A8%E6%9C%BA%E3%80%91"><span class="nav-number">2.</span> <span class="nav-text">【研究动机】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9C%AC%E4%BD%93%E8%AE%BA%E9%9A%8F%E6%9C%BA%E6%80%A7"><span class="nav-number">2.1.</span> <span class="nav-text">本体论随机性</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Kolmogorov-%E9%9A%8F%E6%9C%BA%E6%80%A7"><span class="nav-number">2.1.1.</span> <span class="nav-text">Kolmogorov 随机性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Kolmogorov-%E5%A4%8D%E6%9D%82%E5%BA%A6"><span class="nav-number">2.1.2.</span> <span class="nav-text">Kolmogorov 复杂度</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%A1%8C%E4%B8%BA%E4%B8%BB%E4%B9%89%E9%9A%8F%E6%9C%BA%E6%80%A7"><span class="nav-number">2.2.</span> <span class="nav-text">行为主义随机性</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BC%AA%E9%9A%8F%E6%9C%BA%E6%80%A7"><span class="nav-number">2.2.1.</span> <span class="nav-text">伪随机性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AE%A1%E7%AE%97%E7%AD%89%E4%BB%B7%E5%8E%9F%E5%88%99"><span class="nav-number">2.2.2.</span> <span class="nav-text">计算等价原则</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8C%BA%E5%88%AB"><span class="nav-number">2.3.</span> <span class="nav-text">区别</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E3%80%90%E4%B8%A5%E6%A0%BC%E7%A0%94%E7%A9%B6%E6%96%B9%E6%B3%95%E3%80%91"><span class="nav-number">3.</span> <span class="nav-text">【严格研究方法】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%90%AF%E5%8F%91%E5%BC%8F%E6%96%B9%E6%B3%95"><span class="nav-number">3.1.</span> <span class="nav-text">启发式方法</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BB%9F%E8%AE%A1%E6%B5%8B%E8%AF%95%E7%9A%84%E8%AF%84%E4%BB%B7%E6%96%B9%E6%B3%95"><span class="nav-number">3.1.1.</span> <span class="nav-text">统计测试的评价方法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BB%9F%E8%AE%A1%E6%B5%8B%E8%AF%95%E7%9A%84%E5%B1%80%E9%99%90%E6%80%A7"><span class="nav-number">3.1.2.</span> <span class="nav-text">统计测试的局限性</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%BC%BA%E4%B9%8F%E7%B3%BB%E7%BB%9F%E6%80%A7"><span class="nav-number">3.1.2.1.</span> <span class="nav-text">缺乏系统性</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%BE%9D%E8%B5%96%E5%85%B7%E4%BD%93%E5%BA%94%E7%94%A8"><span class="nav-number">3.1.2.2.</span> <span class="nav-text">依赖具体应用</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%AF%86%E7%A0%81%E5%AD%A6%E4%B8%AD%E7%9A%84%E9%A3%8E%E9%99%A9"><span class="nav-number">3.1.2.3.</span> <span class="nav-text">密码学中的风险</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%A5%E6%A0%BC%E5%AE%9A%E4%B9%89%E7%9A%84%E4%BC%AA%E9%9A%8F%E6%9C%BA%E7%94%9F%E6%88%90%E5%99%A8"><span class="nav-number">3.2.</span> <span class="nav-text">严格定义的伪随机生成器</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AE%A1%E7%AE%97%E4%B8%8D%E5%8F%AF%E5%8C%BA%E5%88%86%E6%80%A7%E8%A6%81%E6%B1%82"><span class="nav-number">3.2.1.</span> <span class="nav-text">计算不可区分性要求</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%AF%E6%9B%BF%E4%BB%A3%E6%80%A7"><span class="nav-number">3.2.2.</span> <span class="nav-text">可替代性</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8C%BA%E5%88%AB-1"><span class="nav-number">3.3.</span> <span class="nav-text">区别</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">  
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Alex_McAvoy"
+      src="/assets/img/head.jpg">
+  <p class="site-author-name" itemprop="name">Alex_McAvoy</p>
+  <div class="site-description" itemprop="description">想要成为渔夫的猎手</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">765</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">75</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">86</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Alex-McAvoy" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;Alex-McAvoy" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/u011815404" title="CSDN → https:&#x2F;&#x2F;blog.csdn.net&#x2F;u011815404" rel="noopener" target="_blank"><i class="fas fa-copyright fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+<!-- 静态项目链接 -->
+<div class="links-of-blogroll motion-element">
+  <div class="links-of-blogroll-title">
+    <i class="fas fa-external-link-alt fa-fw"></i> 站点静态项目
+  </div>
+  <ul class="links-of-blogroll-list">
+  <li class="links-of-blogroll-item">
+      <a href="https://alex-mcavoy.github.io/bookshelf/index.html" target="_blank" title="终末之诗">
+        我的书架（施工中...）
+      </a>
+    </li>
+    <li class="links-of-blogroll-item">
+      <a href="https://alex-mcavoy.github.io/end_poem/index.html" target="_blank" title="终末之诗">
+        终末之诗
+      </a>
+    </li>
+	<li class="links-of-blogroll-item">
+      <a href="https://alex-mcavoy.github.io/2nd_anniversary_of_pyc-zwx/index.html" target="_blank" title="逄总与张总的两周年纪念页（朋友已分手，该项目无限延期）">
+        <del>逄总与张总的两周年纪念页<br/>（朋友已分手，该项目无限延期）</del>
+      </a>
+    </li>
+  </ul>
+</div>
+
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdz20172133" title="https:&#x2F;&#x2F;blog.csdn.net&#x2F;sdz20172133" rel="noopener" target="_blank">神仙队友</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://pxlsdz.gitee.io/" title="https:&#x2F;&#x2F;pxlsdz.gitee.io&#x2F;" rel="noopener" target="_blank">神仙队友blog2</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdau_fangshifeng" title="https:&#x2F;&#x2F;blog.csdn.net&#x2F;sdau_fangshifeng" rel="noopener" target="_blank">酷头</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://bycore.net/" title="https:&#x2F;&#x2F;bycore.net" rel="noopener" target="_blank">凉了的某饼同学</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://kris-cn.github.io/" title="http:&#x2F;&#x2F;kris-cn.github.io&#x2F;" rel="noopener" target="_blank">翟孙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://deng.fun/" title="http:&#x2F;&#x2F;deng.fun&#x2F;" rel="noopener" target="_blank">芙蓉姐姐</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/wentong_Xu" title="https:&#x2F;&#x2F;blog.csdn.net&#x2F;wentong_Xu" rel="noopener" target="_blank">小黑贱胖子</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.yuheng.tech/" title="https:&#x2F;&#x2F;www.yuheng.tech&#x2F;" rel="noopener" target="_blank">咸于</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/lanshan1111" title="https:&#x2F;&#x2F;blog.csdn.net&#x2F;lanshan1111" rel="noopener" target="_blank">肥硕硕</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdauguanweihong" title="https:&#x2F;&#x2F;blog.csdn.net&#x2F;sdauguanweihong" rel="noopener" target="_blank">管少</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_41661919" title="https:&#x2F;&#x2F;blog.csdn.net&#x2F;qq_41661919" rel="noopener" target="_blank">俊杰</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_40859951" title="https:&#x2F;&#x2F;blog.csdn.net&#x2F;qq_40859951" rel="noopener" target="_blank">峰哥</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/LSD20164388" title="https:&#x2F;&#x2F;blog.csdn.net&#x2F;LSD20164388" rel="noopener" target="_blank">狗冬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37868325" title="https:&#x2F;&#x2F;blog.csdn.net&#x2F;qq_37868325" rel="noopener" target="_blank">妍大佬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://sanshuiii.github.io/" title="https:&#x2F;&#x2F;sanshuiii.github.io&#x2F;" rel="noopener" target="_blank">sanshuiii</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://zjpzhao.github.io/" title="https:&#x2F;&#x2F;zjpzhao.github.io&#x2F;" rel="noopener" target="_blank">brain</a>
+        </li>
+    </ul>
+  </div>
+
+		
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+  
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2026</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Alex_McAvoy</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+</br>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+<script src="/js/bookmark.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '48fd73a538d3fa927f65',
+      clientSecret: '56618aefeee90bac3c20de8d51bb0b985d67252d',
+      repo        : 'Gitalk-Comment',
+      owner       : 'Alex-McAvoy',
+      admin       : ['Alex-McAvoy'],
+      id          : '0b022246c3ee3c43fe976020a44e9966',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+  
+  <!-- 鼠标单击粒子特效 -->
+  <script type="text/javascript" src="/js/cursor-effects.js"></script>
+  <!-- 多级目录 -->
+  <script type="text/javascript" src="/js/category.js"></script>
+  
+</body>
+</html>
