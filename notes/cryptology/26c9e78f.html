@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 8.1.2">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/img/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/assets/img/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/pace-js@1/themes/blue/pace-theme-minimal.css">
+  <script src="//cdn.jsdelivr.net/npm/pace-js@1/pace.min.js"></script>
+
+
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"alex-mcavoy.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":16,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":true,"color":"#ff0000","save":"manual"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":true},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.json"};
+  </script>
+
+  <meta name="description" content="【引入】计算不可区分性，是基于概率多项式时间算法来定义的，即如果不存在任何 PPT 区分器能够有效区分两个概率系综，就称它们是计算不可区分的。 考虑一个更强的不可区分性概念：多项式规模电路意义下的不可区分性（Indistinguishability by Polynomial-Size Circuits）。其不只考虑统一的多项式时间算法，而是允许对每个输入长度 $n$，都有一个专门设计的电路 $C">
+<meta property="og:type" content="article">
+<meta property="og:title" content="多项式规模电路的计算不可区分性">
+<meta property="og:url" content="https://alex-mcavoy.github.io/notes/cryptology/26c9e78f.html">
+<meta property="og:site_name" content="Alex_McAvoy">
+<meta property="og:description" content="【引入】计算不可区分性，是基于概率多项式时间算法来定义的，即如果不存在任何 PPT 区分器能够有效区分两个概率系综，就称它们是计算不可区分的。 考虑一个更强的不可区分性概念：多项式规模电路意义下的不可区分性（Indistinguishability by Polynomial-Size Circuits）。其不只考虑统一的多项式时间算法，而是允许对每个输入长度 $n$，都有一个专门设计的电路 $C">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-07-20T11:52:00.000Z">
+<meta property="article:modified_time" content="2026-07-21T11:05:19.760Z">
+<meta property="article:author" content="Alex_McAvoy">
+<meta property="article:tag" content="学习笔记">
+<meta property="article:tag" content="密码学">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://alex-mcavoy.github.io/notes/cryptology/26c9e78f.html">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>多项式规模电路的计算不可区分性 | Alex_McAvoy</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Alex_McAvoy</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">想要成为渔夫的猎手</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+
+	
+	
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/notes/cryptology/26c9e78f.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/assets/img/head.jpg">
+      <meta itemprop="name" content="Alex_McAvoy">
+      <meta itemprop="description" content="想要成为渔夫的猎手">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Alex_McAvoy">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          多项式规模电路的计算不可区分性
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2026-07-20 19:52:00" itemprop="dateCreated datePublished" datetime="2026-07-20T19:52:00+08:00">2026-07-20</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/notes/" itemprop="url" rel="index"><span itemprop="name">学习笔记</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/notes/cryptology/" itemprop="url" rel="index"><span itemprop="name">密码学</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>2.9k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>3 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="【引入】"><a href="#【引入】" class="headerlink" title="【引入】"></a>【引入】</h1><p>计算不可区分性，是基于概率多项式时间算法来定义的，即如果不存在任何 PPT 区分器能够有效区分两个概率系综，就称它们是计算不可区分的。</p>
+<p>考虑一个更强的不可区分性概念：<strong>多项式规模电路意义下的不可区分性（Indistinguishability by Polynomial-Size Circuits）</strong>。其不只考虑统一的多项式时间算法，而是允许对每个输入长度 $n$，都有一个专门设计的电路 $C_n$ 作为区分器。</p>
+<p>具体来说，PPT 算法是均匀的，它必须由一个统一的算法描述，并且能够处理所有输入长度；而电路族是非均匀的，它允许每个输入长度 $n$ 都有一个单独设计的电路 $C_n$。</p>
+<p>也就是说：</p>
+<ol>
+<li><strong>PPT 区分器</strong>：一个通用程序，输入任意长度样本后尝试区分</li>
+<li><strong>电路族区分器</strong>：每个长度 $n$ 都有一个专门的区分电路 $C_n$</li>
+</ol>
+<p>因此，电路族模型可能比 PPT 模型更强，因为它允许针对每个长度提前硬编码一些信息，而这些信息未必能由统一算法高效生成。</p>
+<p>所以，如果两个概率系综连所有多项式规模电路族都无法区分，那么它们当然也无法被 PPT 算法区分。</p>
+<h1 id="【多项式规模电路族】"><a href="#【多项式规模电路族】" class="headerlink" title="【多项式规模电路族】"></a>【多项式规模电路族】</h1><p>一个电路族 $\{C_n\}_{n\in\mathbb N}$ 是指对每个输入长度 $n$，都有一个对应的布尔电路 $C_n$。其中，$C_n$ 只处理长度为 $n$ 的输入，输出一个比特 $0$ 或 $1$。</p>
+<p>如果 $C_n$ 的规模被某个多项式 $\mathrm{poly}’(n)$ 上界控制，即：</p>
+<script type="math/tex; mode=display">
+|C_n|\leq \mathrm{poly}'(n)</script><p>则称 $\{C_n\}_{n\in\mathbb N}$ 是一个<strong>多项式规模电路族（Polynomial-Size Circuit Family）</strong>。其中的规模，通常指电路中门的数量。</p>
+<h1 id="【多项式规模电路的不可区分性】"><a href="#【多项式规模电路的不可区分性】" class="headerlink" title="【多项式规模电路的不可区分性】"></a>【多项式规模电路的不可区分性】</h1><h2 id="自然数索引形式"><a href="#自然数索引形式" class="headerlink" title="自然数索引形式"></a>自然数索引形式</h2><p>设两个概率系综分别为 $X=\{X_n\}_{n\in\mathbb N}$ 和 $Y=\{Y_n\}_{n\in\mathbb N}$，如果对于任意多项式规模电路族 $\{C_n\}_{n\in\mathbb N}$，任意正多项式 $\mathrm{poly}(\cdot)$，以及所有充分大的 $n$，都有：</p>
+<script type="math/tex; mode=display">
+\left|
+P[C_n(X_n)=1]
+-
+P[C_n(Y_n)=1]
+\right|
+<
+\frac{1}{\mathrm{poly}(n)}</script><p>则称 $X$ 和 $Y$ 是<strong>多项式规模电路意义下不可区分的（Indistinguishable by Polynomial-Size Circuits）</strong>。</p>
+<p>直观来看，这个定义的含义是：即使允许每个长度 $n$ 都有一个专门设计的多项式规模电路 $C_n$，该电路仍然无法以不可忽略的优势区分 $X_n$ 和 $Y_n$。</p>
+<h2 id="字符串索引形式"><a href="#字符串索引形式" class="headerlink" title="字符串索引形式"></a>字符串索引形式</h2><h3 id="弱形式"><a href="#弱形式" class="headerlink" title="弱形式"></a>弱形式</h3><p>设 $S$ 是一个字符串集合，两个概率系综分别为 $X=\{X_w\}_{w\in S}$ 和 $Y=\{Y_w\}_{w\in S}$，如果对于任意多项式规模电路族 $\{C_n\}_{n\in\mathbb N}$，任意正多项式 $\mathrm{poly}(\cdot)$，以及所有长度充分大的 $w\in S$，都有：</p>
+<script type="math/tex; mode=display">
+\left|
+P[C_{|w|}(X_w)=1]
+-
+P[C_{|w|}(Y_w)=1]
+\right|
+<
+\frac{1}{\mathrm{poly}(|w|)}</script><p>则称 $X$ 和 $Y$ 是多项式规模电路意义下不可区分的。</p>
+<p>这里电路使用的是 $C_{|w|}$，电路只依赖于索引字符串 $w$ 的长度 $|w|$，而不是依赖于具体的 $w$。</p>
+<h3 id="强形式"><a href="#强形式" class="headerlink" title="强形式"></a>强形式</h3><p>对于上述由字符串索引定义的不可区分性，还可以提出一个更强的条件，即不再只允许电路依赖于长度 $|w|$，而是允许每个具体的字符串 $w$ 都有一个专门电路 $C_w$。</p>
+<p>形式上，要求对于任意多项式 $\mathrm{poly}’(\cdot)$、任意满足 $|C_w|\leq \mathrm{poly}’(|w|)$ 的电路集合 $\{C_w\}_{w\in S}$，任意正多项式 $\mathrm{poly}(\cdot)$，以及所有长度充分大的 $w\in S$，都有：</p>
+<script type="math/tex; mode=display">
+\left|
+P[C_w(X_w)=1]
+-
+P[C_w(Y_w)=1]
+\right|
+<
+\frac{1}{\mathrm{poly}(|w|)}</script><p>这个条件看起来更强，因为它允许电路不仅依赖输入长度，还可以依赖具体索引 $w$。</p>
+<p>也就是说，原定义中，所有长度相同的 $w$ 共用同一个电路 $C_{|w|}$，而新条件中，每个具体的 $w$ 都可以有自己的电路 $C_w$。</p>
+<h3 id="等价性"><a href="#等价性" class="headerlink" title="等价性"></a>等价性</h3><p>强形式相比于弱形式有一个更强的条件，但实际上两种定义形式是等价的。</p>
+<p>假设存在某些多项式 $\mathrm{poly}’(\cdot)$ 和 $\mathrm{poly}(\cdot)$，以及无穷多个字符串 $w$，使得：</p>
+<script type="math/tex; mode=display">
+\left|
+P[C_w(X_w)=1]
+-
+P[C_w(Y_w)=1]
+\right|
+\geq
+\frac{1}{\mathrm{poly}(|w|)}</script><p>也就是说，针对这些 $w$，存在电路 $C_w$ 能够明显区分 $X_w$ 和 $Y_w$。</p>
+<p>由于这样的 $w$ 有无穷多个，所以可以找到一个无限的长度集合 $N$，使得对于每个 $n\in N$，都存在某个长度为 $n$ 的字符串 $w_n\in\{0,1\}^n$ 违反上述条件。也就是说，对于每个 $n\in N$，都有一个具体字符串 $w_n$，以及对应电路 $C_{w_n}$，能够明显区分 $X_{w_n}$ 和 $Y_{w_n}$。</p>
+<p>现在定义一个新的电路族 $C’_n\overset{\mathrm{def}}{=}C_{w_n}$，由于 $C_{w_n}$ 的规模至多为：</p>
+<script type="math/tex; mode=display">
+\mathrm{poly}'(|w_n|)=\mathrm{poly}'(n)</script><p>所以 $\{C’_n\}$ 是一个多项式规模电路族。</p>
+<p>但这个电路族 $C’_n$ 对无穷多个 $n$ 都能明显区分对应的 $X_{w_n}$ 和 $Y_{w_n}$，从而违反弱形式的定义。</p>
+<p>因此，如果弱形式的定义成立，那么这个强形式的定义也必须成立，这说明二者等价。</p>
+<h1 id="【概率电路的去随机化】"><a href="#【概率电路的去随机化】" class="headerlink" title="【概率电路的去随机化】"></a>【概率电路的去随机化】</h1><p>在上述定义中，即使允许电路是概率电路，也不会增强区分能力。也就是说，允许电路内部随机性、使用算法随机选择，并不会使它比确定性电路族更强。</p>
+<p>这是因为，如果一个概率电路能够以某个不可忽略优势区分 $X_n$ 和 $Y_n$，那么它的区分优势是对内部随机性的平均结果。既然平均区分优势不可忽略，就必然存在某一种固定随机选择，使得对应的确定性电路也能够达到至少同样的区分效果。</p>
+<p>因此，可以把这组内部随机性固定下来，将概率电路转化为确定性电路。</p>
+<p>所以，在多项式规模电路意义下，考虑确定性电路族已经足够。</p>
+<h1 id="【重复实验的保持性】"><a href="#【重复实验的保持性】" class="headerlink" title="【重复实验的保持性】"></a>【重复实验的保持性】</h1><p>多项式规模电路意义下的不可区分性在重复实验下仍然保持，而且这一次不需要假设两个概率系综是多项式时间可构造的。</p>
+<p>也就是说，如果 $X$ 和 $Y$ 在多项式规模电路意义下不可区分，那么即使区分器拿到多项式多个独立样本，也仍然无法区分它们。</p>
+<p>在 PPT 情形下，为了证明重复采样下仍然不可区分，需要假设 $X$ 和 $Y$ 都是多项式时间可构造的，而在电路模型中，电路族是非均匀的，可以把某些辅助信息硬编码进电路中，因此重复实验下的保持性可以在不要求分布可高效构造的情况下成立。</p>
+
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>感谢您对我的支持，让我继续努力分享有用的技术与知识点！</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/wechatpay.jpg" alt="Alex_McAvoy 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/alipay.jpg" alt="Alex_McAvoy 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Alex_McAvoy
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://alex-mcavoy.github.io/notes/cryptology/26c9e78f.html" title="多项式规模电路的计算不可区分性">https://alex-mcavoy.github.io/notes/cryptology/26c9e78f.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/notes/" rel="tag"># 学习笔记</a>
+              <a href="/tags/cryptology/" rel="tag"># 密码学</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/notes/cryptology/a8afdfbc.html" rel="prev" title="高效构造性系综的计算不可区分性">
+      <i class="fa fa-chevron-left"></i> 高效构造性系综的计算不可区分性
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/notes/cryptology/aeb6f09.html" rel="next" title="均匀分布系综与伪随机系综">
+      均匀分布系综与伪随机系综 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E3%80%90%E5%BC%95%E5%85%A5%E3%80%91"><span class="nav-number">1.</span> <span class="nav-text">【引入】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E3%80%90%E5%A4%9A%E9%A1%B9%E5%BC%8F%E8%A7%84%E6%A8%A1%E7%94%B5%E8%B7%AF%E6%97%8F%E3%80%91"><span class="nav-number">2.</span> <span class="nav-text">【多项式规模电路族】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E3%80%90%E5%A4%9A%E9%A1%B9%E5%BC%8F%E8%A7%84%E6%A8%A1%E7%94%B5%E8%B7%AF%E7%9A%84%E4%B8%8D%E5%8F%AF%E5%8C%BA%E5%88%86%E6%80%A7%E3%80%91"><span class="nav-number">3.</span> <span class="nav-text">【多项式规模电路的不可区分性】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%87%AA%E7%84%B6%E6%95%B0%E7%B4%A2%E5%BC%95%E5%BD%A2%E5%BC%8F"><span class="nav-number">3.1.</span> <span class="nav-text">自然数索引形式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AD%97%E7%AC%A6%E4%B8%B2%E7%B4%A2%E5%BC%95%E5%BD%A2%E5%BC%8F"><span class="nav-number">3.2.</span> <span class="nav-text">字符串索引形式</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BC%B1%E5%BD%A2%E5%BC%8F"><span class="nav-number">3.2.1.</span> <span class="nav-text">弱形式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BC%BA%E5%BD%A2%E5%BC%8F"><span class="nav-number">3.2.2.</span> <span class="nav-text">强形式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AD%89%E4%BB%B7%E6%80%A7"><span class="nav-number">3.2.3.</span> <span class="nav-text">等价性</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E3%80%90%E6%A6%82%E7%8E%87%E7%94%B5%E8%B7%AF%E7%9A%84%E5%8E%BB%E9%9A%8F%E6%9C%BA%E5%8C%96%E3%80%91"><span class="nav-number">4.</span> <span class="nav-text">【概率电路的去随机化】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E3%80%90%E9%87%8D%E5%A4%8D%E5%AE%9E%E9%AA%8C%E7%9A%84%E4%BF%9D%E6%8C%81%E6%80%A7%E3%80%91"><span class="nav-number">5.</span> <span class="nav-text">【重复实验的保持性】</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">  
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Alex_McAvoy"
+      src="/assets/img/head.jpg">
+  <p class="site-author-name" itemprop="name">Alex_McAvoy</p>
+  <div class="site-description" itemprop="description">想要成为渔夫的猎手</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">772</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">75</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">86</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Alex-McAvoy" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;Alex-McAvoy" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/u011815404" title="CSDN → https:&#x2F;&#x2F;blog.csdn.net&#x2F;u011815404" rel="noopener" target="_blank"><i class="fas fa-copyright fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+<!-- 静态项目链接 -->
+<div class="links-of-blogroll motion-element">
+  <div class="links-of-blogroll-title">
+    <i class="fas fa-external-link-alt fa-fw"></i> 站点静态项目
+  </div>
+  <ul class="links-of-blogroll-list">
+  <li class="links-of-blogroll-item">
+      <a href="https://alex-mcavoy.github.io/bookshelf/index.html" target="_blank" title="终末之诗">
+        我的书架（施工中...）
+      </a>
+    </li>
+    <li class="links-of-blogroll-item">
+      <a href="https://alex-mcavoy.github.io/end_poem/index.html" target="_blank" title="终末之诗">
+        终末之诗
+      </a>
+    </li>
+	<li class="links-of-blogroll-item">
+      <a href="https://alex-mcavoy.github.io/2nd_anniversary_of_pyc-zwx/index.html" target="_blank" title="逄总与张总的两周年纪念页（朋友已分手，该项目无限延期）">
+        <del>逄总与张总的两周年纪念页<br/>（朋友已分手，该项目无限延期）</del>
+      </a>
+    </li>
+  </ul>
+</div>
+
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdz20172133" title="https:&#x2F;&#x2F;blog.csdn.net&#x2F;sdz20172133" rel="noopener" target="_blank">神仙队友</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://pxlsdz.gitee.io/" title="https:&#x2F;&#x2F;pxlsdz.gitee.io&#x2F;" rel="noopener" target="_blank">神仙队友blog2</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdau_fangshifeng" title="https:&#x2F;&#x2F;blog.csdn.net&#x2F;sdau_fangshifeng" rel="noopener" target="_blank">酷头</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://bycore.net/" title="https:&#x2F;&#x2F;bycore.net" rel="noopener" target="_blank">凉了的某饼同学</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://kris-cn.github.io/" title="http:&#x2F;&#x2F;kris-cn.github.io&#x2F;" rel="noopener" target="_blank">翟孙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://deng.fun/" title="http:&#x2F;&#x2F;deng.fun&#x2F;" rel="noopener" target="_blank">芙蓉姐姐</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/wentong_Xu" title="https:&#x2F;&#x2F;blog.csdn.net&#x2F;wentong_Xu" rel="noopener" target="_blank">小黑贱胖子</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.yuheng.tech/" title="https:&#x2F;&#x2F;www.yuheng.tech&#x2F;" rel="noopener" target="_blank">咸于</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/lanshan1111" title="https:&#x2F;&#x2F;blog.csdn.net&#x2F;lanshan1111" rel="noopener" target="_blank">肥硕硕</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdauguanweihong" title="https:&#x2F;&#x2F;blog.csdn.net&#x2F;sdauguanweihong" rel="noopener" target="_blank">管少</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_41661919" title="https:&#x2F;&#x2F;blog.csdn.net&#x2F;qq_41661919" rel="noopener" target="_blank">俊杰</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_40859951" title="https:&#x2F;&#x2F;blog.csdn.net&#x2F;qq_40859951" rel="noopener" target="_blank">峰哥</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/LSD20164388" title="https:&#x2F;&#x2F;blog.csdn.net&#x2F;LSD20164388" rel="noopener" target="_blank">狗冬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37868325" title="https:&#x2F;&#x2F;blog.csdn.net&#x2F;qq_37868325" rel="noopener" target="_blank">妍大佬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://sanshuiii.github.io/" title="https:&#x2F;&#x2F;sanshuiii.github.io&#x2F;" rel="noopener" target="_blank">sanshuiii</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://zjpzhao.github.io/" title="https:&#x2F;&#x2F;zjpzhao.github.io&#x2F;" rel="noopener" target="_blank">brain</a>
+        </li>
+    </ul>
+  </div>
+
+		
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+  
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2026</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Alex_McAvoy</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+</br>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+<script src="/js/bookmark.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '48fd73a538d3fa927f65',
+      clientSecret: '56618aefeee90bac3c20de8d51bb0b985d67252d',
+      repo        : 'Gitalk-Comment',
+      owner       : 'Alex-McAvoy',
+      admin       : ['Alex-McAvoy'],
+      id          : '3cdbc1ddcaeac20df556e4f8cd44f3d4',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+  
+  <!-- 鼠标单击粒子特效 -->
+  <script type="text/javascript" src="/js/cursor-effects.js"></script>
+  <!-- 多级目录 -->
+  <script type="text/javascript" src="/js/category.js"></script>
+  
+</body>
+</html>
