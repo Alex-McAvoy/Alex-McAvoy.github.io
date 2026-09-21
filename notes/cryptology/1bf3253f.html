@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 8.1.2">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/img/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/assets/img/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/pace-js@1/themes/blue/pace-theme-minimal.css">
+  <script src="//cdn.jsdelivr.net/npm/pace-js@1/pace.min.js"></script>
+
+
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"alex-mcavoy.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":16,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":true,"color":"#ff0000","save":"manual"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":true},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.json"};
+  </script>
+
+  <meta name="description" content="【引入】伪随机序列在密码学应用中有一个非常重要的性质：不可预测性（Unpredictability）。 直观来说，一个序列是不可预测的，即代表任何高效算法即使已经看到了这个序列的前面若干位，也无法以明显高于随机猜测的概率预测下一位。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="伪随机性与不可预测性">
+<meta property="og:url" content="https://alex-mcavoy.github.io/notes/cryptology/1bf3253f.html">
+<meta property="og:site_name" content="Alex_McAvoy">
+<meta property="og:description" content="【引入】伪随机序列在密码学应用中有一个非常重要的性质：不可预测性（Unpredictability）。 直观来说，一个序列是不可预测的，即代表任何高效算法即使已经看到了这个序列的前面若干位，也无法以明显高于随机猜测的概率预测下一位。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-09-19T15:43:00.000Z">
+<meta property="article:modified_time" content="2026-09-19T17:37:49.619Z">
+<meta property="article:author" content="Alex_McAvoy">
+<meta property="article:tag" content="学习笔记">
+<meta property="article:tag" content="密码学">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://alex-mcavoy.github.io/notes/cryptology/1bf3253f.html">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>伪随机性与不可预测性 | Alex_McAvoy</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Alex_McAvoy</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">想要成为渔夫的猎手</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+
+	
+	
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/notes/cryptology/1bf3253f.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/assets/img/head.jpg">
+      <meta itemprop="name" content="Alex_McAvoy">
+      <meta itemprop="description" content="想要成为渔夫的猎手">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Alex_McAvoy">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          伪随机性与不可预测性
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2026-09-19 23:43:00" itemprop="dateCreated datePublished" datetime="2026-09-19T23:43:00+08:00">2026-09-19</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/notes/" itemprop="url" rel="index"><span itemprop="name">学习笔记</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/notes/cryptology/" itemprop="url" rel="index"><span itemprop="name">密码学</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>7k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>6 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="【引入】"><a href="#【引入】" class="headerlink" title="【引入】"></a>【引入】</h1><p>伪随机序列在密码学应用中有一个非常重要的性质：<strong>不可预测性（Unpredictability）</strong>。</p>
+<p>直观来说，一个序列是不可预测的，即代表任何高效算法即使已经看到了这个序列的前面若干位，也无法以明显高于随机猜测的概率预测下一位。</p>
+<p>因为对于一个真正均匀随机的二进制序列来说，即使知道前面所有位，也无法帮助预测下一位。下一位仍然只能以概率 $\frac{1}{2}$ 猜中。因此，如果一个序列看起来像随机序列，那么它也应该具有这种下一位不可预测的性质。</p>
+<h1 id="【不可预测性】"><a href="#【不可预测性】" class="headerlink" title="【不可预测性】"></a>【不可预测性】</h1><h2 id="定义"><a href="#定义" class="headerlink" title="定义"></a>定义</h2><p>若对于系综 $\{X_n\}_{n\in\mathbb{N}}$，任意概率多项式时间算法 $A$，任意正多项式 $\mathrm{poly}(\cdot)$，以及所有充分大的 $n$，都有：</p>
+<script type="math/tex; mode=display">
+P[A(1^{|X_n|},X_n)=\mathrm{next}_A(X_n)] < \frac{1}{2}+\frac{1}{\mathrm{poly}(n)}</script><p>则称该系综 $\{X_n\}_{n\in\mathbb{N}}$ 在多项式时间内不可预测。其中，$\mathrm{next}_A(x)$ 表示算法 $A$ 尚未读取的下一位。</p>
+<p>假设算法 $A$ 在输入 $(1^{|x|},x)$ 时，只读取了 $x$ 的前 $k&lt;|x|$ 位，那么有：</p>
+<script type="math/tex; mode=display">
+\mathrm{next}_A(x)=x_{k+1}</script><p>如果算法 $A$ 把整个字符串 $x$ 都读完了，那么此时已经不存在下一位可以预测，因此 $\mathrm{next}_A(x)$ 被定义为一个均匀随机比特。</p>
+<p>同时，算法 $A$ 的输入是 $(1^{|x|},x)$，其中的 $1^{|x|}$ 是一个长度为 $|x|$ 的一元字符串，其作用是让算法在真正读取 $x$ 之前，就知道输入字符串的长度。这是因为，如果算法 $A$ 读取了整个 $x$，那么它必须去猜一个完全随机的比特，因此成功概率不可能超过 $\frac{1}{2}$。真正有意义的情况是，算法 $A$ 只读取 $x$ 的前 $k$ 位，然后尝试根据这 $k$ 位预测第 $k+1$ 位。</p>
+<h2 id="含义"><a href="#含义" class="headerlink" title="含义"></a>含义</h2><p>一个系综 $\{X_n\}_{n\in\mathbb{N}}$ 在多项式时间内不可预测的意思是：不存在任何概率多项式时间算法，能够在看到序列前缀之后，以不可忽略地高于 $\frac{1}{2}$ 的概率预测下一位。</p>
+<p>其中，不可忽略地高于 $\frac{1}{2}$ 的概率是指存在某个多项式 $\mathrm{poly}(n)$，使预测成功概率至少达到：</p>
+<script type="math/tex; mode=display">
+\frac{1}{2}+\frac{1}{\mathrm{poly}(n)}</script><p>如果某个算法能够达到这种优势，那么这个序列就是可预测的</p>
+<h1 id="【伪随机性的等价定理】"><a href="#【伪随机性的等价定理】" class="headerlink" title="【伪随机性的等价定理】"></a>【伪随机性的等价定理】</h1><blockquote>
+<p><strong>Theorem</strong>：一个系综 $\{X_n\}_{n\in\mathbb{N}}$ 是伪随机的，当且仅当它在多项式时间内不可预测。</p>
+</blockquote>
+<p>该定理说明，在计算复杂度意义下，一个序列的伪随机性和下一位不可预测性是等价的。</p>
+<p>换句话说：</p>
+<ol>
+<li>如果一个序列是伪随机的，那么任何高效算法都无法根据前缀预测下一位</li>
+<li>如果任何高效算法都无法根据前缀预测下一位，那么这个序列不能被高效地区分于真正随机序列，满足伪随机性</li>
+</ol>
+<h1 id="【定理证明】"><a href="#【定理证明】" class="headerlink" title="【定理证明】"></a>【定理证明】</h1><h2 id="伪随机性推出不可预测性"><a href="#伪随机性推出不可预测性" class="headerlink" title="伪随机性推出不可预测性"></a>伪随机性推出不可预测性</h2><h3 id="证明思路"><a href="#证明思路" class="headerlink" title="证明思路"></a>证明思路</h3><p>如果 $\{X_n\}$ 是伪随机的，那么它与某个均匀分布系综在多项式时间内不可区分，而真正的均匀随机序列显然是不可预测的，因为无论算法多么强大，只要它没有看到下一位，就不可能以超过 $\frac{1}{2}$ 的概率预测下一位。</p>
+<p>因此，如果 $\{X_n\}$ 是伪随机的，它也必须是不可预测的。</p>
+<p>否则，如果存在一个算法能够预测 $\{X_n\}$ 的下一位，那么就可以利用这个预测算法区分 $\{X_n\}$ 和真正的均匀随机序列，从而与伪随机性的假设矛盾。</p>
+<h3 id="证明"><a href="#证明" class="headerlink" title="证明"></a>证明</h3><p>不失一般性地假设 $X_n$ 是长度为 $n$ 的随机变量，即 $|X_n|=n$。此时，$\{X_n\}$ 与标准均匀随机集合 $\{U_n\}$ 在多项式时间内不可区分。</p>
+<p>反设 $\{X_n\}$ 在多项式时间内是可预测的，也就是说存在一个概率多项式时间算法 $A$、某个多项式 $\mathrm{poly}$，以及无穷多个 $n$，使得：</p>
+<script type="math/tex; mode=display">
+P[A(1^n,X_n)=\mathrm{next}_A(X_n)] \geq \frac{1}{2}+\frac{1}{\mathrm{poly}(n)}</script><p>接下来利用预测算法 $A$ 构造区分器 $D$，区分器 $D$ 在输入 $y$ 时，执行如下操作：</p>
+<ol>
+<li>运行算法 $A(1^{|y|},y)$</li>
+<li>记录算法 $A$ 实际读取了多少位</li>
+<li>记录算法 $A$ 对下一位的预测</li>
+<li>如果预测正确，则输出 $1$；如果预测错误，则输出 $0$</li>
+</ol>
+<p>显然，对于 $X_n$，由于 $A$ 能够成功预测其下一位，所以有：</p>
+<script type="math/tex; mode=display">
+P[D(X_n)=1] = P[A(1^n,X_n)=\mathrm{next}_A(X_n)] \geq \frac{1}{2}+\frac{1}{\mathrm{poly}(n)}</script><p>而对于真正均匀随机的 $U_n$，下一位与前缀完全独立，因此无论 $A$ 如何预测，都不可能以超过 $\frac{1}{2}$ 的概率成功，即：</p>
+<script type="math/tex; mode=display">
+P[D(U_n)=1] = P[A(1^n,U_n)=\mathrm{next}_A(U_n)] \leq \frac{1}{2}</script><p>那么有：</p>
+<script type="math/tex; mode=display">
+P[D(X_n)=1]-P[D(U_n)=1] \geq \frac{1}{\mathrm{poly}(n)}</script><p>这说明 $D$ 能够以不可忽略优势区分 $X_n$ 和 $U_n$，与 $X_n$ 是伪随机的假设矛盾。</p>
+<p>因此，伪随机性推出不可预测性。</p>
+<h2 id="不可预测性推出伪随机性"><a href="#不可预测性推出伪随机性" class="headerlink" title="不可预测性推出伪随机性"></a>不可预测性推出伪随机性</h2><h3 id="证明思路-1"><a href="#证明思路-1" class="headerlink" title="证明思路"></a>证明思路</h3><p>需要证明：如果一个序列在多项式时间内不可预测，那么它一定是伪随机的。</p>
+<p>从信息论的角度考虑。在不考虑计算复杂度的情况下，一个 $0/1$ 随机变量序列不可预测，当且仅当这些随机变量相互独立且均匀分布于 $\{0,1\}$。也就是说，只有真正随机序列才完全不可预测。</p>
+<p>而在计算意义下，类似结论仍然成立：如果一个序列不能被任何多项式时间算法预测下一位，那么它在多项式时间内就无法与真正随机序列区分，因此它是伪随机的。</p>
+<p>因此，采用反证法：假设 $\{X_n\}$ 不是伪随机的，那么存在一个多项式时间区分器 $D$，能够区分 $X_n$ 和均匀随机序列 $U_n$。那么，可以利用这个区分器 $D$ 构造一个预测算法 $A$，使 $A$ 能够预测 $X_n$ 的下一位，从而与不可预测性的假设矛盾。</p>
+<h3 id="混合分布的构造"><a href="#混合分布的构造" class="headerlink" title="混合分布的构造"></a>混合分布的构造</h3><p>仍然假设 $|X_n|=n$，并反设 $\{X_n\}$ 不是伪随机的。那么，存在一个概率多项式时间算法 $D$，某个多项式 $\mathrm{poly}$，以及无穷多个 $n$，使得：</p>
+<script type="math/tex; mode=display">
+|P[D(X_n)=1]-P[D(U_n)=1]| \geq \frac{1}{\mathrm{poly}(n)}</script><p>设 $S$ 是使上式成立的无穷集合，那么在这些 $n$ 中，要么有无穷多个 $n$ 使差值为正，要么有无穷多个 $n$ 使差值为负。如果差值为正，就直接使用 $D$。如果差值为负，就把 $D$ 的输出取反，用 $1-D$ 替代 $D$。</p>
+<p>因此，不失一般性地可以假设，对于无穷多个 $n$，下式成立：</p>
+<script type="math/tex; mode=display">
+P[D(X_n)=1]-P[D(U_n)=1] \geq \frac{1}{\mathrm{poly}(n)}</script><p>对于每一个满足上式的 $n$，定义 $n+1$ 个混合分布 $H_n^0,H_n^1,\dots,H_n^n$，对于每个 $0\leq k \leq n$，定义：</p>
+<script type="math/tex; mode=display">
+H_n^k
+\overset{\text{def}}{=}
+\operatorname{pref}_{k}(X_n) \cdot \operatorname{suff}_{n-k}(U_n)</script><p>其中：</p>
+<ul>
+<li>$\operatorname{pref}_j(\alpha)$ 是字符串 $\alpha$ 位长为 $j$ 的前缀，即 $\alpha$ 的前 $j$ 个比特</li>
+<li>$\operatorname{suff}_j(\alpha)$ 是字符串 $\alpha$ 位长为 $j$ 的后缀，即 $\alpha$ 的后 $j$ 个比特</li>
+<li>$x\cdot y$ 表示字符串 $x$ 和 $y$ 的连接</li>
+</ul>
+<p>此时，对于 $H_n^0$ 与 $H_n^n$ 有：</p>
+<ul>
+<li>$H_n^0$：前 $0$ 位来自 $X_n$，后 $n$ 位来自 $U_n$，即 $H_n^0 \equiv U_n$</li>
+<li>$H_n^n$：前 $n$ 位来自 $X_n$，后 $0$ 位来自 $U_n$，即 $H_n^n \equiv X_n$</li>
+</ul>
+<p>中间的 $H_n^k$ 则表示：前 $k$ 位已经替换为 $X_n$ 的真实前缀，后面仍然保持均匀随机。</p>
+<h3 id="相邻混合分布的区分优势"><a href="#相邻混合分布的区分优势" class="headerlink" title="相邻混合分布的区分优势"></a>相邻混合分布的区分优势</h3><p>由于 $D$ 可以区分 $H_n^0=U_n$ 和 $H_n^n=X_n$，并且区分优势至少为 $\frac{1}{\mathrm{poly(n)}}$，那么从 $H_n^0$ 一步一步变化到 $H_n^n$ 的过程中，必然存在某一对相邻混合分布 $H_n^k$ 和 $H_n^{k+1}$，使得 $D$ 对它们的接受概率存在区分优势。</p>
+<p>考虑相邻混合分布之间的区分优势，有：</p>
+<script type="math/tex; mode=display">
+\sum_{k=0}^{n-1} \left( P[D(H_n^{k+1})=1] - P[D(H_n^k)=1] \right) =P[D(H_n^n)=1]-P[D(H_n^0)=1]</script><p>根据混合分布的端点项，$H_n^n \equiv X_n$，$H_n^0 \equiv U_n$，所以有：</p>
+<script type="math/tex; mode=display">
+P[D(H_n^n)=1]-P[D(H_n^0)=1] = P[D(X_n)=1]-P[D(U_n)=1] \geq \frac{1}{\mathrm{poly}(n)}</script><p>这说明，如果整体上 $X_n$ 和 $U_n$ 可以被区分，那么平均来看，某一步把随机位换成 $X_n$ 的真实位时，也会产生可检测的区分优势。</p>
+<p>因此，从平均意义上看，有如下断言：</p>
+<blockquote>
+<p><strong>Claim</strong>：对于每一个满足 $P[D(X_n)=1]-P[D(U_n)=1] \geq \frac{1}{\mathrm{poly}(n)}$ 的 $n$，有：</p>
+<script type="math/tex; mode=display">
+\frac{1}{n} \sum_{k=0}^{n-1} \left( P[D(H_n^{k+1})=1] - P[D(H_n^k)=1] \right) \geq \frac{1}{\mathrm{poly}(n)\cdot n}</script></blockquote>
+<h3 id="由区分器构造预测器"><a href="#由区分器构造预测器" class="headerlink" title="由区分器构造预测器"></a>由区分器构造预测器</h3><h4 id="预测算法-A"><a href="#预测算法-A" class="headerlink" title="预测算法 $A$"></a>预测算法 $A$</h4><p>根据上述断言，利用利用区分器 $D$ 构造一个预测 $\{X_n\}$ 的下一个比特的算法 $A$，该算法的目标是：在只读取 $X_n$ 的前 $k$ 位之后，预测第 $k+1$ 位。</p>
+<p>算法 $A$ 在输入 $1^n$ 和字符串 $x=x_1x_2\cdots x_n$ 时，执行如下步骤：</p>
+<ol>
+<li>从集合 $\{0,1,\dots,n-1\}$ 中均匀随机选择一个 $k$</li>
+<li>读取 $x$ 的前 $k$ 位 $x_1,\dots,x_k$</li>
+<li>独立均匀随机生成 $r_{k+1},\dots,r_n\in\{0,1\}$</li>
+<li>构造字符串 $x_1\cdots x_k r_{k+1}\cdots r_n$</li>
+<li>把该字符串输入区分器 $D$</li>
+<li>如果 $D$ 输出 $1$，则 $A$ 预测 $x_{k+1}=r_{k+1}$；如果 $D$ 输出 $0$，则 $A$ 预测 $x_{k+1}=1-r_{k+1}$</li>
+</ol>
+<p>这个算法 $A$ 的核心思想是：它不知道真正的第 $k+1$ 位 $x_{k+1}$，于是先随机猜一个候选值 $r_{k+1}$，然后把 $x_1,\dots,x_k,r_{k+1},\dots,r_n$ 交给区分器 $D$。</p>
+<p>如果 $r_{k+1}$ 恰好等于真实的 $x_{k+1}$，那么这个输入更像 $H_n^{k+1}$，因为它的前 $k+1$ 位都来自 $X_n$；如果 $r_{k+1}$ 不等于真实的 $x_{k+1}$，那么这个输入在第 $k+1$ 位上与 $X_n$ 的真实前缀相反，因此它不再像 $H_n^{k+1}$。</p>
+<p>于是，如果 $D$ 判断这个字符串更像 $X_n$，也就是输出 $1$，算法 $A$ 就相信 $r_{k+1}$ 是正确的；如果 $D$ 输出 $0$，算法 $A$ 就认为 $r_{k+1}$ 可能是错误的，于是输出它的相反值 $1-r_{k+1}$。</p>
+<h4 id="断言"><a href="#断言" class="headerlink" title="断言"></a>断言</h4><p>对于预测算法 $A$，有如下断言。</p>
+<blockquote>
+<p><strong>Claim</strong>：对于每个满足 $P[D(X_n)=1]-P[D(U_n)=1] \geq \frac{1}{\mathrm{poly}(n)}$ 的 $n$，预测算法 $A$ 满足：</p>
+<script type="math/tex; mode=display">
+P[A(1^n,X_n)=\mathrm{next}_A(X_n)] \geq \frac{1}{2}+\frac{1}{\mathrm{poly}(n)\cdot n}</script></blockquote>
+<p>该断言说明，预测算法 $A$ 能够以不可忽略优势预测 $X_n$ 的下一位。</p>
+<h4 id="断言证明"><a href="#断言证明" class="headerlink" title="断言证明"></a>断言证明</h4><p>记 $X^j$ 为 $X_n$ 的第 $j$ 位，对于固定的 $k$，算法 $A$ 随机生成 $R^{k+1},R^{k+2},\dots,R^n$，其中每个 $R^j$ 都是独立均匀随机比特。</p>
+<p>算法 $A$ 猜中第 $k+1$ 位有两种情况：</p>
+<ol>
+<li>$D$ 输出 $1$，并且随机比特 $R^{k+1}$ 正好等于真实位 $X^{k+1}$</li>
+<li>$D$ 输出 $0$，并且随机比特 $R^{k+1}$ 正好不等于真实位 $X^{k+1}$</li>
+</ol>
+<p>因此预测成功概率为：</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+s_A(n) 
+=& P[A(1^n,X_n)=\mathrm{next}_A(X_n)] \\
+=& \frac{1}{n} \sum_{k=0}^{n-1} \Big( P \big[ (D(X^1\cdots X^kR^{k+1}\cdots R^n)=1) \wedge (R^{k+1}=X^{k+1})\big] \\
+&+ P\big[(D(X^1\cdots X^k R^{k+1}\cdots R^n)=0) \wedge (R^{k+1}\neq X^{k+1}) \big] \Big) \\
+=& \frac{1}{2n} \sum_{k=0}^{n-1} \Big( P\big[ D(X^1\cdots X^k X^{k+1} R^{k+2}\cdots R^n)=1 \big] \\
+&+\big(1-P\big[ D(X^1\cdots X^k \overline{X}^{k+1} R^{k+2}\cdots R^n)=1 \big] \big) 
+\Big) \\
+\end{align*}</script><p>其中，$R^{k+1}$ 是均匀随机比特，故有 $P[R^{k+1}=X^{k+1}]=\frac{1}{2}$；$\overline{X}^{k+1}\overset{\text{def}}{=}1-X^{k+1}$ 表示第 $k+1$ 位取真实位的相反值。</p>
+<p>定义分布 $Z$，其前 $k$ 位来自 $X_n$，第 $k+1$ 位取真实位的相反值，后面全部随机，即：</p>
+<script type="math/tex; mode=display">
+Z = X^1\cdots X^k \overline{X^{k+1}} R^{k+2}\cdots R^n</script><p>此时，$s_A(n)$ 可化为：</p>
+<script type="math/tex; mode=display">
+s_A(n)= \frac{1}{2} + \frac{1}{2n} \sum_{k=0}^{n-1} \Big( P\big[ D(H^{k+1}_{n})=1 \big] -P\big[ D(Z)=1 \big] \Big) \\</script><p>而对于第 $k+1$ 个混合分布 $H_{n}^{k+1}$，有：</p>
+<script type="math/tex; mode=display">
+H_n^{k+1} = X^1\cdots X^k X^{k+1} R^{k+2}\cdots R^n</script><p>注意到，$H_n^{k}$ 的第 $k+1$ 位本就是随机的，因此其可以看作以下两个分布的平均：</p>
+<ol>
+<li>第 $k+1$ 位等于真实值，此时分布为 $H_n^{k+1}$</li>
+<li>第 $k+1$ 位等于真实值的相反值，此时分布为 $Z$</li>
+</ol>
+<p>因此，有：</p>
+<script type="math/tex; mode=display">
+P[D(H_n^k)=1] = \frac{ P[D(H_n^{k+1})=1] + P[D(Z)=1] }{2}</script><p>即有：</p>
+<script type="math/tex; mode=display">
+P[D(Z)=1] = 2P[D(H_n^k)=1] - P[D(H_n^{k+1})=1]</script><p>将其代入 $s_A(n)$，有：</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+s_A(n)
+&= \frac{1}{2} + \frac{1}{2n} \sum_{k=0}^{n-1} \Big( P\big[ D(H^{k+1}_{n})=1 \big] - 2P[D(H_n^k)=1] + P[D(H_n^{k+1})=1] \Big) \\
+&= \frac{1}{2} + \frac{1}{n} \sum_{k=0}^{n-1} \Big( P\big[ D(H^{k+1}_{n})=1 \big] - P[D(H_n^k)=1] \Big) \\
+\end{align*}</script><p>根据相邻混合分布的区分优势断言可知，相邻混合分布的区分优势大于等于 $\frac{1}{\mathrm{poly}(n)\cdot n}$，故有：</p>
+<script type="math/tex; mode=display">
+\begin{align*}
+s_A(n)
+&= \frac{1}{2} + \frac{1}{n} \sum_{k=0}^{n-1} \Big( P\big[ D(H^{k+1}_{n})=1 \big] - P[D(H_n^k)=1] \Big) \\
+&\geq \frac{1}{2}+ \frac{1}{\mathrm{poly}(n)\cdot n}
+\end{align*}</script><p>证明完毕。</p>
+<h3 id="完成反证"><a href="#完成反证" class="headerlink" title="完成反证"></a>完成反证</h3><p>算法 $A$ 是概率多项式时间算法，因为它只是随机选择一个位置 $k$，生成随机比特，并调用一次概率多项式时间区分器 $D$。</p>
+<p>预测算法 $A$ 的断言表明，对于无穷多个 $n$，算法 $A$ 可以 $\frac{1}{2}+ \frac{1}{\mathrm{poly}(n)\cdot n}$ 的概率预测 $X_n$ 的下一位。</p>
+<p>而 $\mathrm{poly}(n)\cdot n$ 仍然是多项式，因此这个优势是不可忽略的，这与 $\{X_n\}$ 在多项式时间内不可预测的假设矛盾。</p>
+<p>因此，反设不成立。所以，可由不可预测性推出伪随机性。</p>
+
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>感谢您对我的支持，让我继续努力分享有用的技术与知识点！</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/wechatpay.jpg" alt="Alex_McAvoy 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/alipay.jpg" alt="Alex_McAvoy 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Alex_McAvoy
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://alex-mcavoy.github.io/notes/cryptology/1bf3253f.html" title="伪随机性与不可预测性">https://alex-mcavoy.github.io/notes/cryptology/1bf3253f.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/notes/" rel="tag"># 学习笔记</a>
+              <a href="/tags/cryptology/" rel="tag"># 密码学</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/notes/cryptology/72f98f36.html" rel="prev" title="伪随机生成器的适用性">
+      <i class="fa fa-chevron-left"></i> 伪随机生成器的适用性
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/notes/cryptology/71cb5f93.html" rel="next" title="伪随机生成器与单向函数的存在性">
+      伪随机生成器与单向函数的存在性 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E3%80%90%E5%BC%95%E5%85%A5%E3%80%91"><span class="nav-number">1.</span> <span class="nav-text">【引入】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E3%80%90%E4%B8%8D%E5%8F%AF%E9%A2%84%E6%B5%8B%E6%80%A7%E3%80%91"><span class="nav-number">2.</span> <span class="nav-text">【不可预测性】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%9A%E4%B9%89"><span class="nav-number">2.1.</span> <span class="nav-text">定义</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%90%AB%E4%B9%89"><span class="nav-number">2.2.</span> <span class="nav-text">含义</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E3%80%90%E4%BC%AA%E9%9A%8F%E6%9C%BA%E6%80%A7%E7%9A%84%E7%AD%89%E4%BB%B7%E5%AE%9A%E7%90%86%E3%80%91"><span class="nav-number">3.</span> <span class="nav-text">【伪随机性的等价定理】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E3%80%90%E5%AE%9A%E7%90%86%E8%AF%81%E6%98%8E%E3%80%91"><span class="nav-number">4.</span> <span class="nav-text">【定理证明】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BC%AA%E9%9A%8F%E6%9C%BA%E6%80%A7%E6%8E%A8%E5%87%BA%E4%B8%8D%E5%8F%AF%E9%A2%84%E6%B5%8B%E6%80%A7"><span class="nav-number">4.1.</span> <span class="nav-text">伪随机性推出不可预测性</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AF%81%E6%98%8E%E6%80%9D%E8%B7%AF"><span class="nav-number">4.1.1.</span> <span class="nav-text">证明思路</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AF%81%E6%98%8E"><span class="nav-number">4.1.2.</span> <span class="nav-text">证明</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%8D%E5%8F%AF%E9%A2%84%E6%B5%8B%E6%80%A7%E6%8E%A8%E5%87%BA%E4%BC%AA%E9%9A%8F%E6%9C%BA%E6%80%A7"><span class="nav-number">4.2.</span> <span class="nav-text">不可预测性推出伪随机性</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AF%81%E6%98%8E%E6%80%9D%E8%B7%AF-1"><span class="nav-number">4.2.1.</span> <span class="nav-text">证明思路</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B7%B7%E5%90%88%E5%88%86%E5%B8%83%E7%9A%84%E6%9E%84%E9%80%A0"><span class="nav-number">4.2.2.</span> <span class="nav-text">混合分布的构造</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%9B%B8%E9%82%BB%E6%B7%B7%E5%90%88%E5%88%86%E5%B8%83%E7%9A%84%E5%8C%BA%E5%88%86%E4%BC%98%E5%8A%BF"><span class="nav-number">4.2.3.</span> <span class="nav-text">相邻混合分布的区分优势</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%94%B1%E5%8C%BA%E5%88%86%E5%99%A8%E6%9E%84%E9%80%A0%E9%A2%84%E6%B5%8B%E5%99%A8"><span class="nav-number">4.2.4.</span> <span class="nav-text">由区分器构造预测器</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%A2%84%E6%B5%8B%E7%AE%97%E6%B3%95-A"><span class="nav-number">4.2.4.1.</span> <span class="nav-text">预测算法 $A$</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%96%AD%E8%A8%80"><span class="nav-number">4.2.4.2.</span> <span class="nav-text">断言</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%96%AD%E8%A8%80%E8%AF%81%E6%98%8E"><span class="nav-number">4.2.4.3.</span> <span class="nav-text">断言证明</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%8C%E6%88%90%E5%8F%8D%E8%AF%81"><span class="nav-number">4.2.5.</span> <span class="nav-text">完成反证</span></a></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">  
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Alex_McAvoy"
+      src="/assets/img/head.jpg">
+  <p class="site-author-name" itemprop="name">Alex_McAvoy</p>
+  <div class="site-description" itemprop="description">想要成为渔夫的猎手</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">775</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">75</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">86</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Alex-McAvoy" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;Alex-McAvoy" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/u011815404" title="CSDN → https:&#x2F;&#x2F;blog.csdn.net&#x2F;u011815404" rel="noopener" target="_blank"><i class="fas fa-copyright fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+<!-- 静态项目链接 -->
+<div class="links-of-blogroll motion-element">
+  <div class="links-of-blogroll-title">
+    <i class="fas fa-external-link-alt fa-fw"></i> 站点静态项目
+  </div>
+  <ul class="links-of-blogroll-list">
+  <li class="links-of-blogroll-item">
+      <a href="https://alex-mcavoy.github.io/bookshelf/index.html" target="_blank" title="终末之诗">
+        我的书架（施工中...）
+      </a>
+    </li>
+    <li class="links-of-blogroll-item">
+      <a href="https://alex-mcavoy.github.io/end_poem/index.html" target="_blank" title="终末之诗">
+        终末之诗
+      </a>
+    </li>
+	<li class="links-of-blogroll-item">
+      <a href="https://alex-mcavoy.github.io/2nd_anniversary_of_pyc-zwx/index.html" target="_blank" title="逄总与张总的两周年纪念页（朋友已分手，该项目无限延期）">
+        <del>逄总与张总的两周年纪念页<br/>（朋友已分手，该项目无限延期）</del>
+      </a>
+    </li>
+  </ul>
+</div>
+
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdz20172133" title="https:&#x2F;&#x2F;blog.csdn.net&#x2F;sdz20172133" rel="noopener" target="_blank">神仙队友</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://pxlsdz.gitee.io/" title="https:&#x2F;&#x2F;pxlsdz.gitee.io&#x2F;" rel="noopener" target="_blank">神仙队友blog2</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdau_fangshifeng" title="https:&#x2F;&#x2F;blog.csdn.net&#x2F;sdau_fangshifeng" rel="noopener" target="_blank">酷头</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://bycore.net/" title="https:&#x2F;&#x2F;bycore.net" rel="noopener" target="_blank">凉了的某饼同学</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://kris-cn.github.io/" title="http:&#x2F;&#x2F;kris-cn.github.io&#x2F;" rel="noopener" target="_blank">翟孙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://deng.fun/" title="http:&#x2F;&#x2F;deng.fun&#x2F;" rel="noopener" target="_blank">芙蓉姐姐</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/wentong_Xu" title="https:&#x2F;&#x2F;blog.csdn.net&#x2F;wentong_Xu" rel="noopener" target="_blank">小黑贱胖子</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.yuheng.tech/" title="https:&#x2F;&#x2F;www.yuheng.tech&#x2F;" rel="noopener" target="_blank">咸于</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/lanshan1111" title="https:&#x2F;&#x2F;blog.csdn.net&#x2F;lanshan1111" rel="noopener" target="_blank">肥硕硕</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdauguanweihong" title="https:&#x2F;&#x2F;blog.csdn.net&#x2F;sdauguanweihong" rel="noopener" target="_blank">管少</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_41661919" title="https:&#x2F;&#x2F;blog.csdn.net&#x2F;qq_41661919" rel="noopener" target="_blank">俊杰</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_40859951" title="https:&#x2F;&#x2F;blog.csdn.net&#x2F;qq_40859951" rel="noopener" target="_blank">峰哥</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/LSD20164388" title="https:&#x2F;&#x2F;blog.csdn.net&#x2F;LSD20164388" rel="noopener" target="_blank">狗冬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37868325" title="https:&#x2F;&#x2F;blog.csdn.net&#x2F;qq_37868325" rel="noopener" target="_blank">妍大佬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://sanshuiii.github.io/" title="https:&#x2F;&#x2F;sanshuiii.github.io&#x2F;" rel="noopener" target="_blank">sanshuiii</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://zjpzhao.github.io/" title="https:&#x2F;&#x2F;zjpzhao.github.io&#x2F;" rel="noopener" target="_blank">brain</a>
+        </li>
+    </ul>
+  </div>
+
+		
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+  
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2026</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Alex_McAvoy</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+</br>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+<script src="/js/bookmark.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '48fd73a538d3fa927f65',
+      clientSecret: '56618aefeee90bac3c20de8d51bb0b985d67252d',
+      repo        : 'Gitalk-Comment',
+      owner       : 'Alex-McAvoy',
+      admin       : ['Alex-McAvoy'],
+      id          : '1018fb13096c8ca6c842d0af4b571cf2',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+  
+  <!-- 鼠标单击粒子特效 -->
+  <script type="text/javascript" src="/js/cursor-effects.js"></script>
+  <!-- 多级目录 -->
+  <script type="text/javascript" src="/js/category.js"></script>
+  
+</body>
+</html>
