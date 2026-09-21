@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 8.1.2">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/img/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/assets/img/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/pace-js@1/themes/blue/pace-theme-minimal.css">
+  <script src="//cdn.jsdelivr.net/npm/pace-js@1/pace.min.js"></script>
+
+
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"alex-mcavoy.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":16,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":true,"color":"#ff0000","save":"manual"},"fancybox":true,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":true},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.json"};
+  </script>
+
+  <meta name="description" content="【基本思想】基于单向置换的伪随机生成器构造与基于置换集合的伪随机生成器构造中的伪随机生成器的构造均基于硬核谓词，硬核谓词的输出长度为 $1$ 比特，因此每进行一次单向置换 $f_i$，只能产生一个伪随机比特。 将该思想推广到硬核函数上，即不再要求 $H(x)\in\{0,1\}$，而允许 $H(x)\in\{0,1\}^{m},m&gt;1$。此时，每执行一次单向置换，可以输出多个伪随机比特。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="基于硬核函数的伪随机生成器构造">
+<meta property="og:url" content="https://alex-mcavoy.github.io/notes/cryptology/38681d6c.html">
+<meta property="og:site_name" content="Alex_McAvoy">
+<meta property="og:description" content="【基本思想】基于单向置换的伪随机生成器构造与基于置换集合的伪随机生成器构造中的伪随机生成器的构造均基于硬核谓词，硬核谓词的输出长度为 $1$ 比特，因此每进行一次单向置换 $f_i$，只能产生一个伪随机比特。 将该思想推广到硬核函数上，即不再要求 $H(x)\in\{0,1\}$，而允许 $H(x)\in\{0,1\}^{m},m&gt;1$。此时，每执行一次单向置换，可以输出多个伪随机比特。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-09-21T11:20:00.000Z">
+<meta property="article:modified_time" content="2026-09-21T14:07:01.644Z">
+<meta property="article:author" content="Alex_McAvoy">
+<meta property="article:tag" content="学习笔记">
+<meta property="article:tag" content="密码学">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://alex-mcavoy.github.io/notes/cryptology/38681d6c.html">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>基于硬核函数的伪随机生成器构造 | Alex_McAvoy</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Alex_McAvoy</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">想要成为渔夫的猎手</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+
+	
+	
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://alex-mcavoy.github.io/notes/cryptology/38681d6c.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/assets/img/head.jpg">
+      <meta itemprop="name" content="Alex_McAvoy">
+      <meta itemprop="description" content="想要成为渔夫的猎手">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Alex_McAvoy">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          基于硬核函数的伪随机生成器构造
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2026-09-21 19:20:00" itemprop="dateCreated datePublished" datetime="2026-09-21T19:20:00+08:00">2026-09-21</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/notes/" itemprop="url" rel="index"><span itemprop="name">学习笔记</span></a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/notes/cryptology/" itemprop="url" rel="index"><span itemprop="name">密码学</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>4.2k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>4 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="【基本思想】"><a href="#【基本思想】" class="headerlink" title="【基本思想】"></a>【基本思想】</h1><p><a href="https://alex-mcavoy.github.io/notes/cryptology/7b6794ce.html">基于单向置换的伪随机生成器构造</a>与<a href="https://alex-mcavoy.github.io/notes/cryptology/df74f019.html">基于置换集合的伪随机生成器构造</a>中的伪随机生成器的构造均基于硬核谓词，硬核谓词的输出长度为 $1$ 比特，因此每进行一次单向置换 $f_i$，只能产生一个伪随机比特。</p>
+<p>将该思想推广到硬核函数上，即不再要求 $H(x)\in\{0,1\}$，而允许 $H(x)\in\{0,1\}^{m},m&gt;1$。此时，每执行一次单向置换，可以输出多个伪随机比特。</p>
+<h1 id="【硬核函数的输出长度】"><a href="#【硬核函数的输出长度】" class="headerlink" title="【硬核函数的输出长度】"></a>【硬核函数的输出长度】</h1><p>记 $\ell_H((H(i,\cdot))$ 表示硬核函数 $H(i,\cdot)$ 输出空间大小的二进制对数，即：</p>
+<script type="math/tex; mode=display">
+\ell_H((H(i,\cdot))= \log_2 |\mathrm{Range}(H(i,\cdot))|</script><p>也就是说，$\ell_H((H(i,\cdot))$ 表示每次调用硬核函数 $H(i,\cdot)$ 可以输出多少比特。</p>
+<p>由于任何单向函数都可以修改为具有硬核函数的形式，因此每次调用硬核函数输出 $O(\log n)$ 个伪随机比特，即：</p>
+<script type="math/tex; mode=display">
+\ell_H(n)=O(\log n)</script><p>进一步，如果 $H(i,\cdot)\in\{0,1\}$，那么 $|\mathrm{Range}(H(i,\cdot))|=2$，故有：</p>
+<script type="math/tex; mode=display">
+\ell_H(n)=\log_2 2=1</script><p>所以，任何硬核谓词都可以看作输出长度为 $\ell_H(n)=1$ 的硬核函数。</p>
+<p>此外，对于 RSA 集合，如果假设 RSA 是单向的，那么最低有效的 $O(\log n)$ 位硬核函数，即一次 RSA 迭代可以产生 $O(\log n)$ 个安全比特。同理，Rabin 集合也具有类似性质。</p>
+<h1 id="【构造】"><a href="#【构造】" class="headerlink" title="【构造】"></a>【构造】</h1><p>基于硬核函数的伪随机生成器构造，是基于置换集合的伪随机生成器构造的直接推广。</p>
+<blockquote>
+<p><strong>Construction</strong>：设 $(I,D,F)$ 是一个单向置换集合，即对于索引 $i$ 存在 $f_i$，设 $H$ 是对应的硬核函数，$\mathrm{poly}(\cdot)$ 为任意多项式，对于 $n\in\mathbb{N}$ 与随机种子  $r,s\in\{0,1\}^{\mathrm{poly}’(n)}$，首先利用 $r$ 选择置换 $i=I(1^n,r)$ 得到置换函数 $f_i$，然后利用 $s$ 选择初始点 $s_0=D(i,s)$，之后对于 $1\leq j\leq \mathrm{poly}(n)$ 进行迭代，计算 $\alpha_j=H(i,s_{j-1})$ 和 $s_j=f_i(s_{j-1})$ ，最终输出：</p>
+<script type="math/tex; mode=display">
+G(r,s) = \alpha_1\alpha_2\cdots\alpha_{\mathrm{poly}(n)}</script></blockquote>
+<p>需要注意的是，在基于硬核函数的伪随机生成器构造中，硬核谓词 $B(i,s_{j-1})$ 输出一个比特，因此 $\sigma_j=B(i,s_{j-1})$，而现在的硬核函数 $H(i,s_{j-1})$ 输出 $\ell_H(n)$ 个比特，因此 $\alpha_j=H(i,s_{j-1})$。</p>
+<p>所以，现在每一步输出长度从 $1$ 比特增加到 $\ell_H(n)$，最终输出长度 $\mathrm{poly}(n)\cdot \ell_H(n)$</p>
+<h1 id="【硬核函数的伪随机生成器定理】"><a href="#【硬核函数的伪随机生成器定理】" class="headerlink" title="【硬核函数的伪随机生成器定理】"></a>【硬核函数的伪随机生成器定理】</h1><blockquote>
+<p><strong>Theorem</strong>：设 $(I,D,F)$，$H$，$\mathrm{poly}(n)$，$\mathrm{poly}’(n)$，$G$ 满足上述构造，且有：</p>
+<script type="math/tex; mode=display">
+\mathrm{poly}(n)\cdot \ell_H(n) > 2\mathrm{poly}'(n)</script><p>若对于所有 $n$，$I$ 输出范围中的任意 $i$，随机变量 $D(i)$ 在 $D_i$ 上均匀分布，则 $G$ 是伪随机生成器。</p>
+</blockquote>
+<p>需要注意的是，在基于硬核函数的伪随机生成器构造中，种子长度为 $2\mathrm{poly}’(n)$，输出长度 $\mathrm{poly}(n)$，因此需要：$\mathrm{poly}(n)&gt;2\mathrm{poly}’(n)$。而在现在的构造中，每一步输出 $\ell_H(n)$ 比特，总输出 $\mathrm{poly}(n)\cdot\ell_H(n)$ 比特，因此将条件扩展为 $\mathrm{poly}(n)\cdot\ell_H(n)&gt;2\mathrm{poly}’(n)$</p>
+<h1 id="【定理证明】"><a href="#【定理证明】" class="headerlink" title="【定理证明】"></a>【定理证明】</h1><h2 id="基本思路"><a href="#基本思路" class="headerlink" title="基本思路"></a>基本思路</h2><p>该命题的证明与<a href="https://alex-mcavoy.github.io/notes/cryptology/df74f019.html">基于置换集合的伪随机生成器构造</a>中的命题类似。</p>
+<p>首先反转输出顺序，令 $t=\mathrm{poly}(n)$，定义 $\bar G_i^t(x)$ 为 $G_i^t(x)$ 的逆序，即：</p>
+<script type="math/tex; mode=display">
+\bar G_i^t(x) = H(i,f_i^{t-1}(x)) \cdot H(i,f_i^{t-2}(x)) \cdots H(i,x)</script><p>由于只是改变比特顺序，所以当且仅当 $\bar G_i^t(x)$ 是伪随机时，$G_i^t(x)$ 是伪随机的。因此只需要证明反向序列 $\bar G$ 与均匀随机串不可区分，即可证明 $G$ 是伪随机生成器。</p>
+<h2 id="反证假设"><a href="#反证假设" class="headerlink" title="反证假设"></a>反证假设</h2><p>对无限多个 $n$，令 $h(n)=\ell_H(n)$，假设存在一个概率多项式时间区分器 $D$，能够以不可忽略优势区分真实输出和随机输出，即对于某个多项式 $\mathrm{poly}(n)$，有：</p>
+<script type="math/tex; mode=display">
+\left| P[D(\bar G_{I_n}^{t}(X_n))=1] - P[D(U_{t\cdot h(n)})=1] \right| > \frac{1}{\mathrm{poly}(n)}</script><p>其中，$I_n$ 表示 $I(1^n)$ 的随机输出，$X_n=D(I_n)$ 在 $D_{I_n}$ 上均匀分布。</p>
+<p>由于每次的输出是一个 $h(n)$ 长的字符串，为此定义混合分布 $H_0, H_1,\cdots, H_t$，其中 $H_j$ 表示前 $j$ 个 $h(n)$ 长的字符串真实的硬核函数输出，剩下的 $t-j$ 个 $h(n)$ 长的字符串使用均匀随机字符串，即：</p>
+<script type="math/tex; mode=display">
+H_j= H(i,f_i^{t-1}(x)) \cdots H(i,f_i^{t-j}(x)) \cdot U_{(t-j)h(n)}</script><p>此时，对于首尾两项，有：</p>
+<script type="math/tex; mode=display">
+H_0=U_{t\cdot h(n)}, \quad H_t=\bar G_i^t(x)</script><p>如果 $D$ 能够以不可忽略优势区分 $H_0$ 和 $H_t$，那么必然存在某个 $j\in\{0,\ldots,t-1\}$，使得 $D$ 能够以不可忽略优势区分相邻的两个分布 $H_j$ 和 $H_{j+1}$。</p>
+<p>这两个分布之间唯一的区别，就是其中一个 $h(n)$ 长的字符串，在 $H_j$ 中是均匀随机的 $U_{h(n)}$，在 $H_{j+1}$ 中是真实的 $H(i,x)$。</p>
+<p>因此，如果能区分整个生成器输出，就能区分 $H(i,x)$ 和真正的随机 $h(n)$ 长的字符串。</p>
+<h2 id="区分器构造"><a href="#区分器构造" class="headerlink" title="区分器构造"></a>区分器构造</h2><p>现在构造一个算法 $A$，在得到输入 $(i,y,z)$ 时，判断 $z$ 属于哪一种情况。其中，$y=f_i(x)$，而 $z$ 有两种可能：</p>
+<ol>
+<li>$z=H(i,x)$</li>
+<li>$z= U_{h(n)}$</li>
+</ol>
+<p>算法 $A$ 的步骤如下：</p>
+<ol>
+<li>随机选择 $j\in\{0,\ldots,t-1\}$</li>
+<li>基于 $y=f_i(x)$，计算 $f_i(y),f_i^2(y),\cdots$</li>
+<li>计算对应的硬核函数输出 $H(i,y),\ H(i,f_i(y)),\cdots,H(i,f_i^{j-1}(y))$</li>
+<li>构造字符串 $W= H(i,f_i^{j-1}(y)) \cdots H(i,y) \cdot z \cdot U_{(t-j-1)h(n)}$</li>
+<li>将 $W$ 交给区分器 $D$</li>
+</ol>
+<p>此时，针对 $z$ 的两种情况，分别进行分析。如果 $z=H(i,x)$，那么因为 $y=f_i(x)$，有：$f_i^{k}(y)=f_i^{k+1}(x)$，因此 $W$ 的真实部分为：</p>
+<script type="math/tex; mode=display">
+H(i,f_i^j(x)) \cdots H(i,f_i(x)) H(i,x)</script><p>这恰好对应 $H_{j+1}$。如果 $z$ 是均匀随机的 $U_{h(n)}$，那么该位置仍然是随机的 $h(n)$ 长的比特串，所以 $W$ 对应 $H_j$。</p>
+<p>因此，若 $D$ 能够区分 $H_j$ 和 $H_{j+1}$，那么 $A$ 就能够区分 $H(i,x)$ 和 $U_{h(n)}$</p>
+<h2 id="矛盾推出"><a href="#矛盾推出" class="headerlink" title="矛盾推出"></a>矛盾推出</h2><p>由于 $H$ 是该单向置换集合的硬核函数，那么根据定义，在给定 $(i,f_i(x))$ 时，$H(i,x)$ 应当和均匀随机字符串 $U_{h(n)}$ 在多项式时间内不可区分，即：</p>
+<script type="math/tex; mode=display">
+(i,f_i(x),H(i,x)) \approx_c (i,f_i(x),U_{h(n)})</script><p>但是利用 $D$ 构造出的一个多项式时间算法 $A$，能够以不可忽略优势区分这两个分布，产生矛盾。</p>
+<p>因此，不存在这样的 $D$，所以 $G(U_{2\mathrm{poly}’(n)})$ 与 $U_{\mathrm{poly}(n)\cdot h(n)}$ 是不可区分的，即：</p>
+<script type="math/tex; mode=display">
+G(U_{2\mathrm{poly}'(n)}) \approx_c U_{\mathrm{poly}(n)\cdot h(n)}</script><p>种子 $(r,s)$ 的长度为 $2\mathrm{poly}’(n)$，输出长度为 $\mathrm{poly}(n)\cdot h(n)=\mathrm{poly}(n)\ell_{H}(n)$，而定理假设 $\mathrm{poly}(n)\cdot \ell_h(n)&gt;2\mathrm{poly}(n)$，因此输出长度严格大于种子长度。</p>
+<p>同时，$I,D,F,H$ 都是多项式时间可计算的，且 $\mathrm{poly}(n)$ 是多项式，所以 $G$ 也是多项式时间算法。</p>
+<p>综上，$G$ 是一个伪随机生成器。</p>
+<h1 id="【构造的效率分析】"><a href="#【构造的效率分析】" class="headerlink" title="【构造的效率分析】"></a>【构造的效率分析】</h1><p>基于硬核函数的伪随机生成器每应用一次单向置换 $f_i$，都会输出一次对应的硬核函数值 $H(i,x)$。</p>
+<p>设硬核函数的输出长度为 $\ell_H(n)$，则每进行一次单向置换运算，就可以产生 $\ell_H(n)$ 个伪随机比特。也就是说，相比于硬核谓词每次只能输出 $1$ 比特，使用硬核函数可以显著提高伪随机生成器的生成效率。</p>
+<p>例如，对于 Rabin 单向置换，其核心迭代操作是模平方：</p>
+<script type="math/tex; mode=display">
+x= x^2 \pmod N</script><p>其中，$N$ 是一个 $n$ 比特模数。</p>
+<p>目前已知 Rabin 集合可以得到长度为 $O(\log n)$ 的硬核函数，因此每进行一次模平方，可以安全输出 $O(\log n)$ 个伪随机比特。</p>
+<p>因此，如果能够证明 Rabin 集合存在一个更长的硬核函数，使得：</p>
+<script type="math/tex; mode=display">
+\ell_H(n)=\Omega(n)</script><p>那么就可以得到一个非常高效的伪随机生成器：每进行一次模平方运算，就可以输出 $\Omega(n)$ 个伪随机比特。</p>
+
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>感谢您对我的支持，让我继续努力分享有用的技术与知识点！</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/wechatpay.jpg" alt="Alex_McAvoy 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/assets/img/alipay.jpg" alt="Alex_McAvoy 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Alex_McAvoy
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://alex-mcavoy.github.io/notes/cryptology/38681d6c.html" title="基于硬核函数的伪随机生成器构造">https://alex-mcavoy.github.io/notes/cryptology/38681d6c.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/notes/" rel="tag"># 学习笔记</a>
+              <a href="/tags/cryptology/" rel="tag"># 密码学</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/notes/cryptology/df74f019.html" rel="prev" title="基于置换集合的伪随机生成器构造">
+      <i class="fa fa-chevron-left"></i> 基于置换集合的伪随机生成器构造
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E3%80%90%E5%9F%BA%E6%9C%AC%E6%80%9D%E6%83%B3%E3%80%91"><span class="nav-number">1.</span> <span class="nav-text">【基本思想】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E3%80%90%E7%A1%AC%E6%A0%B8%E5%87%BD%E6%95%B0%E7%9A%84%E8%BE%93%E5%87%BA%E9%95%BF%E5%BA%A6%E3%80%91"><span class="nav-number">2.</span> <span class="nav-text">【硬核函数的输出长度】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E3%80%90%E6%9E%84%E9%80%A0%E3%80%91"><span class="nav-number">3.</span> <span class="nav-text">【构造】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E3%80%90%E7%A1%AC%E6%A0%B8%E5%87%BD%E6%95%B0%E7%9A%84%E4%BC%AA%E9%9A%8F%E6%9C%BA%E7%94%9F%E6%88%90%E5%99%A8%E5%AE%9A%E7%90%86%E3%80%91"><span class="nav-number">4.</span> <span class="nav-text">【硬核函数的伪随机生成器定理】</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E3%80%90%E5%AE%9A%E7%90%86%E8%AF%81%E6%98%8E%E3%80%91"><span class="nav-number">5.</span> <span class="nav-text">【定理证明】</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9F%BA%E6%9C%AC%E6%80%9D%E8%B7%AF"><span class="nav-number">5.1.</span> <span class="nav-text">基本思路</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%8D%E8%AF%81%E5%81%87%E8%AE%BE"><span class="nav-number">5.2.</span> <span class="nav-text">反证假设</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8C%BA%E5%88%86%E5%99%A8%E6%9E%84%E9%80%A0"><span class="nav-number">5.3.</span> <span class="nav-text">区分器构造</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%9F%9B%E7%9B%BE%E6%8E%A8%E5%87%BA"><span class="nav-number">5.4.</span> <span class="nav-text">矛盾推出</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E3%80%90%E6%9E%84%E9%80%A0%E7%9A%84%E6%95%88%E7%8E%87%E5%88%86%E6%9E%90%E3%80%91"><span class="nav-number">6.</span> <span class="nav-text">【构造的效率分析】</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">  
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Alex_McAvoy"
+      src="/assets/img/head.jpg">
+  <p class="site-author-name" itemprop="name">Alex_McAvoy</p>
+  <div class="site-description" itemprop="description">想要成为渔夫的猎手</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">777</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">75</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">86</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/Alex-McAvoy" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;Alex-McAvoy" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://blog.csdn.net/u011815404" title="CSDN → https:&#x2F;&#x2F;blog.csdn.net&#x2F;u011815404" rel="noopener" target="_blank"><i class="fas fa-copyright fa-fw"></i>CSDN</a>
+      </span>
+  </div>
+
+<!-- 静态项目链接 -->
+<div class="links-of-blogroll motion-element">
+  <div class="links-of-blogroll-title">
+    <i class="fas fa-external-link-alt fa-fw"></i> 站点静态项目
+  </div>
+  <ul class="links-of-blogroll-list">
+  <li class="links-of-blogroll-item">
+      <a href="https://alex-mcavoy.github.io/bookshelf/index.html" target="_blank" title="终末之诗">
+        我的书架（施工中...）
+      </a>
+    </li>
+    <li class="links-of-blogroll-item">
+      <a href="https://alex-mcavoy.github.io/end_poem/index.html" target="_blank" title="终末之诗">
+        终末之诗
+      </a>
+    </li>
+	<li class="links-of-blogroll-item">
+      <a href="https://alex-mcavoy.github.io/2nd_anniversary_of_pyc-zwx/index.html" target="_blank" title="逄总与张总的两周年纪念页（朋友已分手，该项目无限延期）">
+        <del>逄总与张总的两周年纪念页<br/>（朋友已分手，该项目无限延期）</del>
+      </a>
+    </li>
+  </ul>
+</div>
+
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdz20172133" title="https:&#x2F;&#x2F;blog.csdn.net&#x2F;sdz20172133" rel="noopener" target="_blank">神仙队友</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://pxlsdz.gitee.io/" title="https:&#x2F;&#x2F;pxlsdz.gitee.io&#x2F;" rel="noopener" target="_blank">神仙队友blog2</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdau_fangshifeng" title="https:&#x2F;&#x2F;blog.csdn.net&#x2F;sdau_fangshifeng" rel="noopener" target="_blank">酷头</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://bycore.net/" title="https:&#x2F;&#x2F;bycore.net" rel="noopener" target="_blank">凉了的某饼同学</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://kris-cn.github.io/" title="http:&#x2F;&#x2F;kris-cn.github.io&#x2F;" rel="noopener" target="_blank">翟孙</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="http://deng.fun/" title="http:&#x2F;&#x2F;deng.fun&#x2F;" rel="noopener" target="_blank">芙蓉姐姐</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/wentong_Xu" title="https:&#x2F;&#x2F;blog.csdn.net&#x2F;wentong_Xu" rel="noopener" target="_blank">小黑贱胖子</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.yuheng.tech/" title="https:&#x2F;&#x2F;www.yuheng.tech&#x2F;" rel="noopener" target="_blank">咸于</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/lanshan1111" title="https:&#x2F;&#x2F;blog.csdn.net&#x2F;lanshan1111" rel="noopener" target="_blank">肥硕硕</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/sdauguanweihong" title="https:&#x2F;&#x2F;blog.csdn.net&#x2F;sdauguanweihong" rel="noopener" target="_blank">管少</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_41661919" title="https:&#x2F;&#x2F;blog.csdn.net&#x2F;qq_41661919" rel="noopener" target="_blank">俊杰</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_40859951" title="https:&#x2F;&#x2F;blog.csdn.net&#x2F;qq_40859951" rel="noopener" target="_blank">峰哥</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/LSD20164388" title="https:&#x2F;&#x2F;blog.csdn.net&#x2F;LSD20164388" rel="noopener" target="_blank">狗冬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_37868325" title="https:&#x2F;&#x2F;blog.csdn.net&#x2F;qq_37868325" rel="noopener" target="_blank">妍大佬</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://sanshuiii.github.io/" title="https:&#x2F;&#x2F;sanshuiii.github.io&#x2F;" rel="noopener" target="_blank">sanshuiii</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://zjpzhao.github.io/" title="https:&#x2F;&#x2F;zjpzhao.github.io&#x2F;" rel="noopener" target="_blank">brain</a>
+        </li>
+    </ul>
+  </div>
+
+		
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+  
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2026</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Alex_McAvoy</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+</br>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+<script src="/js/bookmark.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '48fd73a538d3fa927f65',
+      clientSecret: '56618aefeee90bac3c20de8d51bb0b985d67252d',
+      repo        : 'Gitalk-Comment',
+      owner       : 'Alex-McAvoy',
+      admin       : ['Alex-McAvoy'],
+      id          : '5b10a09eba85b7d813256afbe8020277',
+        language: '',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+  
+  <!-- 鼠标单击粒子特效 -->
+  <script type="text/javascript" src="/js/cursor-effects.js"></script>
+  <!-- 多级目录 -->
+  <script type="text/javascript" src="/js/category.js"></script>
+  
+</body>
+</html>
